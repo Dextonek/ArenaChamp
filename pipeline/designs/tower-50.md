@@ -127,3 +127,27 @@ today's area, not a circle.
 - **Known:** the made sea floors' roaming enemies get `floorNumbers(n)` on top of the generator's own +1.5 % a floor, so floor 10's
   packs have about 1.95 times floor 1's health and the Wood's (floor 11, tuned as 2) 1.08: a step down after the crown. Left as it is
   (the task said to leave the curve); worth a look when the Wood's made floors are tuned.
+
+## Progress on the new scope (2026-11-14)
+
+- **Size and shape: done for the sea.** The engine's one change: the walk's box follows the play area (`Arena.walk`, src/arena.ts),
+  and the sky stands round the camera (src/runtime.ts: a dome round the middle showed its cut-off far side from 120 m out). A zone's
+  outline is radii round the middle (gen/core.ts `makeOutline`, land.ts `rimAt`) and its invisible edge walls are fixed cover (look
+  `edge`): the walk, the navigator, the summons and the checks keep inside it with no other engine change. Duels and the Raid are as
+  they were (`test:server` passes; floor 1's old perf print held through the sky change).
+- **The sea at the new size:** floors 2 to 10 re-made (eight places on two rings, a ring road, two named enemies, three side quests,
+  six caches and waystones, 16 tidal flats; floor 10 the Sun Warden's crown) and floor 1 grown (gen/harbour.ts: the sea's generator
+  dressed as the harbour, its people, quests, Old Barnacle, Tam, Zephyr's race; the old save ids kept). Every floor: about 34,900 m2
+  reachable (floor 1 was 6,349), nothing unreachable, at most five units near a spot. Route bot, one run each: floor 1 Lyra and Bram
+  cleared in 22 min, no falls; floors 2 to 10 Lyra 9 of 9 (30 to 41 min) and Bram 9 of 9 (30 to 35 min), 0 to 3 falls, one restart in
+  18 runs. Speed: the large floor 2 8.1 ms a frame on desktop (floor 1 7.7) and 19.6 on the phone profile (21.9); one long frame
+  while the zone is built (the 4096 px painted ground), behind the loading page.
+- **The curve:** the game raises roaming enemies by the floor's tuned number (`floorNumbers`); the sea's made floors are tuned as 1 to
+  2 (`tunedAs`), so the Wood (11, tuned as 2) follows on with no step. The renumbering agent found it (with an own +1.5 % a floor on
+  top of the real number, floor 9's packs were nearly twice floor 1's).
+- **Chapters as hooks:** a generator a chapter (gen/chapters.ts), an arena builder a chapter (floors/gen/arenas.ts), the baking tool
+  by floor number (`node pipeline/tools/gen-floors.ts 12-20`, `harbour` for floor 1), crowns with a tier (`PiecesDef.crownTier`).
+- **Agents:** the renumbering (merged: floors 1, 11, 21, 31, 41; saves migrated and tested; the menu in five chapters); the sea's new
+  models (branch `t3/tower-sea-npc-models`: a keeper, a quest giver, a trader, a drowned docker and the Drowned Admiral, a sheet
+  beside Sefu and Kaia in docs/tower/models/, waiting on the user's yes; not in the game); the Wood, the Sands and the Deep each in
+  their own worktree (briefs: the same bar as the sea), the War next.

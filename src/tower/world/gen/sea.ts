@@ -56,6 +56,8 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   const n = o.n, seed = n * 1000 + (o.attempt ?? 0), rnd = mulberry(seed);
   const m: 1 | -1 = n % 2 === 0 ? -1 : 1; // even floors have their sea in the west
   const k = (n - 1) / 9; // 0 at floor 1, 1 at floor 10
+  // The index into the chapter's lists: floors 2 to 10 are 0 to 8; floor 1 (the harbour, made by gen/harbour.ts) is 8.
+  const fi = (n + 7) % 9;
   const rim = makeOutline(rnd, { area: AREA, min: 72, max: 140 });
   const L = new Layout(rim, rnd, n);
   const range = (a: number, b: number) => L.range(a, b);
@@ -66,9 +68,9 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   // --- who is where: gatekeepers all different over the chapter, people five at a time round the rest ---------------------------
   const order = shuffle(ROSTER.filter((h) => !HANDMADE_GATES.includes(h)), mulberry(1001));
   const gates = order.slice(0, 9), folk = [...order.slice(9), ...HANDMADE_GATES];
-  const who = (i: number) => folk[((n - 2) * 5 + i) % folk.length];
-  const keeperHero = who(0), giverHero = who(1), traderHero = who(2), rivalHero = who(3), villagerHero = who(4), gateHero = gates[(n - 2) % gates.length];
-  const turn = (n - 2) % RULER_BODIES.length, round = [...RULER_BODIES.slice(turn), ...RULER_BODIES.slice(0, turn)];
+  const who = (i: number) => folk[(fi * 5 + i) % folk.length];
+  const keeperHero = who(0), giverHero = who(1), traderHero = who(2), rivalHero = who(3), villagerHero = who(4), gateHero = gates[fi % gates.length];
+  const turn = fi % RULER_BODIES.length, round = [...RULER_BODIES.slice(turn), ...RULER_BODIES.slice(0, turn)];
   const rulerBody = round.find((b) => ![keeperHero, giverHero, traderHero, rivalHero, villagerHero, gateHero].includes(b)) ?? 'Bram';
 
   // --- the camp in the south, the lair in the north, the outline's walls ----------------------------------------------------------
@@ -264,7 +266,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   // from 1 (floor 1) to 2 (floor 10), so the Wood (floor 11, tuned as 2) follows on with no step. (An own +1.5 % a floor on top of the
   // floor's real number made floor 9's packs nearly twice floor 1's: the bot took 50 minutes over it.)
   const hpK = 1, shK = 1, shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 1)));
-  const named1 = NAMED[(2 * (n - 2)) % NAMED.length], named2 = NAMED[(2 * (n - 2) + 1) % NAMED.length];
+  const named1 = NAMED[(2 * fi) % NAMED.length], named2 = NAMED[(2 * fi + 1) % NAMED.length];
   const enemies: Record<string, EnemySpec> = {
     docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: Math.round(70 * hpK), share: r4(0.024 * shK), every: 1.8, speed: 3.2, scale: 1.3, shards: shard(4), color: '#7fd0c0' },
     netter: { id: 'netter', name: 'Net caster', blurb: 'Throws a net: you are rooted a moment.', look: 'netter', melee: false, hp: Math.round(50 * hpK), share: r4(0.02 * shK), every: 2.8, speed: 2.8, range: 9, scale: 1.3, net: { kind: 'root', seconds: 0.8 }, shards: shard(5), color: '#9fe0a0' },
@@ -285,14 +287,14 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   // --- the set pieces: the ruler (the Drowned Captain's moves, another body and name), the gate, the trial, the rival ------------------
   // Floor 10 is the chapter's crown: behind the lair is a Raid boss, alone (pieces/core.ts `crownFight`); the first is the Sun Warden.
   const crown = n === 10 ? ('sun' as const) : undefined;
-  const [rulerName, rulerTitle] = crown ? ['The Sun Warden', 'Keeper of the Sun Court'] : RULERS[(n - 2) % RULERS.length];
+  const [rulerName, rulerTitle] = crown ? ['The Sun Warden', 'Keeper of the Sun Court'] : RULERS[fi % RULERS.length];
   const extra: [string, MoveSpec] = pick([
     ['spray', { use: 'stones', name: 'Falling Spray', share: 0.08, count: 3, cooldown: 6 }],
     ['whirl', { use: 'spokes', name: 'The Whirlpool', share: 0.09, cooldown: 14 }],
     ['fan', { use: 'fan', share: 0.05 }],
   ] as [string, MoveSpec][]);
   const ruler: RulerDef = {
-    name: rulerName, title: rulerTitle, stand: rulerBody, tint: TINTS[(n - 2) % TINTS.length], scale: r2(range(2.1, 2.5)), hp: Math.round((2800 * (1 + 0.02 * (n - 1))) / 50) * 50, speed: 2.0, stagger: { max: 100, kneel: 5 },
+    name: rulerName, title: rulerTitle, stand: rulerBody, tint: TINTS[fi % TINTS.length], scale: r2(range(2.1, 2.5)), hp: Math.round((2800 * (1 + 0.02 * (n - 1))) / 50) * 50, speed: 2.0, stagger: { max: 100, kneel: 5 },
     room: 'harbour',
     moves: {
       anchor: { use: 'sweep', name: pick(['Anchor Sweep', 'Chain Sweep', 'Mast Sweep']), share: 0.045, cooldown: 9 },
@@ -373,7 +375,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   ];
   const cacheDefs = caches.map((c, i) => ({ id: `c${i + 1}`, at: c, shards: shard([25, 30, 20, 30, 25, 20][i]), ...(i === 2 || i === 5 ? { boon: true } : {}) }));
   const stoneDefs = stones.map((s, i) => ({ id: `w${i + 1}`, name: `The ${stoneNear[i].name.replace(/^The /, '').toLowerCase()} stone`, at: s }));
-  const loreText = LORE[(n - 2) % LORE.length];
+  const loreText = LORE[fi % LORE.length];
 
   // A few of the harbour file's props by the places (looks only: barrels, chests, mooring posts, cannons, boats).
   const props: { i: number; dx: number; dz: number; yaw: number }[] = [];
@@ -411,7 +413,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   return {
     n, chapter: 'sea', seed, look, pieces,
     floor: {
-      n, id: `sea-${nn}`, name: crown ? 'The Crown of the Sea' : FLOOR_NAMES[(n - 2) % FLOOR_NAMES.length], blurb: crown ? 'Where the sea ends, a court of the sun keeps the way up.' : BLURBS[(n - 2) % BLURBS.length],
+      n, id: `sea-${nn}`, name: crown ? 'The Crown of the Sea' : FLOOR_NAMES[fi % FLOOR_NAMES.length], blurb: crown ? 'Where the sea ends, a court of the sun keeps the way up.' : BLURBS[fi % BLURBS.length],
       tunedAs: r2(1 + (n - 1) / 9), ring: Math.ceil(Math.max(...rim) + 1.5), start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: Math.round((780 + 20 * (n - 1)) * 2.2),
       shop: { heal: 30 + 2 * (n - 1), boon: 55 + 3 * (n - 1), life: 80 + 4 * (n - 1), hint: 15 },
       law: {

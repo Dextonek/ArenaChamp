@@ -22,13 +22,25 @@ const OUT = join(here, '..', '..', 'src', 'tower', 'world', 'floors', 'gen');
 mkdirSync(OUT, { recursive: true });
 
 const wanted: { n: number; attempt: number }[] = [];
-for (const arg of process.argv.slice(2)) {
+// `harbour`: floor 1 grown to the new size (gen/harbour.ts), baked to floors/gen/harbour-big.ts (not in the made floors' list:
+// floors/harbour.ts loads it).
+if (process.argv.includes('harbour')) {
+  const { makeHarbourFloor } = await import('../../src/tower/world/gen/harbour.ts');
+  const g = makeHarbourFloor();
+  writeFileSync(join(OUT, 'harbour-big.ts'), `// Made by pipeline/tools/gen-floors.ts harbour: floor 1, the Drowned Harbour, grown (src/tower/world/gen/harbour.ts), seed ${g.seed}.
+import type { GenFloor } from '../../gen/types';
+
+export const HARBOUR: GenFloor = ${JSON.stringify(g, null, 1)};
+`);
+  console.log(`floor 1 (harbour, seed ${g.seed}): places ${Object.values(g.floor.places).map((p) => p.name).join(', ')}; cover ${g.look.pieces.length}; race pace ${g.floor.rival.pace}, route ${g.floor.rival.route?.length} points`);
+}
+for (const arg of process.argv.slice(2).filter((a) => a !== 'harbour')) {
   const [span, att] = arg.split(':');
   const [a, b] = span.split('-').map(Number);
   for (let n = a; n <= (b || a); n++) if (n % 10 !== 1) wanted.push({ n, attempt: Number(att || 0) });
 }
-if (!wanted.length) {
-  console.log('usage: node pipeline/tools/gen-floors.ts 2 | 2-10 | 12-20 | 5:1');
+if (!wanted.length && !process.argv.includes('harbour')) {
+  console.log('usage: node pipeline/tools/gen-floors.ts 2 | 2-10 | 12-20 | 5:1 | harbour');
   process.exit(1);
 }
 
