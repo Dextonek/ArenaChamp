@@ -681,7 +681,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
     };
     update(0);
     for (const g of temp) g.dispose();
-    return { update, solids, brooks: brooks.map((b) => ({ ...b.cross, bridge: b.bridge })) };
+    return { update, solids, brooks: brooks.map((b) => ({ ...b.cross, bridge: b.bridge, pts: b.pts })) };
   };
 
   return { paint, build };
