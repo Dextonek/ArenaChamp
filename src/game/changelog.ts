@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
+    title: 'The Climb, looked over',
+    live: false,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'Props set right in the Sands, the Deep and the War',
+        text: 'Things that hung in the air, stood off their slopes or lay in pieces now sit as they should: necks on their jars, swords in their cairns, ropes on the wells, the gateway\'s lintel on its two piers, mushroom caps on their stems, spearheads on their shafts, the hedge\'s lashings on its stakes.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-14',
     title: 'The Climb grows to fifty floors',
     live: true,
     items: [
