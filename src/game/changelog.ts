@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Tower',
+        title: 'A map of the floor',
+        text: 'The Climb now has a small round map in the top-left corner that follows your hero, with the enemies, people, doors, waystones and the next step of your quest on it. Press M, or tap the small map, to see the whole floor with the names of its places.',
+      },
+      {
         tag: 'Online',
         title: 'See who waits to duel',
         text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',

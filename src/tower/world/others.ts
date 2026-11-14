@@ -240,6 +240,11 @@ export class WorldOthers implements WorldSink {
     return this.list.size;
   }
 
+  /** Each other player's place now (the map's green dots). */
+  forEachPlace(fn: (x: number, z: number) => void) {
+    for (const o of this.list.values()) fn(o.pos.x, o.pos.z);
+  }
+
   private kitOf(hero: string) {
     return this.api.kits.find((k) => k.name === hero) ?? null;
   }

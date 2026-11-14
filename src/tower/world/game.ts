@@ -7,6 +7,7 @@ import type { FloorDef, Spot, DoorDef } from './def';
 import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
 import { FLOORS, floorAbove, floorAtOrBelow } from './floors';
 import { WorldHud } from './hud';
+import { WorldMap } from './map';
 import { WorldOthers } from './others';
 import type { WorldPresence } from '../../net/world';
 import { KEYS, LIVES, WorldRun, nextFloor, read, sigils, wipe, write } from './state';
@@ -61,6 +62,8 @@ export class WorldGame {
    * the floor's shard and each zone put away (a door, a fall that begins the floor again, the result card, Leave) leaves it.
    */
   readonly others: WorldOthers;
+  /** The minimap in the top-left corner and the big map on M (map.ts); a person's play only. */
+  readonly map: WorldMap | null;
   private presence: WorldPresence | null;
   private lastX = NaN;
   private lastZ = NaN;
@@ -70,6 +73,7 @@ export class WorldGame {
     this.mode = o.mode ?? 'play';
     this.persist = o.persist ?? true;
     this.others = new WorldOthers(api);
+    this.map = this.mode === 'play' ? new WorldMap(api, this.others) : null;
     this.presence = o.presence ?? null;
     this.others.onCount = (n) => this.hud.setOthers(this.presence?.online || n > 0 ? n : null);
     if (this.presence) this.presence.sink = this.others;
@@ -131,6 +135,7 @@ export class WorldGame {
     if (run.hp < 0.999) setHealth(api, run.hp * api.duel.heroMax);
     setSunlit(api, run.boons);
     this.zone.begin();
+    this.map?.setZone(this.zone, floor);
     // The autopilot's camera is fixed on the arena's middle; a zone this wide has to follow the hero.
     if (this.mode === 'run') api.heroMode.focus = null;
     api.heroMode.snapCameraNow();
@@ -153,6 +158,7 @@ export class WorldGame {
 
   private leave() {
     this.presence?.leave();
+    this.map?.setZone(null, null);
     this.door = null;
     this.handle?.cancel();
     this.handle = null;
@@ -200,6 +206,7 @@ export class WorldGame {
     this.lastX = me.x;
     this.lastZ = me.z;
     this.others.update(dt, me, zoneOn);
+    this.map?.update(dt, zoneOn);
   }
 
   stop() {
@@ -209,6 +216,7 @@ export class WorldGame {
     this.piece = null;
     if (this.presence?.sink === this.others) this.presence.sink = null;
     this.others.dispose();
+    this.map?.dispose();
     this.hud.dispose();
   }
 

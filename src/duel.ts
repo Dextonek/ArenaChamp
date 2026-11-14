@@ -712,6 +712,8 @@ export class Duel {
     this.hud.style.top = `calc(${small ? 94 : 86}px + env(safe-area-inset-top, 0px))`;
     this.hud.style.left = small ? 'auto' : '12px';
     this.hud.style.right = small ? '6px' : 'auto';
+    // Named for the page's own layout rules (the Climb's minimap steps it down: src/tower/world/map.ts).
+    this.hud.dataset.corner = small ? 'right' : 'left';
     this.hud.style.transform = 'none';
     this.waiting = !run && this.holdStart;
     if (this.waiting) hm.locked = true;
@@ -1499,6 +1501,7 @@ export class Duel {
     this.hud.style.flexDirection = 'row';
     this.hud.style.alignItems = 'center';
     this.hud.style.top = this.hudTop;
+    delete this.hud.dataset.corner;
     this.hud.style.left = '50%';
     this.hud.style.right = 'auto';
     this.hud.style.transform = 'translateX(-50%)';
@@ -3488,6 +3491,7 @@ export class Duel {
 
   private buildHud() {
     const root = document.createElement('div');
+    root.className = 'duel-hud';
     // A phone: smaller portraits and bars that share the screen width (two 220 px bars don't fit 375 px).
     const small = TOUCH || innerWidth < 760;
     root.style.cssText =

@@ -1470,6 +1470,7 @@ export class HeroMode implements TouchTarget {
       `-webkit-touch-callout:none;font:600 12px ui-sans-serif,system-ui;color:${hudInk(kit)};`;
 
     const plate = document.createElement('div');
+    plate.className = 'hero-plate';
     plate.style.cssText =
       'position:absolute;left:calc(8px + env(safe-area-inset-left, 0px));top:calc(78px + env(safe-area-inset-top, 0px));' +
       `display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:12px;pointer-events:auto;` +
