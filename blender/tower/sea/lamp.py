@@ -43,7 +43,16 @@ def build():
     fl = Vector((-rxw * 1.15, cw.y, z["waist"] - 0.1))
     P.hull(g, "gold", [fl, fl + Vector((0, 0, 0.05)), fl + Vector((0, 0, 0.09)), fl + Vector((0, 0, 0.11))], [0.035, 0.04, 0.014, 0.012], seg=12)
 
-    # the hooded mantle to the hips, lined in wine
+    # the hooded mantle: over her shoulders and breast in front, to the knee behind, lined in wine
+    R.fitted("Mantle", ["spine_03", "clavicle", "upperarm"], "sea", offset=0.02, above=z["chest"] - 0.07, keep_skin=True,
+             where=lambda p: abs(p.x) < R.bone("upperarm_l").x + 0.1)
+    fr = R.piece("near")
+    pts = []
+    for k in range(33):
+        a = -2.6 + 5.2 * k / 32
+        p, out = P.on_trunk(R, z["chest"] - 0.075, a, off=0.022)
+        pts.append(p)
+    fr.tube("gold", pts, 0.006, seg=6, caps=False)
     PA.cloak(R, "sea", hem=z["knee"] - 0.02, width=0.4, depth=0.85, spread=1.45, top_spread=2.1, lining="wine", trim="gold", nu=18, nv=10)
     P.collar(R, "sea", height=0.04, grow=1.25, flare=0.2, arc=(0.45, 2 * PI - 0.45))
     PA.cowl(R, "sea", grow=1.08, low=0.08, high=0.0)
@@ -52,5 +61,5 @@ def build():
     # the hand lantern, held up by its ring
     h = K.hand(R)
     h.f.torus("gold", K.at(h, 0.015), 0.028, 0.006, normal=h.side, seg=(14, 5))
-    K.lantern(h, K.at(h, 0.0), "gold", "glass", "glow", size=1.35, chain=0.03)
+    K.lantern(h, K.at(h, 0.0), "gold", "glass", "glow", size=1.8, chain=0.03)
     return R

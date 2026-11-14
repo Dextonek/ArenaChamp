@@ -44,9 +44,10 @@ def build():
     R.boots("leather", top=z["ankle"] + 0.05)
     P.toes(R, "leather")
     for n in "lr":
-        P.sleeve(R, n, "saffron", t0=0.1, t1=0.9, r0=0.04, r1=0.12, bones=("thigh", "calf"), seg=16, n=4)
+        P.sleeve(R, n, "saffron", t0=0.15, t1=1.02, r0=0.04, r1=0.09, bones=("thigh", "calf"), seg=16, n=4)
+        P.sleeve(R, n, "saffron", t0=-0.04, t1=0.86, r0=0.05, r1=0.0, bones=("calf", "foot"), seg=16, n=4)
         c, r = R.leg_r(n, z["ankle"] + 0.07)
-        R.piece(f"calf_{n}").torus("gold", c, r + 0.014, 0.008, seg=(20, 5))
+        R.piece(f"calf_{n}").torus("gold", c, r + 0.03, 0.012, seg=(20, 5))
     P.skirt(R, "saffron", z["hip"] - 0.1, flare=1.3, depth=1.15, folds=6, amp=0.014, seg=40)
 
     # the satchel of bottles on her right hip

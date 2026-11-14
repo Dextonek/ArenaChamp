@@ -1,6 +1,6 @@
 """The Echo-Hermit (the Deep's keeper, who gives the main quest): blind for longer than anyone remembers, he finds the
 way through the dark halls by the echoes of his staff. An old man, grey hair and a grey beard, his eyes bound
-with a band of pale linen. A heavy violet mantle with a cowl lying round his shoulders, a long slate robe to the floor
+with a band of pale linen. A heavy violet mantle with a cowl lying round his shoulders, a long violet-black robe to the floor
 with a silver hem, a cord belt. In the LEFT hand a tall staff whose head is a silver tuning fork, a crystal at its base
 that glows a cold mint: his one light (hold: torch). Signature shape: the blindfold, the cowl and the fork."""
 import math
@@ -16,7 +16,7 @@ import folk as K
 def build():
     R = Real("deep_hermit", sex="m", height=1.03, width=0.98, depth=0.98, skin="#c0a290")
     z = R.z
-    R.mat("slate", "#2e3346", rough=0.72, double=True)
+    R.mat("slate", "#231d30", rough=0.72, double=True)
     R.mat("violet", "#3a2856", rough=0.7, double=True)
     R.mat("dark", "#15141c", rough=0.8, double=True)
     R.mat("linen", "#ddd6c4", rough=0.8, double=True)

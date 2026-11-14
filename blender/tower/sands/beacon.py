@@ -26,6 +26,8 @@ def build():
     R.mat("gold", "#c9a24a", rough=0.32, metal=0.85, double=True)
     R.mat("glow", "#ffb060", rough=0.4, emit="#ff7a20", strength=1.0)
     R.hair(None, "#1a1210")
+    R.mat("hair", "#1a1210", rough=0.6)
+    PA.hair_cap(R, "hair", grow=1.05)
 
     # the tunic with short sleeves, bare forearms with gold bands; trousers gathered at the ankle
     el = R.bone("lowerarm_l").x

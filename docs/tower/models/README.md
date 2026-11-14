@@ -22,8 +22,14 @@ gatekeepers and rulers are still heroes, and the enemies are still drawn in code
 Each is described in the head of its module (`blender/tower/<chapter>/<name>.py`) and on the page. Per chapter here:
 `<chapter>-lineup-game.jpg` and `<chapter>-lineup-front.jpg` (the five beside Sefu and Kaia), `<chapter>-sheet.jpg` and one
 `<chapter>-<name>.jpg` each (front, back, the game's camera, the face), and `<chapter>-ingame.jpg` (the camp of the chapter's first
-floor in the game, the keeper's card open). The Sea's drowned docker and Drowned Admiral (`sea-docker.jpg`, `sea-admiral.jpg`) are
-the first sample's enemy and ruler: built, not in the game.
+floor in the game, the trader's card open). The Sea's drowned docker and Drowned Admiral (`sea-docker.jpg`, `sea-admiral.jpg`, and
+the first sample's own line-ups `sea-sample-lineup-game.jpg`, `sea-sample-lineup-front.jpg`, `sea-sample-sheet.jpg`) are an enemy
+and a ruler: built, not in the game.
+
+**Checked against the heroes they might echo**, side by side (not kept): the Crystal-Seller against Opaline (she lost her silver
+hair and lavender for dark hair and sea-glass green), the Firefly-Seller against Gus (his cone hat became a flat-crowned one), the
+Echo-Hermit against Gus (his robe went from blue-grey to violet-black), the Ferryman against Nyx (his lining from violet to deep
+sea-green), the Charm-Pedlar against Hank, the Moss-Abbess against Fenna, the Star-Reader against Lyra.
 
 **How they were made to differ:** within a chapter no two share more than one of headwear, the held thing's top, the lower outline
 (gown, coat, skirt or legs) and the main colour; the pack has one face per sex, so faces do not tell them apart. Each holds its
@@ -38,8 +44,9 @@ floor (three or four of them).
 - `TOWER_FOLK` lists the 25 with their model, name, slot and the hero whose way of holding they borrow. `withFolk(n, floor)`
   (applied to every floor in `floors/index.ts`) gives each person a `figure` by the floor's number: the chapter's keeper; the first
   giver of the floor (the camp's, `giver`) the camp giver, the second (`villager`, or the War's `healer`) the giver out in the land;
-  the trader the first on odd floors and the second on even ones. A generated floor has all five; the handmade first floors (11,
-  21, 31, 41) have no second giver, and floor 1 has all five.
+  the trader the first on odd floors and the second on even ones. So a floor shows four of the five (one trader at a time): a
+  generated floor and floor 1 show the keeper, both givers and a trader; floors 11, 21 and 31 have no second giver and show three;
+  floor 41 shows three and Brannoc (below). The giver out in the land first appears on a chapter's second floor (and on floor 1).
 - **Their lines are the slots' own**, so the givers do not swap slots: the Sea's camp giver hauls nets, the War's land giver is the
   healer. On the generated floors the keeper and both givers are the same on every floor of a chapter; only the trader alternates.
 - A person who was named after a hero takes the figure's name on its card and mark and in every line of the floor that names it

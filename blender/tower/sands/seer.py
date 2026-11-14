@@ -23,6 +23,8 @@ def build():
     R.mat("gold", "#d2ae55", rough=0.32, metal=0.85, double=True)
     R.mat("glow", "#fff4d0", rough=0.3, emit="#ffd070", strength=1.0)
     R.hair(None, "#cfcac2")
+    R.mat("hair", "#cfcac2", rough=0.6)
+    PA.hair_cap(R, "hair", grow=1.05)
 
     R.fitted("Robe", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "indigo", offset=0.008)
     R.fitted("Under", ["thigh", "calf"], "night", offset=0.004)

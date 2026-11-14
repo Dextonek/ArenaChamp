@@ -1,5 +1,5 @@
 """The Firefly-Seller (one of the Deep's two traders): he sells living light, the fireflies of the deep caves, by the
-jar. A broad man with a dark beard under a wide shallow cone of a hat of black lacquer with a silver rim. A quilted slate
+jar. A broad man with a dark beard under a wide flat-crowned hat of black felt with a violet band and a silver rim. A quilted slate
 coat to the knee with violet edges, dark trousers, black boots. Across his shoulders a carrying yoke of dark wood, a
 covered jar of glass hanging from each end. In the LEFT hand, held up on a cord, one more jar whose fireflies glow a soft
 green: his one light (hold: torch). Signature shape: the hat and the yoke."""
@@ -39,12 +39,8 @@ def build():
     R.band("black", z["waist"], height=0.05, grow=1.17)
     P.collar(R, "violet", height=0.05, grow=1.05, flare=0.05)
 
-    # the wide flat conical hat
-    f, c, r = R.head_piece()
-    hb = Vector((0, c.y + 0.015, z["top"] - 0.05))
-    P.hull(f, "black", [hb, hb + Vector((0, 0, 0.06)), hb + Vector((0, 0, 0.115))], [0.32, 0.16, 0.006], [0.33, 0.165, 0.006], seg=32, side=Vector((1, 0, 0)))
-    f.torus("silver", hb, 0.32, 0.007, seg=(44, 5))
-    f.torus("violet", hb + Vector((0, 0, -0.012)), 0.12, 0.012, seg=(28, 6))
+    # the wide flat-crowned hat
+    K.wide_hat(R, "black", "violet", brim=0.27, crown=(0.115, 0.125, 0.05), tilt=(0.0, 0.06), lift=0.04, band_h=0.016, rim="silver")
 
     # the yoke across his shoulders, a jar at each end
     yk = R.piece("spine_03")

@@ -1,7 +1,7 @@
 """The Crystal-Seller (one of the Deep's two traders): she cuts the Deep's crystals and sells light by the facet. A
-slim woman with short silver hair, a fitted violet bodice with silver edges over a slate blouse, a long slate skirt with
+slim woman with dark hair in buns, a fitted violet bodice with silver edges over a slate blouse, a long slate skirt with
 a violet overskirt open at the front, a leather apron of tools at her hip. On her back a tall rack of uncut crystals,
-pale lavender, rising over her shoulders. In the LEFT hand, held up, a cut crystal that glows lavender-white: her one
+pale sea-glass green, rising over her shoulders. In the LEFT hand, held up, a cut crystal that glows a cold mint: her one
 light (hold: torch). Signature shape: the crystals over her shoulders."""
 import math
 
@@ -21,9 +21,9 @@ def build():
     R.mat("violet", "#4a3270", rough=0.62, double=True)
     R.mat("leather", "#2a2024", rough=0.5, double=True)
     R.mat("silver", "#c8ccd4", rough=0.28, metal=0.9, double=True)
-    R.mat("crystal", "#c8b8f0", rough=0.18)
-    R.mat("glow", "#f4eeff", rough=0.2, emit="#b89aff", strength=1.0)
-    R.hair("Hair_BuzzedFemale", "#d4d6dc", rough=0.5)
+    R.mat("crystal", "#a8e0d4", rough=0.18)
+    R.mat("glow", "#e8fff8", rough=0.2, emit="#60f0c0", strength=1.0)
+    R.hair("Hair_Buns", "#1a1418", rough=0.5)
 
     R.fitted("Blouse", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "slate", offset=0.008)
     R.cuffs("silver", at=(0.9,), offset=0.01, thick=0.006)

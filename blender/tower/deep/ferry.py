@@ -1,6 +1,6 @@
 """The Ferryman (the Deep's quest giver out by the black water): he poles the one boat across the lake under the
 mountain, and brings back those who went too far down. A tall lean man, his deep hood up and his face in its shadow, a
-long slate cloak to the shins lined in violet over a dark tunic, a wide belt with a silver clasp, tall wading boots. A
+long slate cloak to the shins lined in deep sea-green over a dark tunic, a wide belt with a silver clasp, tall wading boots. A
 small lantern of silver hangs at his hip, its light a cold mint: his one light. In the LEFT hand a very long punt pole,
 silver-shod at both ends (hold: torch). Signature shape: the hood and the long pole."""
 import math
@@ -17,7 +17,7 @@ def build():
     R = Real("deep_ferry", sex="m", height=1.05, width=0.96, depth=0.97, skin="#a8907e")
     z = R.z
     R.mat("slate", "#2e3346", rough=0.7, double=True)
-    R.mat("violet", "#3a2856", rough=0.7, double=True)
+    R.mat("violet", "#1e3e3a", rough=0.7, double=True)
     R.mat("dark", "#17161d", rough=0.7, double=True)
     R.mat("leather", "#2a2024", rough=0.5, double=True)
     R.mat("wood", "#3a2e26", rough=0.6)
