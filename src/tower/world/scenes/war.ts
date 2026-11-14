@@ -17,7 +17,7 @@ import type { Battlefield, WarLook } from '../warZone';
  *   army's banner, a graveyard of swords with helmets on them, a watchtower fallen in pieces.
  *
  * Each side of the field (look.crimson) uses its army's colour; the middle ground between the lines holds both. Floors 48 to 50, the
- * hardest, are the most scarred: more aftermath, scorch under it, more scenes.
+ * hardest, are the most scarred: more aftermath, burnt planks in it, more scenes.
  *
  * Placed by its own random stream (`seeded(8803 + look.seed)`), never the zone's, the depth's or `Math.random`: nothing that was there
  * moves. A scene keeps 3 m off the floor's spots (keep.ts), off the cover, the roads' middles, the places' rounds and the depth's own
@@ -403,7 +403,7 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
 
   // --- the kinds -------------------------------------------------------------------------------------------------------------------
   const KINDS: Record<WarSceneKind, () => void> = {
-    /** Where two lines met: shields of both colours, swords, helmets, a volley's arrows, a trampled banner, a wheel; scorch when scarred. */
+    /** Where two lines met: shields of both colours, swords, helmets, a volley's arrows, trampled banners, a wheel; burnt planks when scarred. */
     aftermath() {
       const a = army(), b = cur.side === 'mid' ? other(a) : rnd() < 0.35 ? other(a) : a;
       if (scarred) burnt(r(-1.5, 1.5), r(-1, 1), 2.6);

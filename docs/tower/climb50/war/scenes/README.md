@@ -66,10 +66,12 @@ from the arena's id) decides how scarred it is.
   waystones, caches, doors, every quest step), the cover's bodies, 2.5 m round the roads' lines, the places' rounds (1.5 m more), the
   depth's own big props (milestones, banner poles, stakes, carts, the places' dressing, the near trees: `warDepth.ts` records where it
   put them, adding no draw of its stream), behind the siege line, and 4 m from each other.
+- **The keep spots are points** (as `floorKeep` gives them): a patrol's or an escort's way between two of its points is not a spot. The
+  escorts' ways run on the roads, which the scenes keep off; a patrol may walk past a scene, which is only looks.
 - **Grass under a scene:** the depth's grass tufts, strewn arrows, helmets and spears that would stand up through a scene's cloth are
   left out under it (about 140 instances a floor). Nothing else of the depth changes.
 
-## The numbers (2026-11-14, final code)
+## The numbers (2026-11-14)
 
 **Scenes per floor** (open ground / leaning on a wall / past the edge):
 
@@ -88,9 +90,11 @@ open ground is 0.6 m. Tried with the planner's keep and road clearances switched
 **`_worldCheck`**, floors 41 to 50: nothing unreachable; reachable 34 942 to 35 171 m²; at most 6 units near any point. The same as the
 chapter's notes: no floor data changed (the scenes are looks only).
 
-**Speed** (`perf.py scenes --scenes world-5,gen-46,gen-42`, 1500 frames, A = `--set '{"globals": {"__warScenes": false}}'` (a switch
-added to `perf-page.js`'s what-ifs), B = the scenes on, back to back while other agents ran; every pair played the same fights, prints
-6ff3e790, b2e87242, dd44d21). Median frame in ms, world-5 / gen-46 / gen-42:
+**Speed** (`perf.py scenes --scenes world-5,gen-46,gen-42 --no-pictures`, 1500 frames; A with the scenes off, B on, back to back while
+other agents ran; every pair played the same fights, prints 6ff3e790, b2e87242, dd44d21). The switch is a what-if added to
+`perf-page.js`: `--set "{\"globals\": {\"__warScenes\": false}}"` (that quoting works in PowerShell 5.1 and in bash). The "final" rows
+were run on the one-mesh version before the last trims of the build (typed arrays, shared shapes), which do not touch a frame. Median
+frame in ms, world-5 / gen-46 / gen-42:
 
 | Version | Profile | A | B |
 |---|---|---|---|
@@ -123,3 +127,4 @@ The scenes' own work is 87 to 120 ms of it (planning 12 to 24, building 68 to 96
 ## Not done, for the lead
 
 - `src/game/changelog.ts` (players will see the scenes) and `docs/STATUS.md` are outside this pass's files.
+- `pipeline/tools/perf-page.js` (shared) has one new line for the `globals` what-if; another chapter's pass may add its own switch there.
