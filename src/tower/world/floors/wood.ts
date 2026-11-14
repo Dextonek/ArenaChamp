@@ -1,5 +1,5 @@
 import type { FloorDef } from '../def';
-import { woodGenArena } from '../woodZone';
+import { woodGenArena, woodKeep } from '../woodZone';
 import { WOOD_11 } from './woodGrown';
 
 /**
@@ -11,6 +11,6 @@ import { WOOD_11 } from './woodGrown';
  */
 export const wood: FloorDef = {
   ...WOOD_11.floor,
-  arena: woodGenArena('tower-zone-wood', 'The Walking Wood, a zone', WOOD_11.look),
+  arena: woodGenArena('tower-zone-wood', 'The Walking Wood, a zone', WOOD_11.look, woodKeep(WOOD_11.floor)),
   cover: WOOD_11.look.pieces.map((p) => p.o),
 };
