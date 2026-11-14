@@ -217,7 +217,7 @@ function rimAtLook(rim: number[], a: number) {
 
 const COLOUR = {
   wood: '#4a3220', dark: '#2c211a', plank: '#6b4a2e', charred: '#3a3430', ash: '#4c4844', stone: '#7a766e', rubble: '#6c6860',
-  earth: '#4a3c30', shot: '#56524e', mud: '#3e342c', leather: '#5a3a24', cream: '#c8bea4', paper: '#d0c8b0', linen: '#a49e90', canvas: '#9e9480',
+  earth: '#4a3c30', shot: '#56524e', soot: '#4a4440', mud: '#3e342c', leather: '#5a3a24', cream: '#c8bea4', paper: '#d0c8b0', linen: '#a49e90', canvas: '#9e9480',
   straw: '#b89a5a', sack: '#9a8a66', rope: '#b89a5a', leaf: '#3e5a30', wine: '#5e1a28', crimson: '#9a2c2c', azure: '#2c4c9a',
   steel: '#8a8e98', iron: '#2a2c32', gold: '#c9a24a', tin: '#9a9ca2',
 } as const;
@@ -544,10 +544,10 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
         if (rnd() < 0.15) { add(S.cone(0.1, 0.7, 6), 'wood', x + 0.4, 0.1, z, rnd() * 6, 1, 1, 1, Math.PI / 2 - 0.1); continue; } // knocked flat
         sub(x, z, 0, () => { add(S.cyl(0.1, 0.1, 0.36, 6), 'wood', 0, 0, 0, 0, 1, 1, 1, 0, -0.55); add(S.cone(0.1, 0.2, 6), 'plank', -Math.sin(0.55) * 0.36, Math.cos(0.55) * 0.36, 0, 0, 1, 1, 1, 0, -0.55); });
       }
-      for (let k = 0; k < 10; k++) { const x = r(2.6, 4.2), z = r(-4, 4); for (let t = 0; t < 4; t++) add(S.cone(0.035, 0.18, 3), 'iron', x, 0.02, z, (t / 4) * 6.28 + 0.4, 1, 1, 1, t === 3 ? 0 : 1.9); }
+      for (let k = 0; k < 10; k++) { const x = r(2.4, 3.8), z = r(-3, 3); for (let t = 0; t < 4; t++) add(S.cone(0.035, 0.18, 3), 'iron', x, 0.02, z, (t / 4) * 6.28 + 0.4, 1, 1, 1, t === 3 ? 0 : 1.9); }
       add(S.ring(0.32, 0.07, 12), 'rope', r(-2.2, -1.6), 0, r(-2, 2));
       sub(-1.6, r(2, 3), 0.3, () => { add(S.box(0.06, 0.05, 1.1), 'wood', 0, 0.02, 0); add(S.box(0.26, 0.03, 0.32), 'iron', 0, 0.01, 0.68); }); // the spade
-      if (scarred) for (let k = 0; k < 3; k++) shield(r(1.8, 4), r(-3.5, 3.5), army(), rnd() < 0.6);
+      if (scarred) for (let k = 0; k < 3; k++) shield(r(1.8, 3.6), r(-2.8, 2.8), army(), rnd() < 0.6);
       if (scarred) volley(r(2, 3.5), r(-2, 2), 8, 1.2);
     },
     /** A rider's end, without the horse: a dropped saddle on its blanket, the harness cut, a horseshoe, a broken lance with its pennon. */
@@ -605,15 +605,15 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
         for (let k = 0; k < Math.round(len / 1.1); k++) {
           const t = (k + 0.5) / Math.round(len / 1.1) - 0.5, h = r(0.4, 1.7);
           if (rnd() < 0.15) continue;
-          add(S.box(along ? len / Math.round(len / 1.1) : 0.5, h, along ? 0.5 : len / Math.round(len / 1.1)), rnd() < 0.5 ? 'charred' : 'rubble', x + (along ? t * len : 0), -0.1, z + (along ? 0 : t * len));
+          add(S.box(along ? len / Math.round(len / 1.1) : 0.5, h, along ? 0.5 : len / Math.round(len / 1.1)), rnd() < 0.5 ? 'charred' : 'soot', x + (along ? t * len : 0), -0.1, z + (along ? 0 : t * len));
         }
       };
       course(0, -D / 2, W, true); course(0, D / 2, W, true); course(-W / 2, 0, D, false); course(W / 2, 0, D, false);
-      add(S.box(1.1, 4.6, 1.1), 'stone', W / 2 - 0.3, -0.2, -0.6); add(S.box(1.2, 0.3, 1.2), 'charred', W / 2 - 0.3, 4.4, -0.6);
+      add(S.box(1.1, 4.6, 1.1), 'soot', W / 2 - 0.3, -0.2, -0.6); add(S.box(1.2, 0.3, 1.2), 'charred', W / 2 - 0.3, 4.4, -0.6);
       for (let k = 0; k < 5; k++) add(S.box(0.22, 0.22, r(3.2, 4.6)), 'charred', r(-2.5, 2), r(0.2, 1.6), r(-1.6, 1.6), rnd() * 3, 1, 1, 1, r(-0.5, 0.5));
       sub(-1, 0, 0.4, () => { add(S.box(0.2, 0.2, 3.6), 'charred', 0, 0.5, 0, 0, 1, 1, 1, 0.4, 0.5); add(S.box(0.2, 0.2, 3.6), 'charred', 0.8, 0.5, 0, 0, 1, 1, 1, 0.4, -0.5); }); // the roof's frame down
       sub(0, D / 2 + 0.3, 0, () => { for (const s of [-0.6, 0.6]) add(S.box(0.22, 2.1, 0.22), 'dark', s, -0.1, 0); add(S.box(1.5, 0.22, 0.26), 'dark', 0, 2.0, 0); });
-      for (let k = 0; k < 6; k++) add(S.stone(r(0.25, 0.45)), 'rubble', r(-4, 4), -0.05, r(-3.5, 3.5), rnd() * 6);
+      for (let k = 0; k < 6; k++) add(S.stone(r(0.25, 0.45)), 'soot', r(-4, 4), -0.05, r(-3.5, 3.5), rnd() * 6);
       wheel(-4.6, 2.6, 0.5);
       sub(4.8, 2.4, 0.3, () => { add(S.box(1.2, 0.8, 0.6), 'plank', 0, 0, 0, 0, 1, 1, 1, 0.1); add(S.box(1.25, 0.06, 0.65), 'charred', 0, 0.8, 0); });
     },
