@@ -38,6 +38,10 @@ export interface LandSpec {
   ruin?: { dx: number; dz: number };
   /** The zone's cover (world coordinates): the depth's looks keep off it (depth.ts). */
   cover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
+  /** The cover without the outline's invisible edge walls (nothing is drawn there), for the scenes (scenes/sea.ts). */
+  sceneCover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
+  /** Other things the scenes keep off (world): the harbour file's props, which load later. */
+  sceneTaken?: { x: number; z: number; r: number }[];
   /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
   keep?: { x: number; z: number }[];
 }
@@ -256,6 +260,8 @@ const PALETTE = {
   wall: '#b4ab94', stone: '#4e4c4c', capstone: '#64605a', boulder: '#383c46', wood: '#4a3220', plank: '#6b4226', lacquer: '#1d1b21',
   wine: '#5e1a28', slate: '#3a3f4c', teal: '#2b5560', cream: '#d8cfb4', rock: '#615d5a', sail: '#d8cfb4', gold: '#c9a24a',
   rope: '#b89a5a', salt: '#e2dccc', leaf: '#4a6638', cloth: '#b9b2a0',
+  /** Gold drawn matte, in the merged dressing (the scenes' trims: no cells of the polished gold of their own). */
+  brass: '#b8923e',
 } as const;
 export type Key = keyof typeof PALETTE;
 
@@ -442,8 +448,10 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     for (const side of [-1.3, 1.3]) dress.add('gold', new THREE.BoxGeometry(0.1, 0.08, len + 1), mid.x - uz * side, 0.5, mid.z + ux * side, yaw);
     for (let s = 0; s < len; s += 3.5) free.push({ x: ux * (r0 + s), z: uz * (r0 + s), r: 2 });
   }
+  const boatsAt: { x: number; z: number; r: number }[] = []; // for the scenes to keep off (scenes/sea.ts)
   const boat = (a: number, b: number, yaw: number, mast: boolean, paint: Key) => {
     const o = out(a, b), p = W(o.dx, o.dz);
+    boatsAt.push({ x: p.x, z: p.z, r: 4 });
     const hull = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.3, 0.8, 3.6);
     dress.add(paint, hull, p.x, WATER + 0.5, p.z, yaw).add('wood', new THREE.BoxGeometry(2.3, 0.12, 6.2), p.x, WATER + 0.48, p.z, yaw);
     dress.add('gold', new THREE.TorusGeometry(1, 0.06, 6, 24).scale(1.3, 3.6, 1).rotateX(Math.PI / 2), p.x, WATER + 0.52, p.z, yaw);
@@ -534,7 +542,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   inst(bushGeo, leaves, bush);
 
   // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).
-  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [] });
+  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
+    ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6, tree: true })), ...(spec.sceneTaken ?? []), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 0.7 }))] });
   dress.build(into, own);
 
   return {

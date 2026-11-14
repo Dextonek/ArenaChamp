@@ -6,6 +6,7 @@ import type { ArenaDef, ArenaStage } from '../../arenas/types';
 import type { WoodKind, WoodLook } from './gen/wood';
 import { rimAt } from './land';
 import { woodDepth } from './woodDepth';
+import { buildWoodScenes } from './scenes/wood';
 
 /**
  * A Wood floor at the new size (the Climb's chapter 2, floors 11 to 20; pipeline/designs/tower-50.md), drawn from its baked look
@@ -243,7 +244,10 @@ class Forest {
   private bins = new Map<string, THREE.Matrix4[]>();
   private q = new THREE.Quaternion();
   private up = new THREE.Vector3(0, 1, 0);
+  /** Where each tree and bush stands, with its reach (for the scenes to keep off: scenes/wood.ts). */
+  readonly at: { x: number; z: number; r: number; tree?: boolean }[] = [];
   add(kind: number, x: number, y: number, z: number, s: number, sy = s, yaw = 0, shadow = true) {
+    this.at.push({ x, z, r: (kind === 3 ? 1 : kind === 2 ? 3 : 2.3) * s, tree: kind !== 3 });
     const key = `${kind}:${Math.floor(x / SQ)}:${Math.floor(z / SQ)}:${shadow ? 1 : 0}`;
     let b = this.bins.get(key);
     if (!b) this.bins.set(key, (b = []));
@@ -549,6 +553,9 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   }
   const deep = depth.build({ kit, into: g, own, gold, glows: glowSpots });
   g.userData.depth = { solids: deep.solids, brooks: deep.brooks, places: look.places }; // for the checks and the pictures (pipeline/tools)
+  // The scenes (scenes/wood.ts): little stories told in props, their own random stream; they keep off the depth's props and the trees.
+  g.userData.woodScenes = buildWoodScenes({ look, land, kit, own, keep, taken: [...deep.solids.map((s) => ({ x: s.x, z: s.z, r: s.r })), ...forest.at.filter((t) => land.beyond(t.x - RING.x, t.z - RING.z) > -3)], brooks: deep.brooks.map((b) => b.pts) });
+  g.userData.depthMarks = deep.solids; // for the probe (pipeline/tools/scenes-probe.js)
   forest.build(TREE_GEOS, leaves, g);
   kit.build(g, own);
 

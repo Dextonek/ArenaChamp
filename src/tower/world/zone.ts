@@ -229,7 +229,7 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
 
   const kit = new Kit();
   // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
-  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o), keep }, kit, g, own);
+  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o), sceneCover: L.pieces.filter((p) => p.look !== 'edge').map((p) => p.o), sceneTaken: (L.props ?? []).map((p) => { const o = HARBOUR_OBSTACLES[p.i]; return { x: RING.x + p.dx, z: RING.z + p.dz, r: (o ? Math.hypot(o.bx - o.ax, o.bz - o.az) / 2 + o.r : 1.5) + 0.6 }; }), keep }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
