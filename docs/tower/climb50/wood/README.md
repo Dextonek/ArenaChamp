@@ -53,6 +53,9 @@ Silvane), quests, packs and ids; it gained three waystones and three caches for 
 - Route bot, one run each, Lyra and Bram, all ten floors: **20 of 20 cleared, every one under par** (1254 to 1910 game seconds against
   pars of 1848 to 2244). Lyra began floor 15 again once (three falls in the main quest's fights) and lost floor 16's gate duel (Hank) three
   times before winning it; Bram never fell.
+- Again with the roots held still for the whole floor (`_worldRoute`'s `pin`: Lyra in state 0, Bram in state 1): **20 of 20 cleared**, all
+  within par and a half (floor 14 Lyra 2211 s against 1980, floor 18 Bram 2475 s against 2156 after losing the ruler once; the rest under
+  par). Hank, floor 16's gatekeeper, beat Lyra 7 times before she won: the hardest duel of the chapter for a ranged hero.
 - Ash and Ember alone at tier 1: won by Lyra 2 of 2 and Bram 1 of 2 in a direct test; won in both route runs of floor 20; a loss comes back
   as a loss (3 s at 5 % health).
 - Speed (`perf.py scenes`, `world-1` against `gen-12`, the same run): desktop median 10.6 against 11.0 ms; phone, slowed 4 times, 42.5
