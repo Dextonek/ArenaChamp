@@ -352,7 +352,8 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       { id: 'b', at: H2.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 + moreMites }] },
       { id: 'c', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }, { kind: 'mite', n: moreMites }].filter((x) => x.n > 0) },
       { id: 'y', at: Y.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
-      { id: 'd', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 + moreMites }], elite: 'thief' },
+      // the elite's pack keeps two mites (with a third from floor 36 Lyra lost to it, healed at the camp and lost again: floor 36)
+      { id: 'd', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
       { id: 'named1', at: patrol1[0], mix: [{ kind: 'named1', n: 1 }], named: { name: named1, speed: 1.0, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },
       { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'named2', n: 1 }], named: { name: named2, speed: 1.0, patrol: patrol2Loop, bounty: { shards: shard(40), relic: false } } },
     ];

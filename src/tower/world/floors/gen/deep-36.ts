@@ -3344,7 +3344,7 @@ export const DEEP_36: GenFloor = {
     "mix": [
      {
       "kind": "mite",
-      "n": 3
+      "n": 2
      }
     ],
     "elite": "thief"
