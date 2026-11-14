@@ -8,9 +8,11 @@
 // and a pick nobody answers are real).
 // All of that runs with the hero shop switched off, as it was written: its accounts are new and play any hero. The shop
 // itself (pipeline/designs/hero-shop.md), the raid ranks and the week's boards are played on servers of their own, with the
-// shop on, at the same time as the rest (`shopCases`): their lines are printed at the end.
+// shop on, at the same time as the rest (`shopCases`): their lines are printed at the end. So is the Climb's open world (`worldCases`:
+// shards of a floor, walks and casts relayed, leaving).
 //   node server/smoke-test.mjs                         (its own Node servers on temporary data files)
 //   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
+//   node server/smoke-test.mjs --world                 (only the Climb's open world: a few seconds)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server with the shop off, e.g. `npm run cf:dev` with
 //                                                       SHOP "off"; unique names per run; the shop's cases are left out)
 import { createServer } from 'node:http';
@@ -28,6 +30,7 @@ import {
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
 
 const onlyShop = process.argv.includes('--shop');
+const onlyWorld = process.argv.includes('--world');
 const target = process.argv.slice(2).find((x) => !x.startsWith('--'));
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
@@ -418,10 +421,130 @@ async function shopCases() {
   return lines;
 }
 
-// The shop's cases run beside the rest, on their own servers.
-const shopRun = target ? null : shopCases();
+/**
+ * The Climb's open world, stage 1 (pipeline/designs/climb-open-world.md), on a server of its own beside the rest: players on one
+ * floor share a shard and hear each other's walks and casts, a ninth opens a second shard, another floor hears nothing, and leaving,
+ * a dropped connection and going to a lobby all take a player out. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function worldCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} world: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-world.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in. @param {string} name */
+  const enter = async (name) => {
+    const x = await client(to);
+    x.send({ t: 'register', name, password: 'pw1234' });
+    await x.next('session');
+    return x;
+  };
+  try {
+    // Not signed in: no world.
+    const guest = await client(to);
+    guest.send({ t: 'world_join', floor: 2, hero: 'Kaia' });
+    ok((await guest.next('auth_error')).error === 'Please log in', 'a page not signed in is not put on a floor');
+    guest.close();
 
-if (!onlyShop) try {
+    const a = await enter('wanda'), b = await enter('walt');
+    a.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: 1, z: 2, yaw: 0.5 });
+    const ra = await a.next('world_roster');
+    ok(ra.shard === '2.1' && ra.floor === 2 && ra.players.length === 0 && ra.max === 8 && Number.isInteger(ra.you), 'the first on floor 2 opens its shard 2.1, alone');
+    b.send({ t: 'world_join', floor: 2, hero: 'Lyra', x: 4, z: 5, yaw: 1 });
+    const rb = await b.next('world_roster'), joined = await a.next('world_joined');
+    ok(rb.shard === '2.1' && rb.players.length === 1 && rb.players[0].name === 'wanda' && rb.players[0].hero === 'Kaia' && rb.players[0].x === 1 && rb.players[0].z === 2,
+      'a second on floor 2 joins the same shard and sees the first where it stands');
+    ok(joined.id === rb.you && joined.name === 'walt' && joined.hero === 'Lyra' && joined.x === 4, 'the first hears the second come in, with its name and hero');
+
+    // Walks: relayed with the sender's id, clamped to the floor's reach; a flood is cut at 12 a second.
+    b.send({ t: 'world_move', x: 6.12345, z: 9999, yaw: 2, walk: true, hp: 1.7, ts: 1234 });
+    const mv = await a.next('world_moved');
+    ok(mv.id === rb.you && mv.x === 6.123 && mv.z === 500 && mv.walk === true && mv.hp === 1 && mv.ts === 1234, 'a walk is relayed with its id, clamped (x to the mm, z inside the reach, health share at most 1)');
+    await pause(1100);
+    a.forget('world_moved');
+    const before = a.got.world_moved ?? 0;
+    for (let i = 0; i < 30; i++) b.send({ t: 'world_move', x: i, z: 0, yaw: 0, walk: true, hp: 1 });
+    await pause(400);
+    const flood = (a.got.world_moved ?? 0) - before;
+    ok(flood === 12, `a flood of 30 walks in one moment: 12 relayed (${flood})`);
+
+    // Casts: the look's label and spots, relayed; the same spell again too soon is dropped.
+    b.send({ t: 'world_cast', label: 'Starfall', x: 1, z: 1, tx: 3, tz: 4 });
+    const cs = await a.next('world_cast');
+    ok(cs.id === rb.you && cs.label === 'Starfall' && cs.tx === 3 && cs.tz === 4, 'a cast is relayed with its label and aim');
+    b.send({ t: 'world_cast', label: 'Starfall', x: 1, z: 1, tx: 3, tz: 4 });
+    b.send({ t: 'world_cast', label: 'x'.repeat(60), x: 1, z: 1, tx: 3, tz: 4 });
+    await pause(300);
+    ok((a.got.world_cast ?? 0) === 1, 'the same spell again within 350 ms, and a label too long, are dropped');
+
+    // Another floor hears none of it.
+    const c = await enter('wren');
+    c.send({ t: 'world_join', floor: 3, hero: 'Sefu' });
+    const rc = await c.next('world_roster');
+    ok(rc.shard === '3.1' && rc.players.length === 0, 'floor 3 is a shard of its own');
+    b.send({ t: 'world_move', x: 1, z: 1, yaw: 0, walk: false, hp: 1 });
+    await a.next('world_moved');
+    await pause(200);
+    ok(!c.got.world_moved && !c.got.world_joined, 'a player on floor 3 hears nothing of floor 2');
+
+    // Eight to a shard: six more fill 2.1, the ninth opens 2.2.
+    const more = [];
+    for (let i = 0; i < 6; i++) {
+      const x = await enter(`wx${i}`);
+      x.send({ t: 'world_join', floor: 2, hero: 'Bram' });
+      more.push({ x, r: await x.next('world_roster') });
+    }
+    ok(more.every((m) => m.r.shard === '2.1') && more[5].r.players.length === 7, 'eight players fill shard 2.1');
+    const ninth = await enter('wynn');
+    ninth.send({ t: 'world_join', floor: 2, hero: 'Nyx' });
+    const r9 = await ninth.next('world_roster');
+    ok(r9.shard === '2.2' && r9.players.length === 0, 'the ninth gets a new shard, 2.2');
+
+    // Joining the same floor again (a zone built again) keeps the shard and says nothing to the others.
+    a.forget('world_joined'); b.forget('world_joined');
+    const joinedBefore = b.got.world_joined ?? 0;
+    a.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: 1, z: 1 });
+    const again = await a.next('world_roster');
+    await pause(200);
+    ok(again.shard === '2.1' && again.you === ra.you && (b.got.world_joined ?? 0) === joinedBefore, 'joining the floor it is on keeps the shard, and the others hear nothing new');
+
+    // Leaving: by the message, by a dropped connection, by going to a lobby.
+    b.send({ t: 'world_leave' });
+    const left = await a.next('world_left');
+    ok(left.id === rb.you, 'world_leave: the others hear world_left with its id');
+    more[0].x.close();
+    const dropped = await a.next('world_left');
+    ok(dropped.id === more[0].r.you, 'a dropped connection: the others hear world_left');
+    more[1].x.send({ t: 'lobby_create' });
+    const lobbied = await a.next('world_left');
+    ok(lobbied.id === more[1].r.you, 'a player who opens a lobby leaves the floor');
+    // The room the leavers made: shard 2.1 has room again, and a newcomer goes there (2.2 was left empty when the ninth went on).
+    ninth.send({ t: 'world_join', floor: 3, hero: 'Nyx' });
+    await ninth.next('world_roster');
+    const late = await enter('wade2');
+    late.send({ t: 'world_join', floor: 2, hero: 'Kaia' });
+    ok((await late.next('world_roster')).shard === '2.1', 'after the ninth went to floor 3, a newcomer on floor 2 goes into 2.1, which has room again');
+    for (const x of [a, b, c, ninth, late, ...more.map((m) => m.x)]) x.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+  }
+  server.close();
+  return lines;
+}
+
+// The shop's cases and the world's run beside the rest, on their own servers.
+const shopRun = target || onlyWorld ? null : shopCases();
+const worldRun = target || onlyShop ? null : worldCases();
+
+if (!onlyShop && !onlyWorld) try {
   // The rules version: an older tab is told to reload, before any name or password is looked at.
   const old = await client();
   old.send({ t: 'login', name: 'nobody', password: 'nothing', v: PROTOCOL - 1 });
@@ -1698,6 +1821,8 @@ if (!onlyShop) try {
 }
 if (shopRun) for (const line of await shopRun) console.log(line);
 else console.log('     the shop, the ranks and the boards were not played: they need servers of their own');
+if (worldRun) for (const line of await worldRun) console.log(line);
+else console.log('     the Climb\'s open world was not played: it needs a server of its own');
 http.close();
 httpPicks.close();
 rmSync(dir, { recursive: true, force: true });

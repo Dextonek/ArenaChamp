@@ -7,6 +7,7 @@
 import type { BuffKind, StatusKind } from '../effects/status';
 import type { CastMods } from '../traits';
 import { PROTOCOL } from '../../server/protocol.mjs';
+import type { WorldPlayer } from './world';
 
 export interface HeroStats {
   played: number;
@@ -222,6 +223,13 @@ export type ServerMsg =
   | { t: 'watch_end'; winner: number; reason: string; seconds: number; score: number[]; hp: number[] }
   // How many watch the duel this screen is in, as a player or a watcher.
   | { t: 'watchers'; n: number }
+  // The Climb's open world (since PROTOCOL 16; src/net/world.ts). `world_roster`: this player's shard of a floor and everyone else in
+  // it, on joining. Then who comes in, walks, casts (the look only) and leaves, each by its id in the shard.
+  | { t: 'world_roster'; shard: string; floor: number; you: number; max: number; players: WorldPlayer[] }
+  | ({ t: 'world_joined' } & WorldPlayer)
+  | { t: 'world_moved'; id: number; x: number; z: number; yaw: number; walk?: boolean; hp?: number; ts?: number }
+  | { t: 'world_cast'; id: number; label: string; x: number; z: number; tx: number; tz: number }
+  | { t: 'world_left'; id: number }
   | { t: 'socket'; open: boolean };
 
 /** A duel being fought now, on the Lobbies screen's list (`lobbies.live`). */

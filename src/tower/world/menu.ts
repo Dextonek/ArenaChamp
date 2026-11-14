@@ -3,6 +3,7 @@ import { boonById } from '../boons';
 import { CHAPTERS, FLOORS, TOP_FLOOR, chapterOf, floorAtOrBelow, isCrown } from './floors';
 import { WorldGame } from './game';
 import { KEYS, WorldRun, nextFloor, read, sigils } from './state';
+import type { WorldPresence } from '../../net/world';
 
 /**
  * The Tower screen's "Climb" tab (the floors as worlds, pipeline/designs/tower-worlds.md) and the controller that runs a climb on the game
@@ -163,7 +164,8 @@ export class WorldClimb {
   game: WorldGame | null = null;
   private leave: HTMLButtonElement;
 
-  constructor(private api: GameApi, private ui: { onEnter(): void; onExit(): void }) {
+  /** `presence`: the game page's link to the hub for the open world (src/net/world.ts); none, and every climb is alone. */
+  constructor(private api: GameApi, private ui: { onEnter(): void; onExit(): void }, private presence: WorldPresence | null = null) {
     this.leave = document.createElement('button');
     this.leave.className = 'btn ghost forfeit raid-leave tower-leave world-leave';
     this.leave.textContent = 'Leave';
@@ -180,7 +182,7 @@ export class WorldClimb {
     this.ui.onEnter();
     const view = (this.api as unknown as { view?: { paused: boolean } }).view;
     if (view) view.paused = false;
-    const g = new WorldGame(this.api, { hero: o.hero, floor: o.floor, mode: 'play', persist: true });
+    const g = new WorldGame(this.api, { hero: o.hero, floor: o.floor, mode: 'play', persist: true, presence: this.presence });
     g.ui = { next: (n) => this.start({ hero: o.hero, floor: n, resume: false }), back: () => this.exit() };
     this.game = g;
     g.start({ resume: o.resume });

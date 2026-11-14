@@ -42,3 +42,15 @@ everyone holds: 8 players x 10 moves a second a shard is small; the hub stays al
 ## Rules that hold
 `PROTOCOL` goes up with stage 1 (old clients are told to reload: the build-id bar). Each deploy only on the user's word, and a deploy
 drops every connection. Two-tab tests with the local test accounts (fetched by the page from the git-ignored file, never typed).
+
+## Progress
+- **Stage 1, presence: built (2026-11-14, branch `tower-50`), not deployed.** The hub keeps each floor's shards (8 a shard, the
+  fullest with room first) and relays `world_join` / `world_move` / `world_cast` / `world_leave` (PROTOCOL 16); the page joins with
+  each zone it builds, leaves with each one it puts away, sends its place 10 times a second and its casts as their spell's name,
+  and draws the others as the Raid's partners (full for the nearest 3, light past them, names over their heads, casts as looks
+  only). How it works and the messages: docs/architecture/multiplayer.md, "The Climb's open world, stage 1". The two-tab test:
+  docs/tower/openworld/stage1/. Waiting on the user's look before stage 2.
+- **What stage 2 builds on:** the shard (`WorldShard.members`) is the set a pack's owner and its mirrors live in; `world_roster`
+  and `world_joined` / `world_left` already tell every screen who is there and in what order they came (the first to come, or the
+  oldest member, can own a pack, handed on at `world_left` as the Raid's brain is); `world_cast` is where a hit on a pack would ride
+  to its owner; `WorldOthers` has each player's figure, place and caster figure for a pack's AI to see as targets.

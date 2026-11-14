@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Online',
+        title: 'Meet others on the Climb',
+        text: 'Signed in, you now see the other players on your floor of the Climb: their heroes walk, cast and fall beside yours, with their names over their heads, up to eight on a floor. Each still fights their own foes for now; fighting the packs together comes next.',
+      },
+      {
         tag: 'Tower',
         title: 'Five chapters of ten floors',
         text: 'The Climb is now fifty floors in five chapters: the Sea, the Wood, the Sands, the Deep and the War. Every tenth floor is a crown, a great boss you face alone. The Climb screen shows all fifty, with the floors you can play and the ones still locked.',

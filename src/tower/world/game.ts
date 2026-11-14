@@ -7,6 +7,8 @@ import type { FloorDef, Spot, DoorDef } from './def';
 import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
 import { FLOORS, floorAbove, floorAtOrBelow } from './floors';
 import { WorldHud } from './hud';
+import { WorldOthers } from './others';
+import type { WorldPresence } from '../../net/world';
 import { KEYS, LIVES, WorldRun, nextFloor, read, sigils, wipe, write } from './state';
 import { buildZone, offersFor, relicFor, type Zone } from './world';
 
@@ -53,11 +55,24 @@ export class WorldGame {
   private last = 0;
   private alive = true;
   private pickLater: { label: string; offers: Boon[] }[] = [];
+  /**
+   * The open world (pipeline/designs/climb-open-world.md, stage 1): the other players on this floor, drawn only. `presence` is the
+   * game page's link to the hub (src/net/world.ts); without it, or not signed in, the climb is alone as before. Each zone built joins
+   * the floor's shard and each zone put away (a door, a fall that begins the floor again, the result card, Leave) leaves it.
+   */
+  readonly others: WorldOthers;
+  private presence: WorldPresence | null;
+  private lastX = NaN;
+  private lastZ = NaN;
 
-  constructor(readonly api: GameApi, o: { hero: string; mode?: 'play' | 'run'; floor?: number; persist?: boolean }) {
+  constructor(readonly api: GameApi, o: { hero: string; mode?: 'play' | 'run'; floor?: number; persist?: boolean; presence?: WorldPresence | null }) {
     this.hero = o.hero;
     this.mode = o.mode ?? 'play';
     this.persist = o.persist ?? true;
+    this.others = new WorldOthers(api);
+    this.presence = o.presence ?? null;
+    this.others.onCount = (n) => this.hud.setOthers(this.presence?.online || n > 0 ? n : null);
+    if (this.presence) this.presence.sink = this.others;
     // A floor asked for that does not exist (not made yet) gives the highest one below it that does.
     this.floor = FLOORS[floorAtOrBelow(o.floor ?? nextFloor())];
   }
@@ -76,6 +91,9 @@ export class WorldGame {
     this.piece = null;
     this.enter();
     this.save();
+    // The speed test's switch: `game.html?others=7` walks seven made-up others about the hero (no server).
+    const fakes = Math.min(16, Math.max(0, Math.floor(Number(new URLSearchParams(location.search).get('others')) || 0)));
+    if (fakes) this.others.fake(fakes, this.api.arena.caster.group.position);
     if (!this.manual) this.loop();
   }
 
@@ -116,6 +134,16 @@ export class WorldGame {
     // The autopilot's camera is fixed on the arena's middle; a zone this wide has to follow the hero.
     if (this.mode === 'run') api.heroMode.focus = null;
     api.heroMode.snapCameraNow();
+    // The open world: this hero's casts go to the others on the floor as looks (after the fight's own handling of them).
+    const hm = api.heroMode, inner = hm.onCast;
+    hm.onCast = (label, slot, target) => {
+      inner?.(label, slot, target);
+      const me = api.arena.caster.group.position, p = 'enemy' in target ? target.enemy.group.position : target.point;
+      this.presence?.cast(label, me.x, me.z, p.x, p.z);
+    };
+    const me = api.arena.caster.group.position;
+    this.presence?.join(floor.n, run.hero, me.x, me.z, api.arena.caster.group.rotation.y);
+    this.hud.setOthers(this.presence?.online || this.others.count > 0 ? this.others.count : null);
   }
 
   private wake(): Spot {
@@ -124,6 +152,7 @@ export class WorldGame {
   }
 
   private leave() {
+    this.presence?.leave();
     this.door = null;
     this.handle?.cancel();
     this.handle = null;
@@ -157,6 +186,20 @@ export class WorldGame {
       this.beginAgain();
     }
     if (!this.zone && this.piece === null && !this.finished && this.run && this.restartIn < 0) this.enter();
+    this.share(dt);
+  }
+
+  /** The open world, once a frame: this hero's place to the others (the link sends ten a second at most), and the others drawn. */
+  private share(dt: number) {
+    const c = this.api.arena.caster.group, me = c.position, zoneOn = !!this.zone && this.piece === null && !this.finished;
+    if (zoneOn && this.presence) {
+      const walk = Math.abs(me.x - this.lastX) + Math.abs(me.z - this.lastZ) > 0.002;
+      const hp = this.api.duel.heroHp <= 0 ? 0 : Math.max(0.01, this.run.hp);
+      this.presence.move(me.x, me.z, c.rotation.y, walk, hp);
+    }
+    this.lastX = me.x;
+    this.lastZ = me.z;
+    this.others.update(dt, me, zoneOn);
   }
 
   stop() {
@@ -164,6 +207,8 @@ export class WorldGame {
     cancelAnimationFrame(this.raf);
     this.leave();
     this.piece = null;
+    if (this.presence?.sink === this.others) this.presence.sink = null;
+    this.others.dispose();
     this.hud.dispose();
   }
 
@@ -345,6 +390,8 @@ export class WorldGame {
     // The clock stops here (the zone under the card does not count it), and what is awake goes to sleep.
     run.result = { stars: stars.map((s) => (s.got ? 1 : 0)), seconds: +run.clock.toFixed(1) };
     this.zone?.setPacks(false);
+    // The floor is done: out of its shard (the next floor joins its own).
+    this.presence?.leave();
     const before = sigils();
     if (this.persist) {
       // The next floor that exists (or the one above the last, when none does: it opens as soon as it is made).
