@@ -588,7 +588,7 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
   }
 
   // The mine dressed as a place people worked in, and the far cave (deepDepth.ts; looks only, its own random stream).
-  const depth = buildDeepDepth({ look, cave, into: g, own, waterLevel: WATER, keep });
+  const depth = buildDeepDepth({ look, cave, into: g, own, waterLevel: WATER, keep, ground: { canvas: map.image as HTMLCanvasElement, L } });
 
   dress.build(g, own, (x, z) => cave.beyond(x - RING.x, z - RING.z) < 14);
   kit.build(g, own);

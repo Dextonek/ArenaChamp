@@ -47,6 +47,8 @@ export interface DeepDepthIn {
   waterLevel: number;
   /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
   keep?: { x: number; z: number }[];
+  /** The cave floor's canvas (deepZone.ts `paint`), `L` metres across, before it goes to the graphics card: the scenes paint their ground in. */
+  ground?: { canvas: HTMLCanvasElement; L: number };
 }
 
 const COL = {
@@ -873,7 +875,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
 
   mark('bats');
   // --- the scenes (scenes/deep.ts): little stories in props, into the same batch; their own random stream, so nothing above moves
-  const sc = deepScenes({ look, cave, keep: o.keep ?? [], props, sink: { put: (b, p, mm) => batch.putMatrix(b, p, mm) }, waterLevel: o.waterLevel });
+  const sc = deepScenes({ look, cave, keep: o.keep ?? [], props, sink: { put: (b, p, mm) => batch.putMatrix(b, p, mm) }, waterLevel: o.waterLevel, ground: o.ground });
   group.userData.scenes = sc.scenes;
   group.userData.sceneLook = look;
   group.userData.scenesMs = sc.ms;
