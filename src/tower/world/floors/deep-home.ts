@@ -1101,396 +1101,180 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
     }
    },
    {
-    "look": "post",
+    "look": "rock",
     "o": {
      "ax": -71.95,
      "az": -10.71,
-     "bx": -71.95,
-     "bz": -10.71,
+     "bx": -76.78,
+     "bz": -13.98,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -74.21,
-     "az": -11.49,
-     "bx": -74.21,
-     "bz": -11.49,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
+     "ax": -76.78,
+     "az": -13.98,
+     "bx": -77.38,
+     "bz": -19.78,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -76.07,
-     "az": -13,
-     "bx": -76.07,
-     "bz": -13,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
+     "ax": -77.38,
+     "az": -19.78,
+     "bx": -73.32,
+     "bz": -23.97,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -77.31,
-     "az": -15.06,
-     "bx": -77.31,
-     "bz": -15.06,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -77.76,
-     "az": -17.41,
-     "bx": -77.76,
-     "bz": -17.41,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -76.22,
-     "az": -21.87,
-     "bx": -76.22,
-     "bz": -21.87,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -74.4,
-     "az": -23.44,
-     "bx": -74.4,
-     "bz": -23.44,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -72.17,
-     "az": -24.3,
-     "bx": -72.17,
-     "bz": -24.3,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -69.77,
-     "az": -24.33,
-     "bx": -69.77,
-     "bz": -24.33,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": -67.51,
-     "az": -23.55,
+     "ax": -73.32,
+     "az": -23.97,
      "bx": -67.51,
      "bz": -23.55,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -76.34,
-     "az": -19.42,
-     "bx": -76.34,
-     "bz": -19.42,
+     "ax": -76.15,
+     "az": -19.35,
+     "bx": -76.15,
+     "bz": -19.35,
      "r": 1,
      "height": 5.2,
      "kind": "pillar"
     }
    },
    {
-    "look": "post",
+    "look": "rock",
     "o": {
      "ax": -53.65,
      "az": -59.06,
-     "bx": -53.65,
-     "bz": -59.06,
+     "bx": -55.6,
+     "bz": -64.56,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -55.01,
-     "az": -61.04,
-     "bx": -55.01,
-     "bz": -61.04,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
+     "ax": -55.6,
+     "az": -64.56,
+     "bx": -52.64,
+     "bz": -69.59,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -55.61,
-     "az": -63.36,
-     "bx": -55.61,
-     "bz": -63.36,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
+     "ax": -52.64,
+     "az": -69.59,
+     "bx": -46.89,
+     "bz": -70.55,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -55.38,
-     "az": -65.74,
-     "bx": -55.38,
-     "bz": -65.74,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -54.35,
-     "az": -67.91,
-     "bx": -54.35,
-     "bz": -67.91,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -50.46,
-     "az": -70.58,
-     "bx": -50.46,
-     "bz": -70.58,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -48.07,
-     "az": -70.77,
-     "bx": -48.07,
-     "bz": -70.77,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -45.76,
-     "az": -70.13,
-     "bx": -45.76,
-     "bz": -70.13,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -43.81,
-     "az": -68.74,
-     "bx": -43.81,
-     "bz": -68.74,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": -42.45,
-     "az": -66.76,
+     "ax": -46.89,
+     "az": -70.55,
      "bx": -42.45,
      "bz": -66.76,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -52.02,
-     "az": -68.68,
-     "bx": -52.02,
-     "bz": -68.68,
+     "ax": -51.9,
+     "az": -68.52,
+     "bx": -51.9,
+     "bz": -68.52,
      "r": 1,
      "height": 5.2,
      "kind": "pillar"
     }
    },
    {
-    "look": "post",
+    "look": "rock",
     "o": {
      "ax": 64.19,
      "az": -47.96,
-     "bx": 64.19,
-     "bz": -47.96,
+     "bx": 69.64,
+     "bz": -50.04,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 66.13,
-     "az": -49.36,
-     "bx": 66.13,
-     "bz": -49.36,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
+     "ax": 69.64,
+     "az": -50.04,
+     "bx": 74.74,
+     "bz": -47.21,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 68.43,
-     "az": -50.02,
-     "bx": 68.43,
-     "bz": -50.02,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
+     "ax": 74.74,
+     "az": -47.21,
+     "bx": 75.84,
+     "bz": -41.49,
+     "r": 1,
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 70.82,
-     "az": -49.85,
-     "bx": 70.82,
-     "bz": -49.85,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 73.01,
-     "az": -48.88,
-     "bx": 73.01,
-     "bz": -48.88,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 75.78,
-     "az": -45.06,
-     "bx": 75.78,
-     "bz": -45.06,
-     "r": 1.2,
-     "height": 3.55,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 76.03,
-     "az": -42.67,
-     "bx": 76.03,
-     "bz": -42.67,
-     "r": 1.2,
-     "height": 3.41,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 75.45,
-     "az": -40.35,
-     "bx": 75.45,
-     "bz": -40.35,
-     "r": 1.2,
-     "height": 3.2,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 74.11,
-     "az": -38.36,
-     "bx": 74.11,
-     "bz": -38.36,
-     "r": 1.2,
-     "height": 2.94,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 72.17,
-     "az": -36.96,
+     "ax": 75.84,
+     "az": -41.49,
      "bx": 72.17,
      "bz": -36.96,
      "r": 1,
-     "height": 5.4,
-     "kind": "pillar"
+     "height": 3.4,
+     "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 73.84,
-     "az": -46.57,
-     "bx": 73.84,
-     "bz": -46.57,
+     "ax": 73.68,
+     "az": -46.45,
+     "bx": 73.68,
+     "bz": -46.45,
      "r": 1,
      "height": 5.2,
      "kind": "pillar"
@@ -2793,38 +2577,20 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
    "wall",
    "wall",
    "wall",
-   "column",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "column",
+   "stalwall",
+   "stalwall",
+   "stalwall",
+   "stalwall",
    "great",
-   "column",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "column",
+   "stalwall",
+   "stalwall",
+   "stalwall",
+   "stalwall",
    "great",
-   "column",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "column",
+   "stalwall",
+   "stalwall",
+   "stalwall",
+   "stalwall",
    "great",
    "rock",
    "rock",
@@ -3441,8 +3207,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": 58.5
       },
       "to": {
-       "x": -76.34,
-       "z": -19.42
+       "x": -76.15,
+       "z": -19.35
       },
       "r": 2.2
      },
@@ -3453,8 +3219,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal1",
         "at": {
-         "x": -76.34,
-         "z": -19.42
+         "x": -76.15,
+         "z": -19.35
         }
        }
       ],
@@ -3471,8 +3237,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": -15.72
       },
       "to": {
-       "x": -52.02,
-       "z": -68.68
+       "x": -51.9,
+       "z": -68.52
       },
       "r": 2.2
      },
@@ -3483,8 +3249,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal2",
         "at": {
-         "x": -52.02,
-         "z": -68.68
+         "x": -51.9,
+         "z": -68.52
         }
        }
       ],
@@ -3501,8 +3267,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": -59.37
       },
       "to": {
-       "x": 73.84,
-       "z": -46.57
+       "x": 73.68,
+       "z": -46.45
       },
       "r": 2.2
      },
@@ -3513,8 +3279,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal3",
         "at": {
-         "x": 73.84,
-         "z": -46.57
+         "x": 73.68,
+         "z": -46.45
         }
        }
       ],

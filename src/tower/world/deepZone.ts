@@ -25,7 +25,7 @@ import type { Piece } from './zone';
  */
 
 /** What a piece of the Deep's cover is drawn as (gen/deep.ts lays them out). `edge`: the outline's invisible walls. */
-export type DeepLookKind = 'stal' | 'column' | 'rock' | 'crystal' | 'great' | 'timber' | 'hut' | 'cradle' | 'cart' | 'fire' | 'crate' | 'wall' | 'ridge' | 'post' | 'edge';
+export type DeepLookKind = 'stal' | 'stalwall' | 'column' | 'rock' | 'crystal' | 'great' | 'timber' | 'hut' | 'cradle' | 'cart' | 'fire' | 'crate' | 'wall' | 'ridge' | 'post' | 'edge';
 
 /** What a Deep zone is drawn from (gen/deep.ts writes it; a made floor bakes it, floor 31 too). */
 export interface DeepLook {
@@ -425,6 +425,16 @@ export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: 
       case 'stal':
         dress.add('pale', cone(r, h), o.ax, 0, o.az, rnd() * 3).add('paleDark', cone(r * 0.55, h * 0.55, 6), o.ax + r * 0.9, 0, o.az - r * 0.3, rnd() * 3);
         break;
+      case 'stalwall': {
+        // a wall of stalagmites grown together: a low rock foot along it, pale cones close set on it, tallest in the middle
+        const steps = Math.max(2, Math.round(len / 1.1));
+        dress.add('rock', box(r * 2, 0.9, len + r), mx, 0, mz, yaw);
+        for (let k = 0; k <= steps; k++) {
+          const t = k / steps, x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t, hh = h * (0.6 + 0.5 * rnd());
+          dress.add(k % 2 ? 'paleDark' : 'pale', cone(r * (0.75 + 0.3 * rnd()), hh), x + (rnd() - 0.5) * 0.5, 0, z + (rnd() - 0.5) * 0.5, rnd() * 3);
+        }
+        break;
+      }
       case 'column':
         dress.add('pale', cyl(r * 0.8, r, h, 9), o.ax, 0, o.az).add('stone', cyl(r * 1.25, r * 1.25, 0.3, 9), o.ax, 0, o.az);
         break;

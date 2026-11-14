@@ -61,7 +61,7 @@ const LURK = 20;
 const lk = (s: DeepLookKind) => s as unknown as Look;
 /** The nearest of zone.ts's looks to each of the Deep's (what a reader of the baked data that knows only those would draw). */
 const NEAREST: Record<DeepLookKind, Look> = {
-  stal: 'rock', column: 'post', rock: 'rock', crystal: 'rock', great: 'rock', timber: 'crate', hut: 'tent', cradle: 'barrel', cart: 'crate', fire: 'fire', crate: 'crate',
+  stal: 'rock', stalwall: 'rock', column: 'post', rock: 'rock', crystal: 'rock', great: 'rock', timber: 'crate', hut: 'tent', cradle: 'barrel', cart: 'crate', fire: 'fire', crate: 'crate',
   wall: 'house', ridge: 'rock', post: 'post', edge: 'edge',
 }; // Layout takes zone.ts's looks; the Deep draws its own (deepZone.ts)
 
@@ -164,14 +164,12 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     const Q = (dOut: number, dTan: number): V => add(add(p.c, out, dOut), tan, dTan);
     switch (p.kind) {
       case 'hall': {
-        // A horseshoe of stalagmites round the back, open to the middle; the great crystal in the middle of the back, just inside it.
-        // Shut, not a fence: every gap in it under a walker's width (the path finder's walker is 0.5 m round; floor 33's first bake had
-        // 0.9 m gaps, as floor 31's 48 m hall had, and the route bot came at a hall from behind, wedged itself in one and stood there).
-        for (const d of [-100, -80, -60, -40, -20, 20, 40, 60, 80, 100]) {
-          const a = (d * Math.PI) / 180, q = add(add(p.c, out, Math.cos(a) * 6.9), tan, Math.sin(a) * 6.9);
-          pill(Math.abs(d) > 90 ? 'column' : 'stal', q, Math.abs(d) > 90 ? 1.0 : 1.2, Math.abs(d) > 90 ? 5.4 : r2(2.8 + 0.8 * Math.cos(a)));
-        }
-        const cr = Q(5.8, 0);
+        // The back of the hall: one wall of stalagmites in four joined lengths, open to the middle, the great crystal set into it. A wall,
+        // not a row of posts: the route bot wedged itself in a 0.9 m gap between two posts (floor 33's first bake) and pressed for good
+        // against a row of touching ones (floor 37's third).
+        const arc = [-100, -50, 0, 50, 100].map((d) => { const a = (d * Math.PI) / 180; return add(add(p.c, out, Math.cos(a) * 6.9), tan, Math.sin(a) * 6.9); });
+        for (let i = 1; i < arc.length; i++) wall('stalwall', arc[i - 1], arc[i], 1.0, 3.4);
+        const cr = Q(5.6, 0);
         crystals.push({ x: r2(cr.x), z: r2(cr.z) });
         pill('great', cr, 1.0, 5.2);
         break;
@@ -517,7 +515,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   for (let i = 0; i < L.cover.length; i++) for (let j = i + 1; j < L.cover.length; j++) {
     const a = L.cover[i].o, b = L.cover[j].o, A0 = { x: a.ax, z: a.az }, A1 = { x: a.bx, z: a.bz }, B0 = { x: b.ax, z: b.az }, B1 = { x: b.bx, z: b.bz };
     const gap = Math.min(segDist(A0, B0, B1), segDist(A1, B0, B1), segDist(B0, A0, A1), segDist(B1, A0, A1)) - a.r - b.r;
-    if (gap > 0.3 && gap < 1.2) throw new Error(`floor ${n}: a ${gap.toFixed(2)} m gap at ${r2(a.ax)}, ${r2(a.az)}`);
+    if (gap > 0.05 && gap < 1.2) throw new Error(`floor ${n}: a ${gap.toFixed(2)} m gap at ${r2(a.ax)}, ${r2(a.az)}`);
   }
 
   // --- into the world: mirrored if the water is west, moved to the ring's middle ---------------------------------------------------
