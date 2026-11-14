@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RING, seeded } from '../../arenas/common';
 import type { SandsLook } from './sandsZone';
 import { rimAt } from './land';
-import { sandsScenes, type Proto } from './scenes/sands';
+import { sandsScenes, type GroundCanvas, type Proto } from './scenes/sands';
 
 /**
  * The world's depth on a Sands floor (floors 21 to 30; the user, 2026-11-14: "add depth into the worlds, make all the background fit there,
@@ -158,8 +158,11 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
   }).filter((v): v is { x: number; z: number; r: number; a: number } => !!v);
   const inPool = (x: number, z: number, pad: number) => oasis.some((o) => Math.hypot(x - o.x, z - o.z) < o.r + pad);
 
+  /** The ground's canvas, kept from `paint` for the scenes (scenes/sands.ts paints their ground into it in `build`, before it is drawn). */
+  let ground: GroundCanvas | null = null;
   /** Draws into the ground's canvas (sandsZone.ts `paint`): `X`, `Z` from offsets to pixels, `ppm` pixels a metre. */
   const paint = (g: CanvasRenderingContext2D, X: (dx: number) => number, Z: (dz: number) => number, ppm: number) => {
+    ground = { g, X, Z, ppm };
     const prnd = seeded(931 + look.seed);
     // darker drifts in the lee (south) of the rocks, and pebbles: free, and from far the sand reads as ground, not a cloth
     for (const c of cover) {
@@ -498,7 +501,8 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
     };
     update(0);
     // The scenes (scenes/sands.ts): little stories in props, into the same merged meshes; their own random stream, so nothing above moves.
-    const sc = sandsScenes({ look, land, keep, solids, sink: mg });
+    const sc = sandsScenes({ look, land, keep, solids, sink: mg, ground });
+    ground = null;
     mg.build(into, own);
     for (const g of Object.values(G)) g.dispose();
     const caravan = { x: (route[0].x + route[1].x) / 2, z: (route[0].z + route[1].z) / 2, y: (route[0].y + route[1].y) / 2 };
