@@ -61,7 +61,7 @@ export const RULER_OF: Record<number, string> = {
 };
 
 /** How much of a made floor's tint lies over a ruler's own colours (a hero stand-in had 0.5: its colours were not the ruler's). */
-const TINT = 0.35;
+const TINT = 0.22;
 
 const codeFoes = () => !!(globalThis as { __codeFoes?: boolean }).__codeFoes;
 

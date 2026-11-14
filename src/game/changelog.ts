@@ -51,6 +51,13 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'The Climb’s rulers and enemies are their own',
+        text: 'Every ruler on the Climb is now a giant of its own, three to a chapter, from the Drowned Admiral to the Crow King, and the people-shaped enemies are new figures too: dockers and net casters, moss giants and thorn sprites, raiders, lurkers, and soldiers in their army’s colours. Their fights are the same as before; the beasts are as they were.',
+        image: '/news/climb-rulers.jpg',
+        alt: 'The Sands’ three rulers between the heroes Sefu and Kaia: the Scarab King in blue-black shell armour with a horned helm and a hooked sword, the Brass Sphinx with a calm brass mask, a mane and a disc of sun rays, and the Red Jackal with a black jackal’s head and a spear of green glass.',
+      },
+      {
+        tag: 'Tower',
         title: 'A map of the floor',
         text: 'The Climb now has a small round map in the top-left corner that follows your hero, with the enemies, people, doors, waystones and the next step of your quest on it. Press M, or tap the small map, to see the whole floor with the names of its places.',
       },

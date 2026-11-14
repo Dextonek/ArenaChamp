@@ -21,7 +21,7 @@ def build():
     R.mat("plate", "#444852", rough=0.48, metal=0.6, double=True)
     R.mat("crimson", "#8c1e22", rough=0.62, double=True)
     R.mat("azure", "#1e3c8c", rough=0.62, double=True)
-    R.mat("white", "#e6e2d8", rough=0.7, double=True)
+    R.mat("white", "#a8a49c", rough=0.75, double=True)
     R.mat("gold", "#d2ae55", rough=0.3, metal=0.85, double=True)
     R.mat("steel", "#c8ccd4", rough=0.22, metal=0.9)
     R.mat("glow", "#ffffff", rough=0.2, emit="#e8f0ff", strength=1.3)
