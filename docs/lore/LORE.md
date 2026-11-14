@@ -570,8 +570,8 @@ comes up under you.
 
 Where the fire of the fallen sun rises through the Ember Caldera, it cools into black glass, and Itzel speaks for that fire. She is the
 Herald of the Underforge, a lean warrior in black lacquered armour inlaid with turquoise, under a mantle of jade and white feathers,
-with a broad blade of obsidian. Her strikes crack the ground in straight lines, and the fire under the Dial answers where her lines
-meet. She cuts the glass that Mabel's miners dig out. She thinks Campana's bronze would crack in a real fire, and has offered more than
+with a broad blade of obsidian. Her strikes split the ground in straight lines: a chasm to her enemies, a road to her, as the
+fire under the Dial has always been. She cuts the glass that Mabel's miners dig out. She thinks Campana's bronze would crack in a real fire, and has offered more than
 once to show her. She fights in the Ring to carry the Underforge's word, and her word is sharp.
 
 ### Hesk | the Golemwright | golem | underforge | he | next20
