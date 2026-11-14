@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../arenas/common';
-import type { Dress, Geo, LandSpec } from './land';
+import type { Dress, Geo, Key, LandSpec } from './land';
+import { buildSeaScenes } from './scenes/sea';
 
 /**
  * The world's depth on a sea floor (the user, 2026-11-14: "add depth into the worlds, make all the background fit there, all the roads
@@ -27,6 +28,8 @@ export interface DepthIn {
   rnd: () => number;
   /** The zone's cover in world coordinates. */
   cover: Seg[];
+  /** The land's houses and jetties (offsets from the middle) and boats (world), for the scenes to keep off. */
+  taken?: { x: number; z: number; r: number }[];
 }
 
 const segDist = (px: number, pz: number, s: Seg) => {
@@ -36,7 +39,19 @@ const segDist = (px: number, pz: number, s: Seg) => {
 };
 
 export function buildDepth(o: DepthIn) {
-  const { spec, geo, dress, rnd } = o;
+  const { spec, geo, rnd } = o;
+  // Where the depth puts its props, for the scenes to keep off (scenes/sea.ts); the dressing itself is unchanged.
+  const marks: { x: number; z: number; r: number }[] = [];
+  interface Rec { add(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): Rec }
+  const dress: Rec = {
+    add(key, g, x, y, z, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0) {
+      if (!g.boundingBox) g.computeBoundingBox();
+      const b = g.boundingBox!, ox = (b.min.x + b.max.x) / 2, oz = (b.min.z + b.max.z) / 2;
+      marks.push({ x, z, r: Math.min(Math.hypot(b.max.x - b.min.x, b.max.z - b.min.z) / 2 * Math.max(sx, sz) + Math.hypot(ox, oz) * Math.max(sx, sz), 30) });
+      o.dress.add(key, g, x, y, z, yaw, sx, sy, sz, tilt);
+      return dress;
+    },
+  };
   const glows: { x: number; y: number; z: number; size?: number }[] = [];
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 7) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
@@ -263,6 +278,10 @@ export function buildDepth(o: DepthIn) {
     flock.instanceMatrix.needsUpdate = true;
   };
   fly(0);
+
+  // --- scenes: little stories told in props (scenes/sea.ts), their own random stream ---------------------------------------------------
+  const scenes = buildSeaScenes({ spec, geo, dress: o.dress, cover: o.cover, marks, taken: o.taken ?? [] });
+  o.into.userData.seaScenes = scenes;
 
   return { glows, update: fly };
 }

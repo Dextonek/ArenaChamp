@@ -442,8 +442,10 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     for (const side of [-1.3, 1.3]) dress.add('gold', new THREE.BoxGeometry(0.1, 0.08, len + 1), mid.x - uz * side, 0.5, mid.z + ux * side, yaw);
     for (let s = 0; s < len; s += 3.5) free.push({ x: ux * (r0 + s), z: uz * (r0 + s), r: 2 });
   }
+  const boatsAt: { x: number; z: number; r: number }[] = []; // for the scenes to keep off (scenes/sea.ts)
   const boat = (a: number, b: number, yaw: number, mast: boolean, paint: Key) => {
     const o = out(a, b), p = W(o.dx, o.dz);
+    boatsAt.push({ x: p.x, z: p.z, r: 4 });
     const hull = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.3, 0.8, 3.6);
     dress.add(paint, hull, p.x, WATER + 0.5, p.z, yaw).add('wood', new THREE.BoxGeometry(2.3, 0.12, 6.2), p.x, WATER + 0.48, p.z, yaw);
     dress.add('gold', new THREE.TorusGeometry(1, 0.06, 6, 24).scale(1.3, 3.6, 1).rotateX(Math.PI / 2), p.x, WATER + 0.52, p.z, yaw);
@@ -534,7 +536,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   inst(bushGeo, leaves, bush);
 
   // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).
-  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [] });
+  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
+    ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6 })), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 1 }))] });
   dress.build(into, own);
 
   return {
