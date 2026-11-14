@@ -1,60 +1,74 @@
-# The Tower's own figures
+# The Climb's own people
 
-The user, 2026-11-14: "if you need to create like new model for some npc and stuff make new ones also for enemies just
-make new dont just reuse heroes that we have". Today the Tower's people and rulers are roster heroes (a ruler is a hero drawn
-big and tinted), and its enemies are drawn in code (`src/tower/world/looks.ts`). This folder holds the first sample of new
-models, for chapter 1 (the Sea), **for the user's yes before any more are made. Nothing here is in the game.**
+The user, 2026-11-14: "if you need to create like new model for some npc and stuff make new ones also for enemies just make new dont
+just reuse heroes that we have", then "also make new models for npc, don't reuse them from heroes". **Since then every person on a
+Climb floor (keeper, quest givers, trader) is a figure of its own, in the game** (not live until the next deploy). The rivals,
+gatekeepers and rulers are still heroes, and the enemies are still drawn in code: see the plan below.
 
-## The sample: chapter 1, the Sea
+**The page of all 25, chapter by chapter: [index.html](index.html)** (made by `python blender/tower/page.py`).
 
-![Beside Sefu and Kaia, from the game's camera](sea-lineup-game.jpg)
+![The Wood's five beside Sefu and Kaia, from the game's camera](wood-lineup-game.jpg)
 
-![Beside Sefu and Kaia, from the front](sea-lineup-front.jpg)
+## The 25
 
-![Each alone: front, back, the game's camera, the face](sea-sheet.jpg)
+| Chapter | Keeper (all ten floors) | Quest giver at the camp | Quest giver out in the land | Traders (odd floors / even floors) |
+|---|---|---|---|---|
+| The Sea, 1-10 | The Bell-Warden | The Net-Father | The Lamp-Bearer | The Tide-Broker / The Coral-Pedlar |
+| The Wood, 11-20 | The Moss-Abbess | The Path-Lighter | The Kiln-Mother | The Amber-Seller / The Charm-Pedlar |
+| The Sands, 21-30 | The Star-Reader | The Storm-Counter | The Beacon-Keeper | The Silk-Merchant / The Glass-Seller |
+| The Deep, 31-40 | The Echo-Hermit | The Candle-Crowned | The Ferryman | The Crystal-Seller / The Firefly-Seller |
+| The War, 41-50 | The Herald | The Turncloak | The White Sister | The Camp-Mother / The Quartermaster |
 
-All five stand in the pack's idle clip, drawn by the game's own figure code (`HeroFigure`) in the hero stand's light,
-at true sizes beside the heroes Sefu and Kaia (the admiral at 2.2 times a hero, as a ruler is drawn). One picture per
-figure as well: `sea-keeper.jpg`, `sea-fisher.jpg`, `sea-trader.jpg`, `sea-docker.jpg`, `sea-admiral.jpg`.
+Each is described in the head of its module (`blender/tower/<chapter>/<name>.py`) and on the page. Per chapter here:
+`<chapter>-lineup-game.jpg` and `<chapter>-lineup-front.jpg` (the five beside Sefu and Kaia), `<chapter>-sheet.jpg` and one
+`<chapter>-<name>.jpg` each (front, back, the game's camera, the face), and `<chapter>-ingame.jpg` (the camp of the chapter's first
+floor in the game, the keeper's card open). The Sea's drowned docker and Drowned Admiral (`sea-docker.jpg`, `sea-admiral.jpg`) are
+the first sample's enemy and ruler: built, not in the game.
 
-| Figure | Role | What it is | Body and parts |
-|---|---|---|---|
-| **The Bell-Warden** | keeper (main quest) | She rings the harbour bell that calls the drowned ships home. Silver hair in buns, a sea-navy gown to the floor with a gold hem and front seam, a flared sea-foam collar, a wine sash knotted at the hip, and a tall black staff whose gold crook holds the harbour bell; its clapper is her one light. | Female body (height 1.03). Fitted gown, `skirt` in folds, `collar`, `band`; the staff in the LEFT hand (held upright like Sefu's crook). |
-| **The Net-Father** | quest giver | The old fisher who mends the nets that hold the sea back. Grey hair and beard, bare-headed, a snug cream roll neck, a sea-green tunic, rope bracers, a black apron, his net coiled across the chest with gold floats and one glowing sea-glass float, a steering oar blade-up. | Male body, broad (width 1.1). Pack hair and beard; the net is a strap round the trunk; the oar in the LEFT hand. |
-| **The Tide-Broker** | trader | She weighs what the tide gives back. A cream blouse with full sleeves, a black bodice laced in gold, a long wine skirt with an open black overskirt, pearls, a gold circlet, a strongbox on her back, and a brass balance held up, a glowing pearl in one pan. | Female body. Pack long hair; the balance in the LEFT hand. |
-| **Drowned docker** | enemy, melee | A dock hand the sea sent back up the quay. Pale grey-green skin, no brows, a cold sea-glass light for eyes, a sea-green jersey, clean dark-green kelp ribbons from the shoulders and belt, smooth cream barnacles on one shoulder and one forearm, a shackle and short chain, a brass cargo hook. No rags: what is drowned is told by colour, weed and barnacles. | Male body, lean. The hook in the RIGHT hand (strikes as Brannoc does). 19,000 faces. |
-| **The Drowned Admiral** | ruler (boss) | The admiral who went down with his fleet. Built as a giant, not a hero made big: broad and deep, a smaller head, hands 1.3 times as big. A long deep-teal coat with wine lining and gold braid, gold epaulettes, a cream neck-stock, a wine sash, a black bicorne with a glowing sea-glass cockade, coral grown through the left epaulette, barnacles, and a great anchor held by the shank, carried crown-up across his chest at rest (his move is the Anchor Sweep). | Male body, width 1.3, depth 1.25, head 0.86, `big_hands`. The anchor in the RIGHT hand. |
+**How they were made to differ:** within a chapter no two share more than one of headwear, the held thing's top, the lower outline
+(gown, coat, skirt or legs) and the main colour; the pack has one face per sex, so faces do not tell them apart. Each holds its
+thing in the LEFT hand and stands as the hero Sefu holds his staff (the Turncloak holds a shield on his left arm, as Auriel does),
+at ease. One small light each. 450-550 KB and 19,000-24,500 faces each, like a hero; **12.3 MB for all 25**, about 1.5 MB on a
+floor (three or four of them).
 
-**Kept from the house rules:** the fourth hero style (the pack's realistic body, one continuous skin, on the Universal
-Animation Library's skeleton, so every clip the heroes play plays on these); mythic roles, never jobs played for a joke
-(ART_BIBLE §1; the jokes may live in names); the arena's materials (`blender/arenas/real/STYLE.md`: matte cloth, polished
-gold, the harbour's wine as the chapter's own colour); one small light each; staffs and held things in the left hand,
-weapons in the right (`pipeline/designs/style-v4/README.md`). Each is 460-550 KB and 19,000-25,000 faces, like a hero.
+**Decided here, for the user to overrule:** all the names, the sexes, the roles, which trader is first.
 
-**Decided here, for the user to overrule:** the names; the keeper is a woman and the fisher a man (the pack has one face
-per sex, so the two drowned men share a face and differ by skin, beard and hat); the docker's eyes glow; the admiral's
-coral is the Tide palette's orange accent. **Not checked:** walking, striking, being hit (only the idle clip was looked
-at); a phone.
+## How a floor picks its people (src/tower/world/folk.ts)
+
+- `TOWER_FOLK` lists the 25 with their model, name, slot and the hero whose way of holding they borrow. `withFolk(n, floor)`
+  (applied to every floor in `floors/index.ts`) gives each person a `figure` by the floor's number: the chapter's keeper; the first
+  giver of the floor (the camp's, `giver`) the camp giver, the second (`villager`, or the War's `healer`) the giver out in the land;
+  the trader the first on odd floors and the second on even ones. A generated floor has all five; the handmade first floors (11,
+  21, 31, 41) have no second giver, and floor 1 has all five.
+- **Their lines are the slots' own**, so the givers do not swap slots: the Sea's camp giver hauls nets, the War's land giver is the
+  healer. On the generated floors the keeper and both givers are the same on every floor of a chapter; only the trader alternates.
+- A person who was named after a hero takes the figure's name on its card and mark and in every line of the floor that names it
+  (quests, doors, the rival's lines): "Gus has a quest about a key" became "The Bell-Warden has a quest about a key". Ids stay
+  (saved runs name them). The few lines written for a hero that the figure would not say (floor 41's deserter was a cat with nine
+  lives, floor 11's keeper had sheep) are rewritten in `LINES` and `QUEST_LINES` there.
+- The rival stays a hero, and so does a person who is the rival's hero (floor 41's Brannoc, who holds the ground for his duel).
+- `people.ts` draws a person with a `figure` from `models/tower/<figure>_v4.glb`, loaded when the floor starts: a floor loads only
+  its own three or four.
 
 ## How they are built, and the command
 
-One module per figure, `blender/tower/<chapter>/<name>.py`, each with a `build()` that dresses a `Real` exactly as a
-hero's `blender/heroes/real/<theme>.py` does (the kit is `blender/heroes/realkit.py` and the shared parts
-`blender/heroes/real/parts_*.py`). `blender/tower/build.py` writes `docs/tower/models/glb/<chapter>_<name>_v4.glb` (not
-committed: about a minute to rebuild; `--out` writes elsewhere, e.g. `public/models/tower` when they go into the game).
-The `_v4.glb` ending is what makes the game's figure code treat a model as one of this style.
+One module per figure, `blender/tower/<chapter>/<name>.py`, each with a `build()` that dresses a `Real` exactly as a hero's
+`blender/heroes/real/<theme>.py` does (the kit is `blender/heroes/realkit.py`, the shared parts `blender/heroes/real/parts_*.py`,
+and the people's own `blender/tower/folk.py`: a held thing's frame, poles, a hanging lantern, a wide hat, a veil, a basket and
+straps, a tray). `blender/tower/build.py --out public/models/tower` writes the game's models (committed); without `--out` it writes
+`docs/tower/models/glb/` (not committed). The `_v4.glb` ending is what makes the game's figure code treat a model as one of this style.
 
 ```
-"C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" --background --factory-startup --python blender/tower/build.py -- sea.keeper sea.fisher sea.trader sea.docker sea.admiral
-python pipeline/tools/page-shots.py pipeline/tools/tower-models-sheet.js docs/tower/models --port 5186
+"C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" --background --factory-startup --python blender/tower/build.py -- wood.abbess wood.lighter wood.kiln wood.amber wood.charm --out public/models/tower
+python pipeline/tools/page-shots.py <wrapper.js> docs/tower/models --port 5254
+python blender/tower/page.py
 ```
 
-The second line takes the pictures (`pipeline/tools/tower-models-sheet.js`: the two line-ups, each figure alone, and the
-sheet of all of them) straight into this folder, under the names above. Use a port no other agent's server is on.
-`--shots <folder>` on the first line also writes a Blender check picture of each in its T-pose. The page log shows one
-404 while the figures load; all seven load and are drawn, and where it comes from was not looked into.
+The pictures: `pipeline/tools/tower-models-sheet.js` draws one chapter (`window._towerChapter = 'wood';` on a line before the
+file's own text, in a copy given to page-shots; default the Sea) from the game's own models and figure code. The tool page shows
+one 404 when it loads (its favicon); the game's own runs show no console errors.
 
-## The plan for all 50 floors
+## The plan for all 50 floors (the people are done; rulers and enemies are next)
 
 The ladder (pipeline/designs/tower-50.md): five chapters of ten floors; in each, one handmade floor, eight made by the
 generator, and a crown. **The five crowns are Raid bosses and need nothing.** Gatekeepers and rivals stay heroes (they
@@ -82,13 +96,10 @@ dockers is six of them. Enemies should get a lighter budget than a hero's (about
 the body's hidden skin dropped), and a floor's packs measured with `python pipeline/tools/perf.py` before the rest are
 made. A floor loads about 3 people, 3 enemy kinds and its ruler: about 3.5 MB of models.
 
-## What the game code would need (not changed here)
+## What the game code needs for the rest
 
-1. **People** (`src/tower/world/def.ts` `PersonDef.hero`, read in `src/tower/world/people.ts`): an optional `model` (a
-   path such as `models/tower/sea_keeper_v4.glb`) and `hold` (`torch` for a staff, oar or balance in the left hand),
-   used in place of the hero's kit. `HeroFigure.setModel(url, at, kit)` already draws any `_v4.glb`; it takes the way of
-   holding from `REAL_STYLE[kit.name]` (`src/motion/real.ts`), so it needs that hold passed in another way (a small
-   stand-in kit, or a new argument).
+1. **People: done** (above). `PersonDef.figure`, the stand-in hero for the way of holding (`Folk.stand`: no change to the figure
+   code was needed), the names in the floor's words.
 2. **Rulers** (`src/tower/world/pieces/types.ts` `RulerDef.stand`, read at `src/tower/world/pieces/ruler.ts:85`): the
    stand-in hero gives four things: the model, the hit size (`HERO_BODIES`), whether it is melee and how it strikes
    (`standKit`), and the tint. A ruler of its own needs `model`, `body` (radius and height, measured on the model) and
