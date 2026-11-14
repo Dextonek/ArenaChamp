@@ -3,6 +3,7 @@ import { RING, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { DeepLook } from './deepZone';
 import { rimAt } from './land';
+import { deepScenes } from './scenes/deep';
 
 /**
  * The Deep's depth (floors 31 to 40; the user, 2026-11-14: "add depth into the worlds, make all the background fit there, all the roads
@@ -106,6 +107,15 @@ class Batch {
     bin.p.push(p);
     bin.g.push(GLOW[b]);
     for (let i = 0; i < 16; i++) bin.e.push(this.M.elements[i]);
+  }
+  /** A placement by a full matrix (scenes/deep.ts), into the same quarters. */
+  putMatrix(b: Bucket, p: Proto, m: THREE.Matrix4) {
+    const e = m.elements, dx = e[12] - RING.x, dz = e[14] - RING.z, key = (dx < 0 ? 0 : 1) + (dz < 0 ? 0 : 2) + (dx * dx + dz * dz > this.far * this.far ? 4 : 0);
+    let bin = this.cells.get(key);
+    if (!bin) this.cells.set(key, (bin = { p: [], e: [], g: [] }));
+    bin.p.push(p);
+    bin.g.push(GLOW[b]);
+    for (let i = 0; i < 16; i++) bin.e.push(e[i]);
   }
   build(into: THREE.Group, own: { dispose(): void }[], material: THREE.Material) {
     let draws = 0, verts = 0;
@@ -862,6 +872,12 @@ export function buildDeepDepth(o: DeepDepthIn) {
   fly(0);
 
   mark('bats');
+  // --- the scenes (scenes/deep.ts): little stories in props, into the same batch; their own random stream, so nothing above moves
+  const sc = deepScenes({ look, cave, keep: o.keep ?? [], props, sink: { put: (b, p, mm) => batch.putMatrix(b, p, mm) }, waterLevel: o.waterLevel });
+  group.userData.scenes = sc.scenes;
+  group.userData.sceneLook = look;
+  group.userData.scenesMs = sc.ms;
+  mark('scenes');
   // --- into meshes ---------------------------------------------------------------------------------------------------------------
   const own = o.own;
   const mk = <T extends THREE.Material>(mm: T) => { own.push(mm); return mm; };
