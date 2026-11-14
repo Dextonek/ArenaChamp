@@ -95,14 +95,15 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   L.edges();
   pill('fire', C(0, -0.5), 0.9, 0.9); pill('hut', C(-8.5, 2.5), 1.7, 2.4); pill('hut', C(8.5, -1.5), 1.7, 2.4);
   pill('crate', C(-5, -4), 0.8, 1.2); pill('crate', C(5.4, 2.2), 0.8, 1.2); pill('timber', C(11, 4), 1.0, 1.6);
-  const cradle = C(6.5, -3.5);
+  const cradle = C(5.5, -4.5);
   pill('cradle', cradle, 0.7, 0.9);
   L.reserve(camp.c, 11);
   const lights = [C(0, 0), C(-6, 3), C(6, -3)];
   // The lair: a rock fall across the north, its gap facing the middle, walled at the sides.
   const lairZ = r2(-northR + 9), lairDoor: V = { x: 0, z: r2(-northR + 5.4) };
   wall('wall', { x: -24, z: lairZ }, { x: -3.4, z: lairZ }, 0.5, 4.4); wall('wall', { x: 3.4, z: lairZ }, { x: 24, z: lairZ }, 0.5, 4.4);
-  for (const s of [-1, 1]) wall('wall', { x: s * 24, z: lairZ }, { x: s * 24, z: lairZ - 7 }, 0.5, 4.4);
+  // its sides run on past the outline, so no sliver of a gap is left between them and the cave's wall
+  for (const s of [-1, 1]) wall('wall', { x: s * 24, z: lairZ }, { x: s * 24, z: lairZ - 30 }, 0.5, 4.4);
   L.reserve({ x: 0, z: lairZ + 2 }, 6);
 
   // --- eight places on two rings round the middle -------------------------------------------------------------------------------
@@ -137,6 +138,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       const p = at(range(...s.deg), range(...s.f));
       if (places.some((q) => dist(q.c, p) < (packIds.includes(q.id) && packIds.includes(s.id) ? 44 : 28))) continue;
       if (dist(p, camp.c) < 32 || dist(p, { x: 0, z: lairZ }) < 26 || inside(rim, p) < 14) continue;
+      if (segDist(p, { x: -24, z: lairZ }, { x: 24, z: lairZ }) < 16 || segDist(p, { x: -24, z: lairZ }, { x: -24, z: lairZ - 30 }) < 16 || segDist(p, { x: 24, z: lairZ }, { x: 24, z: lairZ - 30 }) < 16) continue;
       c = p;
       break;
     }
@@ -161,12 +163,14 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     const Q = (dOut: number, dTan: number): V => add(add(p.c, out, dOut), tan, dTan);
     switch (p.kind) {
       case 'hall': {
-        // A horseshoe of stalagmites round the back, open to the middle; the great crystal in the middle of the back.
-        for (const d of [-88, -62, -36, 36, 62, 88]) {
+        // A horseshoe of stalagmites round the back, open to the middle; the great crystal in the middle of the back, just inside it.
+        // Shut, not a fence: every gap in it under a walker's width (the path finder's walker is 0.5 m round; floor 33's first bake had
+        // 0.9 m gaps, as floor 31's 48 m hall had, and the route bot came at a hall from behind, wedged itself in one and stood there).
+        for (const d of [-100, -80, -60, -40, -20, 20, 40, 60, 80, 100]) {
           const a = (d * Math.PI) / 180, q = add(add(p.c, out, Math.cos(a) * 6.9), tan, Math.sin(a) * 6.9);
-          pill(Math.abs(d) > 80 ? 'column' : 'stal', q, Math.abs(d) > 80 ? 0.9 : 1.1, Math.abs(d) > 80 ? 5.4 : 3.4);
+          pill(Math.abs(d) > 90 ? 'column' : 'stal', q, Math.abs(d) > 90 ? 1.0 : 1.2, Math.abs(d) > 90 ? 5.4 : r2(2.8 + 0.8 * Math.cos(a)));
         }
-        const cr = Q(6.3, 0);
+        const cr = Q(5.8, 0);
         crystals.push({ x: r2(cr.x), z: r2(cr.z) });
         pill('great', cr, 1.0, 5.2);
         break;
@@ -499,6 +503,12 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     most = Math.max(most, sum);
   }
   if (most > 6) throw new Error(`floor ${n}: ${most} units near one spot`);
+  // No gap between two pieces of cover that a walker could half enter and wedge in (the path finder's walker is 0.5 m round).
+  for (let i = 0; i < L.cover.length; i++) for (let j = i + 1; j < L.cover.length; j++) {
+    const a = L.cover[i].o, b = L.cover[j].o, A0 = { x: a.ax, z: a.az }, A1 = { x: a.bx, z: a.bz }, B0 = { x: b.ax, z: b.az }, B1 = { x: b.bx, z: b.bz };
+    const gap = Math.min(segDist(A0, B0, B1), segDist(A1, B0, B1), segDist(B0, A0, A1), segDist(B1, A0, A1)) - a.r - b.r;
+    if (gap > 0.3 && gap < 1.2) throw new Error(`floor ${n}: a ${gap.toFixed(2)} m gap at ${r2(a.ax)}, ${r2(a.az)}`);
+  }
 
   // --- into the world: mirrored if the water is west, moved to the ring's middle ---------------------------------------------------
   const W = worldOf(m), X = W.X;
