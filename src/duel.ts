@@ -482,6 +482,7 @@ export class Duel {
       arenaCover: () => this.currentArena?.obstacles ?? [],
       stands: (i) => { const o = this.currentArena?.obstacles[i]; return !!o && !!arena.obstacles?.includes(o); },
       boltWall: (side, a, b, halfWidth, seconds) => arena.projectiles.wall(side, { a: new THREE.Vector3(a.x, 0, a.z), b: new THREE.Vector3(b.x, 0, b.z), halfWidth, seconds }),
+      hurtUnit: (u, damage) => arena.summons.hurt(u, { damage, knock: 0 }, true),
       bolts: () => arena.projectiles.live,
       boltSide: (p) => (p.world.tag.startsWith('hero') ? 'hero' : 'opponent'),
     });
@@ -1913,6 +1914,8 @@ export class Duel {
     if (dealer === 'opponent' && !this.net) hit.damage *= this.cpuLevel.damage;
     // Sealed (Sefu's sarcophagus): nothing reaches the figure, from either side.
     if (victimIsHero && arena.statusOf(victim)?.sealed) hit.blocked = true;
+    // Asleep before this hit's own hooks (src/mech): a hit that puts the hero to sleep does not wake it again.
+    const sleeper: MechSide | null = victimIsHero && this.mech.asleep(victim === arena.caster ? 'hero' : 'opponent') ? (victim === arena.caster ? 'hero' : 'opponent') : null;
     dRt?.dealt(hit);
     vRt?.taken(hit);
     // A hook may replace the options object: read it back.
@@ -1927,11 +1930,8 @@ export class Duel {
       return o;
     }
     // A sleeper's waking hit lands harder, and wakes it (src/mech; only where this hero's hits are decided).
-    if (victimIsHero && hit.damage >= 0.5) {
-      const side: MechSide = victim === arena.caster ? 'hero' : 'opponent';
-      hit.damage += this.mech.wakingHit(side, hit.damage);
-      if (kind === 'spell') this.mech.noteHit(side, kind);
-    }
+    if (sleeper && hit.damage >= 0.5) hit.damage += this.mech.wakingHit(sleeper, hit.damage);
+    if (victimIsHero && kind === 'spell' && hit.damage >= 0.5) this.mech.noteHit(victim === arena.caster ? 'hero' : 'opponent', kind);
     if (victimIsHero && mods.status && !o.status) o.status = mods.status;
     if (mods.debuff && !o.debuff) o.debuff = mods.debuff;
     if (mods.knock) o.knock = (o.knock ?? 0) + mods.knock;
@@ -3298,6 +3298,8 @@ export class Duel {
    */
   private hitUnit(c: EnemyCast, target: Enemy, opts: HitOptions = {}) {
     if (this.over || c.round !== this.round || !this.on) return;
+    // A placed thing's HP is counted on the attacker's screen and told here (src/mech `placed`): its replayed hits do not count twice.
+    if (this.mech.placedElsewhere(target)) return;
     const p = target.group.position;
     if (opts.projectile || (this.inCastReach(c, p) && this.mech.zoneReaches(c.zones, c.aimed, p, insideTelegraph))) {
       this.host.arena.hit(target, this.resolve('opponent', target, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq));

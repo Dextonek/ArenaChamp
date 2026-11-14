@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Enemy } from '../effects/common';
 import type { StatusSet } from '../effects/status';
 import type { Projectile } from '../effects/projectile';
+import type { Summon, SummonUnit } from '../effects/summon';
 import type { BoltWall } from '../effects/projectile';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroSpell } from '../heroes';
@@ -52,6 +53,8 @@ export interface MechHost {
   stands(i: number): boolean;
   /** Raises a bolt wall owned by `side` (it stops the other side's bolts). */
   boltWall(side: MechSide, a: P, b: P, halfWidth: number, seconds: number): BoltWall;
+  /** Takes `damage` off a unit as a hit decided on the other screen (no trait hears it again). */
+  hurtUnit(u: SummonUnit, damage: number): void;
   /** The bolts in flight, and whose each is. */
   bolts(): readonly Projectile[];
   boltSide(p: Projectile): MechSide;
@@ -204,6 +207,10 @@ export class Mech {
   private shownLeashes: { side: MechSide; anchorSide: MechSide | null; x: number; z: number; r: number; until: number }[] = [];
   /** The plain look of the pieces (both screens); the duel adds its group to the scene. */
   readonly fx = new MechFx();
+  /** Placed things whose HP the attacker's screen decides (`placed`), by owner and number: the same numbers on both screens. */
+  private placedUnits = new Map<string, { unit: SummonUnit; sent: number }>();
+  private placedFigures = new WeakSet<object>();
+  private placedN: Record<MechSide, number> = { hero: 0, opponent: 0 };
   /** Anything to do in `update`: false until a piece is used this round. */
   private busy = false;
   readonly views: Record<MechSide, MechView>;
@@ -226,6 +233,9 @@ export class Mech {
     this.casts.clear();
     this.hits.clear();
     this.shownLeashes.length = 0;
+    this.placedUnits.clear();
+    this.placedFigures = new WeakSet();
+    this.placedN = { hero: 0, opponent: 0 };
     this.busy = false;
     this.fx.begin();
     this.fx.end();
@@ -612,11 +622,48 @@ export class Mech {
     return out;
   }
 
+  // --- placed things with HP (bells, statues, lanterns, a kite) ---------------------------------------------------
+
+  /**
+   * Makes the units of `handle` (a summon of `owner`'s: a bell, a statue, a lantern, a kite, made as `crystalPillar.ts` makes its
+   * crystal) agree on both screens. Each screen runs its own copy of the units, and a hit on a unit is judged where it is seen:
+   * a basic attack on a unit is not even sent to the other screen. So the screen of the side that attacks it decides: there its
+   * HP is counted, and each change is told to the owner's screen, which takes it off its own copy and ignores the hits it
+   * replays itself. Register in the spell, at the cast (both screens play it, in the same order: the numbers match). Offline
+   * nothing changes.
+   */
+  placed(owner: MechSide, handle: Summon) {
+    for (const unit of handle.units) {
+      const id = this.placedN[owner]++;
+      this.placedUnits.set(owner + id, { unit, sent: unit.hp });
+      this.placedFigures.add(unit.figure);
+    }
+    this.busy = true;
+  }
+
+  /** True when a hit on `figure` is the other screen's to decide (a placed thing of this screen's own hero, online). */
+  placedElsewhere(figure: object) {
+    return this.host.online() && this.placedFigures.has(figure) && [...this.placedUnits.entries()].some(([k, p]) => p.unit.figure === figure && k.startsWith('hero'));
+  }
+
+  private sendPlaced() {
+    if (!this.host.online()) return;
+    for (const [key, p] of this.placedUnits) {
+      if (!key.startsWith('opponent')) continue;
+      const hp = Math.max(0, Math.round(p.unit.alive ? p.unit.hp : 0));
+      if (hp >= p.sent) continue;
+      p.sent = hp;
+      const id = Number(key.slice('opponent'.length));
+      this.host.send(msgName('u', this.rel('opponent') + encDigit(Math.floor(id / 36)) + encDigit(id % 36)), hp);
+    }
+  }
+
   // --- every frame, both screens ---------------------------------------------------------------------------------
 
   update(dt: number) {
     if (!this.busy) return;
     const now = this.now();
+    if (this.placedUnits.size) this.sendPlaced();
     for (const [side, s] of this.sleeps) {
       // A sleep ends at its time, or when its stun ended some other way (a cleanse, a new round's clear).
       if (now >= s.until || !this.host.status(side)?.has('stun')) this.sleeps.delete(side);
@@ -719,6 +766,13 @@ export class Mech {
         t.receive({ holder: h, x: decPos(data.slice(2, 4)), z: decPos(data.slice(4, 6)), version: n, since: 0, start: decTime(data.slice(6, 9)) });
         return;
       }
+      case 'u': {
+        // The other screen counted a hit on one of this screen's placed things: take it off here.
+        const owner = side(data[0]), id = decDigit(data[1]) * 36 + decDigit(data[2]);
+        const p = this.placedUnits.get(owner + id);
+        if (p && p.unit.alive && p.unit.hp > n) this.host.hurtUnit(p.unit, p.unit.hp - n);
+        return;
+      }
       case 'c': {
         const i = decDigit(data[0]) * 36 + decDigit(data[1]);
         if (!this.host.stands(i)) return;
@@ -778,6 +832,8 @@ export class MechView {
   chasm(o: Obstacle, seconds: number) { return this.m.barrier(o, this.enemySide, seconds); }
   attractor(x: number, z: number, r: number, seconds: number, onCatch?: (bolt: Projectile) => void) { return this.m.attractor(x, z, r, this.side, seconds, onCatch); }
   hurtCover(i: number, damage: number, from?: P) { return this.m.hurtCover(i, damage, this.side, from); }
+  /** A summon of this side's that is a placed thing (a bell, a statue, a lantern): its HP agrees on both screens. */
+  placed(handle: Summon) { this.m.placed(this.side, handle); }
   coverLeft(i: number) { return this.m.coverLeft(i); }
   coverNear(p: P, r: number) { return this.m.coverNear(p, r); }
 }
