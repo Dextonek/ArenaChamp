@@ -117,3 +117,71 @@ dry sand past the edge is 1.5 to 4 m wide. No kind is missing.
   **Read the added milliseconds, not the percentages:** this page builds the whole zone (land, painted ground, depth) in 5.6 to 8 s at
   4x, so it is not the same measure as the 0.6 s given for floor 1 on the phone profile in pipeline/designs/tower-50.md; against a
   smaller base the same 215 to 283 ms would be a larger share.
+
+## The second pass: bigger, clearer, fuller (2026-11-14, "continue more refine")
+
+Pictures: `refine/fNN-sheet.jpg` (start here; before left, after right), floors 1, 4 and 8, and `refine/fNN-<view>-before.jpg` /
+`-after.jpg`: `mid1`, `mid2` at the game's own zoom (1.25), `close-*` (0.8), `beach-*` (past the edge); floor 1 also `wide` (from above
+over its busiest stretch, fog lifted for that picture). **"Before" is tower-50 with its first-pass scenes**, and the scenes moved, so a
+before picture shows tower-50's nearest scene of the same kind (or the same spot, for a kind tower-50 did not have); the caption says
+which.
+
+What changed:
+
+- **A clear main piece, big enough to read.** The ground scenes are drawn 1.45 times life size (was 1.3) and each has one large flat piece
+  in a clear colour: the stall's striped awning, the tent come down by the fire, a torn sail or the ship's wheel, the banner or a shield
+  wall with its drum, the cart's tray and tarp, the oars laid round the cairn like rays or the bow of the lost boat. Large cloths are in
+  a new duller `canvas` colour (cream glared next to the hero's light). The anchor and the mooring post the lead found hard to see:
+  the anchor is now iron a shade lighter (`iron`) with a wooden stock and a gilt ring, its cable out to a heap of coils (or a chain to a
+  broken stump); the post is thicker, with a wine band between two gilt rings and a rope wound twice.
+- **Their own ground.** Each scene paints into the land's map (the painted middle of `land.ts`, 14 to 18 pixels a metre; no triangles,
+  no draw calls): a trodden patch of earth under it, a scorch under a fire, a black pool of oil under the barrels, wet ground under nets
+  and fish, a pale fan of salt or grain, two wheel ruts from the nearest road to a tipped cart, and the furrow an anchor left, dragged up
+  from the sea. Each patch is shrunk to keep off the roads' middles, the places' stands and the tidal flats.
+- **More of them where players walk.** Along the roads one every 20 to 30 m on alternate verges (was 34 to 52), trying both verges and
+  three distances; one at each fork; up to 14 round the floor's spots (6 to 10 m off them, so 3 m off still holds); the places that suit
+  them get two when they are big. **Echoes** between: a small piece of the scene ahead dropped on the verge 8 to 14 m before it (a crate
+  off the cart, fish from the stall, arrows towards the fight, a barrel and its stain). They are recorded with `echo` and are not counted
+  as scenes.
+- **Variety.** Each kind has two or three ways (which main piece, which load, which state), and new kinds: `drying` (a catch laid out on
+  a sailcloth, the rack knocked flat) on the ground; past the edge `caulk` (a boat upside down on trestles being caulked, the tar pot on
+  its fire), `fishrack` (split fish hung on a pole between two A-frames) and `tidecart` (a cart sunk to its hubs at the tide line, its
+  shafts in the air). The pots now spill from a tipped hand-cart, the barrels from their ramp.
+- The checks keep each scene's parts off everything by the parts' real reach (a long anchor cable used to reach past the short list of
+  nearby spots; one hit on floor 10 in a trial, fixed), and look up nearby props in the 8 m squares round a wide scene, not all of them.
+
+### Numbers
+
+Scenes a floor (not counting echoes), before and after: 1: 26, 32 (+5 echoes); 2: 22, 32 (+8); 3: 22, 32 (+7); 4: 25, 34 (+8); 5: 22, 37
+(+5); 6: 27, 31 (+4); 7: 24, 32 (+5); 8: 20, 35 (+7); 9: 23, 34 (+4); 10: 27, 35 (+5). Past the edge 2 or 3 a floor (the dry beach is
+narrow): over the ten floors caulk 3, tidecart 3, fishrack 2, rowboat 2, mooring 5, capsized 10.
+
+**The views probe** (`_scenesViews` in `pipeline/tools/scenes-probe.js`): the hero stands every 8 m along every road and on an 8 m grid
+over the walkable ground, the camera is the game's own at its own zoom (1.25), and a view counts when a scene's main piece is in the
+picture outside the HUD's bar. Stricter, a scene **reads** when its largest part is at least 60 px across (of 1280 x 720) in the middle
+of the picture. The brief's aim: 70 % of road views and 45 % of all views. Before then after:
+
+| Floor | road views | all views | road views that read | all views that read |
+|---|---|---|---|---|
+| 1 | 64 %, 75 % | 51 %, 62 % | 20 %, 56 % | 17 %, 47 % |
+| 2 | 65 %, 85 % | 51 %, 68 % | 25 %, 72 % | 20 %, 49 % |
+| 3 | 52 %, 85 % | 45 %, 62 % | 22 %, 78 % | 21 %, 45 % |
+| 4 | 77 %, 78 % | 51 %, 71 % | 32 %, 62 % | 16 %, 47 % |
+| 5 | 59 %, 82 % | 51 %, 69 % | 18 %, 67 % | 15 %, 50 % |
+| 6 | 61 %, 79 % | 52 %, 62 % | 23 %, 60 % | 14 %, 45 % |
+| 7 | 65 %, 77 % | 50 %, 68 % | 14 %, 52 % | 15 %, 49 % |
+| 8 | 47 %, 84 % | 44 %, 66 % | 15 %, 65 % | 14 %, 48 % |
+| 9 | 47 %, 78 % | 46 %, 68 % | 13 %, 58 % | 15 %, 50 % |
+| 10 | 64 %, 77 % | 58 %, 62 % | 13 %, 64 % | 18 %, 44 % |
+
+Plainly: the brief's "all views" aim was nearly met before (the game's camera sees about 40 by 30 m), which is why the stricter column
+is there; it shows what the lead saw (a scene read in 13 to 32 % of road views) and it is now 52 to 78 %.
+
+- **Overlap probe:** 0 hits on all ten floors (echoes included).
+- **`_worldCheck`**, floors 1 to 10: nothing unreachable, 34,825 to 35,004 m2 reachable, most units near a spot 5: the same as before (it
+  reads only the floor's data).
+- **Build time, phone profile** (processor slowed 4 times, tower-50 from a second checkout and this branch served in turn, three
+  alternating rounds of three builds after a warm one; medians of nine): the scenes' own code, floor 1: 253 ms, 372 ms (+119); floor 6:
+  259 ms, 392 ms (+133); the merge of the dressing +6 ms on both. The whole zone's build: floor 1 8695, 9688; floor 6 8410, 8851; single
+  builds of the same code ranged 8052 to 12382 ms, so the whole-zone medians are mostly noise and the scenes' own timer is the measure.
+  Unslowed the scenes take 57 to 67 ms a floor (about 45 before); the dressing gets about 100k vertices from them (71k before).
