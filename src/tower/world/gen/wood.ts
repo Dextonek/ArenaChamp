@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, PackDef, PersonDef, PlaceDef, QuestD
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { Look, Piece } from '../zone';
 import type { ChapterLook, GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Wood chapter's generator (pipeline/designs/tower-50.md): floor `n` (12 to 20) of the Wood, made from floor 11's parts (The Walking
@@ -117,10 +117,13 @@ function layoutWood(n: number, rnd: () => number, slots: Slot[], o: { closable: 
   const lairZ = r2(-northR + 9), lairDoor: V = { x: 0, z: lairZ };
   wall('lair', { x: -24, z: lairZ + 1.5 }, { x: -3.4, z: lairZ }, 0.6, 3.8); wall('lair', { x: 3.4, z: lairZ }, { x: 24, z: lairZ + 1.5 }, 0.6, 3.8);
   // Behind the wall, to the edge, the Elder's roots: no free ground there either.
-  for (let x = -30; x <= 30; x += 5) {
+  // (2.5 m apart: mounds 5 m apart left slivers between them and the edge's walls that a body fits into, and an order there searched the map)
+  for (let x = -30; x <= 30; x += 2.5) {
     let zE = lairZ - 1;
     while (zE > lairZ - 40 && inside(rim, { x, z: zE }) > -2.6) zE -= 0.5;
-    const r = r2((lairZ - 0.4 - zE) / 2 + 1), c = { x, z: r2(zE + r - 1) };
+    // from 1.2 m behind the wall's line, following its slant (the wall's back face and the mound leave no room for a body between them; the door's spot in the
+    // doorway stays clear) to a metre past the edge
+    const wallZ = lairZ + 1.5 * Math.max(0, Math.min(1, (Math.abs(x) - 3.4) / 20.6)), south = wallZ - 1.2, north = zE - 1, r = r2((south - north) / 2), c = { x, z: r2((south + north) / 2) };
     if (r > 0.8) pill('roots', c, r, 1.6);
   }
   L.reserve({ x: 0, z: lairZ + 3 }, 6);
@@ -370,10 +373,17 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // --- who is where: gatekeepers all different over the chapter (none a handmade floor's), people five at a time round the rest ------
   const order = shuffle(ROSTER.filter((h) => !HANDMADE_GATES.includes(h)), mulberry(2002));
   const gates = order.slice(0, 9), folk = [...order.slice(9), ...HANDMADE_GATES];
-  const who = (i: number) => folk[((n - 12) * 5 + i) % folk.length];
+  const whoOn = (fl: number, i: number) => folk[((fl - 12) * 5 + i) % folk.length];
+  const who = (i: number) => whoOn(n, i);
   const keeperHero = who(0), giverHero = who(1), traderHero = who(2), rivalHero = who(3), villagerHero = who(4), gateHero = gates[(n - 12) % gates.length];
-  const turn = (n - 12) % RULER_BODIES.length, round = [...RULER_BODIES.slice(turn), ...RULER_BODIES.slice(0, turn)];
-  const rulerBody = round.find((b) => ![keeperHero, giverHero, traderHero, rivalHero, villagerHero, gateHero].includes(b)) ?? 'Hank';
+  // The ruler's body: in turn round the list, never one of the floor's own people, never the floor before's (worked out from floor 12 up).
+  let rulerBody = 'Hank';
+  for (let fl = 12, last = ''; fl <= n; fl++) {
+    const turn = (fl - 12) % RULER_BODIES.length, round = [...RULER_BODIES.slice(turn), ...RULER_BODIES.slice(0, turn)];
+    const taken = [0, 1, 2, 3, 4].map((i) => whoOn(fl, i)).concat(gates[(fl - 12) % gates.length], last);
+    rulerBody = round.find((b) => !taken.includes(b)) ?? 'Hank';
+    last = rulerBody;
+  }
 
   const kindA = pick(['den', 'bramble'] as const), kindB = kindA === 'den' ? 'thicket' : pick(['den', 'thicket'] as const);
   const kindC = pick(['shrine', 'spring'] as const), kindE = kindC === 'shrine' ? 'spring' : 'shrine';
@@ -416,8 +426,6 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const lore = L.reserve(L.spot(at(range(150, 165), 0.8), 4, 1.5), 2.5);
   const caches = [at(range(-170, -155), 0.84), at(range(-100, -88), 0.88), at(range(-20, -8), 0.86), at(range(14, 26), 0.86), at(range(64, 76), 0.6), at(range(140, 150), 0.86)]
     .map((p) => L.reserve(L.spot(p, 5, 1.5), 2.5));
-  const stoneNear = [A, Vl, B, Cl, D, H];
-  const stones = stoneNear.map((p) => L.reserve(L.spot(add(p.c, toMid(p.c), 16), 4, 1.5, far(14)), 2.5));
 
   // Two named enemies: one walks round the hollow oak's glade, one round a lamp's glade (no pack there). Their ways are kept clear.
   const patrolIn = (p: Place, r0: number, r1: number) => {
@@ -443,6 +451,11 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // The heart's three feeding roots, round its clearing (off the way to the door).
   const roots = [add(heart.c, { x: -8, z: -2 }), add(heart.c, { x: 8, z: -2 }), add(heart.c, { x: 0, z: 7 })];
   for (const r of roots) L.reserve(r, 2);
+  // The waystones, last: a fall wakes the hero at the last one touched, so each stands 14 m from every pack and root and 15 m from every leg
+  // of a named enemy's walk (one on a patrol was a loop of falls).
+  const stoneNear = [A, Vl, B, Cl, D, H];
+  const stoneOk = (q: V) => far(14)(q) && roots.every((r) => dist(r, q) >= 14) && [patrol1, patrol2].every((pt) => pt.every((a, i) => segDist(q, a, pt[(i + 1) % pt.length]) >= 15));
+  const stones = stoneNear.map((p) => L.reserve(L.spot(add(p.c, toMid(p.c), p === H ? 30 : 16), 4, 1.5, stoneOk), 2.5));
 
   scatter(G, 44 + Math.round(8 * k), [A.c, B.c, Fp.c, D.c, heart.c]);
 
@@ -671,8 +684,6 @@ export function makeWoodEleven(o: { attempt?: number } = {}): GenFloor {
   const lore = L.reserve(L.spot(add(heart.c, { x: -12, z: -3 }), 3, 1.5), 2.5);
   const caches = [add(Thi.c, { x: -14, z: 10 }), at(range(68, 80), 0.86), at(range(-20, -8), 0.5), at(range(150, 165), 0.86), at(range(-100, -90), 0.9), at(range(14, 26), 0.86)]
     .map((p) => L.reserve(L.spot(p, 5, 1.5), 2.5));
-  const stoneNear = [LW, LE, Thi, Sto, Gia, Den];
-  const stones = stoneNear.map((p) => L.reserve(L.spot(add(p.c, toMid(p.c), p === Sto ? 12 : 16), 4, 1.5, far(14)), 2.5));
   // The Hollow Oak walks the old road between the old stones and the heart (passes that never close, as the avenue never did).
   const oakWay = [Sto.stand, ...passRoute(cells, passes, cellOf(Sto), cellOf(heart)), heart.stand];
   const oakPatrol: V[] = [];
@@ -690,6 +701,10 @@ export function makeWoodEleven(o: { attempt?: number } = {}): GenFloor {
   const spadeTo = C(1.6, -2.9);
   const roots = [add(heart.c, { x: -7, z: -2 }), add(heart.c, { x: 7, z: -2 }), add(heart.c, { x: 0, z: 7 })];
   for (const r of roots) L.reserve(r, 2);
+  // The waystones, last: 14 m from every pack and root, 15 m from every leg of the Hollow Oak's walk.
+  const stoneNear = [LW, LE, Thi, Sto, Gia, Den];
+  const stoneOk = (q: V) => far(14)(q) && roots.every((r) => dist(r, q) >= 14) && oakLoop.every((a, i) => segDist(q, a, oakLoop[(i + 1) % oakLoop.length]) >= 15);
+  const stones = stoneNear.map((p) => L.reserve(L.spot(add(p.c, toMid(p.c), p === Sto ? 20 : 16), 4, 1.5, stoneOk), 2.5));
   scatter(G, 46, [Den.c, Bra.c, Gia.c, heart.c]);
 
   const enemies: Record<string, EnemySpec> = {

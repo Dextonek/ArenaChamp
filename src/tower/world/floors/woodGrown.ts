@@ -1,123 +1,123 @@
-// Made by pipeline/tools/gen-wood11.ts: floor 11, The Walking Wood, at the new size, seed 11002. Made again by that tool; a hand fix is
+// Made by pipeline/tools/gen-wood11.ts: floor 11, The Walking Wood, at the new size, seed 11000. Made again by that tool; a hand fix is
 // kept only until then (pipeline/designs/tower-50.md). Its set pieces are in pieces/floors.ts.
 import type { FloorDef } from '../def';
 import type { WoodLook } from '../gen/wood';
 
 export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; look: WoodLook } = {
- "seed": 11002,
+ "seed": 11000,
  "floor": {
   "n": 11,
   "id": "wood",
   "name": "The Walking Wood",
   "blurb": "A forest that does not stay where you left it.",
   "tunedAs": 2,
-  "ring": 128,
+  "ring": 125,
   "start": {
    "x": 0,
-   "z": 99.03
+   "z": 117.03
   },
   "camp": {
    "x": 0,
-   "z": 95.53
+   "z": 113.53
   },
   "places": {
    "camp": {
     "id": "camp",
     "name": "The camp",
     "x": 0,
-    "z": 93.53,
+    "z": 111.53,
     "r": 8,
     "stand": {
      "x": 0,
-     "z": 97.03
+     "z": 115.03
     }
    },
    "den": {
     "id": "den",
     "name": "The hounds’ den",
-    "x": -48.85,
-    "z": 24.16,
+    "x": -61.15,
+    "z": 30.3,
     "r": 9.5,
     "stand": {
-     "x": -46.02,
-     "z": 23.17
+     "x": -58.35,
+     "z": 29.23
     }
    },
    "bramble": {
     "id": "bramble",
     "name": "The bramble",
-    "x": 84.45,
-    "z": 36.01,
+    "x": 77.03,
+    "z": 29.49,
     "r": 9.5,
     "stand": {
-     "x": 84.45,
-     "z": 36.01
+     "x": 77.03,
+     "z": 29.49
     }
    },
    "stones": {
     "id": "stones",
     "name": "The old stones",
-    "x": 0.95,
-    "z": -8.72,
+    "x": 0.82,
+    "z": -0.96,
     "r": 7,
     "stand": {
-     "x": 0.95,
-     "z": -8.72
+     "x": 0.82,
+     "z": -0.96
     }
    },
    "giants": {
     "id": "giants",
     "name": "The giants’ glade",
-    "x": 57.45,
-    "z": -41.99,
+    "x": 45.53,
+    "z": -37.55,
     "r": 9.5,
     "stand": {
-     "x": 57.45,
-     "z": -41.99
+     "x": 45.53,
+     "z": -37.55
     }
    },
    "thicket": {
     "id": "thicket",
     "name": "The thicket",
-    "x": -48.56,
-    "z": -48.22,
+    "x": -66.09,
+    "z": -40.63,
     "r": 9,
     "stand": {
-     "x": -48.56,
-     "z": -48.22
+     "x": -66.09,
+     "z": -40.63
     }
    },
    "lampw": {
     "id": "lampw",
     "name": "The west lamp glade",
-    "x": -32.01,
-    "z": 55.35,
+    "x": -48.01,
+    "z": 61.84,
     "r": 7,
     "stand": {
-     "x": -32.01,
-     "z": 55.35
+     "x": -48.01,
+     "z": 61.84
     }
    },
    "lampe": {
     "id": "lampe",
     "name": "The east lamp glade",
-    "x": 37.84,
-    "z": 68.55,
+    "x": 39.95,
+    "z": 66.24,
     "r": 7,
     "stand": {
-     "x": 37.84,
-     "z": 68.55
+     "x": 39.95,
+     "z": 66.24
     }
    },
    "heart": {
     "id": "heart",
     "name": "The heart",
     "x": 0,
-    "z": -89.81,
+    "z": -40.84,
     "r": 10,
     "stand": {
      "x": 0,
-     "z": -97.81
+     "z": -48.84
     }
    }
   },
@@ -138,40 +138,12 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    "walls": [
     {
      "a": {
-      "x": 9.57,
-      "z": -49.38
+      "x": -8.12,
+      "z": 42.47
      },
      "b": {
-      "x": -5.03,
-      "z": -49.2
-     },
-     "r": 0.7,
-     "height": 3.4,
-     "set": 0,
-     "name": "the heart’s road"
-    },
-    {
-     "a": {
-      "x": 25.6,
-      "z": -31.47
-     },
-     "b": {
-      "x": 33,
-      "z": -18.89
-     },
-     "r": 0.7,
-     "height": 3.4,
-     "set": 1,
-     "name": "the giants’ road"
-    },
-    {
-     "a": {
-      "x": 2.34,
-      "z": 32.51
-     },
-     "b": {
-      "x": -10.64,
-      "z": 25.83
+      "x": -19.64,
+      "z": 33.51
      },
      "r": 0.7,
      "height": 3.4,
@@ -180,12 +152,12 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     },
     {
      "a": {
-      "x": 6.84,
-      "z": 41.22
+      "x": -29.11,
+      "z": 91.62
      },
      "b": {
-      "x": 4.12,
-      "z": 55.56
+      "x": -18.61,
+      "z": 81.48
      },
      "r": 0.7,
      "height": 3.4,
@@ -194,31 +166,59 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     },
     {
      "a": {
-      "x": -55.81,
-      "z": -12.06
+      "x": 22.8,
+      "z": -19.72
      },
      "b": {
-      "x": -41.21,
-      "z": -12
+      "x": 32.04,
+      "z": -8.42
      },
      "r": 0.7,
      "height": 3.4,
      "set": 0,
-     "name": "the thicket road"
+     "name": "the giants’ road"
     },
     {
      "a": {
-      "x": 25.8,
-      "z": 26.85
+      "x": -3.38,
+      "z": 50.96
      },
      "b": {
-      "x": 12.62,
-      "z": 33.15
+      "x": -4.1,
+      "z": 65.54
      },
      "r": 0.7,
      "height": 3.4,
      "set": 1,
      "name": "the east road"
+    },
+    {
+     "a": {
+      "x": 26.52,
+      "z": 29.07
+     },
+     "b": {
+      "x": 13.9,
+      "z": 36.41
+     },
+     "r": 0.7,
+     "height": 3.4,
+     "set": 0,
+     "name": "the old path"
+    },
+    {
+     "a": {
+      "x": -70.7,
+      "z": -4.67
+     },
+     "b": {
+      "x": -56.14,
+      "z": -5.69
+     },
+     "r": 0.7,
+     "height": 3.4,
+     "set": 1,
+     "name": "the thicket road"
     }
    ]
   },
@@ -314,8 +314,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "den",
     "at": {
-     "x": -48.85,
-     "z": 24.16
+     "x": -61.15,
+     "z": 30.3
     },
     "mix": [
      {
@@ -327,8 +327,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "bramble",
     "at": {
-     "x": 84.45,
-     "z": 36.01
+     "x": 77.03,
+     "z": 29.49
     },
     "mix": [
      {
@@ -340,8 +340,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "giants",
     "at": {
-     "x": 57.45,
-     "z": -41.99
+     "x": 45.53,
+     "z": -37.55
     },
     "mix": [
      {
@@ -354,8 +354,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "oak",
     "at": {
-     "x": -3.63,
-     "z": -22.04
+     "x": 2.79,
+     "z": -11.31
     },
     "mix": [
      {
@@ -368,28 +368,20 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
      "speed": 1.6,
      "patrol": [
       {
-       "x": -3.63,
-       "z": -22.04
+       "x": 2.79,
+       "z": -11.31
       },
       {
-       "x": -32.59,
-       "z": -23.98
+       "x": 9.33,
+       "z": -26.45
       },
       {
-       "x": -26.04,
-       "z": -78.59
+       "x": 13.87,
+       "z": -32.43
       },
       {
-       "x": 7.16,
-       "z": -74.65
-      },
-      {
-       "x": -26.04,
-       "z": -78.59
-      },
-      {
-       "x": -32.59,
-       "z": -23.98
+       "x": 9.33,
+       "z": -26.45
       }
      ],
      "bounty": {
@@ -402,7 +394,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "id": "root1",
     "at": {
      "x": -7,
-     "z": -91.81
+     "z": -42.84
     },
     "mix": [
      {
@@ -415,7 +407,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "id": "root2",
     "at": {
      "x": 7,
-     "z": -91.81
+     "z": -42.84
     },
     "mix": [
      {
@@ -428,7 +420,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "id": "root3",
     "at": {
      "x": 0,
-     "z": -82.81
+     "z": -33.84
     },
     "mix": [
      {
@@ -446,7 +438,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "role": "keeper",
     "at": {
      "x": -2.6,
-     "z": 95.93
+     "z": 113.93
     },
     "face": 0.4,
     "greet": [
@@ -464,7 +456,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "role": "giver",
     "at": {
      "x": 3.6,
-     "z": 95.53
+     "z": 113.53
     },
     "face": -0.5,
     "greet": [
@@ -481,10 +473,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "name": "Nyx",
     "role": "rival",
     "at": {
-     "x": -48.08,
-     "z": -60.08
+     "x": -78.36,
+     "z": -41.64
     },
-    "face": 0.62,
+    "face": 1.02,
     "greet": [],
     "quests": []
    },
@@ -495,7 +487,7 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "role": "trader",
     "at": {
      "x": -4.6,
-     "z": 92.73
+     "z": 110.73
     },
     "face": 0.6,
     "greet": [
@@ -521,26 +513,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
       "look": "wisp",
       "speed": 3,
       "from": {
-       "x": -38.4,
-       "z": 14.84
+       "x": -51.49,
+       "z": 22.54
       },
       "r": 3,
       "path": [
        {
-        "x": -23.95,
-        "z": 7.72
+        "x": -30.16,
+        "z": 14.67
        },
        {
-        "x": -23.8,
-        "z": -28.47
-       },
-       {
-        "x": -24.28,
-        "z": -69.01
+        "x": 0.41,
+        "z": -20.9
        },
        {
         "x": 0,
-        "z": -97.81
+        "z": -48.84
        }
       ]
      },
@@ -551,42 +539,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
       "look": "wisp",
       "speed": 3,
       "from": {
-       "x": 71.73,
-       "z": 33.7
+       "x": 64.04,
+       "z": 28.88
       },
       "r": 3,
       "path": [
        {
-        "x": 61.15,
-        "z": 52.28
+        "x": 61.28,
+        "z": -4.03
        },
        {
-        "x": 18.92,
-        "z": 81.04
-       },
-       {
-        "x": -16,
-        "z": 74.44
-       },
-       {
-        "x": -40.43,
-        "z": 39.76
-       },
-       {
-        "x": -23.95,
-        "z": 7.72
-       },
-       {
-        "x": -23.8,
-        "z": -28.47
-       },
-       {
-        "x": -24.28,
-        "z": -69.01
+        "x": 22.77,
+        "z": -39.19
        },
        {
         "x": 0,
-        "z": -97.81
+        "z": -48.84
        }
       ]
      },
@@ -597,18 +565,18 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
       "look": "wisp",
       "speed": 3,
       "from": {
-       "x": -45.45,
-       "z": -36.38
+       "x": -56.16,
+       "z": -31.37
       },
       "r": 3,
       "path": [
        {
-        "x": -24.28,
-        "z": -69.01
+        "x": -33.04,
+        "z": -40.73
        },
        {
         "x": 0,
-        "z": -97.81
+        "z": -48.84
        }
       ]
      },
@@ -672,15 +640,15 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
        {
         "id": "lamp1",
         "at": {
-         "x": -32.01,
-         "z": 55.35
+         "x": -48.01,
+         "z": 61.84
         }
        },
        {
         "id": "lamp2",
         "at": {
-         "x": 37.84,
-         "z": 68.55
+         "x": 39.95,
+         "z": 66.24
         }
        }
       ],
@@ -712,12 +680,12 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
       "look": "bundle",
       "plain": true,
       "from": {
-       "x": 78.36,
-       "z": 23.95
+       "x": 65.13,
+       "z": 23.38
       },
       "to": {
        "x": 1.6,
-       "z": 90.63
+       "z": 108.63
       },
       "r": 2.2
      }
@@ -734,24 +702,24 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "c1",
     "at": {
-     "x": -60.89,
-     "z": -39.76
+     "x": -79.17,
+     "z": -32.53
     },
     "shards": 25
    },
    {
     "id": "c2",
     "at": {
-     "x": 94.89,
-     "z": -17.65
+     "x": 91.18,
+     "z": -23.48
     },
     "shards": 30
    },
    {
     "id": "c3",
     "at": {
-     "x": -6.14,
-     "z": -54.21
+     "x": -12.58,
+     "z": -33.06
     },
     "shards": 20,
     "boon": true
@@ -759,24 +727,24 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "id": "c4",
     "at": {
-     "x": 39.34,
-     "z": 92.18
+     "x": 40,
+     "z": 100.17
     },
     "shards": 25
    },
    {
     "id": "c5",
     "at": {
-     "x": -69.65,
-     "z": 18.76
+     "x": -92.51,
+     "z": 18.71
     },
     "shards": 30
    },
    {
     "id": "c6",
     "at": {
-     "x": 36.56,
-     "z": -88.37
+     "x": 15.24,
+     "z": -54.77
     },
     "shards": 20,
     "boon": true
@@ -787,48 +755,48 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "id": "w1",
     "name": "The den road stone",
     "at": {
-     "x": -22.75,
-     "z": 41.22
+     "x": -39.22,
+     "z": 51.42
     }
    },
    {
     "id": "w2",
     "name": "The bramble road stone",
     "at": {
-     "x": 26.32,
-     "z": 55.27
+     "x": 27.85,
+     "z": 55.3
     }
    },
    {
     "id": "w3",
     "name": "The thicket stone",
     "at": {
-     "x": -41.61,
-     "z": -33.24
+     "x": -51.98,
+     "z": -34.85
     }
    },
    {
     "id": "w4",
     "name": "The old road stone",
     "at": {
-     "x": 2.04,
-     "z": 8.39
+     "x": -1.64,
+     "z": 19.18
     }
    },
    {
     "id": "w5",
     "name": "The giants’ stone",
     "at": {
-     "x": 45.92,
-     "z": -28.33
+     "x": 36.51,
+     "z": -22.4
     }
    },
    {
     "id": "w6",
     "name": "The den stone",
     "at": {
-     "x": -34.54,
-     "z": 22.25
+     "x": -47.22,
+     "z": 20.82
     }
    }
   ],
@@ -836,8 +804,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    "id": "lore",
    "name": "The root stone",
    "at": {
-    "x": -13.82,
-    "z": -90.88
+    "x": -13.74,
+    "z": -39.8
    },
    "text": [
     "The wood was a field once. It walked away from the plough and has been walking since.",
@@ -851,14 +819,14 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "name": "The Elder Root’s door",
     "at": {
      "x": 0,
-     "z": -108.81
+     "z": -59.84
     },
     "r": 2.2,
     "wall": {
      "ax": -3.4,
-     "az": -108.81,
+     "az": -59.84,
      "bx": 3.4,
-     "bz": -108.81,
+     "bz": -59.84,
      "r": 0.6,
      "height": 3.8
     },
@@ -869,8 +837,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "piece": "trial",
     "name": "The Hollow Stump",
     "at": {
-     "x": -15.77,
-     "z": 97.98
+     "x": -16,
+     "z": 117.7
     },
     "r": 2,
     "locked": ""
@@ -880,8 +848,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "piece": "gate",
     "name": "The gate up",
     "at": {
-     "x": 16.45,
-     "z": 99.95
+     "x": 15.44,
+     "z": 118.22
     },
     "r": 2.2,
     "needs": {
@@ -894,8 +862,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "piece": "rival",
     "name": "Nyx’s thicket",
     "at": {
-     "x": -55.03,
-     "z": -59.3
+     "x": -76.73,
+     "z": -47.36
     },
     "r": 2,
     "locked": ""
@@ -906,8 +874,8 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    "goal": "the thicket",
    "mode": "duel",
    "at": {
-    "x": -48.08,
-    "z": -60.08
+    "x": -78.36,
+    "z": -41.64
    },
    "boon": true,
    "lines": [
@@ -917,63 +885,63 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
  },
  "look": {
   "rim": [
-   120.55,
-   123.44,
-   125.35,
-   126.05,
-   125.47,
-   123.72,
-   121.03,
-   117.71,
-   114.14,
-   110.63,
-   107.45,
-   104.75,
-   102.53,
-   100.69,
-   99.06,
-   97.41,
-   95.52,
-   93.25,
-   90.55,
-   87.51,
-   84.36,
-   81.43,
-   79.11,
-   77.8,
-   77.86,
-   79.51,
-   82.81,
-   87.64,
-   93.69,
-   100.5,
-   107.47,
-   113.99,
-   119.5,
-   123.51,
-   125.76,
-   126.14,
-   124.81,
-   122.11,
-   118.53,
-   114.64,
-   111.06,
-   108.28,
-   106.71,
-   106.53,
-   107.75,
-   110.17,
-   113.43,
-   117.06
+   122.29,
+   123.43,
+   123.45,
+   122.68,
+   121.53,
+   120.35,
+   119.45,
+   118.98,
+   118.99,
+   119.37,
+   119.93,
+   120.4,
+   120.53,
+   120.09,
+   118.96,
+   117.15,
+   114.78,
+   112.11,
+   109.43,
+   107.1,
+   105.41,
+   104.56,
+   104.64,
+   105.56,
+   107.09,
+   108.87,
+   110.44,
+   111.37,
+   111.24,
+   109.77,
+   106.86,
+   102.6,
+   97.27,
+   91.33,
+   85.36,
+   80,
+   75.84,
+   74,
+   74,
+   74.55,
+   78.2,
+   83.51,
+   90,
+   97.07,
+   104.09,
+   110.49,
+   115.81,
+   119.78
   ],
   "pieces": [
    {
     "look": "edge",
     "o": {
-     "ax": 122.75,
+     "ax": 124.49,
      "az": 7,
-     "bx": 123.2,
-     "bz": 40.01,
+     "bx": 121.37,
+     "bz": 39.52,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -983,10 +951,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 123.2,
-     "az": 40.01,
-     "bx": 110.57,
-     "bz": 70.83,
+     "ax": 121.37,
+     "az": 39.52,
+     "bx": 107.15,
+     "bz": 68.86,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -996,10 +964,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 110.57,
-     "az": 70.83,
-     "bx": 87.14,
-     "bz": 94.14,
+     "ax": 107.15,
+     "az": 68.86,
+     "bx": 86.02,
+     "bz": 93.02,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1009,10 +977,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 87.14,
-     "az": 94.14,
-     "bx": 58.17,
-     "bz": 107.75,
+     "ax": 86.02,
+     "az": 93.02,
+     "bx": 60.6,
+     "bz": 111.95,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1022,10 +990,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 58.17,
-     "az": 107.75,
-     "bx": 28.38,
-     "bz": 112.91,
+     "ax": 60.6,
+     "az": 111.95,
+     "bx": 31.61,
+     "bz": 124.97,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1035,10 +1003,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 28.38,
-     "az": 112.91,
+     "ax": 31.61,
+     "az": 124.97,
      "bx": 0,
-     "bz": 111.73,
+     "bz": 129.73,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1049,9 +1017,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "edge",
     "o": {
      "ax": 0,
-     "az": 111.73,
-     "bx": -26.21,
-     "bz": 104.81,
+     "az": 129.73,
+     "bx": -31.36,
+     "bz": 124.03,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1061,10 +1029,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -26.21,
-     "az": 104.81,
-     "bx": -48.86,
-     "bz": 91.63,
+     "ax": -31.36,
+     "az": 124.03,
+     "bx": -58.49,
+     "bz": 108.31,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1074,10 +1042,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -48.86,
-     "az": 91.63,
-     "bx": -65.58,
-     "bz": 72.58,
+     "ax": -58.49,
+     "az": 108.31,
+     "bx": -78.93,
+     "bz": 85.93,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1087,10 +1055,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -65.58,
-     "az": 72.58,
-     "bx": -74.96,
-     "bz": 50.28,
+     "ax": -78.93,
+     "az": 85.93,
+     "bx": -93.19,
+     "bz": 60.8,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1100,10 +1068,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -74.96,
-     "az": 50.28,
-     "bx": -78.54,
-     "bz": 28.04,
+     "ax": -93.19,
+     "az": 60.8,
+     "bx": -103.2,
+     "bz": 34.65,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1113,9 +1081,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -78.54,
-     "az": 28.04,
-     "bx": -80.06,
+     "ax": -103.2,
+     "az": 34.65,
+     "bx": -109.29,
      "bz": 7,
      "r": 0.6,
      "height": 3,
@@ -1126,10 +1094,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -80.06,
+     "ax": -109.29,
      "az": 7,
-     "bx": -82.11,
-     "bz": -15,
+     "bx": -108.8,
+     "bz": -22.15,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1139,10 +1107,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -82.11,
-     "az": -15,
-     "bx": -83.04,
-     "bz": -40.94,
+     "ax": -108.8,
+     "az": -22.15,
+     "bx": -98.24,
+     "bz": -49.72,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1152,10 +1120,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -83.04,
-     "az": -40.94,
-     "bx": -77.55,
-     "bz": -70.55,
+     "ax": -98.24,
+     "az": -49.72,
+     "bx": -77.12,
+     "bz": -70.12,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1165,10 +1133,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -77.55,
-     "az": -70.55,
-     "bx": -60.85,
-     "bz": -98.4,
+     "ax": -77.12,
+     "az": -70.12,
+     "bx": -49.74,
+     "bz": -79.14,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1178,10 +1146,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -60.85,
-     "az": -98.4,
-     "bx": -33.12,
-     "bz": -116.6,
+     "ax": -49.74,
+     "az": -79.14,
+     "bx": -22.66,
+     "bz": -77.58,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1191,10 +1159,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": -33.12,
-     "az": -116.6,
+     "ax": -22.66,
+     "az": -77.58,
      "bx": 0,
-     "bz": -120.01,
+     "bz": -71.04,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1205,9 +1173,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "edge",
     "o": {
      "ax": 0,
-     "az": -120.01,
-     "bx": 31.25,
-     "bz": -109.62,
+     "az": -71.04,
+     "bx": 19.72,
+     "bz": -66.6,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1217,10 +1185,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 31.25,
-     "az": -109.62,
-     "bx": 56.63,
-     "bz": -91.09,
+     "ax": 19.72,
+     "az": -66.6,
+     "bx": 40.2,
+     "bz": -62.63,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1230,10 +1198,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 56.63,
-     "az": -91.09,
-     "bx": 77.01,
-     "bz": -70.01,
+     "ax": 40.2,
+     "az": -62.63,
+     "bx": 65.2,
+     "bz": -58.2,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1243,10 +1211,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 77.01,
-     "az": -70.01,
-     "bx": 95.22,
-     "bz": -47.98,
+     "ax": 65.2,
+     "az": -58.2,
+     "bx": 92.05,
+     "bz": -46.15,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1256,10 +1224,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 95.22,
-     "az": -47.98,
-     "bx": 111.69,
-     "bz": -22.93,
+     "ax": 92.05,
+     "az": -46.15,
+     "bx": 113.99,
+     "bz": -23.54,
      "r": 0.6,
      "height": 3,
      "kind": "wall",
@@ -1269,9 +1237,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "edge",
     "o": {
-     "ax": 111.69,
-     "az": -22.93,
-     "bx": 122.75,
+     "ax": 113.99,
+     "az": -23.54,
+     "bx": 124.49,
      "bz": 7,
      "r": 0.6,
      "height": 3,
@@ -1283,9 +1251,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "fire",
     "o": {
      "ax": 0,
-     "az": 93.03,
+     "az": 111.03,
      "bx": 0,
-     "bz": 93.03,
+     "bz": 111.03,
      "r": 0.9,
      "height": 0.9,
      "kind": "pillar"
@@ -1295,9 +1263,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "tent",
     "o": {
      "ax": -8.5,
-     "az": 96.03,
+     "az": 114.03,
      "bx": -8.5,
-     "bz": 96.03,
+     "bz": 114.03,
      "r": 1.7,
      "height": 2.6,
      "kind": "pillar"
@@ -1307,9 +1275,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "tent",
     "o": {
      "ax": 8.5,
-     "az": 92.03,
+     "az": 110.03,
      "bx": 8.5,
-     "bz": 92.03,
+     "bz": 110.03,
      "r": 1.7,
      "height": 2.6,
      "kind": "pillar"
@@ -1319,9 +1287,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "crate",
     "o": {
      "ax": -5,
-     "az": 89.53,
+     "az": 107.53,
      "bx": -5,
-     "bz": 89.53,
+     "bz": 107.53,
      "r": 0.8,
      "height": 1.2,
      "kind": "pillar"
@@ -1331,9 +1299,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "crate",
     "o": {
      "ax": 5.4,
-     "az": 95.73,
+     "az": 113.73,
      "bx": 5.4,
-     "bz": 95.73,
+     "bz": 113.73,
      "r": 0.8,
      "height": 1.2,
      "kind": "pillar"
@@ -1343,9 +1311,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "stall",
     "o": {
      "ax": 4.2,
-     "az": 100.13,
+     "az": 118.13,
      "bx": 7,
-     "bz": 99.13,
+     "bz": 117.13,
      "r": 0.4,
      "height": 1,
      "kind": "wall"
@@ -1355,9 +1323,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "house",
     "o": {
      "ax": -24,
-     "az": -107.31,
+     "az": -58.34,
      "bx": -3.4,
-     "bz": -108.81,
+     "bz": -59.84,
      "r": 0.6,
      "height": 3.8,
      "kind": "wall"
@@ -1367,9 +1335,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "house",
     "o": {
      "ax": 3.4,
-     "az": -108.81,
+     "az": -59.84,
      "bx": 24,
-     "bz": -107.31,
+     "bz": -58.34,
      "r": 0.6,
      "height": 3.8,
      "kind": "wall"
@@ -1379,10 +1347,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -30,
-     "az": -113.76,
+     "az": -70.19,
      "bx": -30,
-     "bz": -113.76,
-     "r": 5.55,
+     "bz": -70.19,
+     "r": 10.65,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -27.5,
+     "az": -69.69,
+     "bx": -27.5,
+     "bz": -69.69,
+     "r": 10.15,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1391,10 +1371,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -25,
-     "az": -114.26,
+     "az": -69.44,
      "bx": -25,
-     "bz": -114.26,
-     "r": 6.05,
+     "bz": -69.44,
+     "r": 9.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -22.5,
+     "az": -69.49,
+     "bx": -22.5,
+     "bz": -69.49,
+     "r": 9.85,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1403,10 +1395,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -20,
-     "az": -114.76,
+     "az": -69.59,
      "bx": -20,
-     "bz": -114.76,
-     "r": 6.55,
+     "bz": -69.59,
+     "r": 9.75,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -17.5,
+     "az": -69.18,
+     "bx": -17.5,
+     "bz": -69.18,
+     "r": 9.16,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1415,10 +1419,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -15,
-     "az": -115.26,
+     "az": -68.77,
      "bx": -15,
-     "bz": -115.26,
-     "r": 7.05,
+     "bz": -68.77,
+     "r": 8.57,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -12.5,
+     "az": -68.36,
+     "bx": -12.5,
+     "bz": -68.36,
+     "r": 7.98,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1427,10 +1443,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -10,
-     "az": -115.26,
+     "az": -68.45,
      "bx": -10,
-     "bz": -115.26,
-     "r": 7.05,
+     "bz": -68.45,
+     "r": 7.89,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -7.5,
+     "az": -68.29,
+     "bx": -7.5,
+     "bz": -68.29,
+     "r": 7.55,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1439,10 +1467,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": -5,
-     "az": -115.01,
+     "az": -67.63,
      "bx": -5,
-     "bz": -115.01,
-     "r": 6.8,
+     "bz": -67.63,
+     "r": 6.71,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -2.5,
+     "az": -67.19,
+     "bx": -2.5,
+     "bz": -67.19,
+     "r": 6.15,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1451,10 +1491,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": 0,
-     "az": -115.01,
+     "az": -66.94,
      "bx": 0,
-     "bz": -115.01,
-     "r": 6.8,
+     "bz": -66.94,
+     "r": 5.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 2.5,
+     "az": -66.69,
+     "bx": 2.5,
+     "bz": -66.69,
+     "r": 5.65,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1463,10 +1515,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": 5,
-     "az": -114.51,
+     "az": -66.38,
      "bx": 5,
-     "bz": -114.51,
-     "r": 6.3,
+     "bz": -66.38,
+     "r": 5.46,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1474,22 +1526,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 10,
-     "az": -113.76,
-     "bx": 10,
-     "bz": -113.76,
-     "r": 5.55,
-     "height": 1.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 15,
-     "az": -113.26,
-     "bx": 15,
-     "bz": -113.26,
+     "ax": 7.5,
+     "az": -65.79,
+     "bx": 7.5,
+     "bz": -65.79,
      "r": 5.05,
      "height": 1.6,
      "kind": "pillar"
@@ -1498,11 +1538,71 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
+     "ax": 10,
+     "az": -65.45,
+     "bx": 10,
+     "bz": -65.45,
+     "r": 4.89,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 12.5,
+     "az": -65.11,
+     "bx": 12.5,
+     "bz": -65.11,
+     "r": 4.73,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 15,
+     "az": -64.77,
+     "bx": 15,
+     "bz": -64.77,
+     "r": 4.57,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 17.5,
+     "az": -64.43,
+     "bx": 17.5,
+     "bz": -64.43,
+     "r": 4.41,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
      "ax": 20,
-     "az": -112.51,
+     "az": -64.09,
      "bx": 20,
-     "bz": -112.51,
-     "r": 4.3,
+     "bz": -64.09,
+     "r": 4.25,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 22.5,
+     "az": -63.49,
+     "bx": 22.5,
+     "bz": -63.49,
+     "r": 3.85,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1511,10 +1611,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": 25,
-     "az": -111.26,
+     "az": -63.19,
      "bx": 25,
-     "bz": -111.26,
-     "r": 3.05,
+     "bz": -63.19,
+     "r": 3.65,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 27.5,
+     "az": -62.94,
+     "bx": 27.5,
+     "bz": -62.94,
+     "r": 3.4,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1523,10 +1635,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": 30,
-     "az": -110.01,
+     "az": -62.44,
      "bx": 30,
-     "bz": -110.01,
-     "r": 1.8,
+     "bz": -62.44,
+     "r": 2.9,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1534,10 +1646,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -42.83,
-     "az": 96.93,
-     "bx": -22.29,
-     "bz": 79.71,
+     "ax": -52.05,
+     "az": 113.78,
+     "bx": -39.87,
+     "bz": 103.15,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1546,10 +1658,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -9.72,
-     "az": 69.17,
-     "bx": 3.54,
-     "bz": 58.06,
+     "ax": -39.87,
+     "az": 103.15,
+     "bx": -28.82,
+     "bz": 91.34,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1558,10 +1670,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 3.77,
-     "az": 58.09,
-     "bx": 14.4,
-     "bz": 74.2,
+     "ax": -18.9,
+     "az": 81.75,
+     "bx": -4.23,
+     "bz": 67.58,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1570,10 +1682,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 23.44,
-     "az": 87.88,
-     "bx": 30.48,
-     "bz": 101.09,
+     "ax": -4.02,
+     "az": 67.72,
+     "bx": 13.83,
+     "bz": 83.46,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1582,10 +1694,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 30.48,
-     "az": 101.09,
-     "bx": 39.86,
-     "bz": 112.75,
+     "ax": 26.12,
+     "az": 94.31,
+     "bx": 39.41,
+     "bz": 105.55,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1594,10 +1706,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 14.97,
-     "az": -49.43,
-     "bx": 9.17,
-     "bz": -49.37,
+     "ax": 39.41,
+     "az": 105.55,
+     "bx": 52.22,
+     "bz": 117.33,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1606,10 +1718,250 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -4.62,
-     "az": -49.21,
-     "bx": -7.02,
-     "bz": -49.18,
+     "ax": 21.41,
+     "az": -21.33,
+     "bx": 8.61,
+     "bz": -21.07,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -7.79,
+     "az": -20.73,
+     "bx": -32.58,
+     "bz": -20.22,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 24.71,
+     "az": -66.12,
+     "bx": 23.36,
+     "bz": -47.37,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 22.17,
+     "az": -31.02,
+     "bx": 21.5,
+     "bz": -21.74,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -32.98,
+     "az": -20.24,
+     "bx": -33.02,
+     "bz": -32.54,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -33.07,
+     "az": -48.93,
+     "bx": -33.9,
+     "bz": -64.58,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -33.9,
+     "az": -64.58,
+     "bx": -33.17,
+     "bz": -80.23,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -40.75,
+     "az": -6.31,
+     "bx": -33.86,
+     "bz": 7.35,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -26.47,
+     "az": 21.99,
+     "bx": -21.38,
+     "bz": 32.08,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -110.51,
+     "az": -1.9,
+     "bx": -90.31,
+     "bz": -1.99,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -90.31,
+     "az": -1.99,
+     "bx": -70.3,
+     "bz": -4.7,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -56.54,
+     "az": -5.66,
+     "bx": -41.17,
+     "bz": -6.73,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -21.35,
+     "az": 32.23,
+     "bx": -47.01,
+     "bz": 42.92,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -62.15,
+     "az": 49.22,
+     "bx": -77.09,
+     "bz": 56.66,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -77.09,
+     "az": 56.66,
+     "bx": -92.89,
+     "bz": 62.03,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 35.03,
+     "az": 24.02,
+     "bx": 42.64,
+     "bz": 4.98,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 43.18,
+     "az": 4.48,
+     "bx": 53.86,
+     "bz": -0.54,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 68.7,
+     "az": -7.52,
+     "bx": 91.06,
+     "bz": -16.13,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 91.06,
+     "az": -16.13,
+     "bx": 111.96,
+     "bz": -27.84,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 95.09,
+     "az": 84.8,
+     "bx": 80.4,
+     "bz": 68.53,
+     "r": 1.7,
+     "height": 9,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 80.4,
+     "az": 68.53,
+     "bx": 64.26,
+     "bz": 53.69,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1619,9 +1971,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "rock",
     "o": {
      "ax": 52.72,
-     "az": -94.72,
-     "bx": 42.34,
-     "bz": -84.3,
+     "az": 42.04,
+     "bx": 35.26,
+     "bz": 24.43,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1630,10 +1982,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 42.34,
-     "az": -84.3,
-     "bx": 33.97,
-     "bz": -72.2,
+     "ax": 21.59,
+     "az": -21.19,
+     "bx": 23.05,
+     "bz": -19.41,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1642,10 +1994,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 23.48,
-     "az": -59.6,
-     "bx": 15.29,
-     "bz": -49.76,
+     "ax": 31.79,
+     "az": -8.73,
+     "bx": 42.49,
+     "bz": 4.35,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1654,10 +2006,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -7.37,
-     "az": -49.27,
-     "bx": -18.95,
-     "bz": -62.79,
+     "ax": -40.79,
+     "az": -7.03,
+     "bx": -33.14,
+     "bz": -19.93,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1666,10 +2018,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -29.61,
-     "az": -75.24,
-     "bx": -41.11,
-     "bz": -90.94,
+     "ax": -3.46,
+     "az": 46.09,
+     "bx": -8.44,
+     "bz": 42.23,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1678,10 +2030,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -41.11,
-     "az": -90.94,
-     "bx": -54.85,
-     "bz": -104.71,
+     "ax": -19.33,
+     "az": 33.75,
+     "bx": -21.23,
+     "bz": 32.28,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1690,10 +2042,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -36.9,
-     "az": -11.89,
-     "bx": -28.47,
-     "bz": 0.88,
+     "ax": 34.64,
+     "az": 24.34,
+     "bx": 26.17,
+     "bz": 29.27,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1702,10 +2054,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -19.43,
-     "az": 14.56,
-     "bx": -12.93,
-     "bz": 24.41,
+     "ax": 14.25,
+     "az": 36.21,
+     "bx": -2.95,
+     "bz": 46.23,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1714,10 +2066,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -82.7,
-     "az": -12.17,
-     "bx": -55.4,
-     "bz": -12.06,
+     "ax": -3.16,
+     "az": 46.56,
+     "bx": -3.4,
+     "bz": 51.36,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1726,10 +2078,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -41.61,
-     "az": -12,
-     "bx": -37.21,
-     "bz": -11.98,
+     "ax": -4.08,
+     "az": 65.14,
+     "bx": -4.2,
+     "bz": 67.54,
      "r": 1.7,
      "height": 9,
      "kind": "wall"
@@ -1738,262 +2090,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -12.71,
-     "az": 24.79,
-     "bx": -33.21,
-     "bz": 35.86,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -47.65,
-     "az": 43.65,
-     "bx": -60.21,
-     "bz": 51.22,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -60.21,
-     "az": 51.22,
-     "bx": -73.43,
-     "bz": 57.57,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 39.16,
-     "az": 20.26,
-     "bx": 47.19,
-     "bz": 5.27,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 47.33,
-     "az": 5.19,
-     "bx": 69.27,
-     "bz": -3.78,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 69.27,
-     "az": -3.78,
-     "bx": 91.98,
-     "bz": -10.52,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 91.98,
-     "az": -10.52,
-     "bx": 114.42,
-     "bz": -18.04,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 89.48,
-     "az": 92.87,
-     "bx": 79.04,
-     "bz": 74.98,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 79.04,
-     "az": 74.98,
-     "bx": 65.84,
-     "bz": 59,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 56.45,
-     "az": 45.56,
-     "bx": 49.07,
-     "bz": 32.23,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 49.07,
-     "az": 32.23,
-     "bx": 39.11,
-     "bz": 20.71,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 15.25,
-     "az": -49.05,
-     "bx": 25.8,
-     "bz": -31.13,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 32.8,
-     "az": -19.24,
-     "bx": 46.96,
-     "bz": 4.8,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -36.9,
-     "az": -12.05,
-     "bx": -28.92,
-     "bz": -22.06,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -18.69,
-     "az": -34.88,
-     "bx": -7.59,
-     "bz": -48.79,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 7.59,
-     "az": 35.21,
-     "bx": 1.99,
-     "bz": 32.33,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -10.28,
-     "az": 26.01,
-     "bx": -12.42,
-     "bz": 24.92,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 38.8,
-     "az": 20.65,
-     "bx": 25.44,
-     "bz": 27.03,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 12.99,
-     "az": 32.97,
-     "bx": 8.11,
-     "bz": 35.3,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 7.93,
-     "az": 35.42,
-     "bx": 6.76,
-     "bz": 41.61,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 4.2,
-     "az": 55.17,
-     "bx": 3.75,
-     "bz": 57.53,
-     "r": 1.7,
-     "height": 9,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -48.93,
-     "az": 31.56,
-     "bx": -48.93,
-     "bz": 31.56,
+     "ax": -61.04,
+     "az": 37.7,
+     "bx": -61.04,
+     "bz": 37.7,
      "r": 1.9,
      "height": 4.2,
      "kind": "pillar"
@@ -2002,10 +2102,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -53.16,
-     "az": 30.17,
-     "bx": -53.16,
-     "bz": 30.17,
+     "ax": -65.3,
+     "az": 36.42,
+     "bx": -65.3,
+     "bz": 36.42,
      "r": 1.9,
      "height": 4.2,
      "kind": "pillar"
@@ -2014,10 +2114,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -55.83,
-     "az": 26.61,
-     "bx": -55.83,
-     "bz": 26.61,
+     "ax": -68.07,
+     "az": 32.93,
+     "bx": -68.07,
+     "bz": 32.93,
      "r": 1.9,
      "height": 4.2,
      "kind": "pillar"
@@ -2026,10 +2126,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -55.98,
-     "az": 22.16,
-     "bx": -55.98,
-     "bz": 22.16,
+     "ax": -68.33,
+     "az": 28.49,
+     "bx": -68.33,
+     "bz": 28.49,
      "r": 1.9,
      "height": 4.2,
      "kind": "pillar"
@@ -2038,10 +2138,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -53.54,
-     "az": 18.44,
-     "bx": -53.54,
-     "bz": 18.44,
+     "ax": -65.99,
+     "az": 24.7,
+     "bx": -65.99,
+     "bz": 24.7,
      "r": 1.9,
      "height": 4.2,
      "kind": "pillar"
@@ -2050,10 +2150,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "stall",
     "o": {
-     "ax": -43.87,
-     "az": 29.3,
-     "bx": -42.5,
-     "bz": 25.64,
+     "ax": -56.03,
+     "az": 35.31,
+     "bx": -54.76,
+     "bz": 31.61,
      "r": 0.5,
      "height": 1.1,
      "kind": "wall"
@@ -2062,10 +2162,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 90.27,
-     "az": 40.24,
-     "bx": 90.27,
-     "bz": 40.24,
+     "ax": 82.85,
+     "az": 33.72,
+     "bx": 82.85,
+     "bz": 33.72,
      "r": 1.2,
      "height": 1.6,
      "kind": "pillar"
@@ -2074,10 +2174,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 82.23,
-     "az": 42.86,
-     "bx": 82.23,
-     "bz": 42.86,
+     "ax": 74.81,
+     "az": 36.34,
+     "bx": 74.81,
+     "bz": 36.34,
      "r": 1.2,
      "height": 1.6,
      "kind": "pillar"
@@ -2086,10 +2186,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 77.25,
-     "az": 36.01,
-     "bx": 77.25,
-     "bz": 36.01,
+     "ax": 69.83,
+     "az": 29.49,
+     "bx": 69.83,
+     "bz": 29.49,
      "r": 1.2,
      "height": 1.6,
      "kind": "pillar"
@@ -2098,10 +2198,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 82.23,
-     "az": 29.16,
-     "bx": 82.23,
-     "bz": 29.16,
+     "ax": 74.81,
+     "az": 22.64,
+     "bx": 74.81,
+     "bz": 22.64,
      "r": 1.2,
      "height": 1.6,
      "kind": "pillar"
@@ -2110,10 +2210,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 90.27,
-     "az": 31.78,
-     "bx": 90.27,
-     "bz": 31.78,
+     "ax": 82.85,
+     "az": 25.26,
+     "bx": 82.85,
+     "bz": 25.26,
      "r": 1.2,
      "height": 1.6,
      "kind": "pillar"
@@ -2122,9 +2222,57 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 6.29,
+     "ax": 6.16,
+     "az": 2.92,
+     "bx": 6.16,
+     "bz": 2.92,
+     "r": 0.75,
+     "height": 2.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -1.22,
+     "az": 5.32,
+     "bx": -1.22,
+     "bz": 5.32,
+     "r": 0.75,
+     "height": 2.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -5.78,
+     "az": -0.96,
+     "bx": -5.78,
+     "bz": -0.96,
+     "r": 0.75,
+     "height": 2.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -1.22,
+     "az": -7.24,
+     "bx": -1.22,
+     "bz": -7.24,
+     "r": 0.75,
+     "height": 2.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": 6.16,
      "az": -4.84,
-     "bx": 6.29,
+     "bx": 6.16,
      "bz": -4.84,
      "r": 0.75,
      "height": 2.6,
@@ -2134,58 +2282,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -1.09,
-     "az": -2.44,
-     "bx": -1.09,
-     "bz": -2.44,
-     "r": 0.75,
-     "height": 2.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": -5.65,
-     "az": -8.72,
-     "bx": -5.65,
-     "bz": -8.72,
-     "r": 0.75,
-     "height": 2.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": -1.09,
-     "az": -15,
-     "bx": -1.09,
-     "bz": -15,
-     "r": 0.75,
-     "height": 2.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 6.29,
-     "az": -12.6,
-     "bx": 6.29,
-     "bz": -12.6,
-     "r": 0.75,
-     "height": 2.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 63.92,
-     "az": -37.29,
-     "bx": 63.92,
-     "bz": -37.29,
+     "ax": 52,
+     "az": -32.85,
+     "bx": 52,
+     "bz": -32.85,
      "r": 0.9,
      "height": 3.4,
      "kind": "pillar"
@@ -2194,10 +2294,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 54.98,
-     "az": -34.38,
-     "bx": 54.98,
-     "bz": -34.38,
+     "ax": 43.06,
+     "az": -29.94,
+     "bx": 43.06,
+     "bz": -29.94,
      "r": 0.9,
      "height": 3.4,
      "kind": "pillar"
@@ -2206,10 +2306,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 49.45,
-     "az": -41.99,
-     "bx": 49.45,
-     "bz": -41.99,
+     "ax": 37.53,
+     "az": -37.55,
+     "bx": 37.53,
+     "bz": -37.55,
      "r": 0.9,
      "height": 3.4,
      "kind": "pillar"
@@ -2218,10 +2318,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 54.98,
-     "az": -49.6,
-     "bx": 54.98,
-     "bz": -49.6,
+     "ax": 43.06,
+     "az": -45.16,
+     "bx": 43.06,
+     "bz": -45.16,
      "r": 0.9,
      "height": 3.4,
      "kind": "pillar"
@@ -2230,10 +2330,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 63.92,
-     "az": -46.69,
-     "bx": 63.92,
-     "bz": -46.69,
+     "ax": 52,
+     "az": -42.25,
+     "bx": 52,
+     "bz": -42.25,
      "r": 0.9,
      "height": 3.4,
      "kind": "pillar"
@@ -2242,10 +2342,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -43.94,
-     "az": -42.31,
-     "bx": -43.94,
-     "bz": -42.31,
+     "ax": -61.47,
+     "az": -34.72,
+     "bx": -61.47,
+     "bz": -34.72,
      "r": 0.9,
      "height": 3.8,
      "kind": "pillar"
@@ -2254,10 +2354,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -51.85,
-     "az": -41.48,
-     "bx": -51.85,
-     "bz": -41.48,
+     "ax": -69.38,
+     "az": -33.89,
+     "bx": -69.38,
+     "bz": -33.89,
      "r": 0.9,
      "height": 3.8,
      "kind": "pillar"
@@ -2266,10 +2366,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -56.06,
-     "az": -48.22,
-     "bx": -56.06,
-     "bz": -48.22,
+     "ax": -73.59,
+     "az": -40.63,
+     "bx": -73.59,
+     "bz": -40.63,
      "r": 0.9,
      "height": 3.8,
      "kind": "pillar"
@@ -2278,10 +2378,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -51.85,
-     "az": -54.96,
-     "bx": -51.85,
-     "bz": -54.96,
+     "ax": -69.38,
+     "az": -47.37,
+     "bx": -69.38,
+     "bz": -47.37,
      "r": 0.9,
      "height": 3.8,
      "kind": "pillar"
@@ -2290,10 +2390,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -43.94,
-     "az": -54.13,
-     "bx": -43.94,
-     "bz": -54.13,
+     "ax": -61.47,
+     "az": -46.54,
+     "bx": -61.47,
+     "bz": -46.54,
      "r": 0.9,
      "height": 3.8,
      "kind": "pillar"
@@ -2302,10 +2402,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": -35.06,
-     "az": 56.33,
-     "bx": -35.06,
-     "bz": 56.33,
+     "ax": -51.16,
+     "az": 62.4,
+     "bx": -51.16,
+     "bz": 62.4,
      "r": 0.35,
      "height": 3,
      "kind": "pillar"
@@ -2314,10 +2414,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "barrel",
     "o": {
-     "ax": -27.85,
-     "az": 54.5,
-     "bx": -27.85,
-     "bz": 54.5,
+     "ax": -43.78,
+     "az": 61.56,
+     "bx": -43.78,
+     "bz": 61.56,
      "r": 0.6,
      "height": 0.7,
      "kind": "pillar"
@@ -2326,10 +2426,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": -30.19,
-     "az": 60.75,
-     "bx": -30.19,
-     "bz": 60.75,
+     "ax": -46.93,
+     "az": 67.44,
+     "bx": -46.93,
+     "bz": 67.44,
      "r": 1,
      "height": 1.3,
      "kind": "pillar"
@@ -2338,10 +2438,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 37.45,
-     "az": 71.73,
-     "bx": 37.45,
-     "bz": 71.73,
+     "ax": 39.69,
+     "az": 69.43,
+     "bx": 39.69,
+     "bz": 69.43,
      "r": 0.35,
      "height": 3,
      "kind": "pillar"
@@ -2350,10 +2450,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "barrel",
     "o": {
-     "ax": 38.82,
-     "az": 64.42,
-     "bx": 38.82,
-     "bz": 64.42,
+     "ax": 40.76,
+     "az": 62.08,
+     "bx": 40.76,
+     "bz": 62.08,
      "r": 0.6,
      "height": 0.7,
      "kind": "pillar"
@@ -2362,10 +2462,10 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 43.51,
-     "az": 69.17,
-     "bx": 43.51,
-     "bz": 69.17,
+     "ax": 45.64,
+     "az": 66.63,
+     "bx": 45.64,
+     "bz": 66.63,
      "r": 1,
      "height": 1.3,
      "kind": "pillar"
@@ -2375,9 +2475,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "post",
     "o": {
      "ax": -8.33,
-     "az": -96.2,
+     "az": -47.23,
      "bx": -8.33,
-     "bz": -96.2,
+     "bz": -47.23,
      "r": 0.9,
      "height": 4,
      "kind": "pillar"
@@ -2387,9 +2487,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "post",
     "o": {
      "ax": -3.16,
-     "az": -99.82,
+     "az": -50.85,
      "bx": -3.16,
-     "bz": -99.82,
+     "bz": -50.85,
      "r": 0.9,
      "height": 4,
      "kind": "pillar"
@@ -2399,9 +2499,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "post",
     "o": {
      "ax": 3.16,
-     "az": -99.82,
+     "az": -50.85,
      "bx": 3.16,
-     "bz": -99.82,
+     "bz": -50.85,
      "r": 0.9,
      "height": 4,
      "kind": "pillar"
@@ -2411,9 +2511,9 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "look": "post",
     "o": {
      "ax": 8.33,
-     "az": -96.2,
+     "az": -47.23,
      "bx": 8.33,
-     "bz": -96.2,
+     "bz": -47.23,
      "r": 0.9,
      "height": 4,
      "kind": "pillar"
@@ -2422,214 +2522,22 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 112.3,
-     "az": 7.78,
-     "bx": 112.3,
-     "bz": 7.78,
-     "r": 4.28,
-     "height": 9.33,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 100.03,
-     "az": 52.2,
-     "bx": 100.03,
-     "bz": 52.2,
-     "r": 1.27,
-     "height": 1.76,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 82.51,
-     "az": -49.23,
-     "bx": 82.51,
-     "bz": -49.23,
-     "r": 0.75,
-     "height": 9.44,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 13.12,
-     "az": -11.31,
-     "bx": 13.12,
-     "bz": -11.31,
-     "r": 0.79,
-     "height": 10.86,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -42.02,
-     "az": 2.17,
-     "bx": -42.02,
-     "bz": 2.17,
-     "r": 1.02,
-     "height": 1.5,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 66.09,
-     "az": 76.42,
-     "bx": 66.09,
-     "bz": 76.42,
-     "r": 1.66,
-     "height": 1.97,
+     "ax": 111.01,
+     "az": 19.92,
+     "bx": 111.01,
+     "bz": 19.92,
+     "r": 3.58,
+     "height": 7.52,
      "kind": "pillar"
     }
    },
    {
     "look": "stall",
     "o": {
-     "ax": -62.95,
-     "az": 6.63,
-     "bx": -65.91,
-     "bz": 9.79,
-     "r": 0.45,
-     "height": 1.1,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 101.61,
-     "az": 67.39,
-     "bx": 101.61,
-     "bz": 67.39,
-     "r": 0.89,
-     "height": 9.86,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 110.89,
-     "az": 33.96,
-     "bx": 110.89,
-     "bz": 33.96,
-     "r": 3.78,
-     "height": 9.83,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 89.16,
-     "az": -37.55,
-     "bx": 89.16,
-     "bz": -37.55,
-     "r": 0.8,
-     "height": 10.19,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 47.87,
-     "az": 81.78,
-     "bx": 47.87,
-     "bz": 81.78,
-     "r": 3.48,
-     "height": 7.87,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 57.73,
-     "az": 31.06,
-     "bx": 57.73,
-     "bz": 31.06,
-     "r": 1.67,
-     "height": 2.06,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 101.28,
-     "az": 13.06,
-     "bx": 101.28,
-     "bz": 13.06,
-     "r": 3.11,
-     "height": 7.69,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 112.16,
-     "az": 23.94,
-     "bx": 112.16,
-     "bz": 23.94,
-     "r": 3.11,
-     "height": 9.58,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 55.72,
-     "az": 19.22,
-     "bx": 55.72,
-     "bz": 19.22,
-     "r": 1.01,
-     "height": 1.5,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 58.42,
-     "az": -67.15,
-     "bx": 58.42,
-     "bz": -67.15,
-     "r": 3.97,
-     "height": 8.97,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "barrel",
-    "o": {
-     "ax": 30.5,
-     "az": 89.11,
-     "bx": 30.5,
-     "bz": 89.11,
-     "r": 0.6,
-     "height": 0.7,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "stall",
-    "o": {
-     "ax": 54.65,
-     "az": -22.43,
-     "bx": 55.89,
-     "bz": -17.81,
+     "ax": -5.05,
+     "az": 81.28,
+     "bx": -4.29,
+     "bz": 85.68,
      "r": 0.45,
      "height": 1.1,
      "kind": "wall"
@@ -2638,106 +2546,58 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 73.19,
-     "az": 52.58,
-     "bx": 73.19,
-     "bz": 52.58,
-     "r": 1.37,
-     "height": 1.54,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 15.09,
-     "az": -72.91,
-     "bx": 15.09,
-     "bz": -72.91,
-     "r": 0.72,
-     "height": 10.88,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 12.99,
-     "az": -67.19,
-     "bx": 12.99,
-     "bz": -67.19,
-     "r": 0.93,
-     "height": 10.97,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -43.39,
-     "az": -79.93,
-     "bx": -43.39,
-     "bz": -79.93,
+     "ax": -52.59,
+     "az": 95.71,
+     "bx": -52.59,
+     "bz": 95.71,
      "r": 1.1,
-     "height": 1.5,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 9.24,
-     "az": 25.67,
-     "bx": 9.24,
-     "bz": 25.67,
-     "r": 0.82,
-     "height": 9.89,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 105.82,
-     "az": 50.79,
-     "bx": 105.82,
-     "bz": 50.79,
-     "r": 0.73,
-     "height": 9.15,
+     "height": 1.56,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -46.33,
-     "az": 71.19,
-     "bx": -46.33,
-     "bz": 71.19,
-     "r": 1,
-     "height": 1.13,
+     "ax": 86.44,
+     "az": -35.22,
+     "bx": 86.44,
+     "bz": -35.22,
+     "r": 3.69,
+     "height": 8.87,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 24.76,
-     "az": -97.6,
-     "bx": 24.76,
-     "bz": -97.6,
-     "r": 3.32,
-     "height": 8.28,
+     "ax": -81.74,
+     "az": 50.26,
+     "bx": -81.74,
+     "bz": 50.26,
+     "r": 1.17,
+     "height": 1.55,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -45.73,
+     "az": -71.88,
+     "bx": -45.73,
+     "bz": -71.88,
+     "r": 0.76,
+     "height": 10.26,
      "kind": "pillar"
     }
    },
    {
     "look": "barrel",
     "o": {
-     "ax": -50.69,
-     "az": -71.09,
-     "bx": -50.69,
-     "bz": -71.09,
+     "ax": 81.67,
+     "az": -1.76,
+     "bx": 81.67,
+     "bz": -1.76,
      "r": 0.6,
      "height": 0.7,
      "kind": "pillar"
@@ -2746,119 +2606,275 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "post",
     "o": {
-     "ax": 68.68,
-     "az": -57.91,
-     "bx": 68.68,
-     "bz": -57.91,
-     "r": 0.96,
-     "height": 11.48,
+     "ax": 45.86,
+     "az": -10.02,
+     "bx": 45.86,
+     "bz": -10.02,
+     "r": 0.9,
+     "height": 9.67,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 44.72,
-     "az": -64.7,
-     "bx": 44.72,
-     "bz": -64.7,
-     "r": 3.7,
-     "height": 9.15,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "barrel",
-    "o": {
-     "ax": -71.8,
-     "az": -39.08,
-     "bx": -71.8,
-     "bz": -39.08,
-     "r": 0.6,
-     "height": 0.7,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 31.63,
-     "az": -0.15,
-     "bx": 31.63,
-     "bz": -0.15,
+     "ax": -79.89,
+     "az": -56.96,
+     "bx": -79.89,
+     "bz": -56.96,
      "r": 3.43,
-     "height": 9.36,
+     "height": 7.92,
      "kind": "pillar"
     }
    },
    {
     "look": "post",
     "o": {
-     "ax": 69.44,
-     "az": -24.25,
-     "bx": 69.44,
-     "bz": -24.25,
-     "r": 0.94,
-     "height": 9.11,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 49.81,
-     "az": -15.27,
-     "bx": 49.81,
-     "bz": -15.27,
-     "r": 1.32,
-     "height": 1.78,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 66.48,
-     "az": 11.79,
-     "bx": 66.48,
-     "bz": 11.79,
+     "ax": -75.76,
+     "az": 43.15,
+     "bx": -75.76,
+     "bz": 43.15,
      "r": 0.89,
-     "height": 11.95,
+     "height": 8.27,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "stall",
+    "o": {
+     "ax": -6.34,
+     "az": -7.73,
+     "bx": -7.03,
+     "bz": -11.33,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -55.16,
+     "az": 101.92,
+     "bx": -55.16,
+     "bz": 101.92,
+     "r": 0.87,
+     "height": 11.01,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 32.62,
-     "az": 44.18,
-     "bx": 32.62,
-     "bz": 44.18,
+     "ax": -82.77,
+     "az": 6.37,
+     "bx": -82.77,
+     "bz": 6.37,
+     "r": 2.76,
+     "height": 8.69,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": 27.44,
+     "az": 36.08,
+     "bx": 27.44,
+     "bz": 36.08,
+     "r": 0.83,
+     "height": 11.27,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 108.6,
+     "az": 42.99,
+     "bx": 108.6,
+     "bz": 42.99,
+     "r": 3.93,
+     "height": 8.67,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -52.5,
+     "az": -25.45,
+     "bx": -52.5,
+     "bz": -25.45,
+     "r": 3.76,
+     "height": 8.51,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 73.26,
+     "az": -34.46,
+     "bx": 73.26,
+     "bz": -34.46,
+     "r": 3.59,
+     "height": 7.45,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -29.28,
+     "az": -0.52,
+     "bx": -29.28,
+     "bz": -0.52,
+     "r": 0.88,
+     "height": 8.65,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "barrel",
+    "o": {
+     "ax": -70.32,
+     "az": 70.3,
+     "bx": -70.32,
+     "bz": 70.3,
+     "r": 0.6,
+     "height": 0.7,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -80.33,
+     "az": -18.78,
+     "bx": -80.33,
+     "bz": -18.78,
+     "r": 0.89,
+     "height": 10.13,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -81.03,
+     "az": 16.2,
+     "bx": -81.03,
+     "bz": 16.2,
      "r": 3.6,
-     "height": 8.49,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": 17.49,
-     "az": -9.25,
-     "bx": 17.49,
-     "bz": -9.25,
-     "r": 0.79,
-     "height": 10.16,
+     "height": 8.98,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 36.52,
-     "az": 87.54,
-     "bx": 36.52,
-     "bz": 87.54,
-     "r": 1.13,
+     "ax": 23.73,
+     "az": 6.22,
+     "bx": 23.73,
+     "bz": 6.22,
+     "r": 2.79,
+     "height": 9.18,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 70.5,
+     "az": -17.07,
+     "bx": 70.5,
+     "bz": -17.07,
+     "r": 1.06,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "barrel",
+    "o": {
+     "ax": -93.07,
+     "az": 28.41,
+     "bx": -93.07,
+     "bz": 28.41,
+     "r": 0.6,
+     "height": 0.7,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "stall",
+    "o": {
+     "ax": 97.48,
+     "az": -7.98,
+     "bx": 93.68,
+     "bz": -9.33,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": -21.95,
+     "az": 97.72,
+     "bx": -21.95,
+     "bz": 97.72,
+     "r": 0.77,
+     "height": 9.8,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -90.24,
+     "az": 5.19,
+     "bx": -90.24,
+     "bz": 5.19,
+     "r": 1.43,
+     "height": 1.58,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": 16.1,
+     "az": 11.52,
+     "bx": 16.1,
+     "bz": 11.52,
+     "r": 0.87,
+     "height": 9.74,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": 96.86,
+     "az": 17.23,
+     "bx": 96.86,
+     "bz": 17.23,
+     "r": 0.96,
+     "height": 8.86,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -30.31,
+     "az": -10.54,
+     "bx": -30.31,
+     "bz": -10.54,
+     "r": 0.94,
      "height": 1.5,
      "kind": "pillar"
     }
@@ -2866,22 +2882,34 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 112.24,
-     "az": 53.25,
-     "bx": 112.24,
-     "bz": 53.25,
-     "r": 1.13,
-     "height": 1.46,
+     "ax": 57.93,
+     "az": 66.42,
+     "bx": 57.93,
+     "bz": 66.42,
+     "r": 4.03,
+     "height": 8.88,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 38.7,
+     "az": 112.89,
+     "bx": 38.7,
+     "bz": 112.89,
+     "r": 0.91,
+     "height": 1.5,
      "kind": "pillar"
     }
    },
    {
     "look": "stall",
     "o": {
-     "ax": -5,
-     "az": 7.74,
-     "bx": -8.34,
-     "bz": 4.81,
+     "ax": 93.32,
+     "az": 55.27,
+     "bx": 93.08,
+     "bz": 50.51,
      "r": 0.45,
      "height": 1.1,
      "kind": "wall"
@@ -2890,58 +2918,106 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 51.92,
-     "az": -84.8,
-     "bx": 51.92,
-     "bz": -84.8,
-     "r": 1.27,
-     "height": 1.4,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "post",
-    "o": {
-     "ax": -73.93,
-     "az": -43.79,
-     "bx": -73.93,
-     "bz": -43.79,
-     "r": 0.97,
-     "height": 8.5,
+     "ax": 22.18,
+     "az": 22.66,
+     "bx": 22.18,
+     "bz": 22.66,
+     "r": 1.14,
+     "height": 1.28,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 102.13,
-     "az": -1.65,
-     "bx": 102.13,
-     "bz": -1.65,
-     "r": 3.05,
-     "height": 8.72,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 37.83,
-     "az": 30.95,
-     "bx": 37.83,
-     "bz": 30.95,
-     "r": 0.98,
+     "ax": -60.95,
+     "az": 68.01,
+     "bx": -60.95,
+     "bz": 68.01,
+     "r": 1.15,
      "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 42.09,
+     "az": -17.98,
+     "bx": 42.09,
+     "bz": -17.98,
+     "r": 0.95,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -60.95,
+     "az": -65,
+     "bx": -60.95,
+     "bz": -65,
+     "r": 3.68,
+     "height": 8.67,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 33.88,
+     "az": 91.15,
+     "bx": 33.88,
+     "bz": 91.15,
+     "r": 1.12,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 87.37,
+     "az": -25.48,
+     "bx": 87.37,
+     "bz": -25.48,
+     "r": 0.95,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 14.66,
+     "az": 102.05,
+     "bx": 14.66,
+     "bz": 102.05,
+     "r": 1.14,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -86.21,
+     "az": -38.16,
+     "bx": -86.21,
+     "bz": -38.16,
+     "r": 1.03,
+     "height": 1.16,
      "kind": "pillar"
     }
    },
    {
     "look": "stall",
     "o": {
-     "ax": 13.96,
-     "az": 101.45,
-     "bx": 10.89,
-     "bz": 104.68,
+     "ax": -83.51,
+     "az": 29.96,
+     "bx": -86.58,
+     "bz": 31.24,
      "r": 0.45,
      "height": 1.1,
      "kind": "wall"
@@ -2950,24 +3026,48 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    {
     "look": "rock",
     "o": {
-     "ax": 74.35,
-     "az": 85.01,
-     "bx": 74.35,
-     "bz": 85.01,
-     "r": 3.45,
-     "height": 9.41,
+     "ax": -24.88,
+     "az": -50.59,
+     "bx": -24.88,
+     "bz": -50.59,
+     "r": 2.88,
+     "height": 9.28,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -40.13,
-     "az": -24.16,
-     "bx": -40.13,
-     "bz": -24.16,
-     "r": 3.31,
-     "height": 7.51,
+     "ax": -96.08,
+     "az": -20.88,
+     "bx": -96.08,
+     "bz": -20.88,
+     "r": 3.18,
+     "height": 8.8,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -56.37,
+     "az": 78.76,
+     "bx": -56.37,
+     "bz": 78.76,
+     "r": 4.39,
+     "height": 7.97,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 96.11,
+     "az": 41.83,
+     "bx": 96.11,
+     "bz": 41.83,
+     "r": 3.43,
+     "height": 8.82,
      "kind": "pillar"
     }
    }
@@ -3018,7 +3118,18 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    "roots",
    "roots",
    "roots",
-   "band",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
    "band",
    "band",
    "band",
@@ -3093,49 +3204,49 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
    "twist",
    "twist",
    "grove",
-   "rock",
-   "tree",
-   "tree",
-   "thorn",
-   "rock",
-   "log",
-   "tree",
-   "grove",
-   "tree",
-   "grove",
-   "rock",
-   "grove",
-   "grove",
-   "thorn",
-   "grove",
-   "stump",
    "log",
    "rock",
-   "tree",
-   "tree",
-   "thorn",
-   "tree",
-   "tree",
-   "rock",
    "grove",
+   "rock",
+   "tree",
    "stump",
    "tree",
    "grove",
+   "tree",
+   "log",
+   "tree",
+   "grove",
+   "tree",
+   "grove",
+   "grove",
+   "grove",
+   "tree",
    "stump",
+   "tree",
    "grove",
+   "grove",
+   "thorn",
+   "stump",
+   "log",
    "tree",
    "rock",
    "tree",
-   "grove",
    "tree",
+   "thorn",
+   "grove",
+   "thorn",
+   "log",
+   "rock",
+   "thorn",
+   "thorn",
+   "grove",
+   "thorn",
+   "thorn",
    "thorn",
    "rock",
    "log",
-   "rock",
-   "tree",
    "grove",
-   "thorn",
-   "log",
+   "grove",
    "grove",
    "grove"
   ],
@@ -3144,565 +3255,569 @@ export const WOOD_11: { seed: number; floor: Omit<FloorDef, 'arena' | 'cover'>; 
     "id": "camp",
     "kind": "camp",
     "x": 0,
-    "z": 93.53,
+    "z": 111.53,
     "r": 8
    },
    {
     "id": "den",
     "kind": "den",
-    "x": -48.85,
-    "z": 24.16,
+    "x": -61.15,
+    "z": 30.3,
     "r": 9.5
    },
    {
     "id": "bramble",
     "kind": "bramble",
-    "x": 84.45,
-    "z": 36.01,
+    "x": 77.03,
+    "z": 29.49,
     "r": 9.5
    },
    {
     "id": "stones",
     "kind": "stones",
-    "x": 0.95,
-    "z": -8.72,
+    "x": 0.82,
+    "z": -0.96,
     "r": 7
    },
    {
     "id": "giants",
     "kind": "giants",
-    "x": 57.45,
-    "z": -41.99,
+    "x": 45.53,
+    "z": -37.55,
     "r": 9.5
    },
    {
     "id": "thicket",
     "kind": "thicket",
-    "x": -48.56,
-    "z": -48.22,
+    "x": -66.09,
+    "z": -40.63,
     "r": 9
    },
    {
     "id": "lampw",
     "kind": "lamps",
-    "x": -32.01,
-    "z": 55.35,
+    "x": -48.01,
+    "z": 61.84,
     "r": 7
    },
    {
     "id": "lampe",
     "kind": "lamps",
-    "x": 37.84,
-    "z": 68.55,
+    "x": 39.95,
+    "z": 66.24,
     "r": 7
    },
    {
     "id": "heart",
     "kind": "heart",
     "x": 0,
-    "z": -89.81,
+    "z": -40.84,
     "r": 10
    }
   ],
   "paths": [
    [
     [
-     -46.02,
-     16.17
+     -58.35,
+     22.23
     ],
     [
-     -43.94,
-     24.7
+     -55.44,
+     30.42
     ],
     [
-     -40.43,
-     32.76
+     -54.58,
+     39.07
     ]
    ],
    [
     [
-     -40.43,
-     32.76
+     -54.58,
+     39.07
     ],
     [
-     -38.07,
-     41.55
+     -51.83,
+     47.18
     ],
     [
-     -32.01,
-     48.35
-    ]
-   ],
-   [
-    [
-     0,
-     90.03
-    ],
-    [
-     -8.93,
-     79.39
-    ],
-    [
-     -16,
-     67.44
-    ]
-   ],
-   [
-    [
-     -16,
-     67.44
-    ],
-    [
-     -25.18,
-     58.88
-    ],
-    [
-     -32.01,
-     48.35
+     -48.01,
+     54.84
     ]
    ],
    [
     [
      0,
-     90.03
+     -55.84
     ],
     [
-     18.92,
-     74.04
+     -1.68,
+     -41.84
+    ],
+    [
+     0.41,
+     -27.9
     ]
    ],
    [
     [
-     18.92,
-     74.04
+     0.41,
+     -27.9
     ],
     [
-     28.6,
-     68.13
+     -1.46,
+     -17.89
     ],
     [
-     37.84,
-     61.55
-    ]
-   ],
-   [
-    [
-     -46.02,
-     16.17
-    ],
-    [
-     -34.05,
-     9.77
-    ],
-    [
-     -23.95,
-     0.72
-    ]
-   ],
-   [
-    [
-     -23.95,
-     0.72
-    ],
-    [
-     -12.04,
-     -8.31
-    ],
-    [
-     0.95,
-     -15.72
+     0.82,
+     -7.96
     ]
    ],
    [
     [
      0,
-     -104.81
+     -55.84
     ],
     [
-     -9.96,
-     -88.57
+     12.1,
+     -52.71
     ],
     [
-     -24.28,
-     -76.01
+     22.77,
+     -46.19
     ]
    ],
    [
     [
-     -24.28,
-     -76.01
+     22.77,
+     -46.19
     ],
     [
-     -35.07,
-     -64.04
+     33.99,
+     -43.11
     ],
     [
-     -48.56,
-     -55.22
+     45.53,
+     -44.55
     ]
    ],
    [
     [
-     0.95,
-     -15.72
+     77.03,
+     22.49
     ],
     [
-     -10.22,
-     -27.11
+     66.24,
+     30.14
     ],
     [
-     -23.8,
-     -35.47
+     58.49,
+     40.87
     ]
    ],
    [
     [
-     -23.8,
-     -35.47
+     58.49,
+     40.87
     ],
     [
-     -38.02,
-     -43.04
+     49.32,
+     50.15
     ],
     [
-     -48.56,
-     -55.22
-    ]
-   ],
-   [
-    [
-     84.45,
-     29.01
-    ],
-    [
-     71.71,
-     35.58
-    ],
-    [
-     61.15,
-     45.28
-    ]
-   ],
-   [
-    [
-     61.15,
-     45.28
-    ],
-    [
-     48.99,
-     52.69
-    ],
-    [
-     37.84,
-     61.55
+     39.95,
+     59.24
     ]
    ],
    [
     [
      0,
-     -104.81
+     -55.84
     ],
     [
-     14.67,
-     -89.13
+     -16.29,
+     -50.87
     ],
     [
-     28.73,
-     -72.9
+     -33.04,
+     -47.73
     ]
    ],
    [
     [
-     28.73,
-     -72.9
+     -33.04,
+     -47.73
     ],
     [
-     44.81,
-     -63.01
+     -49.56,
+     -46.09
     ],
     [
-     57.45,
-     -48.99
+     -66.09,
+     -47.63
+    ]
+   ],
+   [
+    [
+     77.03,
+     22.49
+    ],
+    [
+     67.46,
+     6.53
+    ],
+    [
+     61.28,
+     -11.03
+    ]
+   ],
+   [
+    [
+     61.28,
+     -11.03
+    ],
+    [
+     51.71,
+     -26.99
+    ],
+    [
+     45.53,
+     -44.55
     ]
    ],
    [
     [
      0,
-     -104.81
+     108.03
     ],
     [
-     -1.05,
-     -80.45
+     7.62,
+     93.15
     ],
     [
-     2.27,
-     -56.29
+     19.98,
+     81.89
     ]
    ],
    [
     [
-     2.27,
-     -56.29
+     19.98,
+     81.89
     ],
     [
-     0.87,
-     -36.03
+     29.75,
+     70.38
     ],
     [
-     0.95,
-     -15.72
+     39.95,
+     59.24
     ]
    ],
    [
     [
-     0.95,
-     -15.72
+     -58.35,
+     22.23
     ],
     [
-     13.88,
-     -26.09
+     -43.04,
+     17.3
     ],
     [
-     29.3,
-     -32.18
+     -30.16,
+     7.67
     ]
    ],
    [
     [
-     29.3,
-     -32.18
+     -30.16,
+     7.67
     ],
     [
-     43.37,
-     -40.59
+     -13.93,
+     1.32
     ],
     [
-     57.45,
-     -48.99
+     0.82,
+     -7.96
     ]
    ],
    [
     [
-     0.95,
-     -15.72
+     0.82,
+     -7.96
     ],
     [
-     -3.07,
-     3.03
+     -8,
+     10.96
     ],
     [
-     -4.15,
-     22.17
+     -13.88,
+     30.99
     ]
    ],
    [
     [
-     -4.15,
-     22.17
+     -13.88,
+     30.99
     ],
     [
-     -17.02,
-     36.39
+     -30.11,
+     44.11
     ],
     [
-     -32.01,
-     48.35
+     -48.01,
+     54.84
     ]
    ],
    [
     [
-     -32.01,
-     48.35
+     0,
+     108.03
     ],
     [
-     -13.42,
-     44.01
+     -11.11,
+     93.11
     ],
     [
-     5.48,
-     41.39
+     -23.86,
+     79.55
     ]
    ],
    [
     [
-     5.48,
-     41.39
+     -23.86,
+     79.55
     ],
     [
-     22.18,
-     50.63
+     -35.85,
+     67.11
     ],
     [
-     37.84,
-     61.55
+     -48.01,
+     54.84
     ]
    ],
    [
     [
-     -46.02,
-     16.17
+     0.82,
+     -7.96
     ],
     [
-     -47.49,
-     -1.41
+     13.6,
+     -15.57
     ],
     [
-     -48.51,
-     -19.03
+     27.42,
+     -21.07
     ]
    ],
    [
     [
-     -48.51,
-     -19.03
+     27.42,
+     -21.07
     ],
     [
-     -50.65,
-     -37.12
+     34.45,
+     -34.37
     ],
     [
-     -48.56,
-     -55.22
+     45.53,
+     -44.55
     ]
    ],
    [
     [
-     0.95,
-     -15.72
+     -48.01,
+     54.84
     ],
     [
-     8.72,
-     4.28
+     -25.81,
+     53.8
     ],
     [
-     19.21,
-     23
+     -3.74,
+     51.25
     ]
    ],
    [
     [
-     19.21,
-     23
+     -3.74,
+     51.25
     ],
     [
-     27.75,
-     42.65
+     18.27,
+     54.37
     ],
     [
-     37.84,
-     61.55
+     39.95,
+     59.24
+    ]
+   ],
+   [
+    [
+     0.82,
+     -7.96
+    ],
+    [
+     7.94,
+     10.37
+    ],
+    [
+     20.21,
+     25.74
+    ]
+   ],
+   [
+    [
+     20.21,
+     25.74
+    ],
+    [
+     29.6,
+     42.77
+    ],
+    [
+     39.95,
+     59.24
+    ]
+   ],
+   [
+    [
+     -58.35,
+     22.23
+    ],
+    [
+     -61.79,
+     5.16
+    ],
+    [
+     -63.42,
+     -12.18
+    ]
+   ],
+   [
+    [
+     -63.42,
+     -12.18
+    ],
+    [
+     -62.87,
+     -30.05
+    ],
+    [
+     -66.09,
+     -47.63
     ]
    ]
   ],
   "passes": [
    {
-    "x": -40.43,
-    "z": 39.76,
-    "dx": -0.88,
-    "dz": 0.48,
+    "x": -54.58,
+    "z": 46.07,
+    "dx": -0.92,
+    "dz": 0.38,
     "w": 6.5
    },
    {
-    "x": -16,
-    "z": 74.44,
-    "dx": 0.77,
-    "dz": -0.64,
-    "w": 6.5
-   },
-   {
-    "x": 18.92,
-    "z": 81.04,
-    "dx": 0.55,
-    "dz": 0.83,
-    "w": 6.5
-   },
-   {
-    "x": -23.95,
-    "z": 7.72,
-    "dx": 0.55,
-    "dz": 0.83,
-    "w": 6.5
-   },
-   {
-    "x": -24.28,
-    "z": -69.01,
-    "dx": -0.65,
-    "dz": -0.76,
-    "w": 6.5
-   },
-   {
-    "x": -23.8,
-    "z": -28.47,
-    "dx": 0.62,
-    "dz": -0.78,
-    "w": 6.5
-   },
-   {
-    "x": 61.15,
-    "z": 52.28,
-    "dx": -0.57,
-    "dz": -0.82,
-    "w": 6.5
-   },
-   {
-    "x": 28.73,
-    "z": -65.9,
-    "dx": -0.64,
-    "dz": 0.77,
-    "w": 6.5
-   },
-   {
-    "x": 2.27,
-    "z": -49.29,
+    "x": 0.41,
+    "z": -20.9,
     "dx": -1,
-    "dz": 0.01,
+    "dz": 0.02,
+    "w": 6.5
+   },
+   {
+    "x": 22.77,
+    "z": -39.19,
+    "dx": -0.07,
+    "dz": 1,
+    "w": 6.5
+   },
+   {
+    "x": 58.49,
+    "z": 47.87,
+    "dx": -0.7,
+    "dz": -0.71,
+    "w": 6.5
+   },
+   {
+    "x": -33.04,
+    "z": -40.73,
+    "dx": 0,
+    "dz": -1,
+    "w": 6.5
+   },
+   {
+    "x": 61.28,
+    "z": -4.03,
+    "dx": 0.91,
+    "dz": -0.43,
+    "w": 6.5
+   },
+   {
+    "x": 19.98,
+    "z": 88.89,
+    "dx": 0.75,
+    "dz": 0.66,
+    "w": 6.5
+   },
+   {
+    "x": -30.16,
+    "z": 14.67,
+    "dx": 0.45,
+    "dz": 0.89,
+    "w": 6.5
+   },
+   {
+    "x": -13.88,
+    "z": 37.99,
+    "dx": -0.79,
+    "dz": -0.61,
     "w": 5.2,
     "set": 0
    },
    {
-    "x": 29.3,
-    "z": -25.18,
-    "dx": 0.51,
-    "dz": 0.86,
+    "x": -23.86,
+    "z": 86.55,
+    "dx": 0.72,
+    "dz": -0.69,
     "w": 5.2,
     "set": 1
    },
    {
-    "x": -4.15,
-    "z": 29.17,
-    "dx": -0.89,
-    "dz": -0.46,
+    "x": 27.42,
+    "z": -14.07,
+    "dx": 0.63,
+    "dz": 0.77,
     "w": 5.2,
     "set": 0
    },
    {
-    "x": 5.48,
-    "z": 48.39,
-    "dx": -0.19,
-    "dz": 0.98,
+    "x": -3.74,
+    "z": 58.25,
+    "dx": -0.05,
+    "dz": 1,
     "w": 5.2,
     "set": 1
    },
    {
-    "x": -48.51,
-    "z": -12.03,
+    "x": 20.21,
+    "z": 32.74,
+    "dx": -0.86,
+    "dz": 0.5,
+    "w": 5.2,
+    "set": 0
+   },
+   {
+    "x": -63.42,
+    "z": -5.18,
     "dx": 1,
-    "dz": 0,
-    "w": 5.2,
-    "set": 0
-   },
-   {
-    "x": 19.21,
-    "z": 30,
-    "dx": -0.9,
-    "dz": 0.43,
+    "dz": -0.07,
     "w": 5.2,
     "set": 1
    }
   ],
   "elder": {
    "x": 0,
-   "z": -126.81
+   "z": -77.84
   },
   "mirror": 1,
   "seed": 1118

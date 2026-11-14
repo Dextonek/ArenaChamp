@@ -470,10 +470,22 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": -30,
-     "az": -106.22,
+     "az": -106.37,
      "bx": -30,
-     "bz": -106.22,
-     "r": 5.05,
+     "bz": -106.37,
+     "r": 4.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -27.5,
+     "az": -106.87,
+     "bx": -27.5,
+     "bz": -106.87,
+     "r": 5.4,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -482,10 +494,22 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": -25,
-     "az": -106.97,
+     "az": -107.12,
      "bx": -25,
-     "bz": -106.97,
-     "r": 5.8,
+     "bz": -107.12,
+     "r": 5.65,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -22.5,
+     "az": -107.42,
+     "bx": -22.5,
+     "bz": -107.42,
+     "r": 5.85,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -494,10 +518,22 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": -20,
-     "az": -107.47,
+     "az": -107.77,
      "bx": -20,
-     "bz": -107.47,
-     "r": 6.3,
+     "bz": -107.77,
+     "r": 6,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -17.5,
+     "az": -107.86,
+     "bx": -17.5,
+     "bz": -107.86,
+     "r": 5.91,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -506,10 +542,22 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": -15,
-     "az": -107.72,
+     "az": -108.2,
      "bx": -15,
-     "bz": -107.72,
-     "r": 6.55,
+     "bz": -108.2,
+     "r": 6.07,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -12.5,
+     "az": -108.54,
+     "bx": -12.5,
+     "bz": -108.54,
+     "r": 6.23,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -518,10 +566,10 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": -10,
-     "az": -107.97,
+     "az": -108.63,
      "bx": -10,
-     "bz": -107.97,
-     "r": 6.8,
+     "bz": -108.63,
+     "r": 6.14,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -529,46 +577,10 @@ export const WOOD_20: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": -5,
-     "az": -107.97,
-     "bx": -5,
-     "bz": -107.97,
-     "r": 6.8,
-     "height": 1.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 0,
-     "az": -107.97,
-     "bx": 0,
-     "bz": -107.97,
-     "r": 6.8,
-     "height": 1.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 5,
-     "az": -107.72,
-     "bx": 5,
-     "bz": -107.72,
-     "r": 6.55,
-     "height": 1.6,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 10,
-     "az": -107.22,
-     "bx": 10,
-     "bz": -107.22,
+     "ax": -7.5,
+     "az": -108.72,
+     "bx": -7.5,
+     "bz": -108.72,
      "r": 6.05,
      "height": 1.6,
      "kind": "pillar"
@@ -577,10 +589,70 @@ export const WOOD_20: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 15,
-     "az": -106.72,
-     "bx": 15,
-     "bz": -106.72,
+     "ax": -5,
+     "az": -108.81,
+     "bx": -5,
+     "bz": -108.81,
+     "r": 5.96,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -2.5,
+     "az": -108.87,
+     "bx": -2.5,
+     "bz": -108.87,
+     "r": 5.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 0,
+     "az": -108.87,
+     "bx": 0,
+     "bz": -108.87,
+     "r": 5.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 2.5,
+     "az": -108.62,
+     "bx": 2.5,
+     "bz": -108.62,
+     "r": 5.65,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 5,
+     "az": -108.56,
+     "bx": 5,
+     "bz": -108.56,
+     "r": 5.71,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 7.5,
+     "az": -108.22,
+     "bx": 7.5,
+     "bz": -108.22,
      "r": 5.55,
      "height": 1.6,
      "kind": "pillar"
@@ -589,11 +661,71 @@ export const WOOD_20: GenFloor = {
    {
     "look": "rock",
     "o": {
+     "ax": 10,
+     "az": -107.88,
+     "bx": 10,
+     "bz": -107.88,
+     "r": 5.39,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 12.5,
+     "az": -107.54,
+     "bx": 12.5,
+     "bz": -107.54,
+     "r": 5.23,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 15,
+     "az": -107.2,
+     "bx": 15,
+     "bz": -107.2,
+     "r": 5.07,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 17.5,
+     "az": -106.86,
+     "bx": 17.5,
+     "bz": -106.86,
+     "r": 4.91,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
      "ax": 20,
-     "az": -106.22,
+     "az": -106.52,
      "bx": 20,
-     "bz": -106.22,
-     "r": 5.05,
+     "bz": -106.52,
+     "r": 4.75,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 22.5,
+     "az": -105.92,
+     "bx": 22.5,
+     "bz": -105.92,
+     "r": 4.35,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -602,10 +734,22 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": 25,
-     "az": -105.22,
+     "az": -105.37,
      "bx": 25,
-     "bz": -105.22,
-     "r": 4.05,
+     "bz": -105.37,
+     "r": 3.9,
+     "height": 1.6,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 27.5,
+     "az": -104.87,
+     "bx": 27.5,
+     "bz": -104.87,
+     "r": 3.4,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -614,10 +758,10 @@ export const WOOD_20: GenFloor = {
     "look": "rock",
     "o": {
      "ax": 30,
-     "az": -104.47,
+     "az": -104.62,
      "bx": 30,
-     "bz": -104.47,
-     "r": 3.3,
+     "bz": -104.62,
+     "r": 3.15,
      "height": 1.6,
      "kind": "pillar"
     }
@@ -1669,13 +1813,133 @@ export const WOOD_20: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 51.83,
-     "az": -66.73,
-     "bx": 51.83,
-     "bz": -66.73,
-     "r": 3.33,
-     "height": 9.05,
+     "ax": -15.03,
+     "az": -47.1,
+     "bx": -15.03,
+     "bz": -47.1,
+     "r": 1.04,
+     "height": 1.52,
      "kind": "pillar"
+    }
+   },
+   {
+    "look": "barrel",
+    "o": {
+     "ax": 99.11,
+     "az": 2.19,
+     "bx": 99.11,
+     "bz": 2.19,
+     "r": 0.6,
+     "height": 0.7,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "stall",
+    "o": {
+     "ax": -82.82,
+     "az": 16.34,
+     "bx": -86.98,
+     "bz": 14.73,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 94.1,
+     "az": 12.71,
+     "bx": 94.1,
+     "bz": 12.71,
+     "r": 2.89,
+     "height": 7.03,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -44.1,
+     "az": 39.1,
+     "bx": -44.1,
+     "bz": 39.1,
+     "r": 4.05,
+     "height": 8.3,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -53.45,
+     "az": 61.63,
+     "bx": -53.45,
+     "bz": 61.63,
+     "r": 1.08,
+     "height": 1.25,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 95.05,
+     "az": -17.41,
+     "bx": 95.05,
+     "bz": -17.41,
+     "r": 3.45,
+     "height": 7.18,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "stall",
+    "o": {
+     "ax": 76.02,
+     "az": 14.82,
+     "bx": 74.73,
+     "bz": 10.54,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "post",
+    "o": {
+     "ax": 102.18,
+     "az": 20.92,
+     "bx": 102.18,
+     "bz": 20.92,
+     "r": 0.75,
+     "height": 9.06,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "barrel",
+    "o": {
+     "ax": 17.05,
+     "az": 65.86,
+     "bx": 17.05,
+     "bz": 65.86,
+     "r": 0.6,
+     "height": 0.7,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "stall",
+    "o": {
+     "ax": 50.52,
+     "az": 58.77,
+     "bx": 50.26,
+     "bz": 54.01,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
     }
    },
    {
@@ -1715,39 +1979,15 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
-    "look": "post",
-    "o": {
-     "ax": 97.33,
-     "az": 14.31,
-     "bx": 97.33,
-     "bz": 14.31,
-     "r": 0.76,
-     "height": 9.55,
-     "kind": "pillar"
-    }
-   },
-   {
     "look": "rock",
     "o": {
-     "ax": -92.83,
-     "az": 27.46,
-     "bx": -92.83,
-     "bz": 27.46,
-     "r": 1.27,
-     "height": 1.8,
+     "ax": 51.1,
+     "az": -68.22,
+     "bx": 51.1,
+     "bz": -68.22,
+     "r": 1.15,
+     "height": 1.5,
      "kind": "pillar"
-    }
-   },
-   {
-    "look": "stall",
-    "o": {
-     "ax": -23.32,
-     "az": 13.24,
-     "bx": -18.56,
-     "bz": 12.99,
-     "r": 0.45,
-     "height": 1.1,
-     "kind": "wall"
     }
    },
    {
@@ -1835,15 +2075,15 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
-    "look": "rock",
+    "look": "stall",
     "o": {
-     "ax": 72.64,
-     "az": 51.86,
-     "bx": 72.64,
-     "bz": 51.86,
-     "r": 1.18,
-     "height": 1.5,
-     "kind": "pillar"
+     "ax": 79.71,
+     "az": -16.85,
+     "bx": 79,
+     "bz": -20.15,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
     }
    },
    {
@@ -1931,18 +2171,6 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
-    "look": "post",
-    "o": {
-     "ax": 97.99,
-     "az": 7.26,
-     "bx": 97.99,
-     "bz": 7.26,
-     "r": 0.97,
-     "height": 8.48,
-     "kind": "pillar"
-    }
-   },
-   {
     "look": "rock",
     "o": {
      "ax": -60.25,
@@ -1979,26 +2207,14 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
-    "look": "rock",
-    "o": {
-     "ax": 51.84,
-     "az": 58.45,
-     "bx": 51.84,
-     "bz": 58.45,
-     "r": 3.13,
-     "height": 9.18,
-     "kind": "pillar"
-    }
-   },
-   {
     "look": "post",
     "o": {
-     "ax": 9.32,
-     "az": 15.24,
-     "bx": 9.32,
-     "bz": 15.24,
-     "r": 0.98,
-     "height": 10.23,
+     "ax": -115.25,
+     "az": 21.3,
+     "bx": -115.25,
+     "bz": 21.3,
+     "r": 0.81,
+     "height": 10.43,
      "kind": "pillar"
     }
    },
@@ -2041,59 +2257,11 @@ export const WOOD_20: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": -56.38,
-     "az": 63.33,
-     "bx": -56.38,
-     "bz": 63.33,
-     "r": 1.8,
-     "height": 2.44,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -103.66,
-     "az": 28.95,
-     "bx": -103.66,
-     "bz": 28.95,
-     "r": 0.98,
-     "height": 1.5,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "barrel",
-    "o": {
-     "ax": 38.41,
-     "az": 56.68,
-     "bx": 38.41,
-     "bz": 56.68,
-     "r": 0.6,
-     "height": 0.7,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 28.41,
-     "az": -83.93,
-     "bx": 28.41,
-     "bz": -83.93,
-     "r": 4.26,
-     "height": 9.23,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 89.92,
-     "az": 16.05,
-     "bx": 89.92,
-     "bz": 16.05,
-     "r": 1.06,
+     "ax": -57.72,
+     "az": 70.42,
+     "bx": -57.72,
+     "bz": 70.42,
+     "r": 0.99,
      "height": 1.5,
      "kind": "pillar"
     }
@@ -2159,6 +2327,18 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
+    "look": "post",
+    "o": {
+     "ax": -103.62,
+     "az": 28.92,
+     "bx": -103.62,
+     "bz": 28.92,
+     "r": 0.82,
+     "height": 8.3,
+     "kind": "pillar"
+    }
+   },
+   {
     "look": "rock",
     "o": {
      "ax": -43.61,
@@ -2195,51 +2375,51 @@ export const WOOD_20: GenFloor = {
     }
    },
    {
-    "look": "post",
+    "look": "stall",
     "o": {
-     "ax": -54.64,
-     "az": 72.3,
-     "bx": -54.64,
-     "bz": 72.3,
-     "r": 0.82,
-     "height": 9.4,
+     "ax": 54.12,
+     "az": -76.06,
+     "bx": 56.06,
+     "bz": -71.82,
+     "r": 0.45,
+     "height": 1.1,
+     "kind": "wall"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -21.29,
+     "az": -41.78,
+     "bx": -21.29,
+     "bz": -41.78,
+     "r": 1.41,
+     "height": 1.8,
      "kind": "pillar"
     }
    },
    {
     "look": "post",
     "o": {
-     "ax": 9.05,
-     "az": 7.06,
-     "bx": 9.05,
-     "bz": 7.06,
-     "r": 0.88,
-     "height": 9.77,
+     "ax": -113.89,
+     "az": 41.29,
+     "bx": -113.89,
+     "bz": 41.29,
+     "r": 0.98,
+     "height": 9.39,
      "kind": "pillar"
     }
    },
    {
     "look": "barrel",
     "o": {
-     "ax": 90.58,
-     "az": 2.92,
-     "bx": 90.58,
-     "bz": 2.92,
+     "ax": 54.06,
+     "az": 65.13,
+     "bx": 54.06,
+     "bz": 65.13,
      "r": 0.6,
      "height": 0.7,
      "kind": "pillar"
-    }
-   },
-   {
-    "look": "stall",
-    "o": {
-     "ax": 76.28,
-     "az": 29.74,
-     "bx": 78.54,
-     "bz": 26.41,
-     "r": 0.45,
-     "height": 1.1,
-     "kind": "wall"
     }
    },
    {
@@ -2252,42 +2432,6 @@ export const WOOD_20: GenFloor = {
      "r": 0.45,
      "height": 1.1,
      "kind": "wall"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -85.93,
-     "az": -9.11,
-     "bx": -85.93,
-     "bz": -9.11,
-     "r": 1.06,
-     "height": 1.5,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 48.33,
-     "az": 68.62,
-     "bx": 48.33,
-     "bz": 68.62,
-     "r": 1.01,
-     "height": 1.23,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 42.84,
-     "az": -71.24,
-     "bx": 42.84,
-     "bz": -71.24,
-     "r": 1.07,
-     "height": 1.36,
-     "kind": "pillar"
     }
    }
   ],
@@ -2324,6 +2468,18 @@ export const WOOD_20: GenFloor = {
    "log",
    "lair",
    "lair",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
+   "roots",
    "roots",
    "roots",
    "roots",
@@ -2424,13 +2580,21 @@ export const WOOD_20: GenFloor = {
    "twist",
    "twist",
    "twist",
-   "grove",
    "rock",
+   "stump",
    "log",
    "grove",
+   "grove",
+   "rock",
+   "grove",
+   "log",
    "tree",
+   "stump",
+   "log",
    "rock",
    "log",
+   "grove",
+   "thorn",
    "thorn",
    "tree",
    "grove",
@@ -2438,7 +2602,7 @@ export const WOOD_20: GenFloor = {
    "stump",
    "thorn",
    "rock",
-   "thorn",
+   "log",
    "thorn",
    "rock",
    "stump",
@@ -2446,36 +2610,28 @@ export const WOOD_20: GenFloor = {
    "thorn",
    "tree",
    "tree",
-   "tree",
    "thorn",
    "log",
-   "grove",
    "grove",
    "tree",
    "log",
    "rock",
    "log",
-   "rock",
-   "thorn",
-   "stump",
-   "grove",
    "thorn",
    "thorn",
    "stump",
    "grove",
    "stump",
    "tree",
+   "tree",
    "grove",
    "tree",
    "tree",
-   "tree",
-   "tree",
-   "stump",
    "log",
-   "log",
-   "thorn",
    "rock",
-   "rock"
+   "tree",
+   "stump",
+   "log"
   ],
   "places": [
    {
@@ -3169,9 +3325,9 @@ export const WOOD_20: GenFloor = {
   "ruler": {
    "name": "Ash and Ember",
    "title": "The fire at the wood’s end",
-   "stand": "Vesper",
+   "stand": "Marin",
    "tint": "#4f8a3a",
-   "scale": 2.66,
+   "scale": 2.67,
    "hp": 4700,
    "speed": 0,
    "stagger": {
@@ -3196,7 +3352,7 @@ export const WOOD_20: GenFloor = {
     },
     "quake": {
      "use": "halves",
-     "name": "The Wood Tilts",
+     "name": "The Ground Splits",
      "share": 0.09,
      "cooldown": 12
     },
@@ -3206,13 +3362,11 @@ export const WOOD_20: GenFloor = {
      "share": 0.1,
      "cooldown": 14
     },
-    "briars": {
-     "use": "stones",
-     "name": "Falling Briars",
-     "share": 0.07,
-     "count": 4,
-     "radius": 1.5,
-     "cooldown": 8
+    "call": {
+     "use": "call",
+     "name": "The Pack Comes",
+     "count": 2,
+     "cooldown": 20
     }
    },
    "phases": [
@@ -3235,7 +3389,7 @@ export const WOOD_20: GenFloor = {
       "thorns",
       "walls",
       "quake",
-      "briars"
+      "call"
      ],
      "gap": [
       1.6,
@@ -3250,7 +3404,7 @@ export const WOOD_20: GenFloor = {
       "walls",
       "quake",
       "rake",
-      "briars"
+      "call"
      ],
      "gap": [
       1.3,
@@ -3738,8 +3892,8 @@ export const WOOD_20: GenFloor = {
    {
     "id": "named1",
     "at": {
-     "x": 43.71,
-     "z": -15.03
+     "x": 44.17,
+     "z": 0.26
     },
     "mix": [
      {
@@ -3752,20 +3906,20 @@ export const WOOD_20: GenFloor = {
      "speed": 1.6,
      "patrol": [
       {
-       "x": 43.71,
-       "z": -15.03
+       "x": 44.17,
+       "z": 0.26
       },
       {
-       "x": 47.95,
-       "z": 7.04
+       "x": 27.81,
+       "z": 8.27
       },
       {
-       "x": 26.6,
-       "z": 6.62
+       "x": 22.52,
+       "z": -14.72
       },
       {
-       "x": 20.3,
-       "z": -12.41
+       "x": 43.41,
+       "z": -14.46
       }
      ],
      "bounty": {
@@ -3777,8 +3931,8 @@ export const WOOD_20: GenFloor = {
    {
     "id": "named2",
     "at": {
-     "x": 63.53,
-     "z": 3.08
+     "x": 87.05,
+     "z": 7.13
     },
     "mix": [
      {
@@ -3791,20 +3945,20 @@ export const WOOD_20: GenFloor = {
      "speed": 1.7,
      "patrol": [
       {
-       "x": 63.53,
-       "z": 3.08
+       "x": 87.05,
+       "z": 7.13
       },
       {
-       "x": 73.9,
-       "z": -20.29
+       "x": 73.74,
+       "z": 7.37
       },
       {
-       "x": 91.18,
-       "z": -11.55
+       "x": 63.75,
+       "z": -13.48
       },
       {
-       "x": 79.82,
-       "z": 8.15
+       "x": 84.14,
+       "z": -15.56
       }
      ],
      "bounty": {
@@ -3884,7 +4038,7 @@ export const WOOD_20: GenFloor = {
     },
     "face": -0.5,
     "greet": [
-     "I lose things in this wood, and the wood keeps them. Maybe you can bring them back."
+     "The paths move, but my lamps stay put. Mostly."
     ],
     "quests": [
      "g1",
@@ -3961,8 +4115,8 @@ export const WOOD_20: GenFloor = {
       "look": "wisp",
       "speed": 3,
       "from": {
-       "x": -63.98,
-       "z": 32.74
+       "x": -55.62,
+       "z": 43.08
       },
       "r": 3,
       "path": [
@@ -4010,8 +4164,8 @@ export const WOOD_20: GenFloor = {
       "look": "wisp",
       "speed": 3,
       "from": {
-       "x": 48.07,
-       "z": 26.47
+       "x": 49.09,
+       "z": 25.87
       },
       "r": 3,
       "path": [
@@ -4143,10 +4297,10 @@ export const WOOD_20: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "The Lost Lantern",
+    "name": "The Lost Spade",
     "giver": "giver",
     "intro": [
-     "Alder dropped a bundle in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
+     "Linden dropped a bundle in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
     ],
     "steps": [
      {
@@ -4158,8 +4312,8 @@ export const WOOD_20: GenFloor = {
       "look": "bundle",
       "plain": true,
       "from": {
-       "x": -53.73,
-       "z": -49.41
+       "x": -50.11,
+       "z": -51.51
       },
       "to": {
        "x": 2,
@@ -4276,48 +4430,48 @@ export const WOOD_20: GenFloor = {
     "id": "w1",
     "name": "The hounds’ den stone",
     "at": {
-     "x": -55.87,
-     "z": 40.66
+     "x": -54.3,
+     "z": 38.39
     }
    },
    {
     "id": "w2",
     "name": "The charcoal clearing stone",
     "at": {
-     "x": -69.89,
-     "z": -22.36
+     "x": -69.29,
+     "z": -24.66
     }
    },
    {
     "id": "w3",
     "name": "The dark thicket stone",
     "at": {
-     "x": -47.14,
-     "z": -49.68
+     "x": -49.98,
+     "z": -47.13
     }
    },
    {
     "id": "w4",
     "name": "The lantern shrine stone",
     "at": {
-     "x": 42.71,
-     "z": -34.64
+     "x": 44.52,
+     "z": -36.73
     }
    },
    {
     "id": "w5",
     "name": "The old stones stone",
     "at": {
-     "x": 42.18,
-     "z": 29.44
+     "x": 39.81,
+     "z": 24.99
     }
    },
    {
     "id": "w6",
     "name": "The old oak stone",
     "at": {
-     "x": 14.97,
-     "z": 0.44
+     "x": 7,
+     "z": 5.31
     }
    }
   ],
@@ -4356,7 +4510,7 @@ export const WOOD_20: GenFloor = {
    {
     "id": "trial",
     "piece": "trial",
-    "name": "The Hollow Stump",
+    "name": "The Moss Barrow",
     "at": {
      "x": -47.38,
      "z": 77.42
