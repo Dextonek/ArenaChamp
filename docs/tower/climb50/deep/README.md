@@ -24,7 +24,7 @@ crystals, the Pale One, the lost lantern, the survey lamp), Tempo's race to the 
 
 ## The pictures
 
-Four a floor, `f31-` to `f40-`:
+Five a floor, `f31-` to `f40-`, and three more of floor 35:
 
 | File | What |
 |---|---|
@@ -33,6 +33,8 @@ Four a floor, `f31-` to `f40-`:
 | `fNN-horizon.jpg` | A low view across the cave toward its north wall and the rock fall (no dark, no HUD) |
 | `fNN-water.jpg` | A higher view toward the black water and the far wall |
 | `fNN-map.jpg` | From high above: the outline, the tracks, the halls, the water and the drop (no fog) |
+| `f35-behind-ridge.jpg` | The hero just north of a ridge of rock: still seen (the ridges were made lower for it) |
+| `f35-woken-dark.jpg`, `f35-woken.jpg` | A woken crystal, with the dark and without: its hall lit for good |
 
 ## The floors
 
@@ -52,28 +54,32 @@ Four a floor, `f31-` to `f40-`:
 Gatekeepers are all level 3 and none is a handmade floor's or the sea chapter's. Fights grow by the game's own rule, the floor's
 tuned number (`tunedAs`) running from 4 (floor 31) to 5 (floor 40, as the War's floor 41); the set pieces' `hard` from 1.4 to 1.54.
 
-## The checks (route bot, one run each, hero Lyra (ranged) and Bram (melee))
+## The checks (route bot, one run each, hero Lyra (ranged) and Bram (melee), on the final data)
 
-All 20 cleared, all inside par x 1.5; two over the par itself (floor 32 and floor 36, both Lyra). Game seconds / falls:
+All 20 cleared, every one inside its par. Game seconds, falls:
 
 | Floor | Par | Lyra | Bram |
 |---|---|---|---|
-| 31 | 1980 | 991 s, 0 | 977 s, 0 |
-| 32 | 2024 | 2137 s, 1 | 1349 s, 1 |
-| 33 | 2068 | 1703 s, 0 | 1194 s, 0 |
-| 34 | 2112 | 1649 s, 0 | 1221 s, 0 |
-| 35 | 2156 | 1445 s, 0 | 1398 s, 0 |
-| 36 | 2200 | 3 falls, the floor begun again, then cleared in 1313 s: about 2990 s in all | 1354 s, 0 |
-| 37 | 2244 | 1497 s, 0 | 1349 s, 0 |
-| 38 | 2288 | 1104 s, 0 | 1265 s, 0 |
-| 39 | 2332 | 1418 s, 0 | 1336 s, 0 |
-| 40 | 2376 | 1281 s, 0 | 1419 s, 0 |
+| 31 | 1980 | 840 s, 0 | 891 s, 0 |
+| 32 | 2024 | 1925 s, 0 | 1300 s, 1 (a gate duel lost) |
+| 33 | 2068 | 1361 s, 0 | 1246 s, 0 |
+| 34 | 2112 | 1320 s, 0 | 1199 s, 0 |
+| 35 | 2156 | 1819 s, 5 (five gate duels lost to Hank, the sixth won) | 1339 s, 0 |
+| 36 | 2200 | 1555 s, 0 | 1343 s, 0 |
+| 37 | 2244 | 1295 s, 0 | 1431 s, 0 |
+| 38 | 2288 | 1340 s, 0 | 1119 s, 0 |
+| 39 | 2332 | 1507 s, 0 | 1343 s, 0 |
+| 40 | 2376 | 1294 s, 0 | 1352 s, 0 |
+
+No floor began again. The rulers all fell at the first try; on floor 40 the Sun Warden (tier 2) fell to Lyra in 106 s (30 % health
+left) and to Bram in 138 s (80 %). Alone, outside the climb (floor 10's crown set to tier 2, 8 fights each at full health): Lyra won 6
+of 8, Bram 2 of 8 (as at tier 1: 2 of 8); a loss comes back as a loss, never a hang.
 
 `_worldCheck` on all ten: nothing unreachable, at most 4 to 6 units near any spot, about 33,000 m2 of walkable ground each (floor 1:
-6,349). The Sun Warden at tier 2, alone (floor 10's crown patched to tier 2, 8 fights each at full health): Lyra won 6 of 8, Bram 2
-of 8 (as at tier 1: 2 of 8); a loss comes back as a loss, never a hang. Inside the route runs on floor 40 both beat it at the first try. (The runs on 37 to 40 were before the named enemies got their last names: a change of words only.)
+6,349).
 
-Speed (`perf.py scenes`, desktop / phone-4x, median frame): floor 1 8.8 / 27.8 ms; floor 35 8.6 / 22.2 ms; floor 31 7.9 / 19.1 ms.
+Speed (`perf.py scenes`, median frame, desktop / phone-4x): floor 1 9.9 / 29.8 ms; floor 35 8.1 / 25.3 ms; floor 31 8.1 / 20.7 ms.
+The longest single frame, the zone being built, is worse: floor 35 0.8 s / 3.8 s against floor 1's 0.14 s / 0.63 s.
 
 ## What the route bot taught (and the generator now does)
 
@@ -90,7 +96,10 @@ Speed (`perf.py scenes`, desktop / phone-4x, median frame): floor 1 8.8 / 27.8 m
   other goal planned a way there every frame and found none (13 ms a frame).
 - A named enemy's home is where its patrol is now, and it gives up 24 m from it: on a loop 50 to 75 m round a melee hero never felled
   one. They walk small loops (8 to 10 m round their middle), slowly.
-- The pools' elite keeps two mites: with a third, Lyra lost to it, healed at the camp and lost again.
+- The pools' elite is leashed at 34 m, not 24: a ranged hero steps back as it shoots, and the Lantern Thief gave up, healed on its way
+  home, woke again and won (floor 36, Lyra, three falls). No pack grows by a unit of the generator's own: the fights grow by the
+  floor's tuned number only.
+- Ridges are low (1.3 to 2.2 m) and the halls' walls 2.4 m: a ridge 3 to 5 m tall hid a hero standing just north of it.
 
 ## To make them again
 
