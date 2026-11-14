@@ -948,7 +948,7 @@ export function buildWarScenes(o: {
         for (let row = 0; row < 4; row++) for (let k = 0; k < 9; k++) {
           const z = (k - 4) * 1.0 + (row % 2 ? 0.5 : 0), x = 0.2 + row * 0.75;
           if (rnd() < 0.12) { add(S.cone(0.1, 0.7, 6), 'wood', x + 0.4, 0.1, z, rnd() * 6, 1, 1, 1, Math.PI / 2 - 0.1); continue; } // knocked flat
-          sub(x, z, 0, () => { add(S.cyl(0.1, 0.1, 0.38, 6), 'wood', 0, 0, 0, 0, 1, 1, 1, 0, -0.55); add(S.cone(0.1, 0.2, 6), 'plank', -Math.sin(0.55) * 0.38, Math.cos(0.55) * 0.38, 0, 0, 1, 1, 1, 0, -0.55); });
+          sub(x, z, 0, () => { add(S.cyl(0.11, 0.11, 0.36, 6), 'wood', 0, 0, 0, 0, 1, 1, 1, 0, -0.55); add(S.cone(0.11, 0.2, 6), 'cream', -Math.sin(0.55) * 0.36, Math.cos(0.55) * 0.36, 0, 0, 1, 1, 1, 0, -0.55); }); // pale sharpened tips: the rows read
         }
         sub(3.6, r(-2, 2), r(-0.3, 0.3), () => { // a palisade's panel lying flat
           for (let k = 0; k < 7; k++) add(S.box(0.26, 0.08, 2.6), 'plank', (k - 3) * 0.28, 0, 0);

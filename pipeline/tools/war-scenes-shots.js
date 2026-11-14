@@ -22,7 +22,8 @@ for (const f of PLAN) {
     const log = [...(globalThis.__warScenesLog ?? new Map()).values()].find((l) => l.floor === f.floor);
     out.push({
       floor: f.floor,
-      scenes: (log?.scenes ?? []).map((s) => ({ kind: s.kind, v: s.v, x: +s.x.toFixed(1), z: +s.z.toFixed(1), R: s.R, mr: s.mr, beyond: s.beyond, side: s.side })),
+      // one line a story (the echo props left out): kind, layout, x, z, footprint, main piece, side, past the edge
+      scenes: (log?.scenes ?? []).filter((s) => s.kind !== 'trail').map((s) => `${s.kind} ${s.v} ${s.x.toFixed(1)} ${s.z.toFixed(1)} ${s.R} ${s.mr} ${s.side}${s.beyond ? ' beyond' : ''}`),
       start: _world.game().floor.start,
     });
   }
@@ -30,10 +31,8 @@ for (const f of PLAN) {
     if (s.lift) api.heroMode.zoom = s.lift; else api.heroMode.setZoom(s.zoom ?? 1.25);
     _world.go(s.x, s.z);
     _world.step(0.6);
-    const hud = _world.game().zone?.hud;
-    hud?.closeCard?.();
     _world.step(0.1);
-    if (hud?.card) hud.card.style.display = 'none';
+    for (const d of document.querySelectorAll('body > div')) if (d.textContent?.includes('Choose a side')) d.style.display = 'none';
     await __shot(s.name);
   }
 }
