@@ -60,5 +60,5 @@ logcart 17, fallen 15, hunters 14, yard 9. No kind is missing.
   spot 4 or 5, as before (it reads only the floor's data, which this pass does not touch).
 - **`npx tsc --noEmit -p .`** clean, **`npm run build`** passes.
 - **Speed:** both chapters were measured together; the numbers are in the sea's README (`docs/tower/climb50/sea/scenes/README.md`,
-  last section). In short: on desktop within the noise except floor 14 (gen-14), 0.5 and 1.0 ms slower in both final pairs; the Wood's
-  zone build at a 4x slowed processor +222 to +283 ms (+4 to 5 %).
+  last section). In short: on desktop within the noise in the one fair pair, but floor 14 (gen-14) was slower in three pairs (0.5 to
+  1.7 ms) and is the one to watch; the Wood's zone build at a 4x slowed processor +222 to +283 ms.

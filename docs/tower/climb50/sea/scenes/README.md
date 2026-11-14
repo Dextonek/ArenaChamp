@@ -94,7 +94,26 @@ dry sand past the edge is 1.5 to 4 m wide. No kind is missing.
   a second on world-1 and world-2 in the first version's pairs, not explained (the scenes allocate nothing per frame); about level in
   pairs 5 and 6 except world-2's pair 5 (+1.9). The final trims (fewer tries, baked geometry) only make the scenes cheaper to build
   and were not timed frame by frame again.
+- **The delivered code, timed again** (base commit d29ea95 from a fresh checkout; the same four scenes; prints unchanged). `step` is the
+  simulation's time a frame, which static props cannot change, so it shows how busy the machine was during each run. Desktop medians
+  (and step), before then after:
+
+  | Pair | world-1 | gen-6 | world-2 | gen-14 |
+  |---|---|---|---|---|
+  | 1 (before first) | 6.2 (0.8), 7.5 (1.1) | 6.5 (0.8), 10.0 (1.2) | 5.2 (0.6), 9.5 (1.0) | 5.7 (0.8), 6.8 (1.1) |
+  | 2 (after first) | 7.4 (0.9), 7.9 (0.9) | 7.6 (0.9), 8.1 (0.9) | 7.4 (1.0), 6.0 (0.8) | 6.7 (1.0), 6.4 (0.9) |
+  | 3 (before first) | 7.9 (0.9), 8.5 (1.0) | 9.2 (1.0), 9.0 (1.1) | 5.9 (0.8), 6.6 (0.9) | 6.0 (0.9), 7.7 (1.1) |
+
+  Phone-4x, pair 1: 30.4, 31.6; 31.4, 35.9; 22.4, 25.5; 29.4, 31.5 (step 8.6 to 9.7 before, 8.9 to 10.7 after); longest frames 383,
+  385; 525, 538; 228, 259; 326, 343. **What that says, plainly:** pair 1 is not a fair pair (step up 40 to 60 % and memory churn about
+  doubled during the after run: other agents were working). In pair 2, the one with equal step, the scenes are within the noise (-1.4 to
+  +0.5 ms). In pair 3 floor 14 (gen-14) is 1.7 ms slower with step up 0.2. So: no clear cost on desktop, but not a clean proof of none
+  either, and floor 14 is the scene to watch; a quiet machine would settle it. The perf tool's `longest` frame is not the zone's build
+  (that happens before the timed frames), so the build is measured on its own below.
 - **Build time, processor slowed 4 times (the phone profile),** each zone built in a page after a warm-up build, three times each way
-  alternating, medians in ms, scenes off then on: floor 1 8133, 8385 (+252, +3 %); floor 6 7866, 8081 (+215); floor 11 5636, 5919
-  (+283, +5 %); floor 14 5688, 5910 (+222). (The first version added 340 to 640; the scenes now try a scene's middle first, try fewer
+  alternating, medians in ms, scenes off then on: floor 1 8133, 8385 (+252); floor 6 7866, 8081 (+215); floor 11 5636, 5919
+  (+283); floor 14 5688, 5910 (+222). (The first version added 340 to 640; the scenes now try a scene's middle first, try fewer
   spots, look things up in an 8 m grid and hand each scene to the merged props as one geometry a colour.)
+  **Read the added milliseconds, not the percentages:** this page builds the whole zone (land, painted ground, depth) in 5.6 to 8 s at
+  4x, so it is not the same measure as the 0.6 s given for floor 1 on the phone profile in pipeline/designs/tower-50.md; against a
+  smaller base the same 215 to 283 ms would be a larger share.
