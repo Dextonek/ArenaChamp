@@ -22,7 +22,7 @@ engine lacks something, the Climb does it from its own side and marks it `TOWER-
 | The zone | `world.ts`, `zone.ts` | `buildZone`: one walking fight on the duel's boss path for the whole floor; the only way a zone begins |
 | Packs | `packs.ts` | Enemies that sleep until the hero is near; at most six awake at once (the summon system's cap) |
 | Laws | `law.ts`, `f45/laws.ts` | The place's rule: `tide`, `storm`, `paths` (`law.ts`), `dark`, `sides` (`f45/laws.ts`, asked first) |
-| Zones | `zone.ts` (with `land.ts`: floor 1's world past the rim), `zoneWood.ts`, `zoneCanyon.ts`, `zoneGen.ts`, `f45/deep-zone.ts`, `f45/banners-zone.ts`, `f45/zonekit.ts` | Each floor's ground, props and cover, drawn in code |
+| Zones | `zone.ts` (with `land.ts`: floor 1's world past the rim), `zoneWood.ts`, `sandsZone.ts` (the Sands, floors 21 to 30; floor 21 baked by `pipeline/tools/gen-canyon.ts`), `zoneGen.ts`, `f45/deep-zone.ts`, `f45/banners-zone.ts`, `f45/zonekit.ts` | Each floor's ground, props and cover, drawn in code |
 | Enemy looks | `looks.ts`, `looksWild.ts`, `f45/looks.ts` | Looks of the summon system's units, by the spec's `look` string |
 | Quests | `quests.ts`, `f45/carry.ts` | Eight verbs; what a carried thing looks like |
 | People, scenery | `people.ts`, `scenery.ts` | Keeper, giver, trader, rival; waystones, caches, the lore stone, the doors |
@@ -119,7 +119,7 @@ Each floor plays one. The numbers and what was measured are in the floors' notes
 |---|---|---|
 | `tide` | 1 | The low ground floods on a clock: 2 % of max health a second and a 0.6 walk; warned 7 s before |
 | `paths` | 11 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
-| `storm` | 21 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
+| `storm` | 21 to 30 | Every 124 to 147 s (each floor's own) a band of sand crosses north to south at walking speed, its time worked out from the zone's size (gen/sands.ts), warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
 | `dark` | 31 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
 | `sides` | 41 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
 
