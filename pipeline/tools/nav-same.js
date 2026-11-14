@@ -25,7 +25,7 @@
         arenas: await import('/src/arenas/index.ts'),
         game: await import('/src/tower/world/game.ts'),
       };
-      const names = ['battlefield', 'caldera', 'canyon', 'cavern', 'frost', 'glade', 'harbour', 'noonfall', 'skyruins', 'sunburst', 'suncourt', 'sunhall', 'sunkenHeart', 'temple', 'tower', 'twinpit', 'cinderpit'];
+      const names = window.__arenaFiles ?? ['battlefield', 'caldera', 'canyon', 'cavern', 'cinderPillars', 'cinderpit', 'common', 'frost', 'glade', 'harbour', 'index', 'noonfall', 'real', 'skyruins', 'sunburst', 'suncourt', 'sunhall', 'sunkenHeart', 'temple', 'tower', 'twinpit', 'types'];
       mods.arenaFiles = {};
       for (const n of names) {
         try { mods.arenaFiles[n] = await import(`/src/arenas/${n}.ts`); } catch (e) { mods.arenaFiles[n] = { __err: String(e).slice(0, 200) }; }
@@ -99,8 +99,16 @@
     if (floors.length) window._world.end();
     if (o.arenas !== false) {
       const R = mods.common.RING;
+      mods.arenaReport = {};
       for (const [file, m] of Object.entries(mods.arenaFiles)) {
-        for (const [key, def] of Object.entries(m)) {
+        const before = maps.length;
+        // Rooms made by a function: the Twin Forge for each band, the stair-well rooms of the old Tower for each kind and a few seeds.
+        const defs = Object.entries(m);
+        if (m.twinPitArena) for (const band of [1, 2, 3]) defs.push([`twinPitArena(${band})`, { ...m.twinPitArena(band) }]);
+        if (m.towerRoom && m.towerCover) {
+          for (const kind of ['gauntlet', 'horde', 'duel', 'break', 'hold', 'guardian']) for (const seed of [1, 7]) defs.push([`towerRoom(${kind}, ${seed})`, m.towerRoom(kind, 1, m.towerCover(kind, seed))]);
+        }
+        for (const [key, def] of defs) {
           if (!def || typeof def !== 'object' || !Array.isArray(def.obstacles) || !def.obstacles.length) continue;
           maps.push({ name: `${file}.${key}`, list: copyList(def.obstacles), bounds: { x: R.x, z: R.z, r: def.ring ?? R.r }, variants: [] });
         }
@@ -108,6 +116,7 @@
           if (!/OBSTACLES$|^PILLARS$/.test(key) || !Array.isArray(l) || !l.length) continue;
           maps.push({ name: `${file}.${key} (no ring)`, list: copyList(l), bounds: null, variants: [] });
         }
+        mods.arenaReport[file] = m.__err ? `failed to load: ${m.__err}` : maps.length > before ? `${maps.length - before} maps` : 'no cover in it';
       }
     }
     if (o.duels !== false) {
@@ -150,7 +159,10 @@
    */
   function oneMap(map, seed, o) {
     const rand = rng(seed), oldNav = new mods.old.OldNavigator(), newNav = new mods.nav.Navigator();
-    const out = { name: map.name, cover: map.list.length, steps: 0, clears: 0, plans: 0, links: 0, nodes: 0, unseenEdits: 0, diffs: 0, first: [] };
+    // The new navigator's slices (`fill`) are let run on every step, never, or by the clock as in the game: by map and seed in turn.
+    const fillMode = ['every step', 'never', 'by the clock'][(seed + (seed / 1000 | 0)) % 3];
+    const out = { name: map.name, cover: map.list.length, fill: fillMode, steps: 0, clears: 0, plans: 0, links: 0, nodes: 0, unseenEdits: 0, diffs: 0, first: [] };
+    const fillNow = () => { if (fillMode === 'every step') newNav.lastFill = -Infinity; else if (fillMode === 'never') newNav.lastFill = Infinity; };
     // The maps are shared between seeds: each run edits copies.
     map = { ...map, list: map.list.map((q) => ({ ...q })), variants: (map.variants ?? []).map((v) => v.map((q) => ({ ...q }))) };
     const diff = (what) => { out.diffs++; if (out.first.length < 5) out.first.push(what); };
@@ -202,9 +214,11 @@
           : r2 < 0.05 ? pa : r2 < 0.1 ? new V(pa.x, 0, pa.z + (rand() - 0.5) * 40) : r2 < 0.15 ? new V(pa.x + (rand() - 0.5) * 40, 0, pa.z)
           : r2 < 0.18 ? new V(pa.x + (rand() < 0.5 ? -1 : 1) * (300 + rand() * 300), 0, pa.z + (rand() - 0.5) * 600) : r2 < 0.25 ? round()
           : r2 < 0.45 ? new V(pa.x + (rand() - 0.5) * 6, 0, pa.z + (rand() - 0.5) * 6) : spot();
-        const want = oldNav.clear(pa, pb), viaIndex = newNav.through(pa, pb), viaList = newNav.clear(pa, pb, list);
+        // Like with like: on the list each navigator holds (the new one through its index), and on the list given (the public `clear`,
+        // as the arena asks it). The two lists differ when the cover changed since the last step.
+        const want = oldNav.clear(pa, pb), viaIndex = newNav.through(pa, pb), wantList = oldNav.clear(pa, pb, list), viaList = newNav.clear(pa, pb, list);
         out.clears++;
-        if (want !== viaIndex || want !== viaList) diff(`clear (${pa.x}, ${pa.z}) -> (${pb.x}, ${pb.z}): old ${want}, index ${viaIndex}, list ${viaList}`);
+        if (want !== viaIndex || wantList !== viaList) diff(`clear (${pa.x}, ${pa.z}) -> (${pb.x}, ${pb.z}): held list old ${want} new ${viaIndex}; given list old ${wantList} new ${viaList}`);
       }
     };
     const comparePlans = (k) => {
@@ -241,6 +255,7 @@
         if (r > 0.995) { oldNav.forget(w.key); newNav.forget(w.key); }
         const given = w.aiStyle ? [...list] : list;
         const sa = oldNav.step(w.key, w.pos.clone(), w.to.clone(), given, map.bounds);
+        fillNow();
         const sb = newNav.step(w.key, w.pos.clone(), w.to.clone(), given, map.bounds);
         out.steps++;
         if (!sameV(sa.point, sb.point) || !sameV(sa.goal, sb.goal)) diff(`step ${t} of a walker at (${w.pos.x}, ${w.pos.z}) to (${w.to.x}, ${w.to.z}): (${sa.point.x}, ${sa.point.z}) vs (${sb.point.x}, ${sb.point.z})`);
@@ -263,7 +278,7 @@
     const rows = [];
     for (const seed of o.seeds ?? [o.seed ?? 1]) for (let k = 0; k < maps.length; k++) rows.push({ seed, ...oneMap(maps[k], seed * 1000 + k, o) });
     const sum = (f) => rows.reduce((n, r) => n + r[f], 0);
-    return { maps: maps.length, runs: rows.length, steps: sum('steps'), clears: sum('clears'), plans: sum('plans'), links: sum('links'), unseenEdits: sum('unseenEdits'), diffs: sum('diffs'), seconds: r2((performance.now() - t0) / 1000), rows };
+    return { arenaFiles: mods.arenaReport ?? {}, maps: maps.length, runs: rows.length, steps: sum('steps'), clears: sum('clears'), plans: sum('plans'), links: sum('links'), unseenEdits: sum('unseenEdits'), diffs: sum('diffs'), seconds: r2((performance.now() - t0) / 1000), rows };
   };
 
   /**
@@ -298,6 +313,8 @@
           res.pointsLinkedByFirst = linked().length;
           const cold = pick.map(([a, c]) => ms(() => nav.step({}, a, c, lists[0], map.bounds)));
           res.morePlansMs = r2(cold.reduce((x, y) => x + y, 0));
+          // Once the links those plans needed are known: the new navigator's slices (`fill`) let finish first.
+          if (nav.toFill) for (let k = 0; k < 1e6 && nav.fillAt < nav.toFill.length; k++) { nav.lastFill = -Infinity; nav.fill(); }
           const warm = pick.map(([a, c]) => ms(() => nav.plan(a, c)));
           res.planKnownMs = r2(warm.reduce((x, y) => x + y, 0) / warm.length);
           res.planKnownMaxMs = r2(Math.max(...warm));
@@ -324,13 +341,20 @@
 
   /**
    * The route bot on a floor (`_worldRoute`) for `seconds` of game time: its longest frames, each with the time spent in the navigators
-   * (`step`, of it `plan`, of it `linksOf`) and how many points' links were found in it.
+   * (`step`, of it `plan`, of it making links) and how many points got their links in it; how many frames spent 4, 8, 16, 33 ms or more
+   * in the navigators; and the slowest plan's walk, to be played again (`_navReplay`). `old: true`: the arena's two navigators are the
+   * old one for the run. The bot runs frames back to back far faster than the clock, so the new navigator is let do its slice (`fill`)
+   * once a frame, as it does in the game.
    */
   window._navFrames = async (o = {}) => {
     await setup();
-    // The new navigator makes a point's links in `row` (with an index); the old one in `linksOf`.
-    const P = mods.nav.Navigator.prototype, links = P.row ? 'row' : 'linksOf', orig = { step: P.step, plan: P.plan, linksOf: P[links] };
+    const arena = vfx.arena, Make = o.old ? mods.old.OldNavigator : mods.nav.Navigator;
+    const was = { nav: arena.nav, aiNav: arena.aiNav };
+    arena.nav = new Make();
+    arena.aiNav = new Make();
+    const P = Make.prototype, links = P.row ? 'row' : 'linksOf', orig = { step: P.step, plan: P.plan, linksOf: P[links] };
     const cur = { step: 0, plan: 0, linksOf: 0, found: 0 };
+    let slowest = null;
     const wrap = (name) => function (...a) {
       if (name === 'linksOf' && (this.rowTo?.[a[0]] ?? this.links[a[0]])) return orig.linksOf.apply(this, a);
       const t = performance.now();
@@ -338,21 +362,25 @@
         const d = performance.now() - t;
         cur[name] += d;
         if (name === 'linksOf') cur.found++;
+        if (name === 'plan' && (!slowest || d > slowest.ms)) {
+          slowest = { ms: r2(d), from: { x: a[0].x, z: a[0].z }, goal: { x: a[1].x, z: a[1].z }, list: copyList(this.obstacles), bounds: copyB(this.bounds), ai: this === arena.aiNav };
+        }
       }
     };
-    // Nested calls (plan inside step, linksOf inside plan) add into their own buckets: the share of each, not exclusive.
+    // Nested calls (plan inside step, links inside plan) add into their own buckets: the share of each, not exclusive.
     P.step = wrap('step'); P.plan = wrap('plan'); P[links] = wrap('linksOf');
     // A frame: the game's step and the run's tick (not the bot's pauses for the page, which wait for whatever else the page does).
     const frames = [];
     const st = vfx.step, G = mods.game.WorldGame.prototype, tick = G.tick;
     let n = 0, inFrame = 0;
     const close = () => {
-      if (inFrame > 0) frames.push({ frame: n++, ms: r2(inFrame), navStep: r2(cur.step), plan: r2(cur.plan), linksOf: r2(cur.linksOf), pointsLinked: cur.found });
+      if (inFrame > 0) frames.push({ frame: n++, ms: r2(inFrame), navStep: r2(cur.step), plan: r2(cur.plan), links: r2(cur.linksOf), pointsLinked: cur.found });
       inFrame = 0;
       cur.step = cur.plan = cur.linksOf = cur.found = 0;
     };
     vfx.step = function (...a) {
       close();
+      for (const nav of [arena.nav, arena.aiNav]) if ('lastFill' in nav) nav.lastFill = -Infinity;
       const t = performance.now();
       try { return st.apply(this, a); } finally { inFrame += performance.now() - t; }
     };
@@ -367,10 +395,39 @@
       close();
       vfx.step = st; G.tick = tick; P.step = orig.step; P.plan = orig.plan; P[links] = orig.linksOf;
       window._world.end?.();
+      arena.nav = was.nav;
+      arena.aiNav = was.aiNav;
     }
-    const top = frames.slice().sort((p, q) => q.ms - p.ms).slice(0, o.top ?? 8);
+    const top = frames.slice().sort((p, q) => q.navStep - p.navStep).slice(0, o.top ?? 8);
     const ms = frames.map((f) => f.ms).sort((p, q) => p - q);
     const nav = frames.reduce((s, f) => s + f.navStep, 0);
-    return { floor: o.floor ?? 46, frames: frames.length, medianMs: ms[Math.floor(ms.length / 2)], p99Ms: ms[Math.floor(ms.length * 0.99)], navMsTotal: r2(nav), top, err, ok: report?.ok };
+    const over = Object.fromEntries([4, 8, 16, 33].map((t) => [`${t}ms`, frames.filter((f) => f.navStep >= t).length]));
+    window.__navSlowest = slowest;
+    return { floor: o.floor ?? 46, navigator: o.old ? 'old' : 'new', frames: frames.length, medianMs: ms[Math.floor(ms.length / 2)], p99Ms: ms[Math.floor(ms.length * 0.99)], navMsTotal: r2(nav), framesWithNavOver: over, topByNav: top, slowestPlan: slowest && { ms: slowest.ms, from: slowest.from, goal: slowest.goal, ai: slowest.ai, cover: slowest.list.length }, err, ok: report?.ok };
+  };
+
+  /**
+   * The slowest plan of the last `_navFrames` (or `w`), on a fresh old and a fresh new navigator: the time of that plan on a map just
+   * made, and again once the links it needed are known; the two paths must be the same.
+   */
+  window._navReplay = async (w = window.__navSlowest) => {
+    await setup();
+    if (!w) return null;
+    const from = new V(w.from.x, 0, w.from.z), goal = new V(w.goal.x, 0, w.goal.z), out = {};
+    const paths = {};
+    for (const [label, Make] of [['old', mods.old.OldNavigator], ['new', mods.nav.Navigator]]) {
+      const nav = new Make();
+      nav.step({}, from, from, w.list, w.bounds);
+      let t = performance.now();
+      const path = nav.plan(from, goal);
+      const first = performance.now() - t;
+      t = performance.now();
+      nav.plan(from, goal);
+      const again = performance.now() - t;
+      out[label] = { firstMs: r2(first), againMs: r2(again), points: nav.nodes.length, pathPoints: path.length };
+      paths[label] = path;
+    }
+    out.samePath = samePath(paths.old, paths.new);
+    return out;
   };
 })();

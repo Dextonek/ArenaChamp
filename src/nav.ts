@@ -6,6 +6,14 @@ import { hyp, segDist, type Obstacle } from './obstacles';
  * their edges: the graph is a ring of points round each capsule, grown by the body's radius, linked wherever a body
  * can walk straight between two of them. A plan is the shortest way through that graph (A*). The graph's points are set once
  * per obstacle list and again when the list changes (a wall falls, a spell raises one); its links are found as plans need them.
+ *
+ * Fast on the Climb's large floors (2026-11-14), with every answer as before to the last bit (`pipeline/tools/nav-same.py` runs the
+ * old navigator, `pipeline/tools/nav-old.ts`, beside this one on the floors, the arenas and made maps): an index of the cover
+ * (`CoverIndex`) so a check asks only the cover near it; the plan's open points in a heap (`OpenHeap`); a link asked only where it would
+ * shorten a way, each pair once a map (`sees`), most of them answered by the shadow of the cover round the point (`shade`); a point's
+ * list of links kept once nearly all its pairs are known, and finished a slice a frame afterwards (`fill`). Every shortcut only picks
+ * what to ask or keeps an answer; what is asked is asked as before. An edit of the list that its signature misses sends every question
+ * back through the list itself, as before (`dropIndex`).
  */
 
 const BODY = 0.5; // the walker's radius (`pushOut` keeps this clearance)
@@ -63,7 +71,8 @@ const INDEX_MIN = 12; // fewer pieces of cover than this: asked one by one, as c
 const SLACK = 0.01; // the index is drawn this much (m) wider than any answer it serves needs: rounding never hides a piece of cover
 const ROW_REST = 64; // a point's whole list of links is made once no more than this many of its pairs are still to be asked (`plan`)
 const SHADE_MIN = 24; // a point's shadow is made when this many of its links are to be asked at once (it costs about as much as 20 asked)
-const FILL_PAIRS = 256; // pairs asked a frame, at most, to finish the lists of links of the points plans went through (`fill`)
+const FILL_ASKS = 128; // walks a frame, at most, asked of the cover itself to finish the lists of links of points plans went through (`fill`)
+const FILL_POINTS = 4; // and points begun a frame (each costs a shadow)
 const FILL_EVERY = 8; // ms of the clock between two such slices: one a frame
 const SHADE_BINS = 1024; // the directions round a point a shadow (`shade`) tells apart
 const SHADE_FAR = 120; // cover farther than this from the point casts no shadow (its shadow is narrow, and the plain check is cheap)
@@ -252,6 +261,8 @@ export class Navigator {
   private fillPoint = -1;
   private fillNext = 0;
   private lastFill = -Infinity;
+  /** How many walks have been asked of the cover itself (`through`): what a slice of `fill` is counted in. */
+  private asks = 0;
   /**
    * The shadow of the cover round one point (`shade`): for each of `SHADE_BINS` directions, the squared distance beyond which a walk from
    * that point in that direction certainly runs into cover (Infinity: not known).
@@ -302,6 +313,7 @@ export class Navigator {
    * `clear` asks it: the same answer. Only inside `step`, after `sync`: the index is of the list as it was then.
    */
   private through(a: Pt, b: Pt) {
+    this.asks++;
     const g = this.index;
     if (!g || !Number.isFinite(a.x + a.z + b.x + b.z)) return this.clear(a, b);
     const ax = a.x, az = a.z, bx = b.x, bz = b.z, dx = bx - ax, dz = bz - az;
@@ -721,17 +733,18 @@ export class Navigator {
   }
 
   /**
-   * A slice of the lists of links not yet finished (`toFill`): at most `FILL_PAIRS` pairs asked, once every `FILL_EVERY` ms of the clock.
-   * The answers are the ones a plan would get by asking (`sees`); kept, they spare a plan the asking.
+   * A slice of the lists of links not yet finished (`toFill`), once every `FILL_EVERY` ms of the clock: at most `FILL_ASKS` walks asked of
+   * the cover itself (those the shadow answers cost next to nothing) and `FILL_POINTS` points begun. The answers are the ones a plan
+   * would get by asking (`sees`); kept, they spare a plan the asking.
    */
   private fill() {
     if (!this.index || this.fillAt >= this.toFill.length) return;
     const now = performance.now();
     if (now - this.lastFill < FILL_EVERY) return;
     this.lastFill = now;
-    const n = this.nodes.length;
-    let budget = FILL_PAIRS;
-    while (budget > 0 && this.fillAt < this.toFill.length) {
+    const n = this.nodes.length, start = this.asks;
+    let points = 0;
+    while (this.asks - start < FILL_ASKS && points < FILL_POINTS && this.fillAt < this.toFill.length) {
       const u = this.toFill[this.fillAt];
       if (this.rowTo[u]) {
         this.fillAt++;
@@ -741,15 +754,12 @@ export class Navigator {
         this.fillPoint = u;
         this.fillNext = 0;
       }
-      // The shadow round the point, when many of its pairs are still to be asked (it is made again after a plan made another).
+      points++;
+      // The shadow round the point, when many of its pairs are still to be asked (made again each slice: a plan may have made another).
       const shadow = n - 1 - this.pairsKnown[u] >= SHADE_MIN;
       if (shadow) this.shade(this.xs[u], this.zs[u], true);
       let j = this.fillNext;
-      for (; j < n && budget > 0; j++) {
-        if (j === u || this.known(u, j)) continue;
-        this.sees(u, j, shadow);
-        budget--;
-      }
+      for (; j < n && this.asks - start < FILL_ASKS; j++) if (j !== u && !this.known(u, j)) this.sees(u, j, shadow);
       this.fillNext = j;
       if (j >= n) {
         this.row(u);
