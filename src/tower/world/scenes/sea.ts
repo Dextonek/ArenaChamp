@@ -35,8 +35,8 @@ export interface SeaScenesIn {
   cover: Seg[];
   /** Where the depth put its props (world), each with a radius. */
   marks: { x: number; z: number; r: number }[];
-  /** The land's houses and jetties (offsets from the middle) and its boats (world). */
-  taken: { x: number; z: number; r: number }[];
+  /** What else stands there (world): the land's houses, jetties, boats and trees (`tree`), the harbour file's props. */
+  taken: { x: number; z: number; r: number; tree?: boolean }[];
 }
 /** One placed scene, for the overlap probe (`pipeline/tools/scenes-probe.js`): its parts' corners on the ground and their tops. */
 export interface Placed {
@@ -124,8 +124,10 @@ function shapes() {
       return new THREE.ShapeGeometry(sh).rotateX(Math.PI / 2).translate(0, 0.03, 0);
     }),
   };
+  /** Any other shape, made once a floor under its own name. */
+  const k = (name: string, make: () => THREE.BufferGeometry) => of(name, make);
   const dispose = () => { for (const g of cache.values()) g.dispose(); cache.clear(); };
-  return { S, dispose };
+  return { S: { ...S, k }, dispose };
 }
 const strip = (g: THREE.BufferGeometry) => {
   const n = g.index ? g.toNonIndexed() : g;
@@ -175,7 +177,7 @@ const basket = (S: Shapes, P: Parts, x: number, z: number, h = 0.3) => {
 };
 /** A basket on its side, its mouth towards +x, and what spilled from it. */
 const basketDown = (S: Shapes, P: Parts, x: number, z: number, yaw: number) => {
-  P.p('plank', S.log(0.2, 0.42, 10), x, 0, z, yaw).p('lacquer', S.disc(0.17, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0), x + Math.cos(yaw) * 0.21, 0, z - Math.sin(yaw) * 0.21, yaw);
+  P.p('plank', S.log(0.2, 0.42, 10), x, 0, z, yaw).p('lacquer', S.k('S.disc(0.17, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0)', () => S.disc(0.17, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0)), x + Math.cos(yaw) * 0.21, 0, z - Math.sin(yaw) * 0.21, yaw);
 };
 const fishFan = (S: Shapes, P: Parts, r: () => number, x: number, z: number, a: number, n: number) => {
   for (let k = 0; k < n; k++) {
@@ -196,7 +198,7 @@ const shells = (S: Shapes, P: Parts, r: () => number, x: number, z: number, n: n
 /** A barrel lying along x (0.52 m high), gilt hoops. */
 const barrelDown = (S: Shapes, P: Parts, x: number, z: number, yaw: number) => {
   P.p('wood', S.log(0.2, 0.62, 12), x, 0, z, yaw);
-  for (const s of [-0.2, 0.2]) P.p('gold', S.ring(0.21, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0), x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, yaw);
+  for (const s of [-0.2, 0.2]) P.p('gold', S.k('S.ring(0.21, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0)', () => S.ring(0.21, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0)), x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, yaw);
 };
 /** A lobster pot: a slatted half-round on a board (0.38 m), along x. Lying on its side when `down`. */
 const pot = (S: Shapes, P: Parts, x: number, y: number, z: number, yaw: number, down = false) => {
@@ -206,7 +208,7 @@ const pot = (S: Shapes, P: Parts, x: number, y: number, z: number, yaw: number, 
     const g = S.hoop(0.23, 0.018);
     P.p('wood', g, x + Math.cos(yaw) * s, y + 0.04, z - Math.sin(yaw) * s, yaw + Math.PI / 2);
   }
-  P.p('rope', S.box(0.7, 0.22, 0.42).clone().translate(0, -0.11, 0).scale(1, 1, 1), x, y + 0.04 + 0.11, z, yaw, 0, 1, 0.01 + 1, 1);
+  P.p('rope', S.k('S.box(0.7, 0.22, 0.42).clone().translate(0, -0.11, 0).scale(1, 1, 1)', () => S.box(0.7, 0.22, 0.42).clone().translate(0, -0.11, 0).scale(1, 1, 1)), x, y + 0.04 + 0.11, z, yaw, 0, 1, 0.01 + 1, 1);
 };
 
 const KINDS: Kind[] = [
@@ -233,17 +235,17 @@ const KINDS: Kind[] = [
       P.p('lacquer', S.disc(0.48, 0.02), 0, 0, 0);
       for (let k = 0; k < 3; k++) P.p('lacquer', S.log(0.055, 0.8, 6), 0, 0.02, 0, k * 1.05 + r() * 0.3);
       // the kettle, on the stones
-      P.p('lacquer', S.cyl(0.17, 0.2, 0.2, 12), 0.62, 0.1, 0.18).p('gold', S.disc(0.15, 0.03), 0.62, 0.3, 0.18).p('gold', S.hoop(0.15, 0.012).clone().translate(0, 0.32, 0), 0.62, 0, 0.18, 0.4);
+      P.p('lacquer', S.cyl(0.17, 0.2, 0.2, 12), 0.62, 0.1, 0.18).p('gold', S.disc(0.15, 0.03), 0.62, 0.3, 0.18).p('gold', S.k('S.hoop(0.15, 0.012).clone().translate(0, 0.32, 0)', () => S.hoop(0.15, 0.012).clone().translate(0, 0.32, 0)), 0.62, 0, 0.18, 0.4);
       P.p('lacquer', S.cyl(0.025, 0.035, 0.16, 6), 0.83, 0.17, 0.18, 0, -1.0);
       const seats = 2 + Math.floor(r() * 2);
       for (let k = 0; k < seats; k++) { const a = 1.9 + k * 1.5 + (r() - 0.5) * 0.4; P.p('plank', S.log(0.17, 1.5, 9), Math.cos(a) * 1.7, 0, -Math.sin(a) * 1.7, a + Math.PI / 2); }
       if (r() < 0.7) P.p('wine', S.log(0.13, 0.8, 9), -1.1, 0, -0.9, 0.7).p('cream', S.log(0.135, 0.06, 9), -1.1 + Math.cos(0.7) * 0.4, 0, -0.9 - Math.sin(0.7) * 0.4, 0.7);
-      if (r() < 0.6) P.p('wood', S.log(0.02, 2.6, 5), 1.3, 0, -1.3, -0.5).p('gold', S.cyl(0.05, 0.05, 0.06, 8).clone().rotateZ(Math.PI / 2), 0.4, 0.05, -0.85, -0.5);
+      if (r() < 0.6) P.p('wood', S.log(0.02, 2.6, 5), 1.3, 0, -1.3, -0.5).p('gold', S.k('S.cyl(0.05, 0.05, 0.06, 8).clone().rotateZ(Math.PI / 2)', () => S.cyl(0.05, 0.05, 0.06, 8).clone().rotateZ(Math.PI / 2)), 0.4, 0.05, -0.85, -0.5);
       P.p('cream', S.cyl(0.05, 0.04, 0.1, 8), -0.75, 0, 0.55);
       // a bedroll half unrolled, a pack against it, the cooking pot knocked over
       P.p('wine', S.box(0.75, 0.05, 1.7), 1.6, 0, 1.1, 0.4).p('wine', S.log(0.15, 0.75, 10), 1.25, 0, 1.85, 0.4).p('gold', S.box(0.77, 0.055, 0.05), 1.6, 0.0, 0.3, 0.4);
       P.p('lacquer', S.box(0.45, 0.3, 0.3), 2.2, 0, 0.05, 1.0).p('gold', S.box(0.08, 0.31, 0.32), 2.2, 0, 0.05, 1.0);
-      if (r() < 0.6) P.p('lacquer', S.log(0.14, 0.22, 10), -0.95, 0, -0.1, 2.0).p('gold', S.ring(0.14, 0.015).clone().rotateZ(Math.PI / 2).translate(0, 0.14, 0), -0.84, 0, -0.06, 2.0);
+      if (r() < 0.6) P.p('lacquer', S.log(0.14, 0.22, 10), -0.95, 0, -0.1, 2.0).p('gold', S.k('S.ring(0.14, 0.015).clone().rotateZ(Math.PI / 2).translate(0, 0.14, 0)', () => S.ring(0.14, 0.015).clone().rotateZ(Math.PI / 2).translate(0, 0.14, 0)), -0.84, 0, -0.06, 2.0);
     },
   },
   {
@@ -272,7 +274,7 @@ const KINDS: Kind[] = [
       P.p('lacquer', S.disc(0.55, 0.012), 1.1, 0, 1.0, 0.4, 0, 1.2, 1, 0.7);
       P.p('wood', S.disc(0.08, 0.04), 1.7, 0, 0.2);
       // his lantern, dropped and out
-      P.p('lacquer', S.box(0.22, 0.3, 0.22).clone().rotateZ(Math.PI / 2).translate(0.15, -0.04, 0), -1.3, 0.11, 0.6, 0.8).p('gold', S.cyl(0.13, 0.13, 0.05, 8).clone().rotateZ(Math.PI / 2), -1.6, 0.11, 0.85, 0.8);
+      P.p('lacquer', S.k('S.box(0.22, 0.3, 0.22).clone().rotateZ(Math.PI / 2).translate(0.15, -0.04, 0)', () => S.box(0.22, 0.3, 0.22).clone().rotateZ(Math.PI / 2).translate(0.15, -0.04, 0)), -1.3, 0.11, 0.6, 0.8).p('gold', S.k('S.cyl(0.13, 0.13, 0.05, 8).clone().rotateZ(Math.PI / 2)', () => S.cyl(0.13, 0.13, 0.05, 8).clone().rotateZ(Math.PI / 2)), -1.6, 0.11, 0.85, 0.8);
       if (r() < 0.6) P.p('plank', S.box(0.3, 0.05, 2.2), -0.2, 0, 1.3, 1.3);
       if (r() < 0.5) coil(S, P, -1.5, -1.2);
     },
@@ -309,8 +311,8 @@ const KINDS: Kind[] = [
     make: (S, P, r) => {
       P.p('lacquer', S.log(0.06, 1.5, 8), 0, 0, 0, 0);
       P.p('lacquer', S.log(0.05, 1.0, 8), 0.68, 0, 0, Math.PI / 2);
-      P.p('lacquer', S.ring(0.48, 0.06, Math.PI).clone().rotateY(-Math.PI / 2), -0.72, 0, 0);
-      for (const s of [-1, 1]) P.p('lacquer', S.box(0.24, 0.05, 0.2).clone().rotateY(Math.PI / 4), -0.72, 0, s * 0.48);
+      P.p('lacquer', S.k('S.ring(0.48, 0.06, Math.PI).clone().rotateY(-Math.PI / 2)', () => S.ring(0.48, 0.06, Math.PI).clone().rotateY(-Math.PI / 2)), -0.72, 0, 0);
+      for (const s of [-1, 1]) P.p('lacquer', S.k('S.box(0.24, 0.05, 0.2).clone().rotateY(Math.PI / 4)', () => S.box(0.24, 0.05, 0.2).clone().rotateY(Math.PI / 4)), -0.72, 0, s * 0.48);
       P.p('gold', S.ring(0.12, 0.025), 0.86, 0.03, 0);
       // the line out to the stump, in an easy curve
       let x = 0.98, z = 0;
@@ -322,20 +324,22 @@ const KINDS: Kind[] = [
     },
   },
   {
-    // A chest washed up, its lid flung back: gilt bands, a spill of coins and a goblet in the sand, weed hanging over its side.
-    name: 'chest', R: 1.8, where: 'ground',
+    // Flotsam from a wreck washed up: a hatch cover, a broken cask and its staves, a spar with its rope, a lantern, a scrap of sail, weed.
+    name: 'flotsam', R: 2.2, where: 'ground',
     make: (S, P, r) => {
-      P.p('wine', S.box(0.84, 0.4, 0.52), 0, -0.04, 0, 0, 0.08);
-      for (const s of [-0.28, 0.28]) P.p('gold', S.box(0.05, 0.41, 0.54), s, -0.04, 0, 0, 0.08);
-      P.p('lacquer', S.box(0.74, 0.02, 0.42), 0, 0.33, 0.03, 0, 0.08);
-      P.p('wine', S.box(0.86, 0.08, 0.54), 0, 0, -0.62).p('gold', S.box(0.05, 0.085, 0.56), -0.28, 0, -0.62).p('gold', S.box(0.05, 0.085, 0.56), 0.28, 0, -0.62);
-      const coins = 7 + Math.floor(r() * 7);
-      for (let k = 0; k < coins; k++) { const a = r() * 1.6 - 0.2, d = 0.4 + r() * 0.8; P.p('gold', S.disc(0.045, 0.012), Math.cos(a) * d * 1.2, 0, 0.3 + Math.sin(a) * d); }
-      if (r() < 0.6) P.p('gold', S.cyl(0.05, 0.02, 0.1, 8).clone().rotateZ(Math.PI / 2).translate(0, 0.05, 0), 0.75, 0, 0.55, 0.5);
-      P.p('leaf', S.box(0.08, 0.02, 0.7), -0.2, 0.36, 0.25, 0.3, 0.6).p('leaf', S.box(0.07, 0.02, 0.9), 0.5, 0, 0.6, -0.4).p('leaf', S.box(0.06, 0.02, 0.6), -0.7, 0, 0.3, 0.9);
-      shells(S, P, r, 0, 0.9, 3, 0.7);
-      for (let k = 0; k < 3; k++) P.p('plank', S.box(0.22, 0.05, 1.3 + r() * 0.8), -1.2 + k * 0.5 + r() * 0.2, 0, -0.4 + (r() - 0.5) * 0.6, 0.4 + (r() - 0.5) * 0.8);
-      if (r() < 0.6) P.p('rope', S.box(1.2, 0.02, 0.9), 0.9, 0, -0.5, 0.7);
+      // the hatch cover: a gilt-edged frame with its grating
+      P.p('plank', S.box(1.1, 0.06, 1.1), 0, 0, 0, 0.3).p('gold', S.box(1.14, 0.03, 0.05), 0, 0.06, 0, 0.3);
+      for (let k = -2; k <= 2; k++) P.p('wood', S.box(0.05, 0.05, 1.05), Math.cos(0.3) * k * 0.2, 0.06, -Math.sin(0.3) * k * 0.2, 0.3);
+      // the cask, broken: its end and staves spread
+      P.p('wood', S.log(0.2, 0.3, 12), 1.2, 0, 0.7, 1.1).p('gold', S.k('caskhoop', () => S.ring(0.21, 0.02).clone().rotateZ(Math.PI / 2).translate(0, 0.2, 0)), 1.2, 0, 0.7, 1.1);
+      for (let k = 0; k < 5; k++) P.p('plank', S.box(0.1, 0.03, 0.62), 1.6 + k * 0.14, 0, 0.0 + (r() - 0.5) * 0.4, 0.4 + (r() - 0.5) * 0.9);
+      // the spar and its rope
+      P.p('wood', S.log(0.07, 3.0, 8), -0.4, 0, -1.2, -0.2).p('rope', S.log(0.03, 1.2, 5), -1.6, 0, -0.7, 0.9);
+      coil(S, P, -1.3, 0.4);
+      if (r() < 0.7) P.p('rope', S.box(1.3, 0.02, 0.9), 0.4, 0, 1.4, 0.5);
+      P.p('lacquer', S.k('lanternside', () => S.box(0.2, 0.28, 0.2).clone().rotateZ(Math.PI / 2).translate(0, -0.04, 0)), -0.9, 0.1, 1.1, 2.0);
+      for (let k = 0; k < 3; k++) P.p('leaf', S.box(0.07, 0.02, 0.8), (r() - 0.5) * 2.4, 0, (r() - 0.5) * 2, r() * 6);
+      shells(S, P, r, 0.2, 0.3, 4, 1.0);
     },
   },
   {
@@ -356,11 +360,11 @@ const KINDS: Kind[] = [
     // A fight's aftermath: a shield split in two, a dropped cutlass, a boarding pike, a dented helmet, arrows standing in the ground.
     name: 'fight', R: 2.4, where: 'ground',
     make: (S, P, r) => {
-      const half = (a: number) => new THREE.CylinderGeometry(0.38, 0.38, 0.04, 14, 1, false, a, Math.PI).translate(0, 0.02, 0);
+      const half = (a: number) => S.k(`half${a}`, () => new THREE.CylinderGeometry(0.38, 0.38, 0.04, 14, 1, false, a, Math.PI).translate(0, 0.02, 0));
       P.p('wine', half(0), -0.6, 0, -0.2, 0.3).p('wine', half(Math.PI), -0.35, 0, 0.2, 0.9).p('gold', S.ring(0.38, 0.02, Math.PI), -0.6, 0.01, -0.2, 0.3);
       P.p('salt', S.box(0.85, 0.012, 0.05), 0.6, 0.01, -0.5, 0.4).p('gold', S.box(0.04, 0.03, 0.18), 1.04, 0, -0.68, 0.4).p('lacquer', S.log(0.022, 0.17, 6), 1.15, 0, -0.73, 0.4);
-      P.p('wood', S.log(0.03, 2.4, 6), 0.1, 0, 0.9, -0.15).p('slate', S.cyl(0.05, 0.0, 0.3, 6).clone().rotateZ(-Math.PI / 2).translate(0, 0.03, 0), 1.33, 0, 0.72, -0.15);
-      P.p('lacquer', new THREE.SphereGeometry(0.17, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), -1.3, 0.04, 0.6, 0, 1.3).p('gold', S.ring(0.17, 0.018), -1.3, 0.0, 0.6, 0, 1.3);
+      P.p('wood', S.log(0.03, 2.4, 6), 0.1, 0, 0.9, -0.15).p('slate', S.k('S.cyl(0.05, 0.0, 0.3, 6).clone().rotateZ(-Math.PI / 2).translate(0, 0.03, 0)', () => S.cyl(0.05, 0.0, 0.3, 6).clone().rotateZ(-Math.PI / 2).translate(0, 0.03, 0)), 1.33, 0, 0.72, -0.15);
+      P.p('lacquer', S.k('helm', () => new THREE.SphereGeometry(0.17, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2)), -1.3, 0.04, 0.6, 0, 1.3).p('gold', S.ring(0.17, 0.018), -1.3, 0.0, 0.6, 0, 1.3);
       // the banner they fought for, down in the grass
       P.p('wood', S.log(0.04, 3.2, 7), 0.3, 0, -1.4, 0.25).p('gold', S.ball(0.07), 1.85, 0, -1.8).p('wine', S.box(1.0, 0.03, 1.3), -0.85, 0, -1.6, 0.25 + Math.PI / 2).p('gold', S.box(1.0, 0.035, 0.05), -0.85, 0, -2.25, 0.25 + Math.PI / 2);
       if (r() < 0.6) P.p('wine', S.cyl(0.36, 0.36, 0.04, 16), 1.6, 0, 0.3).p('gold', S.ring(0.36, 0.022), 1.6, 0.02, 0.3).p('gold', S.ball(0.06, 0.6), 1.6, 0.04, 0.3);
@@ -378,10 +382,10 @@ const KINDS: Kind[] = [
       crate(S, P, -0.4, -0.2, 0.3, true);
       crate(S, P, 0.45, -0.55, -0.4, false);
       for (let k = 0; k < 4 + Math.floor(r() * 4); k++) { const a = 0.3 + r() * 1.6, d = 0.55 + r() * 0.9; P.p('teal', S.log(0.045, 0.24, 7), -0.4 + Math.cos(a) * d, 0, -0.2 + Math.sin(a) * d, r() * 6).p('gold', S.log(0.018, 0.08, 5), -0.4 + Math.cos(a) * d, 0.03, -0.2 + Math.sin(a) * d, r() * 6); }
-      P.p('lacquer', S.box(0.2, 0.28, 0.2).clone().rotateZ(Math.PI / 2).translate(0, -0.04, 0), 0.9, 0.1, 0.5, 2.3).p('gold', S.cyl(0.12, 0.12, 0.04, 8).clone().rotateZ(Math.PI / 2), 1.05, 0.1, 0.43, 2.3);
+      P.p('lacquer', S.k('S.box(0.2, 0.28, 0.2).clone().rotateZ(Math.PI / 2).translate(0, -0.04, 0)', () => S.box(0.2, 0.28, 0.2).clone().rotateZ(Math.PI / 2).translate(0, -0.04, 0)), 0.9, 0.1, 0.5, 2.3).p('gold', S.k('S.cyl(0.12, 0.12, 0.04, 8).clone().rotateZ(Math.PI / 2)', () => S.cyl(0.12, 0.12, 0.04, 8).clone().rotateZ(Math.PI / 2)), 1.05, 0.1, 0.43, 2.3);
       coil(S, P, -1.2, 0.6);
-      P.p('cloth', S.ball(0.3, 0.6), 0.2, 0, 1.2, 0, 0, 1.3, 1, 1).p('rope', S.cyl(0.05, 0.05, 0.06, 8), 0.2, 0.34, 1.2);
-      if (r() < 0.7) P.p('cloth', S.ball(0.28, 0.55), 0.85, 0, 1.0, 0.8, 0, 1.4, 1, 1);
+      P.p('rope', S.ball(0.3, 0.6), 0.2, 0, 1.2, 0, 0, 1.3, 1, 1).p('rope', S.cyl(0.05, 0.05, 0.06, 8), 0.2, 0.34, 1.2);
+      if (r() < 0.7) P.p('rope', S.ball(0.28, 0.55), 0.85, 0, 1.0, 0.8, 0, 1.4, 1, 1);
       if (r() < 0.6) crate(S, P, -1.3, -0.9, 1.1, false);
       for (let k = 0; k < 4; k++) P.p('plank', S.box(0.1, 0.03, 0.62), 1.4 + k * 0.13, 0, -0.6 + (r() - 0.5) * 0.3, 0.3 + (r() - 0.5) * 0.6);
     },
@@ -409,10 +413,10 @@ const KINDS: Kind[] = [
     // The salt barrow tipped: its tray on its side, the salt spilled in a heap, the rake dropped beside it.
     name: 'barrow', R: 1.9, where: 'ground',
     make: (S, P, r) => {
-      P.p('plank', S.box(0.3, 0.5, 1.0), 0, 0, 0, 0.2).p('gold', S.box(0.32, 0.03, 1.02), 0, 0.47, 0, 0.2);
+      P.p('plank', S.box(0.3, 0.36, 1.0), 0, 0, 0, 0.2).p('gold', S.box(0.32, 0.03, 1.02), 0, 0.34, 0, 0.2);
       P.p('wood', S.ring(0.22, 0.04), -0.3, 0, 0.75, 0.2);
       for (const s of [-0.25, 0.25]) P.p('wood', S.log(0.03, 0.9, 6), 0.05, 0, -0.75 + s * 0.1, 1.77 + s);
-      P.p('salt', new THREE.ConeGeometry(0.8, 0.3, 12).translate(0, 0.15, 0), 0.75, 0, -0.05, 0, 0, 1.3, 1, 0.9);
+      P.p('cloth', S.k('saltheap', () => new THREE.ConeGeometry(0.6, 0.26, 12).translate(0, 0.13, 0)), 0.7, 0, -0.05, 0, 0, 1.3, 1, 0.9);
       P.p('wood', S.log(0.022, 1.7, 5), -0.6, 0, 0.9, 0.6).p('lacquer', S.box(0.05, 0.03, 0.45), -1.3, 0, 1.4, 0.6);
       if (r() < 0.5) basket(S, P, 1.1, 1.0, 0.28);
     },
@@ -428,7 +432,7 @@ const KINDS: Kind[] = [
       for (const s of [-0.7, 0.5]) P.p('plank', S.box(1.3, 0.05, 0.2), 0, 0.42, s);
       P.p('plank', S.log(0.035, 2.4, 6), 1.2, 0, -0.4, Math.PI / 2 + 0.15).p('plank', S.box(0.14, 0.03, 0.55), 1.32, 0, 0.75, 0.15);
       P.p('plank', S.log(0.035, 2.4, 6), 0.4, 0.5, 0.2, Math.PI / 2 - 0.1, 0.15);
-      P.p('wood', S.log(0.05, 3.0, 7), -1.3, 0, 0.6, Math.PI / 2 + 0.25).p('sail', S.sail(2.6, 1.5), -1.25, 0, 1.9, -Math.PI / 2 - 0.25);
+      P.p('wood', S.log(0.05, 3.0, 7), -1.3, 0, 0.6, Math.PI / 2 + 0.25).p('wine', S.sail(2.6, 1.5), -1.25, 0, 1.9, -Math.PI / 2 - 0.25);
       if (r() < 0.6) coil(S, P, 1.1, 1.8);
     },
   },
@@ -470,8 +474,8 @@ const KINDS: Kind[] = [
       for (let k = 0; k < 4; k++) P.p('rope', S.log(0.012, 0.25, 4), x + 0.1, 0, z + (k - 1.5) * 0.06, -0.4 + k * 0.25);
       // the anchor, stood fluke-down in the sand, leaning
       P.p('lacquer', S.cyl(0.06, 0.06, 1.3, 8), -1.0, -0.2, 0.9, 0.4, 0.35).p('lacquer', S.log(0.05, 0.9, 8), -1.0 + Math.sin(0.4) * 0.38, 0.95, 0.9 + Math.cos(0.4) * 0.38, 0.4 + Math.PI / 2);
-      P.p('lacquer', S.ring(0.4, 0.06, Math.PI).clone().rotateX(Math.PI / 2).rotateY(Math.PI / 2), -1.0, -0.05, 0.9, 0.4);
-      P.p('gold', S.ring(0.1, 0.022).clone().rotateX(Math.PI / 2), -1.0 + Math.sin(0.4) * 0.48, 1.15, 0.9 + Math.cos(0.4) * 0.48, 0.4);
+      P.p('lacquer', S.k('S.ring(0.4, 0.06, Math.PI).clone().rotateX(Math.PI / 2).rotateY(Math.PI / 2)', () => S.ring(0.4, 0.06, Math.PI).clone().rotateX(Math.PI / 2).rotateY(Math.PI / 2)), -1.0, -0.05, 0.9, 0.4);
+      P.p('gold', S.k('S.ring(0.1, 0.022).clone().rotateX(Math.PI / 2)', () => S.ring(0.1, 0.022).clone().rotateX(Math.PI / 2)), -1.0 + Math.sin(0.4) * 0.48, 1.15, 0.9 + Math.cos(0.4) * 0.48, 0.4);
       if (r() < 0.6) shells(S, P, r, 0.5, 1.0, 4, 0.6);
     },
   },
@@ -479,7 +483,7 @@ const KINDS: Kind[] = [
     // Out at sea: a ship capsized on the far rocks, keel to the sky, her mast broken off beside her.
     name: 'capsized', R: 9, where: 'sea',
     make: (S, P, r) => {
-      for (let k = 0; k < 7; k++) P.p('rock', new THREE.IcosahedronGeometry(1, 0), (r() - 0.5) * 12, -0.4, (r() - 0.5) * 16, r() * 6, 0, 2 + r() * 2, 1.4 + r() * 1.6, 2 + r() * 2);
+      for (let k = 0; k < 7; k++) P.p('rock', S.k('ico', () => new THREE.IcosahedronGeometry(1, 0)), (r() - 0.5) * 12, -0.4, (r() - 0.5) * 16, r() * 6, 0, 2 + r() * 2, 1.4 + r() * 1.6, 2 + r() * 2);
       P.p('lacquer', S.upturned(15, 5.4, 2.8), 0, 0.9, 0, 0, 0.14).p('wood', S.box(0.4, 0.5, 15), 0, 3.6, 0, 0, 0.14).p('gold', S.gunwale(15, 5.4), 0, 0.92, 0, 0, 0.14);
       P.p('wood', S.cyl(0.25, 0.32, 9, 8), 4, -0.3, 3, 0.8, 1.0).p('wood', S.log(0.15, 4.5, 7), 6.5, 0.2, -1.5, 0.3).p('sail', S.box(3.2, 0.05, 2.6), 7.5, 0.1, 4.8, 0.6, 0.12);
     },
@@ -489,11 +493,11 @@ export const SEA_SCENE_KINDS = KINDS.map((k) => k.name);
 
 /** Which kinds suit a place's kind (one is put near such a place, outside its stand). */
 const BY_PLACE: Record<string, string[]> = {
-  market: ['stall', 'cart'], village: ['washing', 'fire'], lighthouse: ['barrels'], beacon: ['barrels', 'fire'], wreck: ['chest', 'anchor'],
+  market: ['stall', 'cart'], village: ['washing', 'fire'], lighthouse: ['barrels'], beacon: ['barrels', 'fire'], wreck: ['flotsam', 'anchor'],
   shipyard: ['anchor', 'nets'], chapel: ['memorial'], fort: ['fight'], caves: ['smugglers'], saltworks: ['barrow'],
 };
 /** Kinds for the roads' verges and the open ground. */
-const ROADSIDE = ['cart', 'fire', 'nets', 'pots', 'fight', 'chest', 'anchor', 'washing', 'barrels', 'stall', 'memorial'];
+const ROADSIDE = ['cart', 'fire', 'nets', 'pots', 'fight', 'flotsam', 'anchor', 'washing', 'barrels', 'stall', 'memorial'];
 
 export function scenesOff() {
   return typeof location !== 'undefined' && /[?&]scenes=off\b/.test(location.search);
@@ -517,97 +521,152 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
   const used = new Map<string, number>();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), corner = new THREE.Vector3();
 
-  /** A part's world corners on the ground and its top, for a scene at (x, z) turned `yaw`, mirrored or not, its ground at `y0(x, z)`. */
-  const lay = (P: Parts, x: number, z: number, yaw: number, mir: number, beyond: boolean) => {
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    return P.list.map((p) => {
-      const kk = beyond ? 1 : GROUND_SCALE, lx = p.x * mir * kk, lz = p.z * kk, wx = x + c * lx + s * lz, wz = z - s * lx + c * lz, wyaw = yaw + p.yaw * mir;
+  /**
+   * Where each part of a scene at (x, z) turned `yaw` (mirrored or not) stands: its middle on the ground, a circle round it and its top
+   * (above its own ground), worked out from its shape's box without building it (a tilted part is given room for its lean). A ground
+   * scene is drawn `GROUND_SCALE` larger, and a part that this lifts over the knee is drawn lower instead (`sy`).
+   */
+  type Laid = { p: Part; wx: number; wz: number; wyaw: number; ground: number; cx: number; cz: number; r: number; top: number; k: number; sy: number };
+  const lay = (P: Parts, x: number, z: number, yaw: number, mir: number, beyond: boolean, ok: (L: Laid) => boolean): Laid[] | null => {
+    const c = Math.cos(yaw), s = Math.sin(yaw), k = beyond ? 1 : GROUND_SCALE, out: Laid[] = [];
+    for (const p of P.list) {
+      const lx = p.x * mir * k, lz = p.z * k, wx = x + c * lx + s * lz, wz = z - s * lx + c * lz, wyaw = yaw + p.yaw * mir;
       const ground = beyond ? Math.max(geo.height(wx - RING.x, wz - RING.z), WATER - 0.25) : 0;
-      const k = beyond ? 1 : GROUND_SCALE;
       const bb = p.g.boundingBox ?? (p.g.computeBoundingBox(), p.g.boundingBox!);
-      const sy0 = p.s[1] * k;
-      let sy = sy0, pts: [number, number][] = [], top = -1e9, cx = 0, cz = 0;
-      for (let pass = 0; pass < 2; pass++) {
-        m4.compose(v.set(wx, ground + p.y * k, wz), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * k, sy, p.s[2] * k));
-        pts = []; top = -1e9; cx = 0; cz = 0;
-        for (let i = 0; i < 8; i++) {
-          corner.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(m4);
-          if (!(i & 2)) pts.push([corner.x, corner.z]);
-          top = Math.max(top, corner.y - ground);
-          cx += corner.x / 8; cz += corner.z / 8;
-        }
-        // a ground scene's part that the larger drawing lifts over the knee is drawn lower instead
-        if (beyond || top <= KNEE - 0.02 || pass) break;
-        const base = p.y * k;
-        sy = sy0 * Math.max(0.3, (KNEE - 0.03 - base) / Math.max(0.01, top - base));
+      const sx = p.s[0] * k, sz = p.s[2] * k, ox = ((bb.min.x + bb.max.x) / 2) * sx, oz = ((bb.min.z + bb.max.z) / 2) * sz;
+      const cy = Math.cos(wyaw), sy2 = Math.sin(wyaw), lean = Math.abs(Math.sin(p.tilt)), up = Math.abs(Math.cos(p.tilt));
+      let sy = p.s[1] * k;
+      const topOf = (yy: number) => p.y * k + Math.max(bb.max.y * yy * up, bb.min.y * yy * up) + lean * Math.max(Math.abs(bb.min.z), Math.abs(bb.max.z)) * sz;
+      let top = topOf(sy);
+      if (!beyond && top > KNEE - 0.02) {
+        const base = p.y * k + lean * Math.max(Math.abs(bb.min.z), Math.abs(bb.max.z)) * sz;
+        sy *= Math.max(0.3, (KNEE - 0.03 - base) / Math.max(0.01, top - base));
+        top = topOf(sy);
       }
-      let r = 0;
-      for (const [px, pz] of pts) r = Math.max(r, Math.hypot(px - cx, pz - cz));
-      return { p, wx, wz, wyaw, ground, cx, cz, r, pts, top, k, sy };
-    });
+      const r = Math.hypot((bb.max.x - bb.min.x) * sx, (bb.max.z - bb.min.z) * sz) / 2 + lean * Math.max(Math.abs(bb.min.y), Math.abs(bb.max.y)) * sy;
+      const L: Laid = { p, wx, wz, wyaw, ground, cx: wx + cy * ox + sy2 * oz, cz: wz - sy2 * ox + cy * oz, r, top, k, sy };
+      if (!ok(L)) return null;
+      out.push(L);
+    }
+    return out;
   };
+  /** A placed part's real corners on the ground and its real top (for the probe), from its full transform. */
+  const corners = (L: Laid) => {
+    const p = L.p, bb = p.g.boundingBox!;
+    m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
+    const pts: [number, number][] = [];
+    let top = -1e9;
+    for (let i = 0; i < 8; i++) {
+      corner.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(m4);
+      if (!(i & 2)) pts.push([corner.x, corner.z]);
+      top = Math.max(top, corner.y - L.ground);
+    }
+    return { pts, top };
+  };
+  /** The depth's props and the land's houses, jetties, boats and trees, by squares of `CELL` m (each in every square within `NEAR` m of it). */
+  const CELL = 8, NEAR = 10, cells = new Map<number, { x: number; z: number; r: number; m: number }[]>();
+  const cellKey = (i: number, j: number) => i * 4096 + j;
+  for (const [list, m] of [[o.marks, 0.35], [taken, 0.6]] as const) for (const t of list) {
+    const e2 = t.r + NEAR;
+    for (let i = Math.floor((t.x - e2) / CELL); i <= Math.floor((t.x + e2) / CELL); i++) for (let j = Math.floor((t.z - e2) / CELL); j <= Math.floor((t.z + e2) / CELL); j++) {
+      const key = cellKey(i, j);
+      let c = cells.get(key);
+      if (!c) cells.set(key, (c = []));
+      c.push({ x: t.x, z: t.z, r: t.r, m });
+    }
+  }
+  const trees = taken.filter((t) => t.tree);
+  const allNear = [...o.marks.map((t) => ({ ...t, m: 0.35 })), ...taken.map((t) => ({ ...t, m: 0.6 }))];
+  /** The props near (x, z): everything within `NEAR` m of it at least (all of them for a scene wider than that). */
+  const propsNear = (x: number, z: number, reachM: number) => (reachM + 3 > NEAR ? allNear : cells.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL))) ?? []);
 
+  /** In a tidal flat as it is drawn (land.ts: an ellipse turned `rot`, wet out to `rx + 2`), with `pad` m more. */
+  const inFlat = (x: number, z: number, pad: number) => spec.flats.some((f) => {
+    const c = Math.cos(f.rot ?? 0), s2 = Math.sin(f.rot ?? 0), dx = x - f.x, dz = z - f.z, u = dx * c + dz * s2, w = -dx * s2 + dz * c, R = f.rx + 2;
+    return Math.hypot(u / (R + pad), w / (R * (f.rz / f.rx) + pad)) < 1;
+  });
   /** Is every part clear? Walkable scenes: low, inside the outline, off roads, cover, spots, places, flats, the depth's props. */
-  const fits = (k: Kind, laid: ReturnType<typeof lay>, x: number, z: number) => {
+  const partCheck = (k: Kind, x: number, z: number) => {
     const R = reach(k) + 1;
-    if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + reach(k) + 1.5)) return false;
     const nearKeep = keep.filter((s) => Math.hypot(s.x - x, s.z - z) < R + 3.5);
     const nearCover = o.cover.filter((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < R + c.r + 1);
     const nearRoads = roads.filter((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < R + 2.5);
-    const nearMarks = o.marks.filter((m) => Math.hypot(m.x - x, m.z - z) < R + m.r + 1.2);
+    const nearProps = propsNear(x, z, R).filter((m) => Math.hypot(m.x - x, m.z - z) < R + m.r + 1.5);
     const nearPlaces = spec.places.filter((p) => Math.hypot(p.x - x, p.z - z) < R + p.r + 1.5);
-    const nearTaken = taken.filter((t) => Math.hypot(t.x - x, t.z - z) < R + t.r + 1.5);
-    for (const L of laid) {
+    return (L: Laid) => {
       const { cx, cz, r } = L;
       if (nearKeep.some((s) => Math.hypot(s.x - cx, s.z - cz) < 3.1 + r)) return false;
       if (nearCover.some((c) => segDist(cx, cz, c.ax, c.az, c.bx, c.bz) < c.r + 0.6 + r)) return false;
       if (nearRoads.some((s) => segDist(cx, cz, s.ax, s.az, s.bx, s.bz) < 2.0 + r)) return false;
-      if (nearMarks.some((m) => Math.hypot(m.x - cx, m.z - cz) < m.r + 0.35 + r)) return false;
+      if (nearProps.some((m) => Math.hypot(m.x - cx, m.z - cz) < m.r + m.m + r)) return false;
       if (nearPlaces.some((p) => Math.hypot(p.x - cx, p.z - cz) < p.r + 0.8 + r)) return false;
-      if (nearTaken.some((t) => Math.hypot(t.x - cx, t.z - cz) < t.r + 0.6 + r)) return false;
       const b = geo.beyond(cx - RING.x, cz - RING.z);
       if (k.where === 'ground') {
         if (b > -0.8 - r || L.top > KNEE) return false;
-        if (spec.flats.some((f) => Math.hypot((cx - f.x) / (f.rx + 1 + r), (cz - f.z) / (f.rz + 1 + r)) < 1.1)) return false;
+        if (inFlat(cx, cz, r + 0.5)) return false;
       } else if (k.where === 'beach') {
         // past the outline (its invisible edge walls reach 1.2 m out), never far up the land
         if (b < 1.4 + r || b > 14) return false;
         const gh = geo.height(cx - RING.x, cz - RING.z);
         if (k.wet) { if (gh < WATER - 0.4 || geo.seaSide(cx - RING.x, cz - RING.z) < 0.5) return false; }
-        else if (gh < WATER + 0.1 || geo.steepness(cx - RING.x, cz - RING.z) > 0.3 || geo.cliff(cx - RING.x, cz - RING.z) > 0.2) return false;
+        else if (gh < WATER - 0.35 || geo.steepness(cx - RING.x, cz - RING.z) > 0.7 || geo.cliff(cx - RING.x, cz - RING.z) > 0.2) return false;
       } else if (b < 16) return false;
-    }
+      return true;
+    };
+  };
+  /** The whole scene: a dry-ground beach scene stands on fairly even ground. */
+  const sceneFits = (k: Kind, laid: Laid[]) => {
     if (k.where === 'beach') {
-      // never south of the walkable ground (between the camera and a hero)
-      const dz = z - RING.z, d = Math.hypot(x - RING.x, dz) || 1;
-      if (dz / d > 0.35) return false;
       if (!k.wet) {
         let lo = 1e9, hi = -1e9;
         for (const L of laid) { lo = Math.min(lo, L.ground); hi = Math.max(hi, L.ground); }
-        if (hi - lo > 0.45) return false;
+        if (hi - lo > 0.6) return false;
       }
+    }
+    return true;
+  };
+
+  /** The cheap tests on a scene's middle alone, before its parts are made: spacing, the outline, a spot, a road, the cover, a place. */
+  const roughly = (k: Kind, x: number, z: number) => {
+    if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + reach(k) + 1.5)) return false;
+    const b = geo.beyond(x - RING.x, z - RING.z);
+    if (k.where === 'ground' ? b > -1.2 : k.where === 'beach' ? b < 1.4 || b > 16 : b < 16) return false;
+    if (keep.some((s) => Math.hypot(s.x - x, s.z - z) < 3.2)) return false;
+    if (roads.some((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < 2.2)) return false;
+    if (o.cover.some((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < c.r + 0.4)) return false;
+    if (spec.places.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 0.8)) return false;
+    if (k.where === 'beach') {
+      // never south of the walkable ground (between the camera and a hero); a dry-ground scene's middle on dry ground
+      const dz = z - RING.z, d = Math.hypot(x - RING.x, dz) || 1, gh = geo.height(x - RING.x, z - RING.z);
+      if (dz / d > 0.35) return false;
+      if (k.wet ? gh < WATER - 0.4 || geo.seaSide(x - RING.x, z - RING.z) < 0.5 : gh < WATER + 0.02) return false;
+      if (propsNear(x, z, 0).some((m) => Math.hypot(m.x - x, m.z - z) < m.r + m.m)) return false;
+      if (trees.some((t) => t.z > z - 1 && t.z < z + 10 && Math.abs(t.x - x) < 5)) return false;
     }
     if (k.where === 'sea' && geo.sea(x - RING.x, z - RING.z) < 0.97) return false;
     return true;
   };
-
   /** Tries a kind round (x, z): a few turns and nudges. */
   const tryPut = (name: string, x: number, z: number, jitter: number, faceYaw?: number) => {
     const k = kinds.get(name)!;
     if ((used.get(name) ?? 0) >= (cap.get(name) ?? 0)) return false;
     for (let t = 0; t < 5; t++) {
-      const P = new Parts(), sub = seeded(Math.floor(rnd() * 1e9));
-      k.make(S, P, sub);
+      const sub = seeded(Math.floor(rnd() * 1e9));
       const px = x + (rnd() - 0.5) * jitter * (t ? 1 : 0), pz = z + (rnd() - 0.5) * jitter * (t ? 1 : 0);
       const yaw = faceYaw !== undefined ? faceYaw + (rnd() - 0.5) * 0.5 : rnd() * Math.PI * 2, mir = rnd() < 0.5 ? 1 : -1;
-      const laid = lay(P, px, pz, yaw, mir, k.where !== 'ground');
-      if (!fits(k, laid, px, pz)) continue;
+      if (!roughly(k, px, pz)) continue;
+      const P = new Parts();
+      k.make(S, P, sub);
+      const chk = partCheck(k, px, pz);
+      const laid = lay(P, px, pz, yaw, mir, k.where !== 'ground', chk);
+      if (!laid || !sceneFits(k, laid)) continue;
       const pts: [number, number][] = [];
       let top = 0;
       for (const L of laid) {
         dress.add(L.p.key, L.p.g, L.wx, L.ground + L.p.y * L.k, L.wz, L.wyaw, L.p.s[0] * L.k, L.sy, L.p.s[2] * L.k, L.p.tilt);
-        pts.push(...L.pts, [L.cx, L.cz]);
-        top = Math.max(top, L.top);
+        const cn = corners(L);
+        pts.push(...cn.pts, [L.cx, L.cz]);
+        top = Math.max(top, cn.top);
       }
       let r = 0;
       for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));
@@ -654,9 +713,9 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
   // 4. The beach past the outline, on the sea's side; 5. a wreck far out on the rocks.
   const seaDir = geo.m === 1 ? 0 : Math.PI;
   const beach = KINDS.filter((k) => k.where === 'beach').map((k) => k.name);
-  for (let t = 0, made = 0; t < 160 && made < 6; t++) {
+  for (let t = 0, made = 0; t < 320 && made < 6; t++) {
     // half the tries on the sea's side, half anywhere round (headlands, the land's side)
-    const a = t % 2 ? seaDir + (rnd() - 0.5) * 2.6 : rnd() * Math.PI * 2, rr = rimAt(spec.rim, a), d = rr + 2.2 + rnd() * 5;
+    const a = t % 2 ? seaDir + (rnd() - 0.5) * 2.6 : rnd() * Math.PI * 2, rr = rimAt(spec.rim, a), d = rr + 1.8 + rnd() * 4;
     const x = RING.x + Math.cos(a) * d, z = RING.z + Math.sin(a) * d;
     if (tryPut(pick(rnd, beach), x, z, 0.8, Math.atan2(Math.cos(a), Math.sin(a)))) made++;
   }

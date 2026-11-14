@@ -38,6 +38,10 @@ export interface LandSpec {
   ruin?: { dx: number; dz: number };
   /** The zone's cover (world coordinates): the depth's looks keep off it (depth.ts). */
   cover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
+  /** The cover without the outline's invisible edge walls (nothing is drawn there), for the scenes (scenes/sea.ts). */
+  sceneCover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
+  /** Other things the scenes keep off (world): the harbour file's props, which load later. */
+  sceneTaken?: { x: number; z: number; r: number }[];
   /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
   keep?: { x: number; z: number }[];
 }
@@ -537,7 +541,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
 
   // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).
   const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
-    ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6 })), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 1 }))] });
+    ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6, tree: true })), ...(spec.sceneTaken ?? []), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 0.7 }))] });
   dress.build(into, own);
 
   return {

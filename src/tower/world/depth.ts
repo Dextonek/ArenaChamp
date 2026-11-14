@@ -29,7 +29,7 @@ export interface DepthIn {
   /** The zone's cover in world coordinates. */
   cover: Seg[];
   /** The land's houses and jetties (offsets from the middle) and boats (world), for the scenes to keep off. */
-  taken?: { x: number; z: number; r: number }[];
+  taken?: { x: number; z: number; r: number; tree?: boolean }[];
 }
 
 const segDist = (px: number, pz: number, s: Seg) => {
@@ -280,8 +280,9 @@ export function buildDepth(o: DepthIn) {
   fly(0);
 
   // --- scenes: little stories told in props (scenes/sea.ts), their own random stream ---------------------------------------------------
-  const scenes = buildSeaScenes({ spec, geo, dress: o.dress, cover: o.cover, marks, taken: o.taken ?? [] });
+  const scenes = buildSeaScenes({ spec, geo, dress: o.dress, cover: spec.sceneCover ?? o.cover, marks, taken: o.taken ?? [] });
   o.into.userData.seaScenes = scenes;
+  o.into.userData.depthMarks = marks; // for the probe (pipeline/tools/scenes-probe.js)
 
   return { glows, update: fly };
 }
