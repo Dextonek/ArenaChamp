@@ -12,8 +12,9 @@ import { hex } from './accounts.mjs';
 import { Clans } from './clans.mjs';
 import {
   CLAN, ELO, LEADER_SIZE, HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
-  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
+  WORLD_PACKS, isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
 } from './protocol.mjs';
+import { CLIMB_PACKS } from './climb-packs.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -104,12 +105,19 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null, world?: WorldSeat | null }} Client
  *   `watching`: a duel this client watches without playing in it (it has no `match`, so nothing it sends can act in one).
  *   `world`: the Climb's floor this client walks, in one of its shards (the open world, pipeline/designs/climb-open-world.md).
- * @typedef {{ id: string, floor: number, members: Set<Client> }} WorldShard
+ * @typedef {{ id: string, floor: number, members: Set<Client>, packs: Map<string, WorldPack> }} WorldShard
  *   One shard of a Climb floor: at most `WORLD.shardMax` players who see each other. `id`: the floor and the shard's number ("2.1").
+ *   `packs`: the packs someone in it woke or cleared (stage 2); a pack not here is each screen's own.
+ * @typedef {{ id: string, home: { x: number, z: number }, owner: Client | null, n: number, x: number, z: number, hits: Map<number, number>,
+ *   cleared: boolean, clearedAt: number, lastAt: number }} WorldPack
+ *   A shared pack: whose screen runs it (null once cleared), how many players its numbers are set for (`n`, only ever up), where it
+ *   fights now (its owner's last report), who hit it and when (seat id to the hub's clock), and when it was cleared.
  * @typedef {{ shard: WorldShard, id: number, hero: string, x: number, z: number, yaw: number, walk: boolean, hp: number,
- *   moves: number, movesFrom: number, casts: number[], lastLabel: string, lastLabelAt: number }} WorldSeat
+ *   moves: number, movesFrom: number, casts: number[], lastLabel: string, lastLabelAt: number,
+ *   rate?: { from: number, states: number, hits: number, hurts: number } }} WorldSeat
  *   A player in a shard: its id there (one number for the connection), its hero, where it last said it stood, and its rate limits:
- *   the moves of the second that began at `movesFrom`, when its last casts went out, and its last spell and when.
+ *   the moves of the second that began at `movesFrom`, when its last casts went out, and its last spell and when; `rate`: its
+ *   pack messages of the second that began at `rate.from`.
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[], raid: string | null, open: boolean, max: number }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
@@ -394,6 +402,18 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return worldMove(c, m);
       case 'world_cast':
         return worldCast(c, m);
+      case 'pack_claim':
+        return packClaim(c, m);
+      case 'pack_state':
+        return packState(c, m);
+      case 'pack_hit':
+        return packHit(c, m);
+      case 'pack_hurt':
+        return packHurt(c, m);
+      case 'pack_clear':
+        return packClear(c, m);
+      case 'pack_release':
+        return packRelease(c, m);
       case 'logout': {
         const was = c.name;
         for (const [tok, n] of sessions) if (n === c.name) sessions.delete(tok);
@@ -1171,7 +1191,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         // The lowest number not in use on this floor.
         let n = 1;
         while (shards.some((s) => s.id === `${m.floor}.${n}`)) n++;
-        shard = { id: `${m.floor}.${n}`, floor: m.floor, members: new Set() };
+        shard = { id: `${m.floor}.${n}`, floor: m.floor, members: new Set(), packs: new Map() };
         shards.push(shard);
       }
       seat = { shard, id: ++worldIds, hero: m.hero, ...at, yaw, walk: false, hp: 1, moves: 0, movesFrom: 0, casts: [], lastLabel: '', lastLabelAt: 0 };
@@ -1186,7 +1206,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       if (x === c || !x.world) continue;
       players.push({ id: x.world.id, name: x.name, tag: tagOf(x.name), hero: x.world.hero, ...worldSeen(x.world) });
     }
-    send(c, { t: 'world_roster', shard: shard.id, floor: shard.floor, you: seat.id, max: WORLD.shardMax, players });
+    send(c, { t: 'world_roster', shard: shard.id, floor: shard.floor, you: seat.id, max: WORLD.shardMax, players, packs: packList(shard) });
   }
 
   /** Out of its shard, if it was in one: the others hear `world_left`, and an empty shard is gone. @param {Client} c */
@@ -1197,6 +1217,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const shard = seat.shard;
     shard.members.delete(c);
     tellShard(shard, { t: 'world_left', id: seat.id }, null);
+    // Its packs go to the oldest member near each (as the Raid's brain is handed on), or to nobody.
+    for (const p of shard.packs.values()) if (p.owner === c) packHandOn(shard, p, now());
     if (!shard.members.size) {
       const shards = (worlds.get(shard.floor) ?? []).filter((s) => s !== shard);
       if (shards.length) worlds.set(shard.floor, shards);
@@ -1220,6 +1242,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     seat.walk = !!m.walk;
     if (num(m.hp)) seat.hp = Math.round(Math.max(0, Math.min(1, m.hp)) * 1000) / 1000;
     tellShard(seat.shard, { t: 'world_moved', id: seat.id, ...worldSeen(seat), ts: num(m.ts) ? m.ts : undefined }, c);
+    packWatch(seat.shard, now());
   }
 
   /**
@@ -1240,6 +1263,245 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     seat.lastLabelAt = t;
     const from = worldPlace(m.x, m.z), to = worldPlace(m.tx, m.tz);
     tellShard(seat.shard, { t: 'world_cast', id: seat.id, label: m.label, x: from.x, z: from.z, tx: to.x, tz: to.z }, c);
+  }
+
+  // --- the Climb's open world, stage 2: shared packs (pipeline/designs/climb-open-world.md) -------------------------------
+  // In a shard, a pack is run by one screen (its owner: the first to wake it) and drawn by the others, who send it their hits through
+  // here. The owner is trusted with its pack (fine for co-op, not for ranked play): the hub checks that the pack is the floor's, that
+  // only its owner speaks for it, clamps the places and limits how fast anyone sends. It counts the players in each fight (for the
+  // pack's numbers), hands a pack on when its owner leaves or goes quiet, and brings a cleared pack back after a while.
+
+  const PK = WORLD_PACKS;
+  /** Each floor's pack ids and homes, from the table (server/climb-packs.mjs). @type {Map<number, Map<string, { x: number, z: number }>>} */
+  const floorPacks = new Map();
+  /** @param {number} floor @param {unknown} id */
+  function packHome(floor, id) {
+    let packs = floorPacks.get(floor);
+    if (!packs) {
+      packs = new Map((CLIMB_PACKS[floor] ?? []).map(([pid, x, z]) => [pid, { x, z }]));
+      floorPacks.set(floor, packs);
+    }
+    return typeof id === 'string' ? packs.get(id) ?? null : null;
+  }
+
+  /** What a newcomer is told of a shard's packs. @param {WorldShard} shard */
+  const packList = (shard) => [...shard.packs.values()].map((p) => ({ id: p.id, owner: p.owner?.world?.id ?? 0, n: p.n, cleared: p.cleared }));
+
+  /**
+   * One of the seat's pack messages of this second: false (drop it) past `max`.
+   * @param {WorldSeat} seat @param {'states' | 'hits' | 'hurts'} kind @param {number} max @param {number} t
+   */
+  function packRate(seat, kind, max, t) {
+    const r = (seat.rate ??= { from: t, states: 0, hits: 0, hurts: 0 });
+    if (t - r.from >= 1000) { r.from = t; r.states = r.hits = r.hurts = 0; }
+    return ++r[kind] <= max;
+  }
+
+  /**
+   * The players in a pack's fight now: its owner, whoever stands within `fightR` m of it, whoever hit it in the last `hitS` s.
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   */
+  function packFight(shard, p, t) {
+    let n = 0;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (!s) continue;
+      if (x === p.owner || Math.hypot(s.x - p.x, s.z - p.z) <= PK.fightR || t - (p.hits.get(s.id) ?? -Infinity) <= PK.hitS * 1000) n++;
+    }
+    return Math.max(1, n);
+  }
+
+  /**
+   * A pack whose fight grew is set for more players (never fewer: leaving cannot make it weaker), and the shard hears it.
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   */
+  function packCount(shard, p, t) {
+    if (p.cleared || !p.owner) return;
+    const n = packFight(shard, p, t);
+    if (n <= p.n) return;
+    p.n = n;
+    tellShard(shard, { t: 'pack_scale', pack: p.id, n }, null);
+  }
+
+  /**
+   * The pack's owner is gone (left, went quiet): the oldest member near it takes it on, one heard from lately first (as `nextBrain`
+   * hands the Raid's boss on); with nobody near, nobody runs it and every screen has it to itself again (the record goes).
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   */
+  function packHandOn(shard, p, t) {
+    const was = p.owner;
+    /** @type {Client | null} */
+    let next = null;
+    /** @type {Client | null} */
+    let any = null;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (x === was || !s || Math.hypot(s.x - p.x, s.z - p.z) > PK.handR) continue;
+      if (Date.now() - (x.seenAt ?? 0) < PK.quietMs) { next = x; break; }
+      any ??= x;
+    }
+    next ??= any;
+    if (!next) {
+      shard.packs.delete(p.id);
+      tellShard(shard, { t: 'pack_owner', pack: p.id, owner: 0, n: p.n }, null);
+      return;
+    }
+    p.owner = next;
+    p.lastAt = t;
+    tellShard(shard, { t: 'pack_owner', pack: p.id, owner: /** @type {WorldSeat} */ (next.world).id, n: p.n }, null);
+  }
+
+  /**
+   * Now and then (each walk in the shard): a fight that grew is counted, an owner quiet for `quietMs` is replaced, and a pack cleared
+   * `respawnS` ago comes back when two or more walk the shard and nobody stands within `clearR` m of its home.
+   * @param {WorldShard} shard @param {number} t
+   */
+  function packWatch(shard, t) {
+    if (!shard.packs.size) return;
+    for (const p of [...shard.packs.values()]) {
+      if (p.cleared) {
+        if (t - p.clearedAt < PK.respawnS * 1000 || shard.members.size < 2) continue;
+        let near = false;
+        for (const x of shard.members) if (x.world && Math.hypot(x.world.x - p.home.x, x.world.z - p.home.z) < PK.clearR) near = true;
+        if (near) continue;
+        shard.packs.delete(p.id);
+        tellShard(shard, { t: 'pack_respawn', pack: p.id }, null);
+        continue;
+      }
+      if (t - p.lastAt > PK.quietMs) { packHandOn(shard, p, t); continue; }
+      packCount(shard, p, t);
+    }
+  }
+
+  /** The seat's shard and the pack named, if the floor has it. @param {Client} c @param {any} m */
+  function packOf(c, m) {
+    const seat = c.world;
+    if (!seat) return null;
+    const home = packHome(seat.shard.floor, m.pack);
+    if (!home) return null;
+    return { seat, shard: seat.shard, home, id: /** @type {string} */ (m.pack), p: seat.shard.packs.get(m.pack) ?? null };
+  }
+
+  /**
+   * `pack_claim { pack, x, z }`: this screen woke the pack (`x`, `z`: where it stands). Nobody runs it: this screen does, set for the
+   * players near it, and the shard hears `pack_owner`. Another runs it: only this screen hears whose it is (it draws the pack). Cleared:
+   * `pack_cleared` to this screen. A pack the floor does not have: `error`.
+   * @param {Client} c @param {any} m
+   */
+  function packClaim(c, m) {
+    if (!c.world) return;
+    const k = packOf(c, m);
+    if (!k) return fail(c, 'No such pack on this floor');
+    const t = now();
+    if (k.p?.cleared) return send(c, { t: 'pack_cleared', pack: k.id });
+    if (k.p?.owner) {
+      send(c, { t: 'pack_owner', pack: k.id, owner: /** @type {WorldSeat} */ (k.p.owner.world).id, n: k.p.n });
+      return packCount(k.shard, k.p, t);
+    }
+    const at = num(m.x) && num(m.z) ? worldPlace(m.x, m.z) : k.home;
+    /** @type {WorldPack} */
+    const p = { id: k.id, home: k.home, owner: c, n: 1, x: at.x, z: at.z, hits: new Map(), cleared: false, clearedAt: 0, lastAt: t };
+    p.n = packFight(k.shard, p, t);
+    k.shard.packs.set(k.id, p);
+    tellShard(k.shard, { t: 'pack_owner', pack: k.id, owner: k.seat.id, n: p.n }, null);
+  }
+
+  /** A number from a report, finite and within bounds, to the mm. @param {unknown} v */
+  const packNum = (v) => (num(v) ? mm(Math.max(-1e6, Math.min(1e6, v))) : 0);
+
+  /**
+   * `pack_state { packs: [{ id, x, z, u, zn }] }`: the owner's packs, ten times a second. `u`: each unit, 0 when it has fallen, else
+   * `[x, z, yaw, hp, max, walk, swing, pose, shots]`; `zn`: the red zones on the ground. Only the owner's own packs pass, places
+   * clamped, numbers made finite; each goes to the members within `seeR` m of it, with the players it is set for (`n`).
+   * @param {Client} c @param {any} m
+   */
+  function packState(c, m) {
+    const seat = c.world;
+    if (!seat || !Array.isArray(m.packs) || m.packs.length > 16) return;
+    const t = now();
+    if (!packRate(seat, 'states', PK.statesPerS, t)) return;
+    const shard = seat.shard;
+    /** @type {{ p: WorldPack, text: string }[]} */
+    const out = [];
+    for (const r of m.packs) {
+      const p = r && shard.packs.get(r.id);
+      if (!p || p.owner !== c || p.cleared || !Array.isArray(r.u) || r.u.length > PK.units) continue;
+      const at = worldPlace(r.x, r.z);
+      p.x = at.x;
+      p.z = at.z;
+      p.lastAt = t;
+      const u = r.u.map((/** @type {unknown} */ v) => {
+        if (!Array.isArray(v)) return 0;
+        const w = v.slice(0, 10).map(packNum), place = worldPlace(w[0], w[1]);
+        w[0] = place.x;
+        w[1] = place.z;
+        return w;
+      });
+      const zn = Array.isArray(r.zn) ? r.zn.slice(0, PK.zones).filter(Array.isArray).map((/** @type {unknown[]} */ v) => v.slice(0, 10).map(packNum)) : [];
+      out.push({ p, text: JSON.stringify({ id: p.id, n: p.n, x: p.x, z: p.z, u, zn }) });
+    }
+    if (!out.length) return;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (x === c || !s) continue;
+      const near = out.filter((o) => Math.hypot(s.x - o.p.x, s.z - o.p.z) <= PK.seeR);
+      if (near.length) sendText(x, `{"t":"pack_state","packs":[${near.map((o) => o.text).join(',')}]}`);
+    }
+    for (const o of out) packCount(shard, o.p, t);
+  }
+
+  /**
+   * `pack_hit { pack, u, dmg }`: this screen's hero hit a unit of a pack another screen runs. Rate-limited (`hitsPerS`, at most `hitMax`
+   * each); goes to the owner as `pack_hit { pack, u, dmg, by }`, and the hitter is in the fight for `hitS` s.
+   * @param {Client} c @param {any} m
+   */
+  function packHit(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.cleared || !k.p.owner || k.p.owner === c) return;
+    if (!Number.isInteger(m.u) || m.u < 0 || m.u >= PK.units || !num(m.dmg) || m.dmg <= 0) return;
+    const t = now();
+    if (!packRate(k.seat, 'hits', PK.hitsPerS, t)) return;
+    k.p.hits.set(k.seat.id, t);
+    send(k.p.owner, { t: 'pack_hit', pack: k.id, u: m.u, dmg: Math.round(Math.min(PK.hitMax, m.dmg) * 10) / 10, by: k.seat.id });
+    packCount(k.shard, k.p, t);
+  }
+
+  /**
+   * `pack_hurt { pack, to, share, x, z, kind?, net? }`: the owner's pack struck another player's hero (`share` of its health before the
+   * hero's own shields and boons, from `x`, `z`; `net`: a hold, `root` or `slow` for `s` seconds). Only the pack's owner, only to a
+   * player in the shard; goes to that player alone.
+   * @param {Client} c @param {any} m
+   */
+  function packHurt(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || !num(m.share) || !Number.isInteger(m.to)) return;
+    const t = now();
+    if (!packRate(k.seat, 'hurts', PK.hurtsPerS, t)) return;
+    let to = null;
+    for (const x of k.shard.members) if (x !== c && x.world?.id === m.to) to = x;
+    if (!to) return;
+    const at = worldPlace(m.x, m.z);
+    const net = m.net && (m.net.kind === 'root' || m.net.kind === 'slow') && num(m.net.s) ? { kind: m.net.kind, s: Math.max(0, Math.min(3, m.net.s)) } : undefined;
+    const kind = typeof m.kind === 'string' && m.kind.length <= WORLD.labelMax ? m.kind : undefined;
+    send(to, { t: 'pack_hurt', pack: k.id, share: Math.round(Math.max(0, Math.min(1, m.share)) * 1e4) / 1e4, x: at.x, z: at.z, kind, net, by: k.seat.id });
+  }
+
+  /** `pack_clear { pack }`: the owner's pack is down to the last unit. The shard hears `pack_cleared`; it comes back after `respawnS`. @param {Client} c @param {any} m */
+  function packClear(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || k.p.cleared) return;
+    k.p.cleared = true;
+    k.p.clearedAt = now();
+    k.p.owner = null;
+    tellShard(k.shard, { t: 'pack_cleared', pack: k.id }, c);
+  }
+
+  /** `pack_release { pack }`: the owner's pack gave up and is home asleep: nobody runs it now (`pack_owner` with owner 0). @param {Client} c @param {any} m */
+  function packRelease(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || k.p.cleared) return;
+    k.shard.packs.delete(k.id);
+    tellShard(k.shard, { t: 'pack_owner', pack: k.id, owner: 0, n: k.p.n }, null);
   }
 
   /** Pairs the two longest-waiting players with different heroes (one effect per spell label on the client). */
