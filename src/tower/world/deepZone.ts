@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
+import { buildDeepDepth } from './deepDepth';
 import { Kit } from './f45/zonekit';
 import { rimAt } from './land';
 import type { Piece } from './zone';
@@ -586,6 +587,9 @@ export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: 
     own.push(geo);
   }
 
+  // The mine dressed as a place people worked in, and the far cave (deepDepth.ts; looks only, its own random stream).
+  const depth = buildDeepDepth({ look, cave, into: g, own, waterLevel: WATER });
+
   dress.build(g, own, (x, z) => cave.beyond(x - RING.x, z - RING.z) < 14);
   kit.build(g, own);
   const warmG = new Glows(warm, 0xffa040, 1.5), coolG = new Glows(cool, 0x6a48d0, 1.5);
@@ -594,7 +598,7 @@ export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: 
 
   return {
     group: g,
-    update(_dt, time) { warmG.update(time); coolG.update(time); },
+    update(_dt, time) { warmG.update(time); coolG.update(time); depth.update(time); },
     dispose() {
       g.removeFromParent();
       for (const o of own) o.dispose();
