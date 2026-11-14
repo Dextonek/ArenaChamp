@@ -12,7 +12,8 @@ import type { Battlefield, WarLook } from '../warZone';
  * Each story has one main piece big enough to read from the game's camera at its centre (a great standard fallen flat, a war cart's
  * bed, a catapult, a ram, a trench's line of sandbags, a dispatch chest...), its spill round it, and a ground of its own painted into the
  * zone's map (churned mud, trampled grass, scorch, wheel ruts and drag marks to the road, hoof marks, spilled grain, a soft dark under the
- * big pieces, which cast no shadow). Every kind has two or three layouts; floors pick which comes first.
+ * big pieces, which cast no shadow). Every kind has two or three layouts; floors pick which comes first (the ladder and the far stories
+ * by the floor's seed).
  * - In the open ground, only low things (knee height, 0.6 m, at most): the aftermath of a clash, a last stand, a camp's fire, a smith's
  *   forge, the wounded's stretchers, a wrecked siege engine, fresh graves, a spilled load, a field of stakes or spiked logs, a rider's
  *   caparison and saddle, a courier's chest and papers, a broken trench, an abandoned ram, the drummers' drums, a banner still
@@ -100,6 +101,9 @@ const VARIANTS: Partial<Record<WarSceneKind, number>> = {
   trench: 2, ram: 2, drums: 2, smoulder: 2, captured: 2, stores: 2,
 };
 const BEYOND: WarSceneKind[] = ['farmhouse', 'tents', 'graveyard', 'watchtower'];
+/** Kinds with two layouts whose first is chosen by the floor's seed, not drawn (added after the first refinement: drawing would move
+ * every other story). */
+const SEEDED: WarSceneKind[] = ['ladder', 'farmhouse', 'tents', 'graveyard', 'watchtower'];
 /** What an echo prop between a scene and the road shows: 0 arrows towards the fight, 1 a dropped crate and sack, 2 a shield and a
  * helmet, 3 a wheel (or a stone shot in its crater), 4 papers blown along. */
 const ECHO: Partial<Record<WarSceneKind, number[]>> = {
@@ -166,10 +170,11 @@ export function planWarScenes(o: WarScenesPlanIn): WarScene[] {
   // which layout each kind starts with on this floor (then they take turns), so floor 42's aftermath is not floor 45's
   const first: Partial<Record<WarSceneKind, number>> = {};
   for (const k of Object.keys(VARIANTS) as WarSceneKind[]) first[k] = Math.floor(rnd() * VARIANTS[k]!);
+  for (const k of SEEDED) first[k] = (look.seed + k.length) % 2;
   const count = (k: WarSceneKind) => placed.filter((s) => s.kind === k).length;
   const stories = () => placed.filter((s) => s.kind !== 'trail').length;
   const put = (kind: WarSceneKind, x: number, z: number, yaw: number, out = false, host?: number, v?: number) => {
-    const nv = VARIANTS[kind] ?? 1;
+    const nv = VARIANTS[kind] ?? (SEEDED.includes(kind) ? 2 : 1);
     placed.push({ kind, x, z, yaw, m: rnd() < 0.5 ? 1 : -1, R: SIZE[kind], side: sideOf(x), v: v ?? ((first[kind] ?? 0) + count(kind)) % nv, beyond: out, host });
   };
   /** Tries a kind at `tries` spots drawn by `spot`; the first clear one wins. */
@@ -866,7 +871,7 @@ export function buildWarScenes(o: {
       ruts(0, 2.4, 2.0);
       if (cur.v === 2) { // a bow-engine: the stock, its two arms apart, the winch, a giant bolt with its gold head
         add(S.box(0.45, 0.3, 4.2), 'plank', 0, 0, 0);
-        add(S.box(0.47, 0.04, 4.22), 'gold', 0, 0.3, 0);
+        for (const e2 of [-0.22, 0.22]) add(S.box(0.04, 0.04, 4.22), 'gold', e2, 0.3, 0); // gold on its edges only
         for (const s of [-1, 1]) sub(s * 1.2, -1.8, s * 0.5, () => { add(S.box(0.2, 0.2, 2.6), 'wood', 0, 0, 0); add(S.box(0.22, 0.05, 0.1), 'gold', 0, 0.2, s * 1.25); });
         add(S.log(0.2, 1.1, 10), 'dark', 0, 0, 1.8, Math.PI / 2 * 0); add(S.box(0.05, 0.05, 0.8), 'iron', 0.6, 0.2, 1.8);
         sub(1.3, 0.6, 0.12, () => { add(S.log(0.07, 3.4, 8), 'wood', 0, 0, 0, Math.PI / 2); add(S.cone(0.15, 0.5, 4), 'gold', 0, 0.07, -1.95, 0, 1, 1, 1, -Math.PI / 2); for (let k = 0; k < 3; k++) add(S.box(0.01, 0.16, 0.4), 'paper', 0, 0.07, 1.5, (k / 3) * Math.PI); });
@@ -1190,7 +1195,7 @@ export function buildWarScenes(o: {
       const a = army();
       prints(0, 0, 1.2, 6);
       switch (cur.v) {
-        case 0: for (let k = 0; k < 7; k++) arrow(r(-0.5, 0.5), -1.2 + k * 0.4, Math.PI + r(-0.12, 0.12), 0.5); break;
+        case 0: for (let k = 0; k < 7; k++) arrow(r(-0.5, 0.5), -1.2 + k * 0.4, Math.PI + r(-0.12, 0.12), 0.5); helmet(r(-0.6, 0.6), -1.0, true); break;
         case 1: crate(r(-0.3, 0.3), r(-0.3, 0.3), rnd() < 0.5); splitSack(0.7, 0.6, rnd() * 6.28); break;
         case 2: shield(0, 0, a, rnd() < 0.7, undefined, rnd() < 0.3 ? 0.2 : 0); helmet(0.7, 0.6); if (rnd() < 0.5) sword(-0.6, 0.4); break;
         case 3:
@@ -1206,6 +1211,17 @@ export function buildWarScenes(o: {
       const d = 1.2, len = 1.7, lean = 0.18;
       stain(0, 0.4, 2.0, 1.4, PAINT.mud, 0.5);
       prints(0, 0, 1.8, 12);
+      if (cur.v === 1) { // the ladder thrown down whole along the wall's foot, a fascine of bound sticks dropped beside it
+        sub(r(-0.2, 0.2), 0.5, Math.PI / 2 + r(-0.08, 0.08), () => {
+          for (const s2 of [-0.26, 0.26]) add(S.box(0.07, 0.07, 3.8), 'wood', s2, 0, 0);
+          for (let k = 0; k < 9; k++) add(S.box(0.5, 0.05, 0.05), 'wood', 0, 0.01, (k - 4) * 0.42);
+        });
+        sub(r(-0.6, 0.6), -0.9, r(-0.3, 0.3), () => { add(S.log(0.24, 1.8, 10), 'straw', 0, 0, 0); for (const x of [-0.6, 0, 0.6]) add(S.log(0.25, 0.06, 10), 'rope', x, -0.01, 0); });
+        shield(r(1.0, 1.6), r(-1.4, -0.9), army(), rnd() < 0.6);
+        for (let k = 0; k < 5; k++) arrow(r(-1.8, 1.8), r(-1.8, -1.2), Math.PI + r(-0.2, 0.2), 0.5);
+        main(1.2);
+        return;
+      }
       sub(0, d - 0.35, 0, () => {
         for (const s of [-0.26, 0.26]) add(S.box(0.07, len, 0.07), 'wood', s, 0, 0, 0, 1, 1, 1, lean);
         for (let k = 0; k < 4; k++) add(S.box(0.5, 0.05, 0.05), 'wood', 0, 0.25 + k * 0.38, Math.sin(lean) * (0.25 + k * 0.38));
@@ -1223,6 +1239,21 @@ export function buildWarScenes(o: {
     farmhouse() {
       const W2 = 7, D = 5;
       drape(7.0, PAINT.scorch, 0.75);
+      if (cur.v === 1) { // a burned mill: the round tower's stub, the millstone down, the sails fallen across the ground, still smoking
+        for (let k = 0; k < 14; k++) { if (rnd() < 0.2) continue; const a = (k / 14) * 6.28; add(S.box(1.0, r(0.8, 2.6), 0.6), rnd() < 0.5 ? 'charred' : 'soot', Math.sin(a) * 2.3, -0.1, Math.cos(a) * 2.3, a); }
+        sub(-3.2, 2.6, r(0, 3), () => { add(S.cyl(0.95, 0.95, 0.32, 16), 'stone', 0, 0.2, 0, 0, 1, 1, 1, 0.25); add(S.cyl(0.2, 0.2, 0.34, 8), 'dark', 0, 0.2, 0, 0, 1, 1, 1, 0.25); });
+        sub(1.6, -1.4, r(0.3, 0.8), () => { // the sails: two long arms crossed, their lattices
+          for (const a of [0, Math.PI / 2]) sub(0, 0, a, () => {
+            add(S.box(0.24, 0.24, 6.6), 'charred', 0, 0, 0);
+            for (let k = 0; k < 6; k++) add(S.box(1.1, 0.06, 0.08), 'charred', 0.55, 0.05, 0.9 + k * 0.42);
+          });
+        });
+        for (let k = 0; k < 4; k++) add(S.box(0.22, 0.22, r(2.4, 3.6)), 'charred', r(-1.5, 1.5), r(0.1, 0.8), r(-1.5, 1.5), rnd() * 3, 1, 1, 1, r(-0.4, 0.4));
+        for (let k = 0; k < 4; k++) sack(r(3.2, 4.6), r(1, 3));
+        smoke(0, 0, 6, 0.65);
+        main(3.0);
+        return;
+      }
       const course = (x: number, z: number, len: number, along: boolean) => {
         for (let k = 0; k < Math.round(len / 1.1); k++) {
           const t = (k + 0.5) / Math.round(len / 1.1) - 0.5, h = r(0.4, 1.7);
@@ -1245,6 +1276,21 @@ export function buildWarScenes(o: {
     tents() {
       const a = cur.side === 'mid' ? 'crimson' : cur.side;
       drape(6.2, PAINT.trodden, 0.6);
+      if (cur.v === 1) { // one bell tent still standing, the other down flat round its fallen pole, the banner pole broken
+        sub(-2.6, -1.2, rnd() * 3, () => {
+          add(S.cone(2.0, 2.9, 8), 'canvas', 0, 0, 0); add(S.cyl(1.65, 2.02, 0.35, 8), a, 0, 0, 0);
+          add(S.cyl(0.04, 0.04, 3.4, 5), 'gold', 0, 0, 0); add(S.box(0.8, 1.3, 0.05), 'dark', 0, 0, 1.75, 0, 1, 1, 1, -0.5);
+        });
+        sub(2.6, -0.8, rnd() * 3, () => {
+          add(S.cyl(2.1, 2.3, 0.18, 10), 'canvas', 0, 0, 0); add(S.ring(2.2, 0.08, 16), a, 0, 0.04, 0);
+          add(S.log(0.04, 3.4, 5), 'gold', 0.4, 0.2, 0.3, 0.6);
+        });
+        sub(0.4, 2.6, 0.4, () => { add(S.log(0.08, 3.0, 6), 'wood', 0, 0, 0); add(S.sheet(1.0, 1.4), a, 0.9, 0.17, 0.85); add(S.cone(0.1, 0.32, 5), 'gold', -1.7, 0.08, 0, 0, 1, 1, 1, 0, Math.PI / 2); });
+        for (let k = 0; k < 3; k++) sub((k - 1) * 1.2 - 1.0, 4.0, r(-0.4, 0.4), () => { add(S.box(0.75, 0.42, 1.9), 'wood', 0, 0, 0, 0, 1, 1, 1, 0, k === 1 ? 1.4 : 0); add(S.box(0.7, 0.08, 1.8), 'linen', 0.3, 0, 0.3, 0.5); });
+        crate(4.2, 2.6, true);
+        main(3.0);
+        return;
+      }
       for (const s of [-1, 1]) sub(s * 2.6, -1.2, rnd() * 3, () => {
         add(S.cone(2.0, 2.9, 8), 'canvas', 0, 0, 0); add(S.cyl(1.65, 2.02, 0.35, 8), a, 0, 0, 0);
         add(S.cyl(0.04, 0.04, 3.4, 5), 'gold', 0, 0, 0);
@@ -1264,6 +1310,16 @@ export function buildWarScenes(o: {
     graveyard() {
       const a = cur.side === 'mid' ? (rnd() < 0.5 ? 'crimson' : 'azure') : cur.side;
       drape(5.6, PAINT.fresh, 0.55);
+      if (cur.v === 1) { // one long row of cairns, a sword upright in each, the army's banner at the row's head
+        for (let k = 0; k < 7; k++) sub((k - 3) * 1.3, r(-0.2, 0.2), 0, () => {
+          add(S.stone(0.42), 'stone', 0, -0.1, 0, rnd() * 6); add(S.stone(0.32), 'rubble', 0.1, 0.32, -0.05, rnd() * 6); add(S.stone(0.22), 'stone', -0.05, 0.6, 0.05, rnd() * 6);
+          add(S.box(0.06, 0.8, 0.014), 'steel', 0, 0.55, -0.45); add(S.box(0.3, 0.05, 0.05), 'gold', 0, 1.28, -0.45); add(S.box(0.045, 0.2, 0.045), 'dark', 0, 1.32, -0.45);
+        });
+        add(S.ring(0.26, 0.06, 12), 'leaf', 0.2, 0.05, 1.0);
+        sub(-4.9, 0.6, 0, () => { add(S.cyl(0.07, 0.09, 3.8, 6), 'wood', 0, 0, 0, 0, 1, 1, 1, 0.05); add(S.box(1.1, 0.07, 0.07), 'wood', 0, 3.45, 0); add(S.cloth(0.95, 1.4), a, 0, 3.42, 0); });
+        main(3.2);
+        return;
+      }
       for (let row = 0; row < 2; row++) for (let k = 0; k < 5; k++) {
         if (rnd() < 0.12) continue;
         sub((k - 2) * 1.6 + (row ? 0.4 : 0), (row - 0.5) * 2.9, r(-0.05, 0.05), () => {
@@ -1279,6 +1335,17 @@ export function buildWarScenes(o: {
     /** Past the edge: a watchtower fallen in pieces, its frame on its side, the platform and roof apart, its ladder and planks strewn. */
     watchtower() {
       drape(6.6, PAINT.mud, 0.6);
+      if (cur.v === 1) { // burned where it stood: four black posts, the platform fallen in between them, the roof on the ground, a brazier tipped
+        for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) add(S.box(0.24, r(1.8, 3.2), 0.24), 'charred', x, -0.1, z, 0, 1, 1, 1, r(-0.08, 0.08), r(-0.08, 0.08));
+        add(S.box(2.2, 0.16, 2.2), 'charred', 0.1, 0.4, 0, 0.2, 1, 1, 1, 0.3, 0.15);
+        sub(3.4, -1.4, 0.4, () => add(S.cone(1.6, 1.4, 4), 'dark', 0, 0, 0, Math.PI / 4, 1, 1, 1, 0.5));
+        sub(-2.6, 2.4, 0, () => { add(S.cyl(0.45, 0.25, 0.4, 10), 'iron', 0, 0.42, 0, 0, 1, 1, 1, 0, Math.PI / 2); for (let k = 0; k < 4; k++) add(S.box(0.2, 0.06, 0.2), 'ember', r(0.4, 1.2), 0, r(-0.5, 0.5), rnd() * 3); });
+        for (let k = 0; k < 6; k++) add(S.box(0.3, 0.05, r(1.2, 2)), 'charred', r(-4, 4), 0.02, r(-3.5, 3.5), rnd() * 6, 1, 1, 1, r(-0.1, 0.1));
+        shield(2.4, 2.6, army(), true, undefined, 0.3);
+        smoke(0, 0, 4.5, 0.5);
+        main(2.4);
+        return;
+      }
       sub(0, 0, Math.PI / 2 + r(-0.15, 0.15), () => { // the frame on its side
         for (const [x, y] of [[-0.8, 0.12], [0.8, 0.12], [-0.8, 1.5], [0.8, 1.5]]) add(S.box(0.22, 0.22, 6.4), 'wood', x, y - 0.1, 0);
         for (let k = 0; k < 4; k++) { add(S.box(1.8, 0.14, 0.14), 'dark', 0, 0.1, (k - 1.5) * 2); add(S.box(0.14, 1.5, 0.14), 'dark', 0.8, 0.1, (k - 1.5) * 2); }

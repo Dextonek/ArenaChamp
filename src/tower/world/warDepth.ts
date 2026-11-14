@@ -396,7 +396,7 @@ export function buildWarDepth(o: WarDepthIn) {
   // that would stand up through a scene's cloth and crates are left out under it (nothing else of the depth changes) -------------------
   const scenes = warScenesOn() ? planWarScenes({ look, geo, keep: o.keep ?? [], taken, floor: o.floor }) : [];
   if (scenes.length) {
-    const under = (mm: THREE.Matrix4) => { const x = mm.elements[12], z = mm.elements[14]; return scenes.some((s) => Math.hypot(x - s.x, z - s.z) < s.R + 0.3); };
+    const under = (mm: THREE.Matrix4) => { const x = mm.elements[12], z = mm.elements[14]; return scenes.some((s) => { const dx = x - s.x, dz = z - s.z, r = s.R + 0.3; return dx * dx + dz * dz < r * r; }); };
     for (const k of ['tuft', 'arrow', 'helm', 'spear'] as const) lists[k] = lists[k].filter((mm) => !under(mm));
   }
 

@@ -16,6 +16,7 @@ The lead's notes on the first pass: the aftermath field, the last stand and the 
 stakes were small at the game's camera; everything is matte and casts no shadow, so the scenes floated. **Start with `refine/index.html`**
 (or the sheets `refine/f41-sheet.jpg`, `f46-sheet.jpg`, `f49-sheet.jpg`: before, the first pass, left; after right; the same spot from the
 game's camera: `mid` at the default zoom 1.25, `close` at 0.62, `edge-farmhouse` at 1.7, `wide` lifted past the player's limit).
+**`refine/kinds-sheet.jpg`** shows every kind and layout once, close (far stories at zoom 1.7), with the floor it was taken on.
 
 What changed (all in `src/tower/world/scenes/war.ts`):
 - **A main piece at the middle of every story**, big enough to read: a great standard fallen flat (a 1.7 by 2.6 m cloth with a gold
@@ -35,6 +36,9 @@ What changed (all in `src/tower/world/scenes/war.ts`):
   its cloth black on a scorch mark, embers, a thin smoke) or a burned cart; **captured** shields of the other side stacked, their spears
   roped, their banner folded on a crate; a supply tower pulled down (**stores**: its frame on its side, crates spilled in a fan).
 - **Two or three layouts a kind** (`v`), the floor choosing which comes first (`first`), so floor 42's aftermath is not floor 45's.
+  The ladder and the far stories got their second layout last (a ladder thrown down whole with a fascine; a burned mill with its sails
+  down; one tent standing and one down; a row of cairns; a watchtower burned where it stood): their first layout is chosen by the floor's
+  seed, not drawn, so adding them moved nothing else.
 - **Echo props** (`trail`, 12 a floor, 16 on 48 to 50) on the way between a story and the road and between two stories: arrows
   leaning towards the fight, a crate and a split sack fallen from a load, a shield and a helmet, a wheel (on 48 to 50 a stone shot in
   its scar), papers blown along.
@@ -71,7 +75,9 @@ measured with the same rule (its main pieces by kind). Share of views showing at
 | **mean** | | | 55.5 → **79.8** | 46.6 → **70.4** | 75.5 → 96.2 | 65.9 → 88.2 | |
 
 The aim was 70 % of road views and 45 % of all views: met on average and on every floor but 42's roads (65.4 % at the default zoom,
-92.6 % at 1.7). "Stories" counts the stories, ladders and far stories; the echoes come on top.
+92.6 % at 1.7). "Stories" counts the stories, ladders and far stories; the echoes come on top. The probe's camera was checked
+against a real picture (`refine/views-probe-check.jpg`: floor 46's mid1 with the probe's projected main pieces drawn on it; the circles
+sit on the cart and the ring of shields). It does not take off the band the hero's bar covers at the bottom of the screen.
 
 **Overlap probe**: 434 scenes (stories, ladders, far stories and echoes), **0 hits** on floors 41 to 50; the tallest thing in the open
 ground 0.6 m.
