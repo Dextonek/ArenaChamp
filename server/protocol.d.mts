@@ -45,3 +45,5 @@ export declare const RAID_RANKS: { id: string; name: string; from: number }[];
 export declare const raidRank: (bosses: number) => { id: string; name: string; from: number } | null;
 export declare const BOARD_SIZE: number;
 export declare const TOWER_FLOOR_MAX: number;
+/** The Climb's open world, stage 1: shard size, rate limits, how far a place may be, how often a page sends its place. */
+export declare const WORLD: { shardMax: number; movesPerS: number; reach: number; casts: number; castsMs: number; labelMax: number; sendHz: number };

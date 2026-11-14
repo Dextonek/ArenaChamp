@@ -4,7 +4,8 @@
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
 // 15 (2026-11-12): no rule change; raised once so the tabs from before `/build.json` (vite.config.ts) reload. Since then any
 // deploy shows open tabs a Reload bar on their own; raise this only for a rule or message change.
-export const PROTOCOL = 15;
+// 16 (2026-11-14): the Climb's open world, stage 1 (`world_join`, `world_move`, `world_cast`, `world_leave`).
+export const PROTOCOL = 16;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -307,3 +308,12 @@ export const BOARD_SIZE = 20;
 
 /** The highest floor a Tower report may name: far past what anyone climbs. */
 export const TOWER_FLOOR_MAX = 500;
+
+/**
+ * The Climb's open world, stage 1 (pipeline/designs/climb-open-world.md): signed-in players on the same Climb floor share a shard
+ * and see each other. `shardMax`: players a shard holds (a full one opens another). `movesPerS`: the most `world_move`s the hub
+ * takes from one player in a second (the page sends 10). `reach`: how far from the floor's middle a place may be (m; the widest
+ * floor is far inside it). `casts` in `castsMs`: the most spells relayed from one player (the same spell again waits as a duel's
+ * slot does). `labelMax`: the longest spell name. `sendHz`: how often a page sends its hero's place (only when it changed).
+ */
+export const WORLD = { shardMax: 8, movesPerS: 12, reach: 500, casts: 8, castsMs: 2000, labelMax: 48, sendHz: 10 };

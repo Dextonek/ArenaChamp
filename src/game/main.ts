@@ -24,6 +24,7 @@ import { RaidRun, scoreText } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
 import { LIVES, TowerRun, towerBest, towerSaved } from '../tower/run';
 import { WorldClimb, climbPanel } from '../tower/world/menu';
+import { WorldLink } from '../net/world';
 import { KIND_NAME, TWISTS, isoWeek, towerFor, untilNext, weekBefore } from '../tower/week';
 import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
@@ -1381,10 +1382,12 @@ const tower = new TowerRun(gameApi, loading, {
   // The climb's floor goes to the week's board from here: nothing in src/tower knows of the server.
   onExit: () => { state.screen = 'tower'; towerEnded(); net.send({ t: 'boards' }); render(); },
 });
+// The Climb's open world (stage 1): signed in, a floor is shared with the others on it (src/net/world.ts).
+const worldLink = new WorldLink(net);
 const world = new WorldClimb(gameApi, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'tower'; render(); },
-});
+}, worldLink);
 const coop = new RaidController(net, gameApi, loading, {
   onEnter: () => render(),
   // Back on the Raid screen: the profile (its obols, its rank) and the week's board as the run left them.

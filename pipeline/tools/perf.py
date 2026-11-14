@@ -74,6 +74,9 @@ MORE = {
     **{f"world-{i}": {"scene": "world", "floor": n, "hero": "Kaia"} for i, n in ((1, 1), (2, 11), (3, 21), (4, 31), (5, 41))},
     # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/, by their own numbers.
     **{f"gen-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (*range(2, 11), *range(12, 21), *range(22, 31), *range(32, 41), *range(42, 51))},
+    # The Climb's open world (pipeline/designs/climb-open-world.md): floor 2 with seven made-up others walking about the hero and
+    # casting (src/tower/world/others.ts `fake`), against gen-2 with none.
+    "gen-2-others": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 7},
 }
 ALL = {**SCENES, **MORE}
 

@@ -23,6 +23,8 @@ export class WorldHud {
   private hearts = document.createElement('div');
   private hpFill = document.createElement('div');
   private statEl = document.createElement('div');
+  /** The open world's line: how many others walk this floor's shard (hidden when the climb is alone, offline). */
+  private othersEl = document.createElement('div');
   private quests = document.createElement('div');
   private banner = document.createElement('div');
   private arrow = document.createElement('div');
@@ -59,7 +61,8 @@ export class WorldHud {
     row.append(this.hearts, bar);
     this.statEl.style.cssText = `font:600 ${s ? 11 : 12}px ui-sans-serif,system-ui;color:#f2e6c8;display:flex;gap:10px;`;
     this.quests.style.cssText = `display:flex;flex-direction:column;gap:3px;margin-top:2px;border-top:1px solid #3a3242;padding-top:3px;font:600 ${s ? 11 : 12}px/1.25 ui-sans-serif,system-ui;`;
-    this.root.append(this.titleEl, this.lawEl, row, this.statEl, this.quests);
+    this.othersEl.style.cssText = `font:600 ${s ? 10 : 11}px ui-sans-serif,system-ui;color:#a8e0b0;display:none;`;
+    this.root.append(this.titleEl, this.lawEl, row, this.statEl, this.othersEl, this.quests);
 
     this.banner.style.cssText = `position:fixed;left:50%;top:${s ? 46 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;text-shadow:0 3px 14px #000;transition:opacity 0.5s;`;
     this.arrow.style.cssText = 'position:fixed;left:0;top:0;z-index:5;pointer-events:none;display:none;width:34px;height:34px;margin:-17px 0 0 -17px;';
@@ -110,6 +113,12 @@ export class WorldHud {
     const share = Math.max(0, Math.min(1, hp / Math.max(1, max)));
     this.hpFill.style.width = `${share * 100}%`;
     this.hpFill.style.background = share < 0.3 ? 'linear-gradient(180deg,#ff8a6a,#b03a2a)' : 'linear-gradient(180deg,#8ee6a4,#3f9a5c)';
+  }
+
+  /** How many others are on this floor's shard (the open world), or null for none of it (not signed in, offline). */
+  setOthers(n: number | null) {
+    this.othersEl.style.display = n === null ? 'none' : '';
+    if (n !== null) this.othersEl.textContent = n === 0 ? 'No one else on this floor yet' : `${n} ${n === 1 ? 'other' : 'others'} on this floor`;
   }
 
   stats(shards: number, seconds: number, extra = '') {

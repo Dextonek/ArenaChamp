@@ -387,6 +387,8 @@
     const visit = () => { const p = packs[k++ % packs.length]; if (p) window._world.go(p.def.at.x + 2.5, p.def.at.z + 2.5); };
     visit();
     await d.whenReady();
+    // The open world (src/tower/world/others.ts): `others` made-up players walking about the hero and casting, drawn as real ones are.
+    if (o.others) game.others.fake(o.others, a.arena.caster.group.position);
     return {
       stepped: true,
       // The run's own tick comes after the duel's step, as the game's loop has it; it is part of the step's time.

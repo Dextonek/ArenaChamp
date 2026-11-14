@@ -10,7 +10,7 @@
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
 import {
-  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX,
+  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
   isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
@@ -100,8 +100,15 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
 
 /**
  * @typedef {{ send: (text: string) => void, name: string | null, lobby: Lobby | null, queued: { hero: string, since: number } | null,
- *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null }} Client
+ *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null, world?: WorldSeat | null }} Client
  *   `watching`: a duel this client watches without playing in it (it has no `match`, so nothing it sends can act in one).
+ *   `world`: the Climb's floor this client walks, in one of its shards (the open world, pipeline/designs/climb-open-world.md).
+ * @typedef {{ id: string, floor: number, members: Set<Client> }} WorldShard
+ *   One shard of a Climb floor: at most `WORLD.shardMax` players who see each other. `id`: the floor and the shard's number ("2.1").
+ * @typedef {{ shard: WorldShard, id: number, hero: string, x: number, z: number, yaw: number, walk: boolean, hp: number,
+ *   moves: number, movesFrom: number, casts: number[], lastLabel: string, lastLabelAt: number }} WorldSeat
+ *   A player in a shard: its id there (one number for the connection), its hero, where it last said it stood, and its rate limits:
+ *   the moves of the second that began at `movesFrom`, when its last casts went out, and its last spell and when.
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[], raid: string | null, open: boolean, max: number }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
@@ -159,6 +166,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** The duels being fought now, by id: the Lobbies screen lists them and anyone signed in may watch one. Raids are not here. */
   /** @type {Map<string, Match>} */
   const duels = new Map();
+  /** The Climb's open world: each floor's shards. @type {Map<number, WorldShard[]>} */
+  const worlds = new Map();
+  /** The last id a player got in a world shard (one per connection, kept while it is open). */
+  let worldIds = 0;
 
   /**
    * A new connection. `send` writes one text frame. Returns the handlers the host calls for each incoming frame and
@@ -361,6 +372,14 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (accounts.boardTower(a.name, m.week, m.floor, m.hero, now())) send(c, boardsMsg());
         return;
       }
+      case 'world_join':
+        return worldJoin(c, m);
+      case 'world_leave':
+        return worldLeave(c);
+      case 'world_move':
+        return worldMove(c, m);
+      case 'world_cast':
+        return worldCast(c, m);
       case 'logout':
         for (const [tok, n] of sessions) if (n === c.name) sessions.delete(tok);
         drop(c, 'logout');
@@ -376,6 +395,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (c.lobby) return fail(c, 'Leave your lobby first');
         if (c.queued) return fail(c, 'Leave the queue first');
         const match = duels.get(String(m.id ?? ''));
+        // Watching a duel is not walking a floor.
+        worldLeave(c);
         if (!match || match.state === 'over') return fail(c, 'That duel is over');
         if (match.players.some((p) => p.client === c)) return fail(c, 'You are in that duel');
         if (c.watching === match) return send(c, watchState(match));
@@ -970,14 +991,16 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (c.match && c.match.state !== 'over') { fail(c, 'You are in a match'); return true; }
     if (c.lobby) { fail(c, 'Leave your lobby first'); return true; }
     if (c.queued) { fail(c, 'Leave the queue first'); return true; }
-    // Watching holds nobody back: going to play a fight of one's own stops it.
+    // Watching holds nobody back: going to play a fight of one's own stops it. Nor does a Climb floor: the player leaves its shard.
     unwatch(c);
+    worldLeave(c);
     return false;
   }
 
   /** Leaves whatever the client is in (lobby, queue, a running match counts as a loss). @param {Client} c @param {string} reason */
   function drop(c, reason) {
     unwatch(c);
+    worldLeave(c);
     leaveLobby(c);
     leaveQueue(c);
     const match = c.match;
@@ -1066,6 +1089,124 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (i >= 0) queue.splice(i, 1);
     c.queued = null;
     for (const q of queue) sendQueue(q);
+  }
+
+  // --- the Climb's open world, stage 1: presence (pipeline/designs/climb-open-world.md) ---------------------------------
+  // Signed-in players on the same Climb floor are put in one of its shards (at most `WORLD.shardMax` each) and see each other walk
+  // and cast. The hub only relays: no enemies, no hits, no progress. A player in a duel, a raid, a lobby or the queue is in none.
+
+  /** A seat's place as the others are told it. @param {WorldSeat} s */
+  const worldSeen = (s) => ({ x: s.x, z: s.z, yaw: s.yaw, walk: s.walk, hp: s.hp });
+
+  /** One message to everyone in a shard but `except`, written out once. @param {WorldShard} shard @param {any} msg @param {Client | null} except */
+  function tellShard(shard, msg, except) {
+    const text = JSON.stringify(msg);
+    for (const x of shard.members) if (x !== except) sendText(x, text);
+  }
+
+  /**
+   * `world_join { floor, hero, x?, z?, yaw? }`: into a shard of that floor, the fullest that has room (a new one when all are full).
+   * Joining the floor it is already on keeps its shard (a zone built again after a door or a fall): only the roster comes again, and
+   * the others hear `world_joined` again if the hero changed. Answers `world_roster`; a new arrival's shard hears `world_joined`.
+   * @param {Client} c @param {any} m
+   */
+  function worldJoin(c, m) {
+    if (!Number.isInteger(m.floor) || m.floor < 1 || m.floor > TOWER_FLOOR_MAX || !validHero(m.hero)) return;
+    // Not beside a fight of its own, a lobby or the queue (the menu does not let a climb begin then).
+    if ((c.match && c.match.state !== 'over') || c.lobby || c.queued) return;
+    const no = lockedFor(c, m.hero);
+    if (no) return fail(c, no);
+    unwatch(c);
+    const at = worldPlace(m.x, m.z), yaw = num(m.yaw) ? mm(m.yaw) : 0;
+    let seat = c.world;
+    if (seat && seat.shard.floor !== m.floor) {
+      worldLeave(c);
+      seat = null;
+    }
+    if (seat) {
+      const changed = seat.hero !== m.hero;
+      seat.hero = m.hero;
+      if (num(m.x) && num(m.z)) Object.assign(seat, at, { yaw });
+      if (changed) tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: c.name, hero: seat.hero, ...worldSeen(seat) }, c);
+    } else {
+      const shards = worlds.get(m.floor) ?? [];
+      worlds.set(m.floor, shards);
+      // The fullest shard that has room: players meet rather than spread out.
+      let shard = null;
+      for (const s of shards) if (s.members.size < WORLD.shardMax && (!shard || s.members.size > shard.members.size)) shard = s;
+      if (!shard) {
+        // The lowest number not in use on this floor.
+        let n = 1;
+        while (shards.some((s) => s.id === `${m.floor}.${n}`)) n++;
+        shard = { id: `${m.floor}.${n}`, floor: m.floor, members: new Set() };
+        shards.push(shard);
+      }
+      seat = { shard, id: ++worldIds, hero: m.hero, ...at, yaw, walk: false, hp: 1, moves: 0, movesFrom: 0, casts: [], lastLabel: '', lastLabelAt: 0 };
+      c.world = seat;
+      shard.members.add(c);
+      tellShard(shard, { t: 'world_joined', id: seat.id, name: c.name, hero: seat.hero, ...worldSeen(seat) }, c);
+      log(`${c.name} walks floor ${m.floor} (shard ${shard.id}, ${shard.members.size} there)`);
+    }
+    const shard = seat.shard;
+    const players = [];
+    for (const x of shard.members) {
+      if (x === c || !x.world) continue;
+      players.push({ id: x.world.id, name: x.name, hero: x.world.hero, ...worldSeen(x.world) });
+    }
+    send(c, { t: 'world_roster', shard: shard.id, floor: shard.floor, you: seat.id, max: WORLD.shardMax, players });
+  }
+
+  /** Out of its shard, if it was in one: the others hear `world_left`, and an empty shard is gone. @param {Client} c */
+  function worldLeave(c) {
+    const seat = c.world;
+    if (!seat) return;
+    c.world = null;
+    const shard = seat.shard;
+    shard.members.delete(c);
+    tellShard(shard, { t: 'world_left', id: seat.id }, null);
+    if (!shard.members.size) {
+      const shards = (worlds.get(shard.floor) ?? []).filter((s) => s !== shard);
+      if (shards.length) worlds.set(shard.floor, shards);
+      else worlds.delete(shard.floor);
+    }
+  }
+
+  /**
+   * `world_move { x, z, yaw, walk, hp, ts? }`: where this hero is now. Kept (a player who comes in later sees it there) and relayed to
+   * the shard as `world_moved { id, ... }`. At most `WORLD.movesPerS` in a second: past that a flood is dropped unread.
+   * @param {Client} c @param {any} m
+   */
+  function worldMove(c, m) {
+    const seat = c.world;
+    if (!seat || !num(m.x) || !num(m.z)) return;
+    const t = Date.now();
+    if (t - seat.movesFrom >= 1000) { seat.movesFrom = t; seat.moves = 0; }
+    if (++seat.moves > WORLD.movesPerS) return;
+    Object.assign(seat, worldPlace(m.x, m.z));
+    if (num(m.yaw)) seat.yaw = mm(m.yaw);
+    seat.walk = !!m.walk;
+    if (num(m.hp)) seat.hp = Math.round(Math.max(0, Math.min(1, m.hp)) * 1000) / 1000;
+    tellShard(seat.shard, { t: 'world_moved', id: seat.id, ...worldSeen(seat), ts: num(m.ts) ? m.ts : undefined }, c);
+  }
+
+  /**
+   * `world_cast { label, x, z, tx, tz }`: this hero cast a spell (its look only: the others draw it and nothing in it counts). Relayed
+   * as `world_cast { id, ... }`, rate-limited as a duel's casts are: the same spell not again within `SLOT_GAP_MS`, and no more than
+   * `WORLD.casts` in `WORLD.castsMs`.
+   * @param {Client} c @param {any} m
+   */
+  function worldCast(c, m) {
+    const seat = c.world;
+    if (!seat || typeof m.label !== 'string' || !m.label || m.label.length > WORLD.labelMax || !num(m.x) || !num(m.z) || !num(m.tx) || !num(m.tz)) return;
+    const t = Date.now();
+    if (m.label === seat.lastLabel && t - seat.lastLabelAt < SLOT_GAP_MS) return;
+    while (seat.casts.length && t - seat.casts[0] > WORLD.castsMs) seat.casts.shift();
+    if (seat.casts.length >= WORLD.casts) return;
+    seat.casts.push(t);
+    seat.lastLabel = m.label;
+    seat.lastLabelAt = t;
+    const from = worldPlace(m.x, m.z), to = worldPlace(m.tx, m.tz);
+    tellShard(seat.shard, { t: 'world_cast', id: seat.id, label: m.label, x: from.x, z: from.z, tx: to.x, tz: to.z }, c);
   }
 
   /** Pairs the two longest-waiting players with different heroes (one effect per spell label on the client). */
@@ -1814,7 +1955,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   return {
     connect,
     /** For tests and the console: what the hub holds right now. */
-    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length }),
+    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length, shards: [...worlds.values()].reduce((n, l) => n + l.length, 0) }),
   };
 }
 
@@ -1852,6 +1993,12 @@ const mm = (v) => Math.round(v * 1000) / 1000;
 /** @param {unknown} h */
 function validHero(h) {
   return typeof h === 'string' && HERO_RE.test(h);
+}
+
+/** A place on a Climb floor, to the millimetre, kept inside the farthest any floor reaches. @param {unknown} x @param {unknown} z */
+function worldPlace(x, z) {
+  const r = WORLD.reach, clamp = (/** @type {unknown} */ v) => (num(v) ? mm(Math.max(-r, Math.min(r, v))) : 0);
+  return { x: clamp(x), z: clamp(z) };
 }
 
 /** A position kept inside the ring (a raid's room is wider). @param {number} x @param {number} z @param {number} [ring] */
