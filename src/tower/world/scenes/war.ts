@@ -409,7 +409,7 @@ export function buildWarScenes(o: {
   /** One part: a shape, its colour, its place in the current frame (y up from the ground), its turn, scale, tilt (about x) and roll. */
   const add = (shape: { p: Float32Array; n: Float32Array }, colour: Colour, lx: number, ly: number, lz: number, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0, roll = 0) => {
     const { x: wx, z: wz } = toW(lx, lz);
-    const ground = cur.beyond ? H(wx, wz) : 0;
+    const ground = cur.beyond ? (ly <= 0.15 ? lowUnder(shape, wx, wz, Math.max(sx, sz)) : H(wx, wz)) : 0;
     e.set(tilt, cur.yaw + cur.m * (fyaw + yaw), cur.m * roll, 'YXZ');
     m4.compose(v.set(wx, ground + fy + ly, wz), q.setFromEuler(e), sc.set(sx, sy, sz));
     nm.getNormalMatrix(m4);
@@ -429,6 +429,17 @@ export function buildWarScenes(o: {
       all.c[at] = col.r; all.c[at + 1] = col.g; all.c[at + 2] = col.b;
       measure(X, Y, Z, ground);
     }
+  };
+  /** Past the edge (2026-11-14, the props pass): the lowest ground under a part that rests on the ground, its middle and six points
+   * round it at its reach, so its downhill side meets the slope (the parts it holds up keep their middle's height). */
+  const reachOf = new WeakMap<object, number>();
+  const lowUnder = (shape: { p: Float32Array }, wx: number, wz: number, s: number) => {
+    let R = reachOf.get(shape);
+    if (R === undefined) { R = 0; for (let i = 0; i < shape.p.length; i += 3) R = Math.max(R, Math.hypot(shape.p[i], shape.p[i + 2])); reachOf.set(shape, R); }
+    const rr = R * s * 0.85;
+    let g = H(wx, wz);
+    if (rr > 0.2) for (let i = 0; i < 6; i++) g = Math.min(g, H(wx + Math.cos(i * 1.047) * rr, wz + Math.sin(i * 1.047) * rr));
+    return g;
   };
   /** The footprint and height, measured from what is built. */
   const measure = (X: number, Y: number, Z: number, ground: number) => {
@@ -812,13 +823,14 @@ export function buildWarScenes(o: {
       sub(1.7, 0.5, 0.3, () => { // the anvil on its stump
         add(S.cyl(0.3, 0.34, 0.3, 10), 'wood', 0, 0, 0);
         add(S.box(0.22, 0.1, 0.5), 'iron', 0, 0.3, 0); add(S.box(0.3, 0.09, 0.62), 'iron', 0, 0.4, 0);
-        add(S.cone(0.06, 0.22, 6), 'iron', 0, 0.445, 0.38, 0, 1, 1, 1, Math.PI / 2);
+        add(S.cone(0.06, 0.22, 6), 'iron', 0, 0.445, 0.3, 0, 1, 1, 1, Math.PI / 2); // from the anvil's face (it stood 7 cm off it)
       });
       sub(2.4, 0.0, 0.5, () => { add(S.box(0.05, 0.03, 0.32), 'dark', 0, 0, 0); add(S.box(0.14, 0.07, 0.07), 'iron', 0, 0, 0.18); }); // the hammer
       sub(-1.9, -1.4, 0, () => { // the grindstone in its low frame
         add(S.box(0.9, 0.12, 0.08), 'wood', 0, 0.1, -0.2); add(S.box(0.9, 0.12, 0.08), 'wood', 0, 0.1, 0.2);
         for (const s of [-0.38, 0.38]) add(S.box(0.08, 0.32, 0.45), 'wood', s, 0, 0);
         add(S.cyl(0.25, 0.25, 0.1, 14), 'stone', 0, 0.3, -0.05, 0, 1, 1, 1, Math.PI / 2, 0);
+        add(S.cyl(0.03, 0.03, 0.8, 6), 'iron', 0.4, 0.3, 0, 0, 1, 1, 1, 0, Math.PI / 2); // its axle, on the legs (it floated in its frame)
       });
       sub(1.6, -1.4, 0, () => { add(S.cyl(0.26, 0.22, 0.44, 12), 'plank', 0, 0, 0); add(S.ring(0.265, 0.02, 12), 'iron', 0, 0.3, 0); add(S.cyl(0.24, 0.24, 0.01, 12), 'mud', 0, 0.4, 0); });
       if (cur.v === 1) { // a pile of the dented and the mended: helmets and shields stacked by the anvil
@@ -1313,7 +1325,7 @@ export function buildWarScenes(o: {
       if (cur.v === 1) { // one long row of cairns, a sword upright in each, the army's banner at the row's head
         for (let k = 0; k < 7; k++) sub((k - 3) * 1.3, r(-0.2, 0.2), 0, () => {
           add(S.stone(0.42), 'stone', 0, -0.1, 0, rnd() * 6); add(S.stone(0.32), 'rubble', 0.1, 0.32, -0.05, rnd() * 6); add(S.stone(0.22), 'stone', -0.05, 0.6, 0.05, rnd() * 6);
-          add(S.box(0.06, 0.8, 0.014), 'steel', 0, 0.55, -0.45); add(S.box(0.3, 0.05, 0.05), 'gold', 0, 1.28, -0.45); add(S.box(0.045, 0.2, 0.045), 'dark', 0, 1.32, -0.45);
+          add(S.box(0.06, 0.8, 0.014), 'steel', 0, 0.55, 0); add(S.box(0.3, 0.05, 0.05), 'gold', 0, 1.28, 0); add(S.box(0.045, 0.2, 0.045), 'dark', 0, 1.32, 0); // in the cairn's top (it stood behind it, in the air)
         });
         add(S.ring(0.26, 0.06, 12), 'leaf', 0.2, 0.05, 1.0);
         sub(-4.9, 0.6, 0, () => { add(S.cyl(0.07, 0.09, 3.8, 6), 'wood', 0, 0, 0, 0, 1, 1, 1, 0.05); add(S.box(1.1, 0.07, 0.07), 'wood', 0, 3.45, 0); add(S.cloth(0.95, 1.4), a, 0, 3.42, 0); });

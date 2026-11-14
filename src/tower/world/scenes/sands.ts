@@ -85,7 +85,11 @@ function proto(parts: Part[]): Proto {
 }
 
 /** Every part's shape, made the first time a Sands floor is built and kept for the page (a few hundred kB). */
+/** A fixed shape's earlier form, measured by the planner in its place (see the end of `makeProtos`). */
+const PLAN = new WeakMap<Proto, Proto>();
 let PROTOS: ReturnType<typeof makeProtos> | null = null;
+/** Every part's shape by name, for the shapes check (pipeline/tools/climb-shapes-probe.js: parts that do not meet). */
+export const sandsSceneShapes = () => (PROTOS ??= makeProtos());
 function makeProtos() {
   const P = proto;
   const arrow = (): Part[] => [[new THREE.CylinderGeometry(0.014, 0.014, 0.66, 4, 1, true).translate(0, 0.19, 0), C.wood], [box(0.006, 0.13, 0.06, 0, 0.44), C.wine], [box(0.06, 0.13, 0.006, 0, 0.44), C.cream]];
@@ -112,7 +116,7 @@ function makeProtos() {
     ...[0, 1, 2, 3].map((k) => [box(R * 2, 0.06, 0.1, 0, 0.43, 0).rotateY((k * Math.PI) / 4), C.wood] as Part),
     [cyl(0.2, 0.2, 0.46, 10).translate(0, 0.02, 0), C.wood], [cyl(0.24, 0.24, 0.04, 10).translate(0, 0.46, 0), C.brass], [ring(R, 0.02, 3, 20).rotateX(Math.PI / 2).translate(0, 0.47, 0), C.brass],
   ];
-  return {
+  const shapes = {
     unitWood: P([[new THREE.BoxGeometry(1, 1, 1), C.wood]]),
     unitRope: P([[new THREE.BoxGeometry(1, 1, 1), C.rope]]),
     poleWood: P([[new THREE.CylinderGeometry(1, 1, 1, 6), C.wood]]), // a unit pole along y, centred
@@ -124,15 +128,15 @@ function makeProtos() {
       [rod(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.38, -0.12), C.wine], [rod(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.4, 0.1), C.turquoise],
     ]),
     lid: P([[box(0.62, 0.05, 0.62), C.plank], [box(0.62, 0.052, 0.08, 0, 0.026, 0.2), C.lacquer], [box(0.62, 0.052, 0.08, 0, 0.026, -0.2), C.lacquer]]),
-    sack: P([[ball(1, 8, 5).scale(0.42, 0.24, 0.3).translate(0, 0.2, 0), C.cream], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.46, 0.18, 0), C.cream], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.52, 0.18, 0), C.rope]]),
-    sackHide: P([[ball(1, 8, 5).scale(0.4, 0.26, 0.3).translate(0, 0.22, 0), C.hide], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.44, 0.2, 0), C.hide], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.5, 0.2, 0), C.rope]]),
+    sack: P([[ball(1, 8, 5).scale(0.42, 0.24, 0.3).translate(0, 0.2, 0), C.cream], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.52, 0.18, 0), C.cream], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.52, 0.18, 0), C.rope]]),
+    sackHide: P([[ball(1, 8, 5).scale(0.4, 0.26, 0.3).translate(0, 0.22, 0), C.hide], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.5, 0.2, 0), C.hide], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.5, 0.2, 0), C.rope]]),
     heapRed: P([[cone(0.62, 0.24, 12), C.red]]),
     heapOchre: P([[cone(0.62, 0.24, 12), C.ochre]]),
     heapGrain: P([[cone(0.62, 0.22, 12), C.grain]]),
     heapTurq: P([[cone(0.5, 0.18, 12), C.turquoise]]),
     lantern: P([
       [rod(0.12, 0.12, 0.3, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.lacquer], [rod(0.105, 0.105, 0.16, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.glass],
-      [cone(0.13, 0.12, 8).rotateZ(-Math.PI / 2).translate(0.15, 0.12, 0), C.brass], [ring(0.08, 0.014, 4, 10).rotateY(Math.PI / 2).translate(0.32, 0.12, 0), C.brass],
+      [cone(0.13, 0.12, 8).rotateZ(-Math.PI / 2).translate(0.15, 0.12, 0), C.brass], [ring(0.08, 0.014, 4, 10).translate(0.34, 0.12, 0), C.brass],
     ]),
     wheelFlat: P(wheelParts(0.7, C.wood).map(([g, c]) => [g.rotateX(-Math.PI / 2).translate(0, 0.08, 0), c] as Part)),
     clothTurq: P([[box(2.6, 0.03, 1.7), C.turquoise], [box(2.6, 0.034, 0.26, 0, 0.017, 0.5), C.wine], [box(2.62, 0.034, 0.06, 0, 0.017, -0.84), C.brass]]),
@@ -175,7 +179,7 @@ function makeProtos() {
     peg: P([[cyl(0.03, 0.04, 0.42, 5), C.wood], [cyl(0.045, 0.045, 0.04, 5).translate(0, 0.4, 0), C.brass]]),
     sieve: P([[box(0.9, 0.06, 0.62), C.wood], [box(0.8, 0.012, 0.52, 0, 0.065), C.rope], [box(0.92, 0.03, 0.05, 0, 0.07, 0.29), C.brass]]),
     basket: P([[cyl(0.26, 0.21, 0.34, 12), C.rope], [ring(0.26, 0.025, 4, 14).rotateX(Math.PI / 2).translate(0, 0.34, 0), C.brass], [cyl(0.23, 0.23, 0.02, 12).translate(0, 0.28, 0), C.sandDark]]),
-    basketLying: P([[cyl(0.26, 0.21, 0.34, 12).rotateZ(Math.PI / 2).translate(-0.17, 0.25, 0), C.rope], [ring(0.26, 0.025, 4, 14).rotateY(Math.PI / 2).translate(0.17, 0.25, 0), C.brass], [cone(0.45, 0.14, 10).translate(0.55, 0, 0), C.sandDark]]),
+    basketLying: P([[cyl(0.26, 0.21, 0.34, 12).rotateZ(-Math.PI / 2).translate(-0.17, 0.25, 0), C.rope], [ring(0.26, 0.025, 4, 14).rotateY(Math.PI / 2).translate(0.17, 0.25, 0), C.brass], [cone(0.45, 0.14, 10).translate(0.55, 0, 0), C.sandDark]]),
     ladder: P([[box(0.06, 0.06, 2.6, 0.22, 0.03), C.wood], [box(0.06, 0.06, 2.6, -0.22, 0.03), C.wood], ...[-1.1, -0.73, -0.36, 0, 0.37, 0.74, 1.1].map((z) => [box(0.5, 0.04, 0.05, 0, 0.065, z), C.plank] as Part)]),
     shovel: P([[rod(0.025, 0.025, 1.3, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.24, 0.02, 0.3, 0, 0.02, 0.78), C.steel], [box(0.18, 0.04, 0.05, 0, 0.03, -0.66), C.brass]]),
     pick: P([[rod(0.025, 0.025, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.6, 0.05, 0.06, 0, 0.04, 0.46), C.steel], [box(0.08, 0.07, 0.08, 0, 0.04, 0.46), C.brass]]),
@@ -183,10 +187,10 @@ function makeProtos() {
     // --- the dry well
     block: P([[box(0.62, 0.42, 0.36), C.sandstone], [box(0.64, 0.05, 0.38, 0, 0.44), C.turquoise]]),
     hole: P([[cyl(0.8, 0.8, 0.02, 20), C.lacquer]]),
-    postLying: P([[box(0.14, 0.14, 1.7, 0, 0.07), C.wood], [box(0.18, 0.04, 0.18, 0, 0.07, 0.86).rotateX(Math.PI / 2), C.brass]]),
-    drum: P([[rod(0.15, 0.15, 1.2, 10).rotateZ(Math.PI / 2).translate(0, 0.2, 0), C.rope], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(0.62, 0.2, 0), C.wood], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.62, 0.2, 0), C.wood], [box(0.05, 0.05, 0.36, 0.7, 0.2, 0.16), C.iron], [box(0.05, 0.05, 0.16, 0.76, 0.2, 0.34), C.iron]]),
-    bucketLying: P([[cyl(0.2, 0.16, 0.32, 12).rotateZ(Math.PI / 2).translate(-0.16, 0.2, 0), C.wood], [ring(0.2, 0.02, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.2, 0), C.brass], [ring(0.18, 0.02, 4, 14).rotateY(Math.PI / 2).translate(-0.06, 0.19, 0), C.brass]]),
-    jarLying: P([[ball(0.3, 10, 7).scale(1, 1.25, 1).rotateZ(Math.PI / 2).translate(0, 0.28, 0), C.clay], [cyl(0.1, 0.13, 0.16, 8).rotateZ(Math.PI / 2).translate(-0.44, 0.28, 0), C.clay], [ring(0.31, 0.025, 4, 16).rotateY(Math.PI / 2).translate(0.05, 0.28, 0), C.turquoise]]),
+    postLying: P([[box(0.14, 0.14, 1.7, 0, 0.07), C.wood], [new THREE.BoxGeometry(0.18, 0.04, 0.18).rotateX(Math.PI / 2).translate(0, 0.07, 0.86), C.brass]]),
+    drum: P([[rod(0.15, 0.15, 1.2, 10).rotateZ(Math.PI / 2).translate(0, 0.2, 0), C.rope], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(0.62, 0.2, 0), C.wood], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.62, 0.2, 0), C.wood], [box(0.05, 0.05, 0.36, 0.66, 0.2, 0.16), C.iron], [box(0.05, 0.05, 0.16, 0.7, 0.2, 0.34), C.iron]]),
+    bucketLying: P([[cyl(0.2, 0.16, 0.32, 12).rotateZ(-Math.PI / 2).translate(-0.16, 0.2, 0), C.wood], [ring(0.2, 0.02, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.2, 0), C.brass], [ring(0.18, 0.02, 4, 14).rotateY(Math.PI / 2).translate(-0.06, 0.19, 0), C.brass]]),
+    jarLying: P([[ball(0.3, 10, 7).scale(1, 1.25, 1).rotateZ(Math.PI / 2).translate(0, 0.28, 0), C.clay], [cyl(0.1, 0.13, 0.16, 8).rotateZ(Math.PI / 2).translate(-0.34, 0.28, 0), C.clay], [ring(0.31, 0.025, 4, 16).rotateY(Math.PI / 2).translate(0.05, 0.28, 0), C.turquoise]]),
     // --- the travellers' rest
     rug: P([[box(2.3, 0.012, 1.6, 0, 0.012), C.wine], [box(2.0, 0.012, 1.3, 0, 0.022), C.turquoise], [box(0.62, 0.012, 0.62, 0, 0.032).rotateY(Math.PI / 4), C.cream], [box(2.0, 0.012, 0.05, 0, 0.034, 0.5), C.brass], [box(2.0, 0.012, 0.05, 0, 0.034, -0.5), C.brass]]),
     teaTray: P([
@@ -194,8 +198,8 @@ function makeProtos() {
       [ball(0.025, 6, 4).translate(0, 0.34, 0), C.lacquer], [cyl(0.02, 0.034, 0.16, 6).rotateZ(-0.9).translate(0.17, 0.17, 0), C.brass], [ring(0.07, 0.013, 4, 10, Math.PI).rotateZ(Math.PI / 2).translate(-0.14, 0.17, 0), C.brass],
       ...[[0.18, 0.15], [-0.05, 0.22], [0.2, -0.12]].map(([x, z]) => [cyl(0.035, 0.03, 0.07, 8).translate(x, 0.03, z), C.cream] as Part),
     ]),
-    cushionWine: P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.wine], ...[[0.3, 0.24], [-0.3, 0.24], [0.3, -0.24], [-0.3, -0.24]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]),
-    cushionTurq: P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.turquoise], ...[[0.3, 0.24], [-0.3, 0.24], [0.3, -0.24], [-0.3, -0.24]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]),
+    cushionWine: P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.wine], ...[[0.25, 0.19], [-0.25, 0.19], [0.25, -0.19], [-0.25, -0.19]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]),
+    cushionTurq: P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.turquoise], ...[[0.25, 0.19], [-0.25, 0.19], [0.25, -0.19], [-0.25, -0.19]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]),
     fireRing: P([
       ...Array.from({ length: 8 }, (_, k) => { const a = (k / 8) * Math.PI * 2; return [new THREE.IcosahedronGeometry(0.13, 0).scale(1, 0.6, 1).translate(Math.cos(a) * 0.44, 0.05, Math.sin(a) * 0.44), k % 2 ? C.rockA : C.rockB] as Part; }),
       [cyl(0.36, 0.36, 0.012, 12), C.ash], [cyl(0.05, 0.05, 0.6, 6).rotateZ(Math.PI / 2).rotateY(0.6).translate(0, 0.06, 0), C.char], [cyl(0.05, 0.05, 0.55, 6).rotateZ(Math.PI / 2).rotateY(-0.7).translate(0, 0.1, 0), C.char],
@@ -218,7 +222,7 @@ function makeProtos() {
     stump: P([[box(0.72, 0.42, 0.72), C.sandstone], [box(0.76, 0.08, 0.76, 0, 0.32), C.turquoise], [box(0.62, 0.14, 0.62, 0, 0, 0).rotateX(0.22).translate(0, 0.46, 0), C.sandstone]]),
     shaft: P([[box(0.48, 0.48, 1.7, 0, 0.24), C.ivory], [box(0.5, 0.5, 0.1, 0, 0.24, 0.6), C.turquoise], [box(0.5, 0.5, 0.04, 0, 0.24, 0.75), C.brass]]),
     shaftShort: P([[box(0.46, 0.46, 1.2, 0, 0.23), C.ivory], [box(0.48, 0.48, 0.1, 0, 0.23, -0.4), C.turquoise]]),
-    pyramidion: P([[cone(0.34, 0.46, 4).rotateY(Math.PI / 4).rotateZ(Math.PI / 2).translate(0.23, 0.24, 0), C.ivory], [cone(0.08, 0.11, 4).rotateY(Math.PI / 4).rotateZ(Math.PI / 2).translate(0.46, 0.24, 0), C.brass]]),
+    pyramidion: P([[cone(0.34, 0.46, 4).rotateY(Math.PI / 4).rotateZ(-Math.PI / 2).translate(-0.23, 0.24, 0), C.ivory], [cone(0.08, 0.11, 4).rotateY(Math.PI / 4).rotateZ(-Math.PI / 2).translate(0.12, 0.24, 0), C.brass]]),
     chunk: P([[new THREE.IcosahedronGeometry(0.2, 0).scale(1, 0.7, 1).translate(0, 0.1, 0), C.sandstone]]),
     // --- a wagon sunk to its axles (its length along x)
     wagon: P([
@@ -265,7 +269,7 @@ function makeProtos() {
     // the cart's bed broken off its wheels and lying flat (its length along x), the side boards fallen outward
     cartBed: P([
       [box(2.7, 0.14, 1.5, 0, 0.2), C.plank], [box(2.74, 0.05, 0.08, 0, 0.29, 0.72), C.brass], [box(2.74, 0.05, 0.08, 0, 0.29, -0.72), C.brass],
-      [box(2.6, 0.06, 0.5, 0, 0.05, 1.05).rotateX(0.12), C.wood], [box(2.6, 0.06, 0.5, 0, 0.05, -1.05).rotateX(-0.12), C.wood],
+      [new THREE.BoxGeometry(2.6, 0.06, 0.5).rotateX(0.12).translate(0, 0.06, 1.05), C.wood], [new THREE.BoxGeometry(2.6, 0.06, 0.5).rotateX(-0.12).translate(0, 0.06, -1.05), C.wood],
       [box(0.5, 0.06, 1.4, -1.6, 0.05), C.wood], [box(2.4, 0.03, 0.06, 0, 0.28, 0.25), C.lacquer], [box(2.4, 0.03, 0.06, 0, 0.28, -0.25), C.lacquer],
       [rod(0.06, 0.06, 1.8, 6).rotateX(Math.PI / 2).translate(0.9, 0.08, 0), C.iron], [box(1.9, 0.1, 0.1, 2.3, 0.06, 0.1).rotateY(0.15), C.wood], [box(0.12, 0.08, 0.9, 3.2, 0.06, 0.25), C.wood],
     ]),
@@ -290,8 +294,8 @@ function makeProtos() {
       [ring(0.24, 0.024, 3, 12).rotateX(Math.PI / 2).translate(0, 0.17, 0), C.turquoise],
     ]),
     amphoraLying: P([
-      [ball(0.26, 9, 5).scale(1.55, 1, 1).translate(0, 0.26, 0), C.clay], [cyl(0.08, 0.11, 0.24, 8).rotateZ(-Math.PI / 2).translate(0.5, 0.26, 0), C.clay], [ring(0.09, 0.022, 4, 10).rotateY(Math.PI / 2).translate(0.63, 0.26, 0), C.brass],
-      [cone(0.07, 0.2, 6).rotateZ(Math.PI / 2).translate(-0.4, 0.26, 0), C.clay], [ring(0.235, 0.024, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.26, 0), C.turquoise],
+      [ball(0.26, 9, 5).scale(1.55, 1, 1).translate(0, 0.26, 0), C.clay], [cyl(0.08, 0.11, 0.24, 8).rotateZ(-Math.PI / 2).translate(0.34, 0.26, 0), C.clay], [ring(0.09, 0.022, 4, 10).rotateY(Math.PI / 2).translate(0.57, 0.26, 0), C.brass],
+      [cone(0.07, 0.2, 6).rotateZ(Math.PI / 2).translate(-0.37, 0.26, 0), C.clay], [ring(0.235, 0.024, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.26, 0), C.turquoise],
     ]),
     // the water-wheel fallen flat on its side (R 1.6 m): two rims, twelve paddles between them, the spokes, a brass hub
     wheelBig: P(bigWheel(1.6)),
@@ -316,7 +320,7 @@ function makeProtos() {
       [cyl(0.05, 0.06, 0.32, 6).translate(0.36, 0.16, 0), C.wood], [cyl(0.05, 0.06, 0.32, 6).translate(-0.36, 0.16, 0), C.wood], [ball(0.07, 8, 5).translate(0.36, 0.48, 0), C.brass], [ball(0.07, 8, 5).translate(-0.36, 0.48, 0), C.brass],
     ]),
     rugRolled: P([[rod(0.16, 0.16, 1.4, 10).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.wine], [rod(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(0.5, 0.16, 0), C.turquoise], [rod(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(-0.5, 0.16, 0), C.turquoise], [rod(0.1, 0.1, 1.42, 8).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.cream]]),
-    waterskin: P([[ball(1, 10, 6).scale(0.32, 0.15, 0.2).translate(0, 0.15, 0), C.hide], [cyl(0.04, 0.06, 0.16, 6).rotateZ(-Math.PI / 2).translate(0.38, 0.14, 0), C.hide], [cyl(0.045, 0.045, 0.03, 6).rotateZ(-Math.PI / 2).translate(0.47, 0.14, 0), C.brass]]),
+    waterskin: P([[ball(1, 10, 6).scale(0.32, 0.15, 0.2).translate(0, 0.15, 0), C.hide], [cyl(0.04, 0.06, 0.16, 6).rotateZ(-Math.PI / 2).translate(0.3, 0.14, 0), C.hide], [cyl(0.045, 0.045, 0.03, 6).rotateZ(-Math.PI / 2).translate(0.45, 0.14, 0), C.brass]]),
     // a covered wagon sunk to its axles: the cream canvas on wooden hoops (its length along x)
     wagonCover: P([
       [new THREE.CylinderGeometry(0.72, 0.72, 2.3, 14, 1, true, 0, Math.PI).rotateZ(Math.PI / 2).translate(0, 1.0, 0), C.cream],
@@ -333,6 +337,35 @@ function makeProtos() {
       [box(0.3, 0.03, 0.2, 0, 0.03, 0.3), C.brass], [cyl(0.1, 0.1, 0.03, 10).translate(0.3, 0.02, 0.35), C.brass],
     ]),
   };
+  // The shapes as they were before the props pass (2026-11-14), for the planner's measure only (`autoCover`): fixed parts moved a few cm
+  // to meet their bodies, which shrank some footprints and let later scenes fit elsewhere. Measuring the old ones keeps every scene
+  // where it was; only what is drawn changed.
+  PLAN.set(shapes.sack, P([[ball(1, 8, 5).scale(0.42, 0.24, 0.3).translate(0, 0.2, 0), C.cream], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.46, 0.18, 0), C.cream], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.52, 0.18, 0), C.rope]]));
+  PLAN.set(shapes.sackHide, P([[ball(1, 8, 5).scale(0.4, 0.26, 0.3).translate(0, 0.22, 0), C.hide], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.44, 0.2, 0), C.hide], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.5, 0.2, 0), C.rope]]));
+  PLAN.set(shapes.lantern, P([
+      [rod(0.12, 0.12, 0.3, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.lacquer], [rod(0.105, 0.105, 0.16, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.glass],
+      [cone(0.13, 0.12, 8).rotateZ(-Math.PI / 2).translate(0.15, 0.12, 0), C.brass], [ring(0.08, 0.014, 4, 10).rotateY(Math.PI / 2).translate(0.32, 0.12, 0), C.brass],
+    ]));
+  PLAN.set(shapes.basketLying, P([[cyl(0.26, 0.21, 0.34, 12).rotateZ(Math.PI / 2).translate(-0.17, 0.25, 0), C.rope], [ring(0.26, 0.025, 4, 14).rotateY(Math.PI / 2).translate(0.17, 0.25, 0), C.brass], [cone(0.45, 0.14, 10).translate(0.55, 0, 0), C.sandDark]]));
+  PLAN.set(shapes.postLying, P([[box(0.14, 0.14, 1.7, 0, 0.07), C.wood], [box(0.18, 0.04, 0.18, 0, 0.07, 0.86).rotateX(Math.PI / 2), C.brass]]));
+  PLAN.set(shapes.drum, P([[rod(0.15, 0.15, 1.2, 10).rotateZ(Math.PI / 2).translate(0, 0.2, 0), C.rope], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(0.62, 0.2, 0), C.wood], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.62, 0.2, 0), C.wood], [box(0.05, 0.05, 0.36, 0.7, 0.2, 0.16), C.iron], [box(0.05, 0.05, 0.16, 0.76, 0.2, 0.34), C.iron]]));
+  PLAN.set(shapes.bucketLying, P([[cyl(0.2, 0.16, 0.32, 12).rotateZ(Math.PI / 2).translate(-0.16, 0.2, 0), C.wood], [ring(0.2, 0.02, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.2, 0), C.brass], [ring(0.18, 0.02, 4, 14).rotateY(Math.PI / 2).translate(-0.06, 0.19, 0), C.brass]]));
+  PLAN.set(shapes.jarLying, P([[ball(0.3, 10, 7).scale(1, 1.25, 1).rotateZ(Math.PI / 2).translate(0, 0.28, 0), C.clay], [cyl(0.1, 0.13, 0.16, 8).rotateZ(Math.PI / 2).translate(-0.44, 0.28, 0), C.clay], [ring(0.31, 0.025, 4, 16).rotateY(Math.PI / 2).translate(0.05, 0.28, 0), C.turquoise]]));
+  PLAN.set(shapes.cushionWine, P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.wine], ...[[0.3, 0.24], [-0.3, 0.24], [0.3, -0.24], [-0.3, -0.24]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]));
+  PLAN.set(shapes.cushionTurq, P([[ball(1, 12, 8).scale(0.34, 0.13, 0.28).translate(0, 0.12, 0), C.turquoise], ...[[0.3, 0.24], [-0.3, 0.24], [0.3, -0.24], [-0.3, -0.24]].map(([x, z]) => [ball(0.035, 6, 4).translate(x, 0.1, z), C.brass] as Part)]));
+  PLAN.set(shapes.pyramidion, P([[cone(0.34, 0.46, 4).rotateY(Math.PI / 4).rotateZ(Math.PI / 2).translate(0.23, 0.24, 0), C.ivory], [cone(0.08, 0.11, 4).rotateY(Math.PI / 4).rotateZ(Math.PI / 2).translate(0.46, 0.24, 0), C.brass]]));
+  PLAN.set(shapes.cartBed, P([
+      [box(2.7, 0.14, 1.5, 0, 0.2), C.plank], [box(2.74, 0.05, 0.08, 0, 0.29, 0.72), C.brass], [box(2.74, 0.05, 0.08, 0, 0.29, -0.72), C.brass],
+      [box(2.6, 0.06, 0.5, 0, 0.05, 1.05).rotateX(0.12), C.wood], [box(2.6, 0.06, 0.5, 0, 0.05, -1.05).rotateX(-0.12), C.wood],
+      [box(0.5, 0.06, 1.4, -1.6, 0.05), C.wood], [box(2.4, 0.03, 0.06, 0, 0.28, 0.25), C.lacquer], [box(2.4, 0.03, 0.06, 0, 0.28, -0.25), C.lacquer],
+      [rod(0.06, 0.06, 1.8, 6).rotateX(Math.PI / 2).translate(0.9, 0.08, 0), C.iron], [box(1.9, 0.1, 0.1, 2.3, 0.06, 0.1).rotateY(0.15), C.wood], [box(0.12, 0.08, 0.9, 3.2, 0.06, 0.25), C.wood],
+    ]));
+  PLAN.set(shapes.amphoraLying, P([
+      [ball(0.26, 9, 5).scale(1.55, 1, 1).translate(0, 0.26, 0), C.clay], [cyl(0.08, 0.11, 0.24, 8).rotateZ(-Math.PI / 2).translate(0.5, 0.26, 0), C.clay], [ring(0.09, 0.022, 4, 10).rotateY(Math.PI / 2).translate(0.63, 0.26, 0), C.brass],
+      [cone(0.07, 0.2, 6).rotateZ(Math.PI / 2).translate(-0.4, 0.26, 0), C.clay], [ring(0.235, 0.024, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.26, 0), C.turquoise],
+    ]));
+  PLAN.set(shapes.waterskin, P([[ball(1, 10, 6).scale(0.32, 0.15, 0.2).translate(0, 0.15, 0), C.hide], [cyl(0.04, 0.06, 0.16, 6).rotateZ(-Math.PI / 2).translate(0.38, 0.14, 0), C.hide], [cyl(0.045, 0.045, 0.03, 6).rotateZ(-Math.PI / 2).translate(0.47, 0.14, 0), C.brass]]));
+  return shapes;
 }
 
 type Pr = ReturnType<typeof makeProtos>;
@@ -752,14 +785,15 @@ function autoCover(rc: Recipe) {
   const items = rc.items.slice();
   const cells = new Map<number, number[]>(); // per 1 m cell: the box of the points found there and their top
   for (const op of rc.ops) {
-    let st = stats.get(op.p);
+    const pp = PLAN.get(op.p) ?? op.p; // a fixed shape is measured as it was, so no scene moves
+    let st = stats.get(pp);
     if (!st) {
       st = [0, -1e9, 0]; // reach round the origin across the ground, top, reach in any direction
-      for (const A of [op.p.pos]) for (let i = 0; i < A.length; i += 3) { st[0] = Math.max(st[0], Math.hypot(A[i], A[i + 2])); st[1] = Math.max(st[1], A[i + 1]); st[2] = Math.max(st[2], Math.hypot(A[i], A[i + 1], A[i + 2])); }
-      stats.set(op.p, st);
+      for (const A of [pp.pos]) for (let i = 0; i < A.length; i += 3) { st[0] = Math.max(st[0], Math.hypot(A[i], A[i + 2])); st[1] = Math.max(st[1], A[i + 1]); st[2] = Math.max(st[2], Math.hypot(A[i], A[i + 1], A[i + 2])); }
+      stats.set(pp, st);
     }
-    let P = hulls.get(op.p);
-    if (!P) hulls.set(op.p, (P = hullOf(op.p)));
+    let P = hulls.get(pp);
+    if (!P) hulls.set(pp, (P = hullOf(pp)));
     const upright = op.tilt === 0 && op.roll === 0;
     const cy = Math.cos(op.yaw), sy = Math.sin(op.yaw), cx = Math.cos(op.tilt), sx = Math.sin(op.tilt), cz = Math.cos(op.roll), sz = Math.sin(op.roll);
     // three.js Euler 'YXZ': R = Ry * Rx * Rz
@@ -770,7 +804,7 @@ function autoCover(rc: Recipe) {
     if (items.some((it) => Math.hypot(op.x - it.x, op.z - it.z) + r <= it.r + 0.02 && (top <= KNEE || it.h >= top - 0.02))) continue;
     if (top <= KNEE) { rc.items.push({ x: op.x, z: op.z, r: r + 0.02, h: Math.max(0, top) }); continue; }
     // a tall part: small circles where its telling points pass the scene's circles (or stand above what they say)
-    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r), T = denseOf(op.p);
+    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r), T = denseOf(pp);
     for (let i = 0; i < T.length; i += 3) {
       const vx = T[i] * op.sx, vy = T[i + 1] * op.sy, vz = T[i + 2] * op.sz;
       const x = op.x + R0 * vx + R1 * vy + R2 * vz, y = op.y + R3 * vx + R4 * vy + R5 * vz, z = op.z + R6 * vx + R7 * vy + R8 * vz;

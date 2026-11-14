@@ -310,6 +310,7 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
           kit.add(M.turquoise, cyl(r * 1.12, r * 1.12, 0.16, 16), o.ax, 0.35, o.az);
           for (const s of [-1, 1]) kit.add(M.wood, cyl(0.08, 0.1, 2.5, 6), o.ax + s * (r + 0.1), 0, o.az);
           kit.add(M.wood, box(0.12, 0.12, r * 2.7), o.ax, 2.45, o.az, Math.PI / 2).add(M.cloth, new THREE.TorusGeometry(0.28, 0.07, 6, 12), o.ax, 1.85, o.az, 0);
+          kit.add(M.wood, cyl(0.018, 0.018, 0.3, 5), o.ax, 2.17, o.az); // the coil on its rope from the beam (it hung in the air)
         } else if (kind === 'spring') {
           kit.add(M.sandstone, cyl(r, r * 1.12, 0.55, 16), o.ax, 0, o.az).add(M.water, cyl(r * 0.82, r * 0.82, 0.05, 16), o.ax, 0.52, o.az).add(M.gold, new THREE.TorusGeometry(r, 0.06, 6, 20).rotateX(Math.PI / 2).translate(0, 0.56, 0), o.ax, 0, o.az);
           glowSpots.push({ x: o.ax, y: 0.9, z: o.az, size: 1.6 });
@@ -401,8 +402,14 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
     }
   });
   for (const d of look.decor) {
-    // an arch's lintel over its two piers
-    kit.add(M.flag, box(7.2, 1, 1.4), d.x, d.s, d.z, d.yaw).add(M.turquoise, box(7.3, 0.3, 1.45), d.x, d.s + 0.35, d.z, d.yaw).add(M.gold, box(7.4, 0.1, 1.5), d.x, d.s + 1, d.z, d.yaw);
+    // an arch's lintel over its two piers: along them, from one's outer face to the other's (2026-11-14, the props pass: it lay across
+    // the piers' line, 7.2 m long between piers 7 to 13 m apart, so it hung in the air between them)
+    const piers = look.pieces.filter((p, i) => kinds.get(i) === 'pier').map((p) => p.o).sort((a, b) => Math.hypot(a.ax - d.x, a.az - d.z) - Math.hypot(b.ax - d.x, b.az - d.z)).slice(0, 2);
+    if (piers.length === 2 && Math.hypot(piers[0].ax - d.x, piers[0].az - d.z) < 9) {
+      const [a, b] = piers, ux = b.ax - a.ax, uz = b.az - a.az, l = Math.hypot(ux, uz), yaw = Math.atan2(-uz, ux), w = l + Math.max(a.r, b.r) * 2 + 0.2;
+      const cx = (a.ax + b.ax) / 2, cz = (a.az + b.az) / 2, top = Math.min(a.height, b.height);
+      kit.add(M.flag, box(w, 1, 1.4), cx, top, cz, yaw).add(M.turquoise, box(w + 0.1, 0.3, 1.45), cx, top + 0.35, cz, yaw).add(M.gold, box(w + 0.2, 0.1, 1.5), cx, top + 1, cz, yaw);
+    } else kit.add(M.flag, box(7.2, 1, 1.4), d.x, d.s, d.z, d.yaw).add(M.turquoise, box(7.3, 0.3, 1.45), d.x, d.s + 0.35, d.z, d.yaw).add(M.gold, box(7.4, 0.1, 1.5), d.x, d.s + 1, d.z, d.yaw);
   }
   // Lanterns at the places, towards the middle.
   for (const p of look.places) {
