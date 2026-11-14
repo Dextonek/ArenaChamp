@@ -44,16 +44,26 @@ export function buildDepth(o: DepthIn) {
   const { spec, geo, rnd } = o;
   // Where the depth puts its props, for the scenes to keep off (scenes/sea.ts); the dressing itself is unchanged.
   const marks: { x: number; z: number; r: number }[] = [];
-  interface Rec { add(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): Rec }
+  interface Rec { add(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): Rec; mute: boolean }
   const dress: Rec = {
+    /** A prop planned where it must not be drawn (on a floor's spot, inside a harbour-file prop): planned as before, not drawn. */
+    mute: false,
     add(key, g, x, y, z, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0) {
       if (!g.boundingBox) g.computeBoundingBox();
       const b = g.boundingBox!, ox = (b.min.x + b.max.x) / 2, oz = (b.min.z + b.max.z) / 2;
+      // a muted prop keeps its mark: the scenes keep off the same ground as before, so none of them moves
       marks.push({ x, z, r: Math.min(Math.hypot(b.max.x - b.min.x, b.max.z - b.min.z) / 2 * Math.max(sx, sz) + Math.hypot(ox, oz) * Math.max(sx, sz), 30) });
-      o.dress.add(key, g, x, y, z, yaw, sx, sy, sz, tilt);
+      if (!dress.mute) o.dress.add(key, g, x, y, z, yaw, sx, sy, sz, tilt);
       return dress;
     },
   };
+  /**
+   * Is (x, z) too near a floor's spot (a person, a cache, a waystone, a door, a quest step: `spec.keep`) or inside one of the harbour
+   * file's props (`spec.sceneTaken`, drawn later by the zone) for a prop reaching `r` m? Such a prop is muted, not moved: the random stream
+   * and every other prop stay as they were (the props pass, 2026-11-14: a signpost through a waystone, a fish rack inside a pile of chests).
+   */
+  const blocked = (x: number, z: number, r: number) =>
+    (spec.keep ?? []).some((k) => Math.hypot(k.x - x, k.z - z) < r + 0.5) || (spec.sceneTaken ?? []).some((t) => Math.hypot(t.x - x, t.z - z) < t.r - 0.6 + r);
   const glows: { x: number; y: number; z: number; size?: number }[] = [];
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 7) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
@@ -89,9 +99,12 @@ export function buildDepth(o: DepthIn) {
           const x = cx + nx * side * 2.9, z = cz + nz * side * 2.9;
           if (free(x, z, 0.5, { road: 2.4, place: 1 })) {
             if (rnd() < 0.6) {
-              dress.add('wood', cyl(0.09, 0.12, 2.5, 6), x, 0, z).add('wood', box(0.08, 0.08, 0.7).translate(0, 0, 0.3), x, 2.4, z, yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2));
+              // the arm reaches out over the lantern (it hangs on the -n side of its post)
+              dress.mute = blocked(x, z, 0.7);
+              dress.add('wood', cyl(0.09, 0.12, 2.5, 6), x, 0, z).add('wood', box(0.08, 0.08, 0.7).translate(0, 0, 0.3), x, 2.4, z, yaw + (side > 0 ? Math.PI / 2 : -Math.PI / 2));
               dress.add('lacquer', box(0.26, 0.34, 0.26), x - nx * side * 0.6, 2.05, z - nz * side * 0.6).add('gold', box(0.3, 0.05, 0.3), x - nx * side * 0.6, 2.38, z - nz * side * 0.6);
-              glows.push({ x: x - nx * side * 0.6, y: 2.2, z: z - nz * side * 0.6, size: 1.1 });
+              if (!dress.mute) glows.push({ x: x - nx * side * 0.6, y: 2.2, z: z - nz * side * 0.6, size: 1.1 });
+              dress.mute = false;
             } else {
               dress.add('capstone', box(0.55, 0.32, 0.4), x, 0, z, yaw + rnd() * 0.3).add('stone', box(0.45, 0.26, 0.38), x + ux * 0.8, 0, z + uz * 0.8, yaw - rnd() * 0.3);
             }
@@ -116,17 +129,21 @@ export function buildDepth(o: DepthIn) {
       if (!place || place.kind === 'camp' && rnd() < 0.5) continue;
       const a = Math.atan2(ex - place.x, ez - place.z), x = ex + Math.cos(a) * 2.6, z = ez - Math.sin(a) * 2.6;
       if (!free(x, z, 0.4, { road: 1.6 })) continue;
+      dress.mute = blocked(x, z, 0.5);
       dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
       dress.add('gold', box(0.18, 0.05, 0.18), x, 2.3, z);
+      dress.mute = false;
     }
   }
 
   // --- the places, dressed as what they are -------------------------------------------------------------------------------------------
-  const ring = (p: { x: number; z: number; r: number }, n: number, from: number, to: number, make: (x: number, z: number, a: number) => void, pad = 0.8) => {
+  const ring = (p: { x: number; z: number; r: number }, n: number, from: number, to: number, make: (x: number, z: number, a: number) => void, pad = 0.8, reach = 0.5) => {
     for (let k = 0, made = 0; k < n * 12 && made < n; k++) {
       const a = rnd() * Math.PI * 2, d = from + rnd() * (to - from), x = p.x + Math.sin(a) * d, z = p.z + Math.cos(a) * d;
       if (!free(x, z, pad, { road: 2.4 })) continue;
+      dress.mute = blocked(x, z, reach) // `reach`: how far the prop itself reaches from (x, z);
       make(x, z, a);
+      dress.mute = false;
       made++;
     }
   };
@@ -136,34 +153,34 @@ export function buildDepth(o: DepthIn) {
       case 'market':
         ring(p, 3, r - 1, r + 4, (x, z, a) => { // a net hung between two poles
           dress.add('wood', cyl(0.07, 0.08, 2.4, 5), x - Math.cos(a) * 1.2, 0, z + Math.sin(a) * 1.2).add('wood', cyl(0.07, 0.08, 2.4, 5), x + Math.cos(a) * 1.2, 0, z - Math.sin(a) * 1.2);
-          dress.add('rope', box(2.4, 1.3, 0.04), x, 0.9, z, a + Math.PI / 2);
-        });
+          dress.add('rope', box(2.4, 1.3, 0.04), x, 0.9, z, a); // along the line of its poles
+        }, 0.8, 1.3); // the net and its poles
         ring(p, 4, r - 2, r + 3, (x, z, a) => dress.add('wood', cyl(0.32, 0.26, 0.35, 9), x, 0, z).add('salt', cyl(0.28, 0.28, 0.06, 9), x, 0.3, z, a)); // baskets of the catch
         ring(p, 2, r, r + 4, (x, z, a) => { // a drying rack of fish
           for (const s of [-1, 1]) dress.add('wood', box(0.08, 1.4, 0.08), x + Math.cos(a) * s, 0, z - Math.sin(a) * s);
-          dress.add('plank', box(2.2, 0.06, 0.06), x, 1.35, z, a + Math.PI / 2);
-          for (let f = -0.8; f <= 0.81; f += 0.4) dress.add('slate', box(0.08, 0.5, 0.18), x + Math.cos(a) * f, 0.75, z - Math.sin(a) * f, a);
-        });
+          dress.add('plank', box(2.2, 0.06, 0.06), x, 1.35, z, a); // from post to post
+          for (let f = -0.8; f <= 0.81; f += 0.4) dress.add('slate', box(0.08, 0.5, 0.18), x + Math.cos(a) * f, 0.85, z - Math.sin(a) * f, a); // hung from the bar
+        }, 0.8, 1.1);
         break;
       case 'village':
         ring(p, 3, r + 1, r + 7, (x, z, a) => { // a garden: a low fence and rows
           for (const [fx, fz] of [[-1.6, -1.2], [1.6, -1.2], [-1.6, 1.2], [1.6, 1.2]]) dress.add('wood', box(0.08, 0.6, 0.08), x + fx, 0, z + fz);
           dress.add('plank', box(3.3, 0.06, 0.06), x, 0.45, z - 1.2).add('plank', box(3.3, 0.06, 0.06), x, 0.45, z + 1.2);
           for (const row of [-0.6, 0, 0.6]) dress.add('leaf', box(2.6, 0.28, 0.3), x, 0, z + row);
-        }, 2);
+        }, 2, 1.8);
         ring(p, 1, r + 1, r + 5, (x, z) => { // the well
-          dress.add('stone', cyl(0.8, 0.85, 0.8, 12), x, 0, z).add('lacquer', cyl(0.62, 0.62, 0.82, 12), x, 0, z);
+          dress.add('stone', cyl(0.8, 0.85, 0.8, 12), x, 0, z).add('lacquer', cyl(0.62, 0.62, 0.74, 12), x, 0, z); // the water below the rim
           for (const s of [-1, 1]) dress.add('wood', box(0.1, 1.9, 0.1), x + s * 0.7, 0, z);
-          dress.add('wine', box(1.8, 0.1, 1.0), x, 1.95, z).add('gold', box(1.84, 0.04, 0.06), x, 2.02, z);
-        }, 1.6);
+          dress.add('wine', box(1.8, 0.1, 1.0), x, 1.9, z).add('gold', box(1.84, 0.04, 0.06), x, 1.97, z); // the roof on its posts
+        }, 1.6, 0.9);
         ring(p, 2, r + 0.5, r + 5, (x, z, a) => { // washing on a line
           for (const s of [-1, 1]) dress.add('wood', box(0.08, 2, 0.08), x + Math.cos(a) * 2 * s, 0, z - Math.sin(a) * 2 * s);
-          dress.add('rope', box(4, 0.02, 0.02), x, 1.9, z, a + Math.PI / 2);
+          dress.add('rope', box(4, 0.02, 0.02), x, 1.9, z, a); // from post to post
           for (const f of [-1.2, -0.3, 0.6, 1.4]) dress.add(rnd() < 0.5 ? 'cloth' : 'cream', box(0.55, 0.7, 0.02).translate(0, -0.35, 0), x + Math.cos(a) * f, 1.9, z - Math.sin(a) * f, a);
-        });
+        }, 0.8, 2.0);
         break;
       case 'wreck': case 'shipyard':
-        ring(p, 7, r - 1, r + 6, (x, z) => dress.add('plank', box(0.35, 0.08, 1.6 + rnd() * 1.6), x, 0.02, z, rnd() * 6.28, 1, 1, 1, (rnd() - 0.5) * 0.2), 0.4);
+        ring(p, 7, r - 1, r + 6, (x, z) => dress.add('plank', box(0.35, 0.08, 1.6 + rnd() * 1.6), x, 0.02, z, rnd() * 6.28, 1, 1, 1, (rnd() - 0.5) * 0.2), 0.4, 1.4);
         ring(p, 3, r - 1, r + 5, (x, z) => dress.add('rope', new THREE.TorusGeometry(0.32, 0.08, 6, 14).rotateX(Math.PI / 2).translate(0, 0.08, 0), x, 0, z), 0.4);
         break;
       case 'beacon':
@@ -171,7 +188,7 @@ export function buildDepth(o: DepthIn) {
         break;
       case 'chapel':
         ring(p, 6, r + 1, r + 7, (x, z, a) => dress.add('stone', box(0.6, 0.85, 0.16), x, 0, z, a).add('capstone', box(0.66, 0.08, 0.2), x, 0.85, z, a), 0.6);
-        ring(p, 2, r - 1, r + 3, (x, z, a) => dress.add('wood', box(1.6, 0.42, 0.4), x, 0, z, a), 0.8);
+        ring(p, 2, r - 1, r + 3, (x, z, a) => dress.add('wood', box(1.6, 0.42, 0.4), x, 0, z, a), 0.8, 0.8);
         break;
       case 'fort':
         ring(p, 3, r - 1, r + 3, (x, z, a) => {
@@ -182,7 +199,7 @@ export function buildDepth(o: DepthIn) {
       case 'caves':
         ring(p, 2, r - 2, r + 1, (x, z) => {
           dress.add('wood', cyl(0.06, 0.08, 1.9, 6), x, 0, z).add('gold', cyl(0.12, 0.08, 0.18, 6), x, 1.9, z);
-          glows.push({ x, y: 2.15, z, size: 1.6 });
+          if (!dress.mute) glows.push({ x, y: 2.15, z, size: 1.6 });
         }, 0.6);
         ring(p, 6, r, r + 6, (x, z) => dress.add('boulder', new THREE.IcosahedronGeometry(0.4 + rnd() * 0.5, 0), x, 0.1, z, rnd() * 6), 0.4);
         break;
@@ -254,8 +271,14 @@ export function buildDepth(o: DepthIn) {
     if (geo.sea(x - RING.x, z - RING.z) < 0.9) continue;
     const s = 10 + rnd() * 16;
     dress.add('rock', new THREE.IcosahedronGeometry(1, 1).scale(s, s * 0.32, s * 0.8), x, -1.2, z, rnd() * 6);
-    dress.add('leaf', new THREE.IcosahedronGeometry(1, 1).scale(s * 0.82, s * 0.2, s * 0.62), x, s * 0.08, z, rnd() * 6);
-    for (let t = 0; t < 5; t++) dress.add('leaf', new THREE.ConeGeometry(1.4, 4.5, 7).translate(0, 2.2, 0), x + (rnd() - 0.5) * s, s * 0.18, z + (rnd() - 0.5) * s * 0.6);
+    const ly = rnd() * 6;
+    dress.add('leaf', new THREE.IcosahedronGeometry(1, 1).scale(s * 0.82, s * 0.2, s * 0.62), x, s * 0.08, z, ly);
+    for (let t = 0; t < 5; t++) {
+      // each tree on the island's green where it stands (all were at one height: sunk in its middle, in the air at its edge)
+      const ox = (rnd() - 0.5) * s, oz = (rnd() - 0.5) * s * 0.6, u = Math.cos(ly) * ox - Math.sin(ly) * oz, w = Math.sin(ly) * ox + Math.cos(ly) * oz;
+      const top = s * 0.08 + s * 0.2 * 0.92 * Math.sqrt(Math.max(0, 1 - (u / (s * 0.82)) ** 2 - (w / (s * 0.62)) ** 2));
+      dress.add('leaf', new THREE.ConeGeometry(1.4, 4.5, 7).translate(0, 2.2, 0), x + ox, top - 0.25, z + oz);
+    }
     if (k === 0) {
       dress.add('cream', cyl(1.1, 1.5, 7, 10), x, s * 0.2, z).add('wine', cyl(1.0, 1.1, 1.2, 10), x, s * 0.2 + 7, z).add('gold', cyl(1.3, 1.3, 0.15, 10), x, s * 0.2 + 8.3, z);
       glows.push({ x, y: s * 0.2 + 8.8, z, size: 6 });

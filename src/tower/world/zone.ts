@@ -27,6 +27,11 @@ import { buildLand } from './land';
  * flat (z 55) and the others reach 49.3. `ArenaDef` should carry its middle and the clamp should follow `arena.bounds`.
  */
 export const ZONE_R = 48;
+const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
+  const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
+  const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
+  return Math.hypot(px - (ax + ex * t), pz - (az + ez * t));
+};
 const at = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
 
 /** The tide's low ground (floor 1's law, floors/harbour.ts): kept here because the ground is drawn from it (tidal flats, land.ts). */
@@ -238,9 +243,11 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
   for (const { look, o } of L.pieces) {
     const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az), len = Math.hypot(o.bx - o.ax, o.bz - o.az), mx = (o.ax + o.bx) / 2, mz = (o.az + o.bz) / 2, r = o.r, h = o.height;
     switch (look) {
-      case 'crate':
-        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, 0);
+      case 'crate': {
+        const cy = rnd() * 3; // its band turned with it (it was square to the world: its corners stood out of the crate's sides)
+        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, cy).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, cy);
         break;
+      }
       case 'barrel':
         kit.add(wood, cyl(r * 0.9, r, h, 9), o.ax, 0, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.3, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.75, o.az);
         break;
@@ -252,7 +259,8 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
       case 'stall': {
         kit.add(wood, box(r * 2, h * 0.55, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h * 0.55, mz, yaw);
         if (h > 2) {
-          for (const s of [-1, 1]) kit.add(darkWood, cyl(0.07, 0.07, h, 5), o.ax + Math.sin(yaw) * (len / 2) * s, 0, o.az + Math.cos(yaw) * (len / 2) * s);
+          // a pole at each end of the counter, under the awning's ends (one stood in its middle, the other half its length past its end)
+          for (const s of [-1, 1]) kit.add(darkWood, cyl(0.07, 0.07, h, 5), mx + Math.sin(yaw) * (len / 2) * s, 0, mz + Math.cos(yaw) * (len / 2) * s);
           kit.add(rnd() < 0.5 ? wine : teal, new THREE.BoxGeometry(1.6, 0.06, len + 0.6).translate(0, h, 0), mx, 0, mz, yaw, 1, 1, 1, 0);
         }
         break;
@@ -289,7 +297,8 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
         kit.add(darkWood, box(r * 2, h * 0.7, len + r * 2), mx, 0, mz, yaw, 1, 1, 1, 0).add(wood, box(r * 1.2, h, len * 0.7), mx, 0.3, mz, yaw);
         for (let k = 0; k <= 6; k++) {
           const t = k / 6, x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t;
-          kit.add(wood, cyl(0.12, 0.2, h * 1.4, 5), x + Math.cos(yaw) * r * 0.9, 0, z - Math.sin(yaw) * r * 0.9, 0, 1, 1, 1, 0.3).add(wood, cyl(0.12, 0.2, h * 1.2, 5), x - Math.cos(yaw) * r * 0.9, 0, z + Math.sin(yaw) * r * 0.9, 0, 1, 1, 1, -0.3);
+          // the ribs lean in across the hull, each side towards the other (they leaned along the world's z, whatever the hull's heading)
+          kit.add(wood, cyl(0.12, 0.2, h * 1.4, 5), x + Math.cos(yaw) * r * 0.9, 0, z - Math.sin(yaw) * r * 0.9, yaw + Math.PI / 2, 1, 1, 1, -0.3).add(wood, cyl(0.12, 0.2, h * 1.2, 5), x - Math.cos(yaw) * r * 0.9, 0, z + Math.sin(yaw) * r * 0.9, yaw + Math.PI / 2, 1, 1, 1, 0.3);
         }
         kit.add(darkWood, cyl(0.2, 0.3, 6, 6), mx, 1.5, mz, yaw, 1, 1, 1, 1.15);
         break;
@@ -307,6 +316,8 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
         kit.add(cream, new THREE.CylinderGeometry(2.0, 2.9, 11, 12).translate(0, 5.5, 0), o.ax, 0, o.az).add(wine, new THREE.CylinderGeometry(1.7, 2.0, 2.4, 12).translate(0, 11 + 1.2, 0), o.ax, 0, o.az);
         kit.add(cream, new THREE.CylinderGeometry(1.45, 1.7, 2.6, 12).translate(0, 13.4 + 1.3, 0), o.ax, 0, o.az).add(gold, new THREE.CylinderGeometry(2.3, 2.3, 0.22, 12).translate(0, 16.1, 0), o.ax, 0, o.az);
         kit.add(iron, new THREE.ConeGeometry(1.8, 1.4, 12).translate(0, 17.9, 0), o.ax, 0, o.az).add(wine, new THREE.CylinderGeometry(2.1, 2.9, 0.5, 12).translate(0, 4, 0), o.ax, 0, o.az);
+        // the lantern room's posts, from the gallery up to the roof (the roof floated a metre over the gallery on nothing)
+        for (let k = 0; k < 6; k++) kit.add(iron, cyl(0.06, 0.06, 1.04, 5), o.ax + Math.cos((k / 6) * Math.PI * 2) * 1.32, 16.18, o.az + Math.sin((k / 6) * Math.PI * 2) * 1.32);
         glowSpots.push({ x: o.ax, y: 16.9, z: o.az, size: 7 });
         break;
       }
@@ -332,9 +343,20 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
     glowSpots.push({ x: RING.x + dx, y: 1.0 * s, z: RING.z + dz, size: 3.2 * s });
   }
   }
-  // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle.
+  // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle, turned along the rim until it stands
+  // off the roads' middles, the floor's spots and the cover (it stood on the road into the plaza, and on a person or a waystone).
+  const roads: [number, number, number, number][] = [];
+  for (const pth of L.paths) for (let i = 1; i < pth.length; i++) roads.push([RING.x + pth[i - 1][0], RING.z + pth[i - 1][1], RING.x + pth[i][0], RING.z + pth[i][1]]);
+  const clearAt = (x: number, z: number) => roads.every(([ax, az, bx, bz]) => segDist(x, z, ax, az, bx, bz) > 2.3) && keep.every((k) => Math.hypot(k.x - x, k.z - z) > 1.6)
+    && L.pieces.every((pc) => segDist(x, z, pc.o.ax, pc.o.az, pc.o.bx, pc.o.bz) > pc.o.r + 0.4);
   for (const pl of L.places) {
-    const a = Math.atan2(RING.x - pl.x, RING.z - pl.z), x = pl.x + Math.sin(a) * (pl.r - 1), z = pl.z + Math.cos(a) * (pl.r - 1);
+    const a0 = Math.atan2(RING.x - pl.x, RING.z - pl.z), rr = pl.r - 1;
+    let a = a0; // (if no turn of it is clear, as it was)
+    if (!clearAt(pl.x + Math.sin(a0) * rr, pl.z + Math.cos(a0) * rr)) for (let k = 1; k <= 18; k++) {
+      const t = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+      if (clearAt(pl.x + Math.sin(t) * rr, pl.z + Math.cos(t) * rr)) { a = t; break; }
+    }
+    const x = pl.x + Math.sin(a) * rr, z = pl.z + Math.cos(a) * rr;
     kit.add(darkWood, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.6 });
   }
@@ -355,9 +377,14 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
   }).then((loaded) => {
     if (disposed) return;
     const extra = new Kit();
+    // A copy that would stand in one drawn before it (two piles of chests in each other) is left out.
+    const stood: { x: number; z: number; r: number }[] = [];
     for (const p of L.props ?? []) {
       const src = loaded.cover[p.i], from = ORIGINAL[p.i];
       if (!src) continue;
+      const ob = HARBOUR_OBSTACLES[p.i], reach = ob ? Math.hypot(ob.bx - ob.ax, ob.bz - ob.az) / 2 + ob.r : 1.2, px = RING.x + p.dx, pz = RING.z + p.dz;
+      if (stood.some((q) => Math.hypot(q.x - px, q.z - pz) < (q.r + reach) * 0.8)) continue;
+      stood.push({ x: px, z: pz, r: reach });
       const wrap = new THREE.Group(), inner = src.clone(true);
       inner.position.set(-from.x, 0, -from.z);
       wrap.add(inner);

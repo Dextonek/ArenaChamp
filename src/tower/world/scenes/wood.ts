@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import type { WoodLook } from '../gen/wood';
+import { slopeFrame, type PartProbe } from './sea';
 import { rimAt } from '../land';
 
 /**
@@ -478,7 +479,8 @@ const KINDS: Kind[] = [
     name: 'woodshed', R: 3.0, where: 'beyond',
     make: (S, P, r) => {
       for (const [x, z, h] of [[-1.4, -0.8, 2.3], [1.4, -0.8, 2.3], [-1.4, 0.8, 1.8], [1.4, 0.8, 1.8]] as const) P.p('bark', S.box(0.14, h, 0.14), x, 0, z);
-      P.p('wine', S.box(3.3, 0.1, 2.2), 0, 2.05, 0, 0, -0.25).p('gold', S.box(3.34, 0.06, 0.08), 0, 1.78, 1.08, 0, -0.25);
+      // the roof slopes down from the tall back posts to the short front ones (it sloped the other way: high over the short posts)
+      P.p('wine', S.box(3.3, 0.1, 2.2), 0, 2.05, 0, 0, 0.25).p('gold', S.box(3.34, 0.06, 0.08), 0, 1.78, 1.08, 0, 0.25);
       for (let row = 0; row < 6; row++) for (let i = 0; i < 10 - (row % 2); i++) P.p(i % 2 ? 'barkLight' : 'bark', S.log(0.12, 1.2, 7), -1.15 + i * 0.25 + (row % 2) * 0.12, row * 0.22, -0.2, Math.PI / 2);
       P.p('bark', S.cyl(0.35, 0.4, 0.45, 12), 1.0, 0, 1.7).p('bark', S.log(0.025, 0.75, 5), 1.0, 0.45, 1.7, 0.6, 0.9).p('iron', S.box(0.2, 0.06, 0.12), 1.0, 0.5, 1.7, 0.6);
       P.p('plank', S.box(0.55, 0.3, 0.85), -1.3, 0, 1.6, 0.3).p('bark', S.ring(0.2, 0.035), -1.4, 0, 2.25, 0.3);
@@ -614,9 +616,19 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
     }
     return out;
   };
+  /** A scene past the outline as one piece on its slope (scenes/sea.ts `slopeFrame`), while it is committed; null on the flat ground. */
+  let frame: { m: THREE.Matrix4; x: number; z: number; loose: Set<Laid> } | null = null;
+  /** A small thing lying on the ground (under 0.4 m): it keeps its own ground in a scene laid on a slope (scenes/sea.ts `slopeFrame`). */
+  const isLoose = (L: Laid) => { const bb = L.p.g.boundingBox!, y = L.ground - L.floor + L.p.y * L.k; return y > -0.02 && y < 0.45 && (bb.max.y - bb.min.y) * L.sy < 0.4; };
+  /** The scene's loose things: small, low, and not on or in a bigger part (a wheel's hub goes with its wheel). */
+  const looseOf = (laid: Laid[]) => {
+    const big = laid.filter((L) => !isLoose(L));
+    return new Set(laid.filter((L) => isLoose(L) && !big.some((B) => Math.hypot(L.cx - B.cx, L.cz - B.cz) < B.r * 0.5)));
+  };
   const corners = (L: Laid) => {
     const p = L.p, bb = p.g.boundingBox!;
-    m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
+    if (frame && !frame.loose.has(L)) m4.compose(v.set(L.wx - frame.x, L.ground - L.floor + p.y * L.k, L.wz - frame.z), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k)).premultiply(frame.m);
+    else m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
     const pts: [number, number][] = [];
     let top = -1e9;
     for (let i = 0; i < 8; i++) {
@@ -685,6 +697,9 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   /** Writes laid parts into the merged props (one geometry a colour) and records them. */
   const commit = (name: string, laid: Laid[], px: number, pz: number, beyond: boolean, echo: boolean) => {
     const pts: [number, number][] = [];
+    // past the outline, the scene as one piece on its slope (the checks above saw it as before: nothing else moves)
+    const looseL = looseOf(laid);
+    frame = beyond ? { m: slopeFrame(laid.map((L) => ({ wx: L.wx, wz: L.wz, ground: L.floor, standing: Math.abs(L.ground - L.floor + L.p.y * L.k) < 0.02 && !looseL.has(L) })), px, pz, heightOf), x: px, z: pz, loose: looseL } : null;
     let top = 0, main = laid[0];
     const byKey = new Map<Col, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
     for (const L of laid) {
@@ -692,10 +707,12 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
       let list = byKey.get(L.p.key);
       if (!list) byKey.set(L.p.key, (list = []));
       list.push({ g: L.p.g, m: m4.clone() });
+      (globalThis as { __propPart?: PartProbe }).__propPart?.(`scene:${name}`, L.p.key, L.p.g, m4); // the props probe (pipeline/tools/props-probe.js)
       pts.push(...cn.pts, [L.cx, L.cz]);
       top = Math.max(top, cn.top);
       if (L.area > main.area) main = L;
     }
+    frame = null;
     for (const [key, list] of byKey) { const g = bake(list); kit.add(M(key), g, 0, 0, 0); g.dispose(); }
     let r = 0;
     for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));

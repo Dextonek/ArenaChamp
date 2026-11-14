@@ -27,6 +27,8 @@ import { WATER, rimAt, type Geo, type Key, type LandSpec } from '../land';
  * `?scenes=off` in the address leaves them out (for before-and-after pictures and A/B timing).
  */
 
+/** The props probe's hook (pipeline/tools/props-probe.js): each placed part, its shape and its transform. Unset in play. */
+export type PartProbe = (site: string, key: string, g: THREE.BufferGeometry, m: THREE.Matrix4) => void;
 /** The land's merged dressing (land.ts `Dress`). */
 export interface Sink {
   add(key: Key, geo: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): unknown;
@@ -67,6 +69,40 @@ const KNEE = 0.55;
 /** The ground scenes are drawn this much larger than life-sized props (they are seen from the game's high camera); never above the knee. */
 const GROUND_SCALE = 1.45;
 
+/**
+ * A scene past the outline laid as one piece (the props pass, 2026-11-14). Each part stood on the ground under its own middle, so on a
+ * slope a part stood off the one it sits on or hangs from (a cart's wheels off the cart, a rack's pole off its frames, a shed's lantern off
+ * its post). Now the scene is turned to the plane that fits the ground under its parts (8 degrees at most: a post stays near upright) and
+ * let down until none of its standing parts is in the air (0.4 m at most). Small loose things on the ground (a tool, a shell, a coil of
+ * rope) keep their own ground, as before (the caller leaves them out: `standing` false, and draws them on their own ground).
+ * Returns the scene's frame: a part goes at (its offset from (px, pz), its own height, ...).
+ */
+export function slopeFrame(parts: { wx: number; wz: number; ground: number; standing: boolean }[], px: number, pz: number, groundAt: (x: number, z: number) => number) {
+  let n = 0, sx = 0, sz = 0, sh = 0, sxx = 0, szz = 0, sxz = 0, sxh = 0, szh = 0;
+  for (const p of parts) {
+    const dx = p.wx - px, dz = p.wz - pz;
+    n++; sx += dx; sz += dz; sh += p.ground; sxx += dx * dx; szz += dz * dz; sxz += dx * dz; sxh += dx * p.ground; szh += dz * p.ground;
+  }
+  let a = sh / Math.max(1, n), b = 0, c = 0;
+  const M = new THREE.Matrix3().set(n, sx, sz, sx, sxx, sxz, sz, sxz, szz);
+  if (n >= 3 && Math.abs(M.determinant()) > 1e-6) {
+    const e = M.invert().elements; // column-major
+    a = e[0] * sh + e[3] * sxh + e[6] * szh; b = e[1] * sh + e[4] * sxh + e[7] * szh; c = e[2] * sh + e[5] * sxh + e[8] * szh;
+  }
+  const g = Math.hypot(b, c), MAXG = Math.tan(0.14);
+  if (g > MAXG) { b *= MAXG / g; c *= MAXG / g; }
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-b, 1, -c).normalize());
+  const frame = new THREE.Matrix4().compose(new THREE.Vector3(px, a, pz), q, new THREE.Vector3(1, 1, 1)), v = new THREE.Vector3();
+  let lift = -Infinity;
+  for (const p of parts) {
+    if (!p.standing) continue;
+    v.set(p.wx - px, 0, p.wz - pz).applyMatrix4(frame);
+    lift = Math.max(lift, v.y - groundAt(v.x, v.z));
+  }
+  if (lift > -Infinity) frame.elements[13] -= Math.max(-0.1, Math.min(0.4, lift));
+  return frame;
+}
+
 const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
   const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
   const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
@@ -74,7 +110,11 @@ const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz:
 };
 
 // --- a part and a scene's parts ---------------------------------------------------------------------------------------------------
-type Part = { key: Key; g: THREE.BufferGeometry; x: number; y: number; z: number; yaw: number; s: [number, number, number]; tilt: number };
+/**
+ * `draw`: the shape, height and turn it is drawn with, when they are not the ones the placing checks measure (the props pass, 2026-11-14:
+ * a part corrected after the floors were laid out keeps its old footprint for the checks, so every scene stands where it stood).
+ */
+type Part = { key: Key; g: THREE.BufferGeometry; x: number; y: number; z: number; yaw: number; s: [number, number, number]; tilt: number; draw?: { g?: THREE.BufferGeometry; y?: number; yaw?: number } };
 /** A mark painted on the ground under a scene: a trodden patch, a scorch, a stain of oil, wet ground, a pale spill of salt or grain. */
 type MarkT = 'patch' | 'scorch' | 'stain' | 'wet' | 'spill';
 class Parts {
@@ -83,6 +123,11 @@ class Parts {
   /** A ground mark in the scene's frame: an ellipse `a` by `b` m (radii), turned `rot`. */
   m(t: MarkT, x: number, z: number, a: number, b = a, rot = 0) {
     this.marks.push({ t, x, z, a, b, rot });
+    return this;
+  }
+  /** The last part is drawn with this shape, height and turn (see `Part.draw`). */
+  d(g?: THREE.BufferGeometry, y?: number, yaw?: number) {
+    this.list[this.list.length - 1].draw = { g, y, yaw };
     return this;
   }
   p(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw = 0, tilt = 0, sx = 1, sy = sx, sz = sx) {
@@ -506,7 +551,7 @@ const KINDS: Kind[] = [
         P.p('teal', S.k('bow', () => {
           const sh = new THREE.Shape([new THREE.Vector2(-0.8, 0), new THREE.Vector2(0.8, 0), new THREE.Vector2(0.55, 0.9), new THREE.Vector2(0, 1.5), new THREE.Vector2(-0.55, 0.9)]);
           return new THREE.ExtrudeGeometry(sh, { depth: 0.12, bevelEnabled: false }).rotateX(Math.PI / 2).translate(0, 0.12, 0);
-        }), 0, 0, 0.75, Math.PI, 0, 1.5, 1, 1.5).p('gold', S.box(2.4, 0.05, 0.08), 0, 0.12, 0.8);
+        }), 0, 0, 0.75, Math.PI, 0, 1.5, 1, 1.5).d(undefined, undefined, 0).p('gold', S.box(2.4, 0.05, 0.08), 0, 0.12, 0.8); // laid out before the cairn (it lay under it, its cloth in the air)
         P.p('cloth', S.box(0.8, 0.04, 0.26), 0, 0.12, 1.7);
       }
       P.p('leaf', S.ring(0.3, 0.06), -0.8, 0, 0.35).p('leaf', S.ring(0.26, 0.055), 0.8, 0, -0.5);
@@ -651,7 +696,7 @@ const KINDS: Kind[] = [
         P.p('wood', S.box(1.9, 0.12, 0.14), 0, 0.85, s);
         for (const q of [-0.75, 0.75]) P.p('wood', S.cyl(0.05, 0.06, 0.9, 6), q, 0, s);
       }
-      P.p(paint, S.upturned(4.4, 1.6, 0.6), 0, 0.97, 0).p('gold', S.gunwale(4.4, 1.6), 0, 0.97, 0).p('lacquer', S.box(0.12, 0.12, 4.2), 0, 1.53, 0);
+      P.p(paint, S.upturned(4.4, 1.6, 0.6), 0, 0.97, 0).p('gold', S.gunwale(4.4, 1.6), 0, 0.97, 0).p('lacquer', S.box(0.12, 0.12, 4.2), 0, 1.53, 0).d(S.upturned(4.46, 0.12, 0.67), 0.97); // the keel on the hull's curve
       P.p('lacquer', S.k('tarstreak', () => new THREE.SphereGeometry(1, 12, 4, 0, Math.PI * 2, 0, 0.5).scale(0.81, 0.61, 2.21)), 0, 0.97, 0);
       // the tar pot on its stones, the bucket, the mallet, the oakum
       for (let k = 0; k < 5; k++) { const a = (k / 5) * 6.28; P.p('stone', S.stone(0.12), 1.6 + Math.cos(a) * 0.32, 0, 1.5 + Math.sin(a) * 0.32); }
@@ -670,7 +715,7 @@ const KINDS: Kind[] = [
       P.p('wood', S.log(0.05, 3.4, 7), 0, 1.75, 0).p('gold', S.ball(0.07), 1.72, 1.8, 0).p('gold', S.ball(0.07), -1.72, 1.8, 0);
       for (let k = 0; k < 9; k++) {
         const x = -1.3 + k * 0.32;
-        P.p('rope', S.log(0.008, 0.3, 3), x, 1.6, 0, 0, 0, 1, 1, 1).p(k % 3 === 1 ? 'cloth' : 'slate', S.k('hangfish', () => new THREE.SphereGeometry(1, 6, 4).scale(0.07, 0.22, 0.035).translate(0, -0.22, 0)), x, 1.55, 0);
+        P.p('rope', S.log(0.008, 0.3, 3), x, 1.6, 0, 0, 0, 1, 1, 1).d(S.cyl(0.008, 0.008, 0.2, 3), 1.55).p(k % 3 === 1 ? 'cloth' : 'slate', S.k('hangfish', () => new THREE.SphereGeometry(1, 6, 4).scale(0.07, 0.22, 0.035).translate(0, -0.22, 0)), x, 1.55, 0);
       }
       fishFan(S, P, r, 1.4, 0.8, -0.6, 5, 0.7);
       basket(S, P, -1.2, 1.0, 0.32);
@@ -682,7 +727,8 @@ const KINDS: Kind[] = [
     name: 'tidecart', R: 3.0, where: 'beach', wet: true,
     make: (S, P, r) => {
       P.p('plank', S.box(2.4, 0.5, 1.4), 0, 0.15, 0, 0, -0.12).p('gold', S.box(2.44, 0.05, 1.44), 0, 0.5, 0, 0, -0.12);
-      for (const s of [-0.8, 0.8]) P.p('wood', S.k('wheelup', () => S.ring(0.6, 0.06).clone().rotateX(Math.PI / 2)), 0.1, -0.15, s).p('gold', S.k('hubup', () => S.cyl(0.1, 0.1, 0.16, 8).clone().rotateX(Math.PI / 2)), 0.1, 0.45, s);
+      // the wheels sunk to their hubs, each hub in its wheel's middle (it sat on the top of the rim)
+      for (const s of [-0.8, 0.8]) P.p('wood', S.k('wheelup', () => S.ring(0.6, 0.06).clone().rotateX(Math.PI / 2)), 0.1, 0, s).p('gold', S.k('hubup', () => S.cyl(0.1, 0.1, 0.16, 8).clone().rotateX(Math.PI / 2)), 0.1, 0, s);
       for (const s of [-0.5, 0.5]) P.p('wood', S.cyl(0.045, 0.05, 2.4, 6), 1.3, 0.35, s, Math.PI / 2, 0.75);
       P.p('leaf', S.ball(0.6, 0.45), -0.3, 0.6, 0.1, 0, 0, 1.4, 1, 1).p('leaf', S.ball(0.4, 0.5), 0.5, 0.6, -0.2);
       barrelUp(S, P, -1.6, 0, 0.9);
@@ -710,7 +756,8 @@ const KINDS: Kind[] = [
     name: 'capsized', R: 9, where: 'sea',
     make: (S, P, r) => {
       for (let k = 0; k < 7; k++) P.p('rock', S.k('ico', () => new THREE.IcosahedronGeometry(1, 0)), (r() - 0.5) * 12, -0.4, (r() - 0.5) * 16, r() * 6, 0, 2 + r() * 2, 1.4 + r() * 1.6, 2 + r() * 2);
-      P.p('lacquer', S.upturned(15, 5.4, 2.8), 0, 0.9, 0, 0, 0.14).p('wood', S.box(0.4, 0.5, 15), 0, 3.6, 0, 0, 0.14).p('gold', S.gunwale(15, 5.4), 0, 0.92, 0, 0, 0.14);
+      // the keel follows the hull's curve (a straight beam lay on its top and stood clear of it towards both ends)
+      P.p('lacquer', S.upturned(15, 5.4, 2.8), 0, 0.9, 0, 0, 0.14).p('wood', S.box(0.4, 0.5, 15), 0, 3.6, 0, 0, 0.14).d(S.upturned(15.2, 0.4, 3.05), 0.9).p('gold', S.gunwale(15, 5.4), 0, 0.92, 0, 0, 0.14);
       P.p('wood', S.cyl(0.25, 0.32, 9, 8), 4, -0.3, 3, 0.8, 1.0).p('wood', S.log(0.15, 4.5, 7), 6.5, 0.2, -1.5, 0.3).p('sail', S.box(3.2, 0.05, 2.6), 7.5, 0.1, 4.8, 0.6, 0.12);
     },
   },
@@ -755,7 +802,7 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
    * (above its own ground), worked out from its shape's box without building it (a tilted part is given room for its lean). A ground
    * scene is drawn `GROUND_SCALE` larger, and a part that this lifts over the knee is drawn lower instead (`sy`).
    */
-  type Laid = { p: Part; wx: number; wz: number; wyaw: number; ground: number; cx: number; cz: number; r: number; top: number; k: number; sy: number; area: number };
+  type Laid = { p: Part; wx: number; wz: number; wyaw: number; ground: number; cx: number; cz: number; r: number; top: number; k: number; sy: number; area: number; mir: number };
   const lay = (P: Parts, x: number, z: number, yaw: number, mir: number, beyond: boolean, ok: (L: Laid) => boolean): Laid[] | null => {
     const c = Math.cos(yaw), s = Math.sin(yaw), k = beyond ? 1 : GROUND_SCALE, out: Laid[] = [];
     for (const p of P.list) {
@@ -774,16 +821,28 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
       }
       const w = (bb.max.x - bb.min.x) * sx, d = (bb.max.z - bb.min.z) * sz;
       const r = Math.hypot(w, d) / 2 + lean * Math.max(Math.abs(bb.min.y), Math.abs(bb.max.y)) * sy;
-      const L: Laid = { p, wx, wz, wyaw, ground, cx: wx + cy * ox + sy2 * oz, cz: wz - sy2 * ox + cy * oz, r, top, k, sy, area: w * d };
+      const L: Laid = { p, wx, wz, wyaw, ground, cx: wx + cy * ox + sy2 * oz, cz: wz - sy2 * ox + cy * oz, r, top, k, sy, area: w * d, mir };
       if (!ok(L)) return null;
       out.push(L);
     }
     return out;
   };
+  /** A beach scene's frame on its slope (`slopeFrame`), while it is committed; null on flat ground. `loose`: its small things on the ground. */
+  let frame: { m: THREE.Matrix4; x: number; z: number; loose: Set<Laid> } | null = null;
+  /** A small thing on or just over the ground (under 0.4 m, its foot under 0.45 m: a tool, a shell, a tar pot on its stones): it keeps
+   *  its own ground in a scene laid on a slope. */
+  const isLoose = (L: Laid) => { const bb = L.p.g.boundingBox!; return L.p.y * L.k > -0.02 && L.p.y * L.k < 0.45 && (bb.max.y - bb.min.y) * L.sy < 0.4; };
+  /** The scene's loose things: small, low, and not on or in a bigger part (a wheel's hub goes with its wheel). */
+  const looseOf = (laid: Laid[]) => {
+    const big = laid.filter((L) => !isLoose(L));
+    return new Set(laid.filter((L) => isLoose(L) && !big.some((B) => Math.hypot(L.cx - B.cx, L.cz - B.cz) < B.r * 0.5)));
+  };
   /** A placed part's real corners on the ground and its real top (for the probe), from its full transform. */
   const corners = (L: Laid) => {
-    const p = L.p, bb = p.g.boundingBox!;
-    m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
+    const p = L.p, g = p.draw?.g ?? p.g, bb = g.boundingBox ?? (g.computeBoundingBox(), g.boundingBox!), py = p.draw?.y ?? p.y;
+    const wyaw = L.wyaw + ((p.draw?.yaw ?? p.yaw) - p.yaw) * L.mir;
+    if (frame && !frame.loose.has(L)) m4.compose(v.set(L.wx - frame.x, py * L.k, L.wz - frame.z), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k)).premultiply(frame.m);
+    else m4.compose(v.set(L.wx, L.ground + py * L.k, L.wz), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
     const pts: [number, number][] = [];
     let top = -1e9;
     for (let i = 0; i < 8; i++) {
@@ -885,17 +944,24 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
   /** Writes laid parts into the dressing (one geometry a colour) and records them; returns the record. */
   const commit = (name: string, laid: Laid[], px: number, pz: number, beyond: boolean, echo: boolean) => {
     const pts: [number, number][] = [];
+    // a beach scene as one piece on its slope (the checks above saw it as before: nothing else moves)
+    const looseL = looseOf(laid);
+    frame = beyond && kinds.get(name)?.where === 'beach'
+      ? { m: slopeFrame(laid.map((L) => ({ wx: L.wx, wz: L.wz, ground: L.ground, standing: Math.abs(L.p.y * L.k) < 0.02 && !looseL.has(L) })), px, pz, (x, z) => Math.max(geo.height(x - RING.x, z - RING.z), WATER - 0.25)), x: px, z: pz, loose: looseL }
+      : null;
     let top = 0, main: Laid = laid[0];
     const byKey = new Map<Key, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
     for (const L of laid) {
       const cn = corners(L), key: Key = L.p.key === 'gold' ? 'brass' : L.p.key;
       let list = byKey.get(key);
       if (!list) byKey.set(key, (list = []));
-      list.push({ g: L.p.g, m: m4.clone() });
+      list.push({ g: L.p.draw?.g ?? L.p.g, m: m4.clone() });
+      (globalThis as { __propPart?: PartProbe }).__propPart?.(`scene:${name}`, key, L.p.draw?.g ?? L.p.g, m4); // the props probe (pipeline/tools/props-probe.js)
       pts.push(...cn.pts, [L.cx, L.cz]);
       top = Math.max(top, cn.top);
       if (L.area > main.area) main = L;
     }
+    frame = null;
     for (const [key, list] of byKey) { const g = bake(list); dress.add(key, g, 0, 0, 0); g.dispose(); }
     let r = 0;
     for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));

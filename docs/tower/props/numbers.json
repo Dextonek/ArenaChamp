@@ -1,0 +1,325 @@
+{
+ "probe": {
+  "sea": {
+   "before": {
+    "sunk": 588,
+    "side": 480,
+    "float": 137,
+    "apart": 505,
+    "overlap": 439,
+    "tree": 78,
+    "spot": 34,
+    "road": 108,
+    "buried": 14
+   },
+   "after": {
+    "sunk": 617,
+    "side": 334,
+    "float": 136,
+    "apart": 73,
+    "overlap": 363,
+    "road": 81,
+    "buried": 17,
+    "tree": 12,
+    "spot": 2
+   }
+  },
+  "wood": {
+   "before": {
+    "side": 288,
+    "float": 30,
+    "buried": 7,
+    "sunk": 136,
+    "apart": 64,
+    "overlap": 81,
+    "road": 121,
+    "tree": 208
+   },
+   "after": {
+    "side": 310,
+    "float": 30,
+    "sunk": 128,
+    "overlap": 81,
+    "road": 98,
+    "tree": 162
+   }
+  }
+ },
+ "same": [
+  {
+   "floor": 1,
+   "scenes": 37,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 386,
+   "cells": 4897
+  },
+  {
+   "floor": 2,
+   "scenes": 40,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 374,
+   "cells": 4941
+  },
+  {
+   "floor": 3,
+   "scenes": 39,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 424,
+   "cells": 4960
+  },
+  {
+   "floor": 4,
+   "scenes": 42,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 336,
+   "cells": 4922
+  },
+  {
+   "floor": 5,
+   "scenes": 42,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 355,
+   "cells": 4920
+  },
+  {
+   "floor": 6,
+   "scenes": 35,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 394,
+   "cells": 4999
+  },
+  {
+   "floor": 7,
+   "scenes": 37,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 413,
+   "cells": 4947
+  },
+  {
+   "floor": 8,
+   "scenes": 42,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 394,
+   "cells": 4981
+  },
+  {
+   "floor": 9,
+   "scenes": 38,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 397,
+   "cells": 4940
+  },
+  {
+   "floor": 10,
+   "scenes": 40,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 426,
+   "cells": 4997
+  },
+  {
+   "floor": 11,
+   "scenes": 44,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 78,
+   "cells": 4124
+  },
+  {
+   "floor": 12,
+   "scenes": 49,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 94,
+   "cells": 4256
+  },
+  {
+   "floor": 13,
+   "scenes": 45,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 89,
+   "cells": 4220
+  },
+  {
+   "floor": 14,
+   "scenes": 39,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 94,
+   "cells": 4230
+  },
+  {
+   "floor": 15,
+   "scenes": 44,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 98,
+   "cells": 4218
+  },
+  {
+   "floor": 16,
+   "scenes": 49,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 103,
+   "cells": 4295
+  },
+  {
+   "floor": 17,
+   "scenes": 57,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 91,
+   "cells": 4214
+  },
+  {
+   "floor": 18,
+   "scenes": 44,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 91,
+   "cells": 4203
+  },
+  {
+   "floor": 19,
+   "scenes": 45,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 94,
+   "cells": 4300
+  },
+  {
+   "floor": 20,
+   "scenes": 50,
+   "scenesSame": true,
+   "packsSame": true,
+   "doorsSame": true,
+   "cellsChanged": 84,
+   "cells": 4193
+  }
+ ],
+ "route": [
+  {
+   "floor": 1,
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1280.02,
+   "lives": 3,
+   "falls": 0,
+   "restarts": 0,
+   "wallMin": 0.7
+  },
+  {
+   "floor": 11,
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1025.22,
+   "lives": 3,
+   "falls": 1,
+   "restarts": 0,
+   "wallMin": 0.6
+  },
+  {
+   "floor": 10,
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1713.9,
+   "lives": 3,
+   "falls": 0,
+   "restarts": 0,
+   "wallMin": 1.3
+  },
+  {
+   "floor": 20,
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1306.13,
+   "lives": 3,
+   "falls": 0,
+   "restarts": 0,
+   "wallMin": 0.9
+  }
+ ],
+ "perf": {
+  "sea": [
+   {
+    "scene": "world-1 (floor 1)",
+    "profile": "desktop",
+    "before": "10.8 / 11.0 ms, 276 calls",
+    "after": "9.0 / 9.5 ms, 274 calls"
+   },
+   {
+    "scene": "world-1 (floor 1)",
+    "profile": "phone-4x",
+    "before": "34.2 / 30.6 ms, 282 calls",
+    "after": "36.0 / 28.1 ms, 280 calls"
+   }
+  ],
+  "wood": [
+   {
+    "scene": "world-2 (floor 11)",
+    "profile": "desktop",
+    "before": "10.2 / 9.5 ms, 218 calls",
+    "after": "9.1 / 9.7 ms, 218 calls"
+   },
+   {
+    "scene": "world-2 (floor 11)",
+    "profile": "phone-4x",
+    "before": "30.7 / 23.9 ms, 224 calls",
+    "after": "27.1 / 22.5 ms, 225 calls"
+   }
+  ]
+ },
+ "perfNote": "Same fights: prints d096aa04 (floor 1) and 467f6a06 (floor 11) on both. Triangles 658k -> 657k (floor 1), 568k/586k the same (floor 11).",
+ "scenesProbe": {
+  "1": 0,
+  "2": 0,
+  "3": 0,
+  "4": 0,
+  "5": 0,
+  "6": 0,
+  "7": 0,
+  "8": 0,
+  "9": 0,
+  "10": 0,
+  "11": 0,
+  "12": 0,
+  "13": 0,
+  "14": 0,
+  "15": 0,
+  "16": 0,
+  "17": 0,
+  "18": 0,
+  "19": 0,
+  "20": 0
+ }
+}
