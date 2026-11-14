@@ -77,22 +77,24 @@ function shapes() {
   const of = (name: string, make: () => THREE.BufferGeometry) => {
     let g = cache.get(name);
     if (!g) {
-      cache.set(name, (g = make()));
+      g = make();
+      if (g.index) { const flat = g.toNonIndexed(); g.dispose(); g = flat; }
+      cache.set(name, g);
       g.computeBoundingBox();
     }
     return g;
   };
   const S = {
     box: (w: number, h: number, d: number) => of(`box${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0)),
-    cyl: (r0: number, r1: number, h: number, n = 10) => of(`cyl${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0)),
+    cyl: (r0: number, r1: number, h: number, n = 10) => of(`cyl${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, Math.min(n, 8)).translate(0, h / 2, 0)),
     /** A round thing lying along x on the ground (a log, a pole, a barrel). */
-    log: (r: number, len: number, n = 9) => of(`log${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, n).rotateZ(Math.PI / 2).translate(0, r, 0)),
-    ball: (r: number, sy = 1) => of(`ball${r},${sy}`, () => new THREE.SphereGeometry(r, 10, 7).scale(1, sy, 1).translate(0, r * sy, 0)),
+    log: (r: number, len: number, n = 9) => of(`log${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, Math.min(n, r < 0.06 ? 5 : 8)).rotateZ(Math.PI / 2).translate(0, r, 0)),
+    ball: (r: number, sy = 1) => of(`ball${r},${sy}`, () => new THREE.SphereGeometry(r, r < 0.1 ? 6 : 8, r < 0.1 ? 4 : 5).scale(1, sy, 1).translate(0, r * sy, 0)),
     stone: (r: number) => of(`stone${r}`, () => new THREE.IcosahedronGeometry(r, 0).scale(1, 0.62, 1).translate(0, r * 0.45, 0)),
-    ring: (r: number, t: number, arc = Math.PI * 2) => of(`ring${r},${t},${arc}`, () => new THREE.TorusGeometry(r, t, 6, 18, arc).rotateX(Math.PI / 2).translate(0, t, 0)),
+    ring: (r: number, t: number, arc = Math.PI * 2) => of(`ring${r},${t},${arc}`, () => new THREE.TorusGeometry(r, t, 4, r < 0.2 ? 10 : 14, arc).rotateX(Math.PI / 2).translate(0, t, 0)),
     /** An upright hoop (a trap's or a pot's rib), across x. */
-    hoop: (r: number, t: number) => of(`hoop${r},${t}`, () => new THREE.TorusGeometry(r, t, 5, 12, Math.PI)),
-    disc: (r: number, h = 0.012) => of(`disc${r},${h}`, () => new THREE.CylinderGeometry(r, r, h, 16).translate(0, h / 2, 0)),
+    hoop: (r: number, t: number) => of(`hoop${r},${t}`, () => new THREE.TorusGeometry(r, t, 4, 8, Math.PI)),
+    disc: (r: number, h = 0.012) => of(`disc${r},${h}`, () => new THREE.CylinderGeometry(r, r, h, r < 0.1 ? 6 : 12).translate(0, h / 2, 0)),
     /** A fish: a slim body and a tail, along x. */
     fish: () => of('fish', () => {
       const body = new THREE.SphereGeometry(1, 8, 5).scale(0.17, 0.045, 0.06).translate(0, 0.045, 0);
@@ -152,6 +154,29 @@ function mergeAll(gs: THREE.BufferGeometry[]) {
   return out;
 }
 const mergeTwo = (a: THREE.BufferGeometry, b: THREE.BufferGeometry) => mergeAll([a, b]);
+
+/** A scene's parts of one colour, transformed and written into one geometry (one hand-off to the merged props, not one a part). */
+function bake(items: { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]) {
+  let n = 0;
+  for (const it of items) n += it.g.attributes.position.count;
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), nm = new THREE.Matrix3(), v = new THREE.Vector3();
+  let o = 0;
+  for (const it of items) {
+    const P = it.g.attributes.position.array as Float32Array, N = it.g.attributes.normal.array as Float32Array, e = it.m.elements;
+    nm.getNormalMatrix(it.m);
+    const f = nm.elements;
+    for (let i = 0; i < P.length; i += 3, o += 3) {
+      const x = P[i], y = P[i + 1], z = P[i + 2];
+      pos[o] = e[0] * x + e[4] * y + e[8] * z + e[12]; pos[o + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; pos[o + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+      v.set(f[0] * N[i] + f[3] * N[i + 1] + f[6] * N[i + 2], f[1] * N[i] + f[4] * N[i + 1] + f[7] * N[i + 2], f[2] * N[i] + f[5] * N[i + 1] + f[8] * N[i + 2]).normalize();
+      nor[o] = v.x; nor[o + 1] = v.y; nor[o + 2] = v.z;
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  return g;
+}
 
 type Shapes = ReturnType<typeof shapes>['S'];
 type Make = (S: Shapes, P: Parts, r: () => number) => void;
@@ -650,7 +675,7 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
   const tryPut = (name: string, x: number, z: number, jitter: number, faceYaw?: number) => {
     const k = kinds.get(name)!;
     if ((used.get(name) ?? 0) >= (cap.get(name) ?? 0)) return false;
-    for (let t = 0; t < 5; t++) {
+    for (let t = 0; t < 3; t++) {
       const sub = seeded(Math.floor(rnd() * 1e9));
       const px = x + (rnd() - 0.5) * jitter * (t ? 1 : 0), pz = z + (rnd() - 0.5) * jitter * (t ? 1 : 0);
       const yaw = faceYaw !== undefined ? faceYaw + (rnd() - 0.5) * 0.5 : rnd() * Math.PI * 2, mir = rnd() < 0.5 ? 1 : -1;
@@ -662,12 +687,16 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
       if (!laid || !sceneFits(k, laid)) continue;
       const pts: [number, number][] = [];
       let top = 0;
+      const byKey = new Map<Key, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
       for (const L of laid) {
-        dress.add(L.p.key, L.p.g, L.wx, L.ground + L.p.y * L.k, L.wz, L.wyaw, L.p.s[0] * L.k, L.sy, L.p.s[2] * L.k, L.p.tilt);
-        const cn = corners(L);
+        const cn = corners(L), key: Key = L.p.key === 'gold' ? 'brass' : L.p.key;
+        let list = byKey.get(key);
+        if (!list) byKey.set(key, (list = []));
+        list.push({ g: L.p.g, m: m4.clone() });
         pts.push(...cn.pts, [L.cx, L.cz]);
         top = Math.max(top, cn.top);
       }
+      for (const [key, list] of byKey) { const g = bake(list); dress.add(key, g, 0, 0, 0); g.dispose(); }
       let r = 0;
       for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));
       placed.push({ kind: name, x: px, z: pz, r, beyond: k.where !== 'ground', top: +top.toFixed(2), pts: pts.map(([a, b]) => [+a.toFixed(2), +b.toFixed(2)]) });

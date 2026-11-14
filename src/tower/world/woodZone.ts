@@ -554,7 +554,7 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   const deep = depth.build({ kit, into: g, own, gold, glows: glowSpots });
   g.userData.depth = { solids: deep.solids, brooks: deep.brooks, places: look.places }; // for the checks and the pictures (pipeline/tools)
   // The scenes (scenes/wood.ts): little stories told in props, their own random stream; they keep off the depth's props and the trees.
-  g.userData.woodScenes = buildWoodScenes({ look, land, kit, gold, own, keep, taken: [...deep.solids.map((s) => ({ x: s.x, z: s.z, r: s.r })), ...forest.at], brooks: deep.brooks.map((b) => b.pts) });
+  g.userData.woodScenes = buildWoodScenes({ look, land, kit, own, keep, taken: [...deep.solids.map((s) => ({ x: s.x, z: s.z, r: s.r })), ...forest.at.filter((t) => land.beyond(t.x - RING.x, t.z - RING.z) > -3)], brooks: deep.brooks.map((b) => b.pts) });
   g.userData.depthMarks = deep.solids; // for the probe (pipeline/tools/scenes-probe.js)
   forest.build(TREE_GEOS, leaves, g);
   kit.build(g, own);

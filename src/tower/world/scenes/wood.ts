@@ -33,7 +33,6 @@ export interface WoodScenesIn {
   look: WoodLook;
   land: { beyond(dx: number, dz: number): number; height(dx: number, dz: number): number };
   kit: Sink;
-  gold: THREE.Material;
   own: { dispose(): void }[];
   keep: Pt[];
   /** The depth's solid props (woodDepth.ts `solids`) and the trees past the edge, with their radii (world). */
@@ -78,23 +77,25 @@ function shapes() {
   const of = (name: string, make: () => THREE.BufferGeometry) => {
     let g = cache.get(name);
     if (!g) {
-      cache.set(name, (g = make()));
+      g = make();
+      if (g.index) { const flat = g.toNonIndexed(); g.dispose(); g = flat; }
+      cache.set(name, g);
       g.computeBoundingBox();
     }
     return g;
   };
   const S = {
     box: (w: number, h: number, d: number) => of(`box${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0)),
-    cyl: (r0: number, r1: number, h: number, n = 10) => of(`cyl${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0)),
+    cyl: (r0: number, r1: number, h: number, n = 10) => of(`cyl${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, Math.min(n, 8)).translate(0, h / 2, 0)),
     /** A round thing lying along x on the ground (a log, a pole). */
-    log: (r: number, len: number, n = 9) => of(`log${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, n).rotateZ(Math.PI / 2).translate(0, r, 0)),
+    log: (r: number, len: number, n = 9) => of(`log${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, Math.min(n, r < 0.06 ? 5 : 8)).rotateZ(Math.PI / 2).translate(0, r, 0)),
     /** A log split along its length: a half lying on its flat side. */
     half: (r: number, len: number) => of(`half${r},${len}`, () => new THREE.CylinderGeometry(r, r, len, 10, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateX(-Math.PI / 2)),
-    ball: (r: number, sy = 1) => of(`ball${r},${sy}`, () => new THREE.SphereGeometry(r, 10, 7).scale(1, sy, 1).translate(0, r * sy, 0)),
+    ball: (r: number, sy = 1) => of(`ball${r},${sy}`, () => new THREE.SphereGeometry(r, r < 0.1 ? 6 : 8, r < 0.1 ? 4 : 5).scale(1, sy, 1).translate(0, r * sy, 0)),
     dome: (r: number, sy = 1) => of(`dome${r},${sy}`, () => new THREE.SphereGeometry(r, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, sy, 1)),
     stone: (r: number) => of(`stone${r}`, () => new THREE.IcosahedronGeometry(r, 0).scale(1, 0.62, 1).translate(0, r * 0.45, 0)),
-    ring: (r: number, t: number, arc = Math.PI * 2) => of(`ring${r},${t},${arc}`, () => new THREE.TorusGeometry(r, t, 6, 18, arc).rotateX(Math.PI / 2).translate(0, t, 0)),
-    disc: (r: number, h = 0.012) => of(`disc${r},${h}`, () => new THREE.CylinderGeometry(r, r, h, 16).translate(0, h / 2, 0)),
+    ring: (r: number, t: number, arc = Math.PI * 2) => of(`ring${r},${t},${arc}`, () => new THREE.TorusGeometry(r, t, 4, r < 0.2 ? 10 : 14, arc).rotateX(Math.PI / 2).translate(0, t, 0)),
+    disc: (r: number, h = 0.012) => of(`disc${r},${h}`, () => new THREE.CylinderGeometry(r, r, h, r < 0.1 ? 6 : 12).translate(0, h / 2, 0)),
     /** A mushroom: a pale stem and a cap. */
     shroom: (s: number) => of(`shroom${s}`, () => mergeAll([new THREE.CylinderGeometry(0.035 * s, 0.045 * s, 0.12 * s, 6).translate(0, 0.06 * s, 0), new THREE.SphereGeometry(0.09 * s, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.7, 1).translate(0, 0.11 * s, 0)])),
     /** Any other shape, made once a floor under its own name. */
@@ -124,6 +125,29 @@ function mergeAll(gs: THREE.BufferGeometry[]) {
   out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   return out;
+}
+
+/** A scene's parts of one colour, transformed and written into one geometry (one hand-off to the merged props, not one a part). */
+function bake(items: { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]) {
+  let n = 0;
+  for (const it of items) n += it.g.attributes.position.count;
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), nm = new THREE.Matrix3(), v = new THREE.Vector3();
+  let o = 0;
+  for (const it of items) {
+    const P = it.g.attributes.position.array as Float32Array, N = it.g.attributes.normal.array as Float32Array, e = it.m.elements;
+    nm.getNormalMatrix(it.m);
+    const f = nm.elements;
+    for (let i = 0; i < P.length; i += 3, o += 3) {
+      const x = P[i], y = P[i + 1], z = P[i + 2];
+      pos[o] = e[0] * x + e[4] * y + e[8] * z + e[12]; pos[o + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; pos[o + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+      v.set(f[0] * N[i] + f[3] * N[i + 1] + f[6] * N[i + 2], f[1] * N[i] + f[4] * N[i + 1] + f[7] * N[i + 2], f[2] * N[i] + f[5] * N[i + 1] + f[8] * N[i + 2]).normalize();
+      nor[o] = v.x; nor[o + 1] = v.y; nor[o + 2] = v.z;
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  return g;
 }
 
 type Shapes = ReturnType<typeof shapes>['S'];
@@ -172,7 +196,7 @@ const KINDS: Kind[] = [
       // the stack begun: two rows between stakes
       for (let row = 0; row < 2; row++) for (let i = 0; i < 4 - row; i++) P.p(i % 2 ? 'barkLight' : 'bark', S.log(0.11, 0.9, 7), -1.6, 0.0 + row * 0.2, -1.0 + (i - (3 - row) / 2) * 0.23, Math.PI / 2);
       P.p('iron', S.box(0.9, 0.012, 0.16), 1.3, 0, -0.8, 0.4).p('plank', S.box(0.12, 0.05, 0.3), 1.75, 0, -1.0, 0.4);
-      for (let k = 0; k < 14; k++) P.p('straw', S.box(0.08, 0.012, 0.05), (r() - 0.5) * 2.2, 0, (r() - 0.5) * 2.2, r() * 6);
+      for (let k = 0; k < 6; k++) P.p('straw', S.box(0.08, 0.012, 0.05), (r() - 0.5) * 2.2, 0, (r() - 0.5) * 2.2, r() * 6);
     },
   },
   {
@@ -293,7 +317,7 @@ const KINDS: Kind[] = [
       P.p('teal', S.cyl(0.38, 0.38, 0.04, 16), -0.6, 0, -0.2).p('gold', S.ring(0.38, 0.022), -0.6, 0.02, -0.2).p('gold', S.ball(0.06, 0.6), -0.6, 0.04, -0.2);
       P.p('bark', S.log(0.03, 1.4, 6), 0.6, 0, 0.6, 0.3).p('bark', S.log(0.03, 1.0, 6), 1.2, 0, -0.5, 1.4).p('iron', S.k('spearHead', () => new THREE.ConeGeometry(0.05, 0.3, 6).rotateZ(-Math.PI / 2).translate(0, 0.03, 0)), 1.4, 0, 0.35, 0.3);
       P.p('lacquer', S.k('lanternSide', () => S.box(0.2, 0.28, 0.2).clone().rotateZ(Math.PI / 2).translate(0, -0.04, 0)), -1.2, 0.1, 0.8, 1.8).p('gold', S.k('lanternCap', () => S.cyl(0.12, 0.12, 0.04, 8).clone().rotateZ(Math.PI / 2)), -1.05, 0.1, 0.72, 1.8);
-      arrows(S, P, r, 8 + Math.floor(r() * 8), 3.6, 3);
+      arrows(S, P, r, 6 + Math.floor(r() * 6), 3.6, 3);
       for (let k = 0; k < 4; k++) P.p('cloth', S.box(0.3, 0.012, 0.08), (r() - 0.5) * 2.4, 0, (r() - 0.5) * 2.4, r() * 6); // torn fur, tufts
     },
   },
@@ -343,15 +367,15 @@ export function scenesOff() {
 
 /** Plans and adds the scenes of one Wood floor; returns where they stand (for the probe). */
 export function buildWoodScenes(o: WoodScenesIn): Placed[] {
-  const { look, land, kit, gold } = o;
+  // gold is drawn matte (brass) in the shared merged props, so the scenes open no cells of the polished gold of their own
+  const { look, land, kit } = o;
   if (scenesOff()) return [];
   const rnd = seeded(SEED + look.seed);
   const { S, dispose } = shapes();
   const mats = new Map<string, THREE.Material>();
   const M = (key: Col) => {
-    if (key === 'gold') return gold;
     let m = mats.get(key);
-    if (!m) { mats.set(key, (m = new THREE.MeshStandardMaterial({ color: (C as Record<string, string>)[key] ?? '#d8cfb4' }))); o.own.push(m); }
+    if (!m) { mats.set(key, (m = new THREE.MeshStandardMaterial({ color: key === 'gold' ? '#b8923e' : (C as Record<string, string>)[key] ?? '#d8cfb4' }))); o.own.push(m); }
     return m;
   };
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
@@ -367,7 +391,7 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   for (const k of KINDS) {
     if (k.where !== 'ground') { squash.set(k.name, 1); continue; }
     let top = 0;
-    for (let t = 0; t < 4; t++) {
+    for (let t = 0; t < 2; t++) {
       const P = new Parts();
       k.make(S, P, seeded(t + 1));
       for (const p of P.list) {
@@ -396,6 +420,22 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
       c.push(t);
     }
   }
+  /** The cover and the trails by squares too (a segment in every square within its reach and NEAR m of it). */
+  type Seg = { ax: number; az: number; bx: number; bz: number; r: number };
+  const segCells = (list: Seg[]) => {
+    const m = new Map<number, Seg[]>();
+    for (const t of list) {
+      const e2 = t.r + NEAR;
+      for (let i = Math.floor((Math.min(t.ax, t.bx) - e2) / CELL); i <= Math.floor((Math.max(t.ax, t.bx) + e2) / CELL); i++) for (let j = Math.floor((Math.min(t.az, t.bz) - e2) / CELL); j <= Math.floor((Math.max(t.az, t.bz) + e2) / CELL); j++) {
+        const key = cellKey(i, j);
+        let c = m.get(key);
+        if (!c) m.set(key, (c = []));
+        c.push(t);
+      }
+    }
+    return (x: number, z: number, reachM: number) => (reachM + 3 > NEAR ? list : m.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL))) ?? []);
+  };
+  const coverNear = segCells(cover), roadsNear = segCells(roads.map((r) => ({ ...r, r: 0 })));
   const propsNear = (x: number, z: number, reachM: number) => (reachM + 3 > NEAR ? allNear : cells.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL))) ?? []);
   const trees = o.taken.filter((t) => t.tree);
   const nearPass = (x: number, z: number, pad: number) => look.passes.some((p) => Math.hypot(x - p.x, z - p.z) < p.w + 3 + pad);
@@ -444,8 +484,8 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   const partCheck = (k: Kind, x: number, z: number) => {
     const R = reach(k) + 1;
     const nearKeep = keep.filter((s) => Math.hypot(s.x - x, s.z - z) < R + 3.5);
-    const nearCover = cover.filter((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < R + c.r + 1);
-    const nearRoads = roads.filter((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < R + 2.5);
+    const nearCover = coverNear(x, z, R).filter((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < R + c.r + 1);
+    const nearRoads = roadsNear(x, z, R).filter((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < R + 2.5);
     const nearProps = propsNear(x, z, R).filter((m) => Math.hypot(m.x - x, m.z - z) < R + m.r + 1.5);
     const nearPlaces = look.places.filter((p) => Math.hypot(p.x - x, p.z - z) < R + p.r + 1.5);
     return (L: Laid) => {
@@ -475,8 +515,8 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
     const b = beyondOf(x, z);
     if (k.where === 'ground' ? b > -1.2 : b < 3 || b > 16) return false;
     if (keep.some((s) => Math.hypot(s.x - x, s.z - z) < 3.2)) return false;
-    if (roads.some((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < 2.2)) return false;
-    if (cover.some((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < c.r + 0.4)) return false;
+    if (roadsNear(x, z, 0).some((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < 2.2)) return false;
+    if (coverNear(x, z, 0).some((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < c.r + 0.4)) return false;
     if (look.places.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 0.8)) return false;
     if (nearPass(x, z, 0)) return false;
     if (k.where === 'beyond') {
@@ -490,7 +530,7 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   const tryPut = (name: string, x: number, z: number, jitter: number, faceYaw?: number) => {
     const k = kinds.get(name)!;
     if ((used.get(name) ?? 0) >= (cap.get(name) ?? 0)) return false;
-    for (let t = 0; t < 5; t++) {
+    for (let t = 0; t < 3; t++) {
       const sub = seeded(Math.floor(rnd() * 1e9));
       const px = x + (rnd() - 0.5) * jitter * (t ? 1 : 0), pz = z + (rnd() - 0.5) * jitter * (t ? 1 : 0);
       const yaw = faceYaw !== undefined ? faceYaw + (rnd() - 0.5) * 0.5 : rnd() * Math.PI * 2, mir = rnd() < 0.5 ? 1 : -1;
@@ -501,12 +541,16 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
       if (!laid || !sceneFits(k, laid)) continue;
       const pts: [number, number][] = [];
       let top = 0;
+      const byKey = new Map<Col, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
       for (const L of laid) {
-        kit.add(M(L.p.key), L.p.g, L.wx, L.ground + L.p.y * L.k, L.wz, L.wyaw, L.p.s[0] * L.k, L.sy, L.p.s[2] * L.k, L.p.tilt);
         const cn = corners(L);
+        let list = byKey.get(L.p.key);
+        if (!list) byKey.set(L.p.key, (list = []));
+        list.push({ g: L.p.g, m: m4.clone() });
         pts.push(...cn.pts, [L.cx, L.cz]);
         top = Math.max(top, cn.top);
       }
+      for (const [key, list] of byKey) { const g = bake(list); kit.add(M(key), g, 0, 0, 0); g.dispose(); }
       let r = 0;
       for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));
       placed.push({ kind: name, x: px, z: pz, r, beyond: k.where !== 'ground', top: +top.toFixed(2), pts: pts.map(([a, b]) => [+a.toFixed(2), +b.toFixed(2)]) });
@@ -535,7 +579,7 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
     const ux = (s.bx - s.ax) / L, uz = (s.bz - s.az) / L;
     for (let d = 5 + rnd() * 20; d < L - 5; d += 28 + rnd() * 16) {
       const side = rnd() < 0.5 ? 1 : -1;
-      for (const name of shuffled(ROADSIDE).slice(0, 6)) {
+      for (const name of shuffled(ROADSIDE).slice(0, 4)) {
         const k = kinds.get(name)!, off = 2.2 + reach(k) * 0.95 + rnd() * 1.5;
         if (tryPut(name, s.ax + ux * d - uz * side * off, s.az + uz * d + ux * side * off, 0.8, name === 'fallen' ? Math.atan2(ux, uz) : undefined)) break;
       }
@@ -543,7 +587,7 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   }
   // 3. The open glades between the places.
   const rmax = Math.max(...look.rim);
-  for (let t = 0, made = 0; t < 320 && made < 10; t++) {
+  for (let t = 0, made = 0; t < 220 && made < 10; t++) {
     const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
     if (beyondOf(x, z) > -4) continue;
     if (roads.some((s) => segDist(x, z, s.ax, s.az, s.bx, s.bz) < 9)) continue;
