@@ -237,3 +237,7 @@ today's area, not a circle.
   `docs/tower/tactics/`). Route bot, on / off: floor 2 Lyra 1574 / 1723 s, Bram 1810-2051 / 1650-1815 s (2 of 4 runs with tactics took
   3-4 ruler tries or 2 falls; the bot steps out of no red zone), floor 46 Bram 1089 / 1091, Lyra 944 / 1009; all cleared. The Climb's
   perf scenes (world-N, gen-N) play other fights now, by design.
+- **The first enemy's freeze (2026-11-14).** `src/tower/world/prewarm.ts`: when a floor's fight begins, one figure of every enemy kind of the
+  floor and a red zone of the tactics stand 400 m under the ground, compiled with the warm-up and kept till the zone goes
+  (`globalThis.__noPrewarm` leaves them out). Floor 46, the frame the first pack appears in, a fresh browser each run: 491 and 417 ms
+  without, 173 and 149 ms with. What is left of it is the pack's own building (rigs, bars), not shaders.

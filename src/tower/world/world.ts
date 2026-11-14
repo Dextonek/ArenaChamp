@@ -13,6 +13,7 @@ import type { WorldHud } from './hud';
 import { buildLaw, type Law } from './law';
 import { Pack, type PackEnv, type PackState } from './packs';
 import { People } from './people';
+import { prewarmFoes } from './prewarm';
 import { Quests } from './quests';
 import { Scenery } from './scenery';
 import type { WorldRun } from './state';
@@ -187,6 +188,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     const quests = (zoneRef.quests = new Quests(c));
     const people = (zoneRef.people = new People(c, quests));
     const scenery = (zoneRef.scenery = new Scenery(c));
+    // Every enemy kind of the floor compiled with the fight (prewarm.ts): the first pack no longer freezes the game.
+    const warm = prewarmFoes(api, floor.enemies);
     scenery.enter = (d) => hooks.door(d);
     scenery.read = (lines) => {
       if (o.mode === 'run') return;
@@ -281,6 +284,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
         dispose() {
           gone = true;
           for (const k of packs.values()) k.dispose();
+          warm.dispose();
           quests.dispose();
           people.dispose();
           scenery.dispose();
