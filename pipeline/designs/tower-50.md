@@ -181,3 +181,7 @@ today's area, not a circle.
   The Deep's pieces of cover carry the nearest drawable kind, with their real kind in a separate `kinds` list on the look; widening the
   kinds type in zone.ts would end that. `f45/deep-zone.ts` is no longer used.
 - **Depth for the Deep** has gone to an agent (deepDepth.ts). Still running: the War, and depth for the Wood and the Sands.
+- **Depth for the Wood and the Sands, merged (2026-11-14):** woodDepth.ts and sandsDepth.ts, called from their zones, which are handed
+  the floor's spots to keep clear of (keep.ts). Before-and-after sheets are in docs/tower/climb50/{wood,sands}/depth/. Speed: on the
+  phone profile both are within the noise. On the desktop, Wood floor 11 is 0.2 to 0.5 ms a frame slower, and memory churn rises by
+  about 1 MB a second on some scenes, not yet explained.

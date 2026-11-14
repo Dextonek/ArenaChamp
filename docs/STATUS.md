@@ -5,7 +5,7 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 ## The Climb to 50 floors, the new scope (2026-11-14): floors 1 to 40 done at five times the ground; three chapters in agents' hands; NOT merged into the main branch, NOT live
 
 - Branch `tower-50`. Floors 1 to 40 (the sea, the Wood, the Sands, the Deep) are made at the new size and checked; the renumbering
-  is merged; the War (41 to 50) is being made by an agent, and two more add depth to the Wood and the Sands, and to the Deep; the new models wait on the user's yes. Everything, with numbers:
+  is merged; the Wood and the Sands have their depth pass; the War (41 to 50) is being made by an agent, and another adds depth to the Deep; the new models wait on the user's yes. Everything, with numbers:
   [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *Progress on the new scope*.
 - **Waiting on the user:** yes or changes to the sea's new models (docs/tower/models/sea-lineup-front.jpg on the branch
   `t3/tower-sea-npc-models`).
