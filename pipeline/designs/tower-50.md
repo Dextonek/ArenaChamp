@@ -157,3 +157,12 @@ today's area, not a circle.
   on the far sea there are islands with a light, and seabirds fly overhead. Village houses are drawn as cottages, each with a roof of its own colour.
   In an A/B on floor 2 under the same load, the frames were no slower. Each other chapter gets its own depth pass, made the same way
   in its own zone file, once its floors are built.
+- **The Sands (floors 21 to 30), merged (2026-11-14):** a generator for floors 22 to 30 (gen/sands.ts) and its zone drawing
+  (sandsZone.ts): red stepped cliffs, dunes, mesas in the haze. Floor 21, the Storm Canyon, is grown and keeps its ids (baked by
+  `pipeline/tools/gen-canyon.ts`). Floor 30 is the crown, the Heart of Noon. tunedAs runs 3.11 to 4. The storm's timing is worked
+  out from the zone's size and the wall moves at walking speed; its wall is now drawn as high as the cliffs. The route bot cleared
+  all ten floors with Lyra and Bram, within par x 1.5; the caravans wait in a rock's lee and walk short roads. Pictures and numbers
+  are in docs/tower/climb50/sands/. Found on the way and fixed for every chapter: a named enemy's patrol walked on mid-fight, so it
+  gave up and healed (packs.ts; it now stands still while it fights).
+- **The War (41 to 50)** is now with an agent, its brief including a depth pass of its own. The Wood and the Deep are still being
+  made. The Sands get their depth pass when an agent slot frees.
