@@ -78,6 +78,15 @@ const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz:
   const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
   return Math.hypot(px - (ax + ex * t), pz - (az + ez * t));
 };
+/** The squared distance from a point to a segment (no square root: the planner asks it thousands of times a floor). */
+const segDist2 = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
+  const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
+  const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
+  const dx = px - (ax + ex * t), dz = pz - (az + ez * t);
+  return dx * dx + dz * dz;
+};
+/** Whether (x, z) is nearer than `d` to (px, pz). */
+const within = (x: number, z: number, px: number, pz: number, d: number) => { const dx = x - px, dz = z - pz; return dx * dx + dz * dz < d * d; };
 
 /** Each kind's planned footprint radius (m). */
 const SIZE: Record<WarSceneKind, number> = {
@@ -130,16 +139,18 @@ export function planWarScenes(o: WarScenesPlanIn): WarScene[] {
       }
     } else if (b > -(R + 1.2)) return false;
     if (behindLine(x, z, host !== undefined ? -2 : R)) return false; // a ladder may stand at the siege line's foot, on the field's side
+    // the cheap and most often failing tests first (squared distances: the same answers, a fraction of the time)
+    for (const s of placed) if (within(x, z, s.x, s.z, s.R + R + (small || s.kind === 'trail' ? 1.2 : 3.5))) return false;
+    for (const p of look.places) if (within(x, z, p.x, p.z, p.r + 1.5 + R)) return false;
+    for (const k of keep) if (within(x, z, k.x, k.z, 3.2 + R)) return false;
+    if (!out) for (const r of roads) { const d = 2.5 + R; if (segDist2(x, z, r[0], r[1], r[2], r[3]) < d * d) return false; }
+    for (const t of taken) if (within(x, z, t.x, t.z, t.r + R + 0.3)) return false;
     for (const c of cover) {
       if (c.i === host) continue;
       // a scene leaning on a wall keeps its parts on the wall's field side: the wall's next pieces may be near its centre, never in it
-      if (segDist(x, z, c.o.ax, c.o.az, c.o.bx, c.o.bz) < c.o.r + (host !== undefined ? 1.0 : R + (out ? 1 : 0.6))) return false;
+      const d = c.o.r + (host !== undefined ? 1.0 : R + (out ? 1 : 0.6));
+      if (segDist2(x, z, c.o.ax, c.o.az, c.o.bx, c.o.bz) < d * d) return false;
     }
-    if (!out) for (const r of roads) if (segDist(x, z, r[0], r[1], r[2], r[3]) < 2.5 + R) return false;
-    for (const p of look.places) if (Math.hypot(x - p.x, z - p.z) < p.r + 1.5 + R) return false;
-    for (const k of keep) if (Math.hypot(x - k.x, z - k.z) < 3.2 + R) return false;
-    for (const t of taken) if (Math.hypot(x - t.x, z - t.z) < t.r + R + 0.3) return false;
-    for (const s of placed) if (Math.hypot(x - s.x, z - s.z) < s.R + R + (small || s.kind === 'trail' ? 1.2 : 3.5)) return false;
     return true;
   };
 
@@ -364,7 +375,7 @@ export function buildWarScenes(o: {
 
   // One sink for every scene on the floor (plain arrays, one mesh at the end: one draw call, no shadow pass; measured on the phone
   // profile, four meshes and their shadows cost more than the noise).
-  const all = { p: new Float32Array(1 << 20), n: new Float32Array(1 << 20), c: new Float32Array(1 << 20), len: 0 };
+  const all = { p: new Float32Array(1 << 19), n: new Float32Array(1 << 19), c: new Float32Array(1 << 19), len: 0 };
   const room = (k: number) => {
     if (all.len + k <= all.p.length) return;
     const grow = (a: Float32Array) => { const b = new Float32Array(Math.max(a.length * 2, all.len + k)); b.set(a); return b; };
@@ -452,6 +463,14 @@ export function buildWarScenes(o: {
     pg.restore();
     paintMs += performance.now() - t;
   };
+  /** A small mark (a footprint, a flattened stalk): a plain ellipse, no gradient (cheap: a floor paints hundreds). */
+  const dot = (lx: number, lz: number, rx: number, rz: number, k: RGB, a: number, rot = 0) => {
+    if (!pg || cur.beyond) return;
+    const t = performance.now(), { x, z } = toW(lx, lz);
+    pg.fillStyle = rgba(k, a);
+    pg.beginPath(); pg.ellipse(PX(x), PZ(z), rx * ppm, rz * ppm, -(cur.yaw + cur.m * (fyaw + rot)), 0, Math.PI * 2); pg.fill();
+    paintMs += performance.now() - t;
+  };
   /** A churned patch: a few stains overlapping, so its edge is not a circle. */
   const blotch = (lx: number, lz: number, R: number, k: RGB, a: number, n = 5) => {
     stain(lx, lz, R * 0.75, R * 0.6, k, a * 0.8, rnd() * 3);
@@ -459,19 +478,19 @@ export function buildWarScenes(o: {
   };
   /** Footprints and hoof marks: small dark stains strewn over a round of radius R. */
   const prints = (lx: number, lz: number, R: number, k: number) => {
-    for (let i = 0; i < k; i++) { const ang = rnd() * 6.28, d = Math.sqrt(rnd()) * R; stain(lx + Math.sin(ang) * d, lz + Math.cos(ang) * d, 0.11, 0.17, PAINT.wet, 0.42, rnd() * 3); }
+    for (let i = 0; i < k; i++) { const ang = rnd() * 6.28, d = Math.sqrt(rnd()) * R; dot(lx + Math.sin(ang) * d, lz + Math.cos(ang) * d, 0.1, 0.15, PAINT.wet, 0.3, rnd() * 3); }
   };
   /** Trampled grass: short pale strokes lying one way (`dir`, in the frame) over a round of radius R. */
   const streaks = (lx: number, lz: number, R: number, dir: number, k: number) => {
-    for (let i = 0; i < k; i++) { const ang = rnd() * 6.28, d = Math.sqrt(rnd()) * R; stain(lx + Math.sin(ang) * d, lz + Math.cos(ang) * d, 0.09, r(0.4, 0.75), PAINT.straw, 0.32, dir + r(-0.25, 0.25)); }
+    for (let i = 0; i < k; i++) { const ang = rnd() * 6.28, d = Math.sqrt(rnd()) * R; dot(lx + Math.sin(ang) * d, lz + Math.cos(ang) * d, 0.06, r(0.25, 0.45), PAINT.straw, 0.22, dir + r(-0.25, 0.25)); }
   };
   /** A soft dark under a big piece (w by d m): the shadow it does not cast. */
   const shade = (lx: number, lz: number, w: number, d: number, rot = 0, a = 0.5) => stain(lx, lz, w * 0.62, d * 0.62, PAINT.shade, a, rot);
   /** Whether a world point is free ground for a mark (off the roads' paved band and ruts, the places' rounds, the cover). */
   const markable = (x: number, z: number) => {
-    for (const rd of roads) if (segDist(x, z, rd[0], rd[1], rd[2], rd[3]) < 2.9) return false;
-    for (const p of look.places) if (Math.hypot(x - p.x, z - p.z) < p.r + 0.5) return false;
-    for (const p of look.pieces) if (segDist(x, z, p.o.ax, p.o.az, p.o.bx, p.o.bz) < p.o.r + 0.4) return false;
+    for (const rd of roads) if (segDist2(x, z, rd[0], rd[1], rd[2], rd[3]) < 2.9 * 2.9) return false;
+    for (const p of look.places) if (within(x, z, p.x, p.z, p.r + 0.5)) return false;
+    for (const p of look.pieces) { const d = p.o.r + 0.4; if (segDist2(x, z, p.o.ax, p.o.az, p.o.bx, p.o.bz) < d * d) return false; }
     return true;
   };
   /** A line painted on the ground in the world (a rut, a drag mark), from (ax, az) towards (bx, bz) as far as the ground is free. */
@@ -509,7 +528,7 @@ export function buildWarScenes(o: {
   };
   /** Hoof marks leaving the scene the way (the frame's angle) a horse ran. */
   const hooves = (lx: number, lz: number, ang: number, len: number) => {
-    for (let s = 0.6; s < len; s += 0.55) { const j = (Math.floor(s / 0.55) % 2 ? 0.22 : -0.22); stain(lx + Math.sin(ang) * s + Math.cos(ang) * j, lz + Math.cos(ang) * s - Math.sin(ang) * j, 0.12, 0.14, PAINT.wet, 0.5); }
+    for (let s = 0.6; s < len; s += 0.55) { const j = (Math.floor(s / 0.55) % 2 ? 0.22 : -0.22); dot(lx + Math.sin(ang) * s + Math.cos(ang) * j, lz + Math.cos(ang) * s - Math.sin(ang) * j, 0.11, 0.13, PAINT.wet, 0.36); }
   };
 
   // --- past the edge the map does not reach: a draped disc of the scene's ground, its rim the ground's own colour -----------------
@@ -552,9 +571,9 @@ export function buildWarScenes(o: {
   /** A round shield lying on the ground: face up (its colour, gold rim and boss) or face down (its planks and iron strap); `tilt` props it up. */
   const shield = (lx: number, lz: number, colour: Colour, up: boolean, yaw = rnd() * 6.28, tilt = 0) => sub(lx, lz, yaw, () => {
     const y = 0.035 + Math.sin(Math.abs(tilt)) * 0.4;
-    add(S.cyl(0.42, 0.42, 0.06, 12), up ? colour : 'plank', 0, y - 0.03, 0, 0, 1, 1, 1, tilt);
+    add(S.cyl(0.42, 0.42, 0.06, 10), up ? colour : 'plank', 0, y - 0.03, 0, 0, 1, 1, 1, tilt);
     if (up) {
-      add(S.cyl(0.45, 0.45, 0.05, 12), 'gold', 0, y - 0.035, 0, 0, 1, 1, 1, tilt); // the rim: a gold disc a little wider, under the face
+      add(S.cyl(0.45, 0.45, 0.05, 10), 'gold', 0, y - 0.035, 0, 0, 1, 1, 1, tilt); // the rim: a gold disc a little wider, under the face
       add(S.cone(0.1, 0.08, 6), 'gold', 0, y + 0.03, 0, 0, 1, 1, 1, tilt);
     } else add(S.box(0.06, 0.02, 0.8), 'iron', 0, y + 0.03, 0, 0, 1, 1, 1, tilt);
   });
@@ -968,7 +987,7 @@ export function buildWarScenes(o: {
     saddle() {
       const a = army();
       blotch(0, 0, 3.2, PAINT.mud, 0.45, 5);
-      for (let k = 0; k < 16; k++) { const ang = -1.2 + k * 0.17, d = 2.6 + r(-0.3, 0.3); stain(Math.sin(ang) * d, Math.cos(ang) * d, 0.13, 0.16, PAINT.wet, 0.55); }
+      for (let k = 0; k < 16; k++) { const ang = -1.2 + k * 0.17, d = 2.6 + r(-0.3, 0.3); dot(Math.sin(ang) * d, Math.cos(ang) * d, 0.12, 0.15, PAINT.wet, 0.4); }
       hooves(0, 0, r(2, 4), 4.2);
       const cap = (lx: number, lz: number, yaw: number, colour: 'crimson' | 'azure') => sub(lx, lz, yaw, () => {
         add(S.sheet(2.6, 1.8), colour, 0, 0.02, 0, 0.05);
