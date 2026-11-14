@@ -15,7 +15,7 @@ import type { FoeModel } from './foeModels';
  * shares the Raider Chief's figure, the War's knights, banner bearers and the deserter share the knight's.
  */
 /** The model files built so far (public/models/tower/<id>_v4.glb): a kind or a ruler whose file is not yet built stays as it was. */
-export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant', 'wood_sprite', 'wood_oak', 'wood_elder', 'wood_briar', 'wood_antler', 'sea_netter', 'sea_mate', 'sea_queen', 'sea_judge', 'sands_raider', 'sands_slinger', 'sands_chief', 'sands_scarab', 'sands_sphinx', 'sands_jackal', 'deep_lurker', 'deep_thief', 'deep_pale', 'deep_prism', 'deep_lamp', 'deep_seam']);
+export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant', 'wood_sprite', 'wood_oak', 'wood_elder', 'wood_briar', 'wood_antler', 'sea_netter', 'sea_mate', 'sea_queen', 'sea_judge', 'sands_raider', 'sands_slinger', 'sands_chief', 'sands_scarab', 'sands_sphinx', 'sands_jackal', 'deep_lurker', 'deep_thief', 'deep_pale', 'deep_prism', 'deep_lamp', 'deep_seam', 'war_footman', 'war_bowman', 'war_knight', 'war_marshal', 'war_siege', 'war_crow']);
 
 export const FOE_MODELS: Record<string, FoeModel> = {
   // the Sea
@@ -37,9 +37,9 @@ export const FOE_MODELS: Record<string, FoeModel> = {
   thief: { id: 'deep_thief', height: 1.85, strike: 'blade', barY: 1.95 },
   pale: { id: 'deep_pale', height: 2.8, strike: 'claw', barY: 3.0 },
   // the War: the crimson and the azure, and those of neither army
-  'footman-r': { id: 'war_footman', height: 1.9, strike: 'thrust', livery: 0x8c1e22, barY: 2.0 },
-  'footman-b': { id: 'war_footman', height: 1.9, strike: 'thrust', livery: 0x1e3c8c, barY: 2.0 },
-  ashen: { id: 'war_footman', height: 1.9, strike: 'thrust', livery: 0x5a5a62, tint: [0xb4b4bc, 0.45], barY: 2.0 },
+  'footman-r': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x8c1e22, barY: 2.0 },
+  'footman-b': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x1e3c8c, barY: 2.0 },
+  ashen: { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x5a5a62, tint: [0xb4b4bc, 0.45], barY: 2.0 },
   'bowman-r': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x8c1e22, barY: 2.0 },
   'bowman-b': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x1e3c8c, barY: 2.0 },
   'knight-r': { id: 'war_knight', height: 2.3, strike: 'thrust', livery: 0x8c1e22, barY: 2.5 },
