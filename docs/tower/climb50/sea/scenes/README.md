@@ -203,3 +203,22 @@ to +2 on desktop (+5 on gen-6 at phone-4x, where the shadow pass draws more squa
 Plainly: on desktop and on phone-4x for floors 1, 11 and 14 the refined scenes are inside the noise (both ways). Floor 6 at phone-4x is
 the one to watch: level in the first pair (+0.5), 4 ms slower in the second, with the machine busier during that run (step +0.9) and 5
 more draw calls. The result files were deleted afterwards.
+
+### After looking at every sheet (fixes, and the whole-zone build checked again)
+
+- Fixed after the pictures were looked at, floor by floor: gold trims that lay flush on a part showed a whole gilt face that glared next
+  to the hero (the pots' hand-cart, the salt barrow, the tide cart's tray; in the Wood the log cart's side and the gatherer's hand-cart):
+  each band now sits below the top, so only its edge shows. The salt heap and the salt sack were dulled (they glared white). The fish
+  rack's A-frame legs splayed outward; they now lean in to meet under the pole. The anchor's furrow, with pale ridges, looked like a
+  plank lying on the grass; it is now a soft groove. Wheel ruts now stop short of a place's stand, a tidal flat (a brook in the Wood) and
+  another road's middle. The pictures in `refine/` were taken again after these fixes; the placing did not change (overlap probe 0 hits on
+  floors 1 to 20, the views probe's numbers the same).
+- **The whole zone's build, checked again** (a fresh page for each run, the processor slowed 4 times, scenes off then on alternating,
+  four rounds each, this branch and then tower-50 from a second checkout). Medians in ms, scenes off then on: floor 1: this 10209, 11550;
+  tower-50 10819, 11599. Floor 6: this 9850, 10962; tower-50 10187, 12188. Floor 11: this 7450, 7653; tower-50 7106, 7911. Floor 14: this
+  7225, 8007; tower-50 7553, 7598. Single builds of the same code and the same switch ranged over 1 to 3 s (tower-50's own scenes cost
+  anywhere from +45 to +2001 ms by this measure, against about +250 by its timer), so this measure cannot resolve 150 ms on this machine.
+  What it does show: with the scenes on, this branch's builds were no slower than tower-50's (-49, -1226, -258 and +409 ms on floors 1,
+  6, 11 and 14). The scenes' own timer (which includes the painting and the hand-off to the merged props) is the measure that resolves
+  it: +119 and +133 ms on the sea's floors 1 and 6, +68 and +122 on the Wood's 11 and 14, against tower-50, at 4x. The painted map is
+  uploaded to the graphics card at the first frame, as it was before (the same canvas, the same size).
