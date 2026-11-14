@@ -103,6 +103,8 @@ interface Mind {
   lastCd: number;
   /** Falling back (s left): a hound after its bite, a knight after two blows, before it comes again with its special. */
   fade: number;
+  /** A warden fell back for its due charge (once: then it slams if the charge cannot start). */
+  backed?: boolean;
 }
 
 /** One pack's mind. Packs make one (`packs.ts`) and hand each unit `brainFor`. */
@@ -247,7 +249,11 @@ export class PackMind {
       if (m.role === 'charger' && m.blows % 2 === 0) m.fade = 2.4;
     }
     // A warden whose charge is due with its victim in reach steps back for it (slam and charge in turn, as the table says).
-    if (m.role === 'warden' && m.i % 2 === 1 && m.fade <= 0 && m.ready <= 0 && !this.busy && dist <= 4 && !this.pinned(tgt)) m.fade = 2.4;
+    // Once a due charge: if it still cannot charge after (a wall at its back, cover in the way), it slams instead.
+    if (m.role === 'warden' && m.i % 2 === 1 && !m.backed && m.fade <= 0 && m.ready <= 0 && !this.busy && dist <= 4 && !this.pinned(tgt)) {
+      m.fade = 2.4;
+      m.backed = true;
+    }
     m.lastCd = u.cd;
     if (m.fade > 0) {
       m.fade -= dt;
@@ -263,8 +269,9 @@ export class PackMind {
     }
 
     // A special, when it is its time and the pack has none going.
-    // It takes the place of a blow: only when one is due (`u.cd` run out), never on top of one just struck.
-    const start = (kind: Kind) => !this.busy && m.ready <= 0 && u.cd <= 0 && !this.pinned(tgt) && this.begin(u, m, kind, tgt, dist);
+    // It takes the place of a blow, never comes on top of one just struck: a slam only when the blow is due (`u.cd` run out), a run
+    // when it will be by the time the run lands (its wind-up and a little more: a knight that fell back is still cooling down).
+    const start = (kind: Kind) => !this.busy && m.ready <= 0 && u.cd <= (kind === 'slam' ? 0 : WIND[kind] + 0.5) && !this.pinned(tgt) && this.begin(u, m, kind, tgt, dist);
     switch (m.role) {
       case 'brute': if (dist <= REACH + 0.8 && start('slam')) return this.carry(u, m, 0); break;
       case 'charger': if (dist > 4 && dist < 12 && tools.sees(u.pos, tgt.pos) && start('charge')) return this.carry(u, m, 0); break;
@@ -310,7 +317,9 @@ export class PackMind {
     const a = base + (k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * spread) + (waits ? this.clock * 0.35 : 0);
     const r = waits ? 3.2 : REACH * 0.8;
     const slot = new THREE.Vector3(tgt.pos.x + Math.sin(a) * r, 0, tgt.pos.z + Math.cos(a) * r);
-    if (Math.hypot(slot.x - u.pos.x, slot.z - u.pos.z) < 0.3) return { face: tgt.pos };
+    // At its slot it stands, but only in reach (or waiting its turn): a slot 1.12 m out reached within 0.3 m can leave it at 1.42 m,
+    // just past its reach, where it would stand with its blow ready and never strike.
+    if (Math.hypot(slot.x - u.pos.x, slot.z - u.pos.z) < 0.3 && (waits || dist <= REACH)) return { face: tgt.pos };
     return { to: slot, face: dist < 4 ? tgt.pos : undefined };
   }
 
@@ -327,8 +336,9 @@ export class PackMind {
     } else {
       len = kind === 'charge' ? Math.min(10, dist + 2.5) : kind === 'pounce' ? Math.min(8.5, dist + 1.5) : Math.min(5, dist + 1);
       len = this.free(u.pos, dir, len);
-      // A run that cannot reach its victim (cover in the way of its body) is not begun: it walks as before.
-      if (len < dist - 0.3) return false;
+      // A run that cannot reach its victim (cover in the way of its body) is not begun: it walks as before. Its blow reaches 1.1 m
+      // and more round it, so a victim with its back to a wall is still reached.
+      if (len < dist - 1) return false;
       const width = kind === 'charge' ? 1.7 : 1.3;
       shape = { kind: 'line', x1: u.pos.x, z1: u.pos.z, x2: u.pos.x + dir.x * len, z2: u.pos.z + dir.z * len, width };
     }
@@ -339,6 +349,7 @@ export class PackMind {
     this.api.arena.group.add(layer.group);
     m.sp = { kind, t: 0, shape, layer, dir, len, went: 0, hit: new Set(), aim: tgt.figure, rest: kind === 'slam' ? 0.5 : kind === 'lunge' ? 0.5 : 1.0 };
     m.ready = EVERY[kind];
+    m.backed = false;
     this.busy = u;
     this.count(m.spec, kind);
     Zones.live++;

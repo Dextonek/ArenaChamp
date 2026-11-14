@@ -47,7 +47,8 @@ JS = """async ([n, hero, secs, off]) => {
       _world.step(0.1);
       const hp = vfx.duel.heroHp;
       if (hp < was) lost += was - hp;
-      if (hp <= max * 0.2) vfx.duel.heroHp = max;
+      if (hp <= max * 0.4) vfx.duel.heroHp = max; // it keeps standing (the share counts what was taken)
+      g.run.lives = 9; // a fall rebuilds the zone (its packs are new ones): counted below, never the run's end
       was = vfx.duel.heroHp;
       maxZones = Math.max(maxZones, zonesLeft());
     }
@@ -58,12 +59,14 @@ JS = """async ([n, hero, secs, off]) => {
     pk.off = true; pk.dispose(); pk.offWas = true;
     for (const o of all) if (o !== pk) o.off = o.offWas;
     _world.step(0.2);
+    if (_world.game().zone !== z) { out.push({ id: pk.id, rebuilt: true }); break; }
     out.push({ id: pk.id, kinds: [...new Set(ks)], n: ks.length, took: +(lost / max).toFixed(3), own: +(mine / max).toFixed(3), others: +(others / max).toFixed(3), stats, byKind, maxZones, left: zonesLeft() });
   }
   // Every kind the floor has (waves, storms and set pieces' too), with its role.
   const every = {};
   for (const [id, sp] of Object.entries(g.floor.enemies ?? {})) every[id] = { look: sp.look, melee: sp.melee, name: sp.name, role: T.roleOf(sp) };
-  return JSON.stringify({ kinds, all: every, packs: out, zonesLive: T.Zones.live, endLeft: zonesLeft() });
+  // (Not `T.Zones`: after a hot reload the game runs its own copy of tactics.ts under another address; the scene is what counts.)
+  return JSON.stringify({ kinds, all: every, packs: out.filter((p) => !p.rebuilt), rebuilt: out.some((p) => p.rebuilt), endLeft: zonesLeft() });
 }"""
 
 EXPECT = {'brute': ['slam'], 'charger': ['charge'], 'hunter': ['lunge'], 'pouncer': ['pounce'], 'warden': ['slam', 'charge'], 'caster': ['fan']}
@@ -111,8 +114,8 @@ def summary(files):
         if not on or not off:
             print(f"{r['floor']:>5}  (no result)  {faults}")
             continue
-        if on.get('zonesLive'):
-            faults.append(f"Zones.live {on['zonesLive']} at the end")
+        if on.get('rebuilt') or off.get('rebuilt'):
+            faults.append('the hero fell and the zone was rebuilt: the probe stopped there')
         if on.get('endLeft'):
             faults.append(f"{on['endLeft']} zone(s) on the ground at the end")
         for k, v in on.get('all', {}).items():

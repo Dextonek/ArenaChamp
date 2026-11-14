@@ -96,12 +96,12 @@ function armies(shard: (x: number) => number): Record<string, EnemySpec> {
   return e;
 }
 /**
- * The par (s): the time under which the floor's fourth star is earned. The banner's soldiers make the War quick: the route bot clears a
- * floor in about 1000 to 1400 s, so the old par (twice that) came free. Now about as hard to earn as in the other chapters taken together
- * (the bot earns it in 18 of 20 runs in the Wood, 19 of 20 in the Deep, 4 of 20 in the Sands): 1061 to 1145 s on the made floors, where
- * the bot earned it in 12 of 20 runs; floor 41, the longest, 1260 s.
+ * The par (s): the time under which the floor's fourth star is earned. The banner's soldiers make the War quick: the route bot (tactics
+ * on, Lyra and Bram) clears a floor in 976 to 1384 s, so the old par (2200 to 2596 s) came free. Now earned about as often as in the
+ * other chapters (the bot earns it in 18 of 20 runs in the Wood, 19 of 20 in the Deep, 15 of 16 on today's chapter floors; the Sands'
+ * storms make them the exception, 4 of 20): 1250 s on floor 41 to 1340 s on 50, which the bot earned in 18 of 20 runs (2026-11-14).
  */
-export const warPar = (n: number) => Math.round((n === 41 ? 1200 : 1000 + 10 * (n - 41)) * 1.05);
+export const warPar = (n: number) => 1250 + 10 * (n - 41);
 
 /** The soldiers of neither army, and the two named enemies. */
 function neutrals(o: { shard: (x: number) => number; chief?: string; castellan?: string; named1?: string; named2?: string }): Record<string, EnemySpec> {
