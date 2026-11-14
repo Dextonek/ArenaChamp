@@ -537,8 +537,11 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
     }
     // towards the middle, turned along the rim until it stands off the trails' middles, the spots and the cover (it stood on the trail in)
     const a0 = Math.atan2(RING.x - p.x, RING.z - p.z), rr = p.r - 1;
-    let a = a0;
-    for (let k = 1; k <= 18 && !clearAt(p.x + Math.sin(a) * rr, p.z + Math.cos(a) * rr); k++) a = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+    let a = a0; // (if no turn of it is clear, as it was)
+    if (!clearAt(p.x + Math.sin(a0) * rr, p.z + Math.cos(a0) * rr)) for (let k = 1; k <= 18; k++) {
+      const t = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+      if (clearAt(p.x + Math.sin(t) * rr, p.z + Math.cos(t) * rr)) { a = t; break; }
+    }
     const x = p.x + Math.sin(a) * rr, z = p.z + Math.cos(a) * rr;
     kit.add(bark, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.8 });

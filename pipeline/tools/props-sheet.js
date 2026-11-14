@@ -26,7 +26,9 @@
     // the kinds and their examples
     const kinds = new Map();
     for (const pr of props) { const k = kindOf(pr); if (!kinds.has(k)) kinds.set(k, []); kinds.get(k).push(pr); }
-    const list = [...kinds.entries()].filter(([k]) => !o.only || o.only.test(k)).sort((a, b) => a[0].localeCompare(b[0]));
+    let list = [...kinds.entries()].filter(([k]) => !o.only || o.only.test(k)).sort((a, b) => a[0].localeCompare(b[0]));
+    // `each: n`: n examples of every kind (spread over its list: its other variants), each forced by its prop
+    if (o.each) list = list.flatMap(([k, prs]) => Array.from({ length: Math.min(o.each, prs.length) }, (_, i) => { const pr = prs[Math.floor((i * prs.length) / Math.min(o.each, prs.length))]; return [k, [pr], prs.length]; }));
     const mats = new Map();
     const matOf = (key) => {
       const hex = key.startsWith('#') ? key : PAL[key] ?? SEA[key] ?? WOOD[key] ?? '#ff00ff';
@@ -48,9 +50,9 @@
       g.fillStyle = '#101014'; g.fillRect(0, 0, out.width, out.height);
       const names = [];
       for (let i = 0; i < chunk.length; i++) {
-        const [k, prs] = chunk[i];
+        const [k, prs, total] = chunk[i];
         // the example: forced, or the one nearest the middle
-        const pr = (o.at?.[k] !== undefined ? prs.find((q) => q.id === o.at[k]) : null) ?? prs.slice().sort((a, b) => Math.hypot(a.x - RING.x, a.z - RING.z) - Math.hypot(b.x - RING.x, b.z - RING.z))[0];
+        const pr = o.each ? prs[0] : (o.at?.[k] !== undefined ? prs.find((q) => q.id === o.at[k]) : null) ?? prs.slice().sort((a, b) => Math.hypot(a.x - RING.x, a.z - RING.z) - Math.hypot(b.x - RING.x, b.z - RING.z))[0];
         const box = centreOf(pr), c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
         const R = Math.max(0.6, Math.hypot(size.x, size.z) / 2, size.y / 2);
         const tmp = new THREE.Group();
@@ -75,7 +77,7 @@
         }
         zg.remove(tmp);
         g.fillStyle = '#e8e2d0'; g.font = '12px sans-serif';
-        const label = `${s * per + i + 1}. ${k.replace(/^scene:/, 'scene ')}  ${size.x.toFixed(1)}x${size.z.toFixed(1)}x${size.y.toFixed(1)} m  (${prs.length}x)`;
+        const label = `${s * per + i + 1}. ${k.replace(/^scene:/, 'scene ')}  ${size.x.toFixed(1)}x${size.z.toFixed(1)}x${size.y.toFixed(1)} m  (${total ?? prs.length}x)`;
         g.fillText(label.slice(0, 64), (i % cols) * 2 * W + 4, Math.floor(i / cols) * (W + 22) + 15);
         names.push({ n: s * per + i + 1, kind: k, at: [+c.x.toFixed(1), +c.z.toFixed(1)], size: [+size.x.toFixed(2), +size.z.toFixed(2), +size.y.toFixed(2)], count: prs.length, prop: pr.id });
       }

@@ -351,8 +351,11 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
     && L.pieces.every((pc) => segDist(x, z, pc.o.ax, pc.o.az, pc.o.bx, pc.o.bz) > pc.o.r + 0.4);
   for (const pl of L.places) {
     const a0 = Math.atan2(RING.x - pl.x, RING.z - pl.z), rr = pl.r - 1;
-    let a = a0;
-    for (let k = 1; k <= 18 && !clearAt(pl.x + Math.sin(a) * rr, pl.z + Math.cos(a) * rr); k++) a = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+    let a = a0; // (if no turn of it is clear, as it was)
+    if (!clearAt(pl.x + Math.sin(a0) * rr, pl.z + Math.cos(a0) * rr)) for (let k = 1; k <= 18; k++) {
+      const t = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+      if (clearAt(pl.x + Math.sin(t) * rr, pl.z + Math.cos(t) * rr)) { a = t; break; }
+    }
     const x = pl.x + Math.sin(a) * rr, z = pl.z + Math.cos(a) * rr;
     kit.add(darkWood, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.6 });

@@ -79,6 +79,10 @@ SEA = [
     ('tidecart', 'The cart stuck at the tide line', 'floors 3, 6, 9',
      'The hubs sat on the tops of the wheels, not in their middles; on the steep beach the cart, its wheels and its shafts stood apart in the air.',
      'scenes/sea.ts: the hub\'s height; each part on its own ground.', 'The hubs are in the wheels\' middles, sunk to the hubs in the sand; the scene is laid as one piece on its slope.'),
+    ('mooring-slope', 'A mooring on the beach: the anchor sunk out of sight', 'floors 2-10',
+     'The anchor beside the mooring post stood on the ground under its own middle; on the slope it went 92 % into the sand, only its shaft showing.',
+     'scenes/sea.ts: each part on its own ground.', 'The scene is laid as one piece on its slope (below): the anchor stands in the sand by its post.'),
+    ('rowboat', 'A rowing boat drawn up on the beach', 'floors 1-3', 'On the slope the boat, its oars and its sail stood a little apart.', 'As above.', 'As above.'),
     ('memorial-bow', 'The memorial: the bow under the cairn', 'floors 1-10, the bow kind (10)',
      'The broken bow lay under the cairn of stones and the cloth meant to lie on it floated 17 cm in the air beside it.', 'scenes/sea.ts: the bow was turned half round.',
      'The bow lies before the cairn with the cloth on it.'),
@@ -87,14 +91,14 @@ SEA = [
      'Each tree stands on the island\'s green where it is.'),
 ]
 SEA_ALSO = [
-    ('Beach scenes on a slope', 'Every scene past the outline (a rowing boat, a boat being caulked, the fish rack, the cart, the mooring) stood each part on the ground under its own middle, so on a slope a part stood off the one it sits on. Now the scene is turned to the plane that fits the ground under it (20 degrees at most) and let down until none of its feet is in the air. Shown in the fish rack, the cart and the caulking pairs above.'),
+    ('Beach scenes on a slope', 'Every scene past the outline (a rowing boat, a boat being caulked, the fish rack, the cart, the mooring) stood each part on the ground under its own middle, so on a slope a part stood off the one it sits on. Now the scene is turned to the plane that fits the ground under it (8 degrees at most, so posts stay near upright) and let down until none of its feet is in the air; small loose things (tools, shells, a tar pot on its stones) keep their own ground. Shown in the fish rack, cart, caulking, mooring and rowing-boat pairs above.'),
 ]
 SEA_LEFT = [
     ('Cover on the roads', 'Some rocks, stalls and ruin walls (the floor\'s cover, which the fights use) stand on a painted road. They are the floor\'s layout, not looks: left where they are.'),
     ('The lair wall', 'On a few floors the back wall of the ruler\'s lair runs into a dune or a hill at one end (lair-wall pair, unchanged). It reads as a wall built into the slope; left.'),
     ('Boulders in piles', 'Fallen rocks overlap each other at the cliff\'s foot: a pile, as it should be.'),
     ('The wreck\'s broken mast', 'The probe called it loose; it starts inside the hull and leans out of it (wreck pair). Fine.'),
-    ('Small shells under the sand', 'After laying the beach scenes on their slopes a few shells and pegs are a few cm under the sand: not seen.'),
+    ('Small things under the sand', 'A few shells, seaweed strips and a cloth of the beach scenes lie a few cm under the sand, as they did before the fixes; at the steepest cliff foot 4 small boulders (2 before) are wholly in the slope: not seen.'),
     ('A signpost board over a spot', 'On floor 3 a signpost\'s board reaches over a quest spot at 2 m; the post itself is clear of it. Left.'),
     ('Baskets of the catch, the chapel benches', 'The white catch in the market baskets reads bright from above and the benches are plain blocks: a matter of taste, not a mistake. Left for the artist.'),
 ]
@@ -124,14 +128,16 @@ WOOD = [
      'Trees of the far wood stood through the cottage; on the hills its plinth had a side in the air.', 'woodDepth.ts / woodZone.ts: the wood was planted without it.',
      'A tree in the cottage (or the watchtower) is left out of the drawing; the plinth reaches the lowest ground.'),
     ('watchtower-trees', 'Trees through the watchtower', 'floors 12-16, 4 trees', 'As above, at the watchtower on the ridge.', 'As above.', 'As above.'),
-    ('woodshed-slope', 'Scenes past the outline on a slope', 'floors 11-20',
-     'Each part stood on the ground under its own middle, so on the hills a shed\'s lantern stood off its post and its roof off its posts.', 'scenes/wood.ts.',
-     'The scene is laid as one piece on the plane of its ground (20 degrees at most) and let down until none of its feet is in the air.'),
+    ('woodshed-slope', 'The woodshed: its roof the wrong way; scenes past the outline on a slope', 'floors 11-19',
+     "The shed's roof sloped up over its short front posts and down to the tall back ones, so it stood off its posts and its gilt edge hung under it. And each part of a scene past the outline stood on the ground under its own middle, so on the hills a part stood off the one it sits on.",
+     "scenes/wood.ts: the roof's lean had the wrong sign; each part on its own ground.",
+     'The roof slopes down to the front posts. The scene is laid as one piece on the plane of its ground (8 degrees at most) and let down until none of its feet is in the air; small loose things keep their own ground.'),
     ('cover-on-trail', 'Standing stones on the trail (left)', 'floors 11-20',
      'Some cover (standing stones, rocks, logs) stands on a painted trail. The lantern beside it moved off; the gold band was fixed; the stones are the floor\'s cover and stay.',
      'The floor\'s layout.', 'Left (the lantern and the band fixed).'),
 ]
 WOOD_LEFT = [
+    ("The Wood's trail lanterns", 'woodDepth.ts has lanterns for the trails, but they ask for 3 m of room off the trail while standing at 2.8 m, so none is ever placed on any floor. Nothing to see; left (placing them would add props).'),
     ('Cover on the trails', 'Standing stones, rocks, logs, mounds and crates of the floor\'s cover stand on painted trails on most floors. They are the fights\' layout: left.'),
     ('The Elder\'s root mound', 'Behind the lair a mound of bark with roots poking out of it in every direction; they cross the trees round it. Looks rough but is a mound of roots: left.'),
     ('zoneWood.ts', 'The old 48 m wood (zoneWood.ts) is no longer used by any floor: not looked at.'),
@@ -188,9 +194,10 @@ the scenes, packs, doors and quests stand where they stood (table below).</p>
 <p>Every vertex the floor draws, in 4 m squares, on the base and on the branch (<code>pipeline/tools/props-same.js</code>): only the squares with a fixed prop change.
 The scenes (kind and place), the packs and the doors are the same.</p>
 <table><tr><th>floor</th><th>scenes</th><th>scenes in place</th><th>packs and doors the same</th><th>4 m squares changed</th></tr>{same_rows}</table>
+<h2>The scenes' own probe</h2><p><code>pipeline/tools/scenes-probe.js</code> on all twenty floors after the fixes: 0 hits on every floor (spots 3 m, roads, cover, places, flats, the outline), every scene kind placed.</p>
 <h2>The route bot</h2><table><tr><th>floor</th><th>result</th><th>game time</th><th>falls</th><th>restarts</th></tr>{route_rows}</table>
 <h2>Speed</h2><p>perf.py, the base (a git worktree) and the branch, twice each, in turn. Frame time median in ms (and draw calls).</p>
-<table><tr><th>scene</th><th>profile</th><th>base</th><th>branch</th></tr>{perf_rows}</table>
+<table><tr><th>scene</th><th>profile</th><th>base</th><th>branch</th></tr>{perf_rows}</table><p>{e(numbers.get('perfNote', ''))}</p>
 <h2>Every kind, on its own</h2><p>Each kind (the line of code that placed it, a scene, a harbour prop) alone on the floor's ground, the hero beside it: the game's camera and low beside it.
 Sheets marked "before" are of kinds only drawn there (taken before the fixes).</p><div class="grid">{sheet_html}</div>
 </main></body></html>"""

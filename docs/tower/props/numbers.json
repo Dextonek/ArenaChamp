@@ -13,13 +13,13 @@
     "buried": 14
    },
    "after": {
-    "sunk": 621,
-    "side": 331,
+    "sunk": 617,
+    "side": 334,
     "float": 136,
-    "apart": 70,
+    "apart": 73,
     "overlap": 363,
     "road": 81,
-    "buried": 25,
+    "buried": 17,
     "tree": 12,
     "spot": 2
    }
@@ -38,8 +38,7 @@
    "after": {
     "side": 310,
     "float": 30,
-    "sunk": 126,
-    "apart": 7,
+    "sunk": 128,
     "overlap": 81,
     "road": 98,
     "tree": 162
@@ -62,7 +61,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 377,
+   "cellsChanged": 374,
    "cells": 4941
   },
   {
@@ -71,7 +70,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 429,
+   "cellsChanged": 424,
    "cells": 4960
   },
   {
@@ -80,7 +79,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 337,
+   "cellsChanged": 336,
    "cells": 4922
   },
   {
@@ -89,7 +88,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 357,
+   "cellsChanged": 355,
    "cells": 4920
   },
   {
@@ -107,7 +106,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 414,
+   "cellsChanged": 413,
    "cells": 4947
   },
   {
@@ -116,7 +115,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 395,
+   "cellsChanged": 394,
    "cells": 4981
   },
   {
@@ -125,7 +124,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 398,
+   "cellsChanged": 397,
    "cells": 4940
   },
   {
@@ -134,7 +133,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 427,
+   "cellsChanged": 426,
    "cells": 4997
   },
   {
@@ -143,7 +142,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 80,
+   "cellsChanged": 78,
    "cells": 4124
   },
   {
@@ -152,7 +151,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 95,
+   "cellsChanged": 94,
    "cells": 4256
   },
   {
@@ -170,7 +169,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 95,
+   "cellsChanged": 94,
    "cells": 4230
   },
   {
@@ -197,7 +196,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 92,
+   "cellsChanged": 91,
    "cells": 4214
   },
   {
@@ -215,7 +214,7 @@
    "scenesSame": true,
    "packsSame": true,
    "doorsSame": true,
-   "cellsChanged": 96,
+   "cellsChanged": 94,
    "cells": 4300
   },
   {
@@ -269,5 +268,58 @@
    "restarts": 0,
    "wallMin": 0.9
   }
- ]
+ ],
+ "perf": {
+  "sea": [
+   {
+    "scene": "world-1 (floor 1)",
+    "profile": "desktop",
+    "before": "10.8 / 11.0 ms, 276 calls",
+    "after": "9.0 / 9.5 ms, 274 calls"
+   },
+   {
+    "scene": "world-1 (floor 1)",
+    "profile": "phone-4x",
+    "before": "34.2 / 30.6 ms, 282 calls",
+    "after": "36.0 / 28.1 ms, 280 calls"
+   }
+  ],
+  "wood": [
+   {
+    "scene": "world-2 (floor 11)",
+    "profile": "desktop",
+    "before": "10.2 / 9.5 ms, 218 calls",
+    "after": "9.1 / 9.7 ms, 218 calls"
+   },
+   {
+    "scene": "world-2 (floor 11)",
+    "profile": "phone-4x",
+    "before": "30.7 / 23.9 ms, 224 calls",
+    "after": "27.1 / 22.5 ms, 225 calls"
+   }
+  ]
+ },
+ "perfNote": "Same fights: prints d096aa04 (floor 1) and 467f6a06 (floor 11) on both. Triangles 658k -> 657k (floor 1), 568k/586k the same (floor 11).",
+ "scenesProbe": {
+  "1": 0,
+  "2": 0,
+  "3": 0,
+  "4": 0,
+  "5": 0,
+  "6": 0,
+  "7": 0,
+  "8": 0,
+  "9": 0,
+  "10": 0,
+  "11": 0,
+  "12": 0,
+  "13": 0,
+  "14": 0,
+  "15": 0,
+  "16": 0,
+  "17": 0,
+  "18": 0,
+  "19": 0,
+  "20": 0
+ }
 }

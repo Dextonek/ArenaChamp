@@ -72,8 +72,10 @@ const GROUND_SCALE = 1.45;
 /**
  * A scene past the outline laid as one piece (the props pass, 2026-11-14). Each part stood on the ground under its own middle, so on a
  * slope a part stood off the one it sits on or hangs from (a cart's wheels off the cart, a rack's pole off its frames, a shed's lantern off
- * its post). Now the scene is turned to the plane that fits the ground under its parts (20 degrees at most) and let down until none of its
- * standing parts is in the air (0.4 m at most). Returns the scene's frame: a part goes at (its offset from (px, pz), its own height, ...).
+ * its post). Now the scene is turned to the plane that fits the ground under its parts (8 degrees at most: a post stays near upright) and
+ * let down until none of its standing parts is in the air (0.4 m at most). Small loose things on the ground (a tool, a shell, a coil of
+ * rope) keep their own ground, as before (the caller leaves them out: `standing` false, and draws them on their own ground).
+ * Returns the scene's frame: a part goes at (its offset from (px, pz), its own height, ...).
  */
 export function slopeFrame(parts: { wx: number; wz: number; ground: number; standing: boolean }[], px: number, pz: number, groundAt: (x: number, z: number) => number) {
   let n = 0, sx = 0, sz = 0, sh = 0, sxx = 0, szz = 0, sxz = 0, sxh = 0, szh = 0;
@@ -87,7 +89,7 @@ export function slopeFrame(parts: { wx: number; wz: number; ground: number; stan
     const e = M.invert().elements; // column-major
     a = e[0] * sh + e[3] * sxh + e[6] * szh; b = e[1] * sh + e[4] * sxh + e[7] * szh; c = e[2] * sh + e[5] * sxh + e[8] * szh;
   }
-  const g = Math.hypot(b, c), MAXG = Math.tan(0.35);
+  const g = Math.hypot(b, c), MAXG = Math.tan(0.14);
   if (g > MAXG) { b *= MAXG / g; c *= MAXG / g; }
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-b, 1, -c).normalize());
   const frame = new THREE.Matrix4().compose(new THREE.Vector3(px, a, pz), q, new THREE.Vector3(1, 1, 1)), v = new THREE.Vector3();
@@ -825,13 +827,21 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
     }
     return out;
   };
-  /** A beach scene's frame on its slope (`slopeFrame`), while it is committed; null on flat ground. */
-  let frame: { m: THREE.Matrix4; x: number; z: number } | null = null;
+  /** A beach scene's frame on its slope (`slopeFrame`), while it is committed; null on flat ground. `loose`: its small things on the ground. */
+  let frame: { m: THREE.Matrix4; x: number; z: number; loose: Set<Laid> } | null = null;
+  /** A small thing on or just over the ground (under 0.4 m, its foot under 0.45 m: a tool, a shell, a tar pot on its stones): it keeps
+   *  its own ground in a scene laid on a slope. */
+  const isLoose = (L: Laid) => { const bb = L.p.g.boundingBox!; return L.p.y * L.k > -0.02 && L.p.y * L.k < 0.45 && (bb.max.y - bb.min.y) * L.sy < 0.4; };
+  /** The scene's loose things: small, low, and not on or in a bigger part (a wheel's hub goes with its wheel). */
+  const looseOf = (laid: Laid[]) => {
+    const big = laid.filter((L) => !isLoose(L));
+    return new Set(laid.filter((L) => isLoose(L) && !big.some((B) => Math.hypot(L.cx - B.cx, L.cz - B.cz) < B.r * 0.5)));
+  };
   /** A placed part's real corners on the ground and its real top (for the probe), from its full transform. */
   const corners = (L: Laid) => {
     const p = L.p, g = p.draw?.g ?? p.g, bb = g.boundingBox ?? (g.computeBoundingBox(), g.boundingBox!), py = p.draw?.y ?? p.y;
     const wyaw = L.wyaw + ((p.draw?.yaw ?? p.yaw) - p.yaw) * L.mir;
-    if (frame) m4.compose(v.set(L.wx - frame.x, py * L.k, L.wz - frame.z), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k)).premultiply(frame.m);
+    if (frame && !frame.loose.has(L)) m4.compose(v.set(L.wx - frame.x, py * L.k, L.wz - frame.z), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k)).premultiply(frame.m);
     else m4.compose(v.set(L.wx, L.ground + py * L.k, L.wz), q.setFromEuler(e.set(p.tilt, wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
     const pts: [number, number][] = [];
     let top = -1e9;
@@ -935,8 +945,9 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
   const commit = (name: string, laid: Laid[], px: number, pz: number, beyond: boolean, echo: boolean) => {
     const pts: [number, number][] = [];
     // a beach scene as one piece on its slope (the checks above saw it as before: nothing else moves)
+    const looseL = looseOf(laid);
     frame = beyond && kinds.get(name)?.where === 'beach'
-      ? { m: slopeFrame(laid.map((L) => ({ wx: L.wx, wz: L.wz, ground: L.ground, standing: Math.abs(L.p.y * L.k) < 0.02 })), px, pz, (x, z) => Math.max(geo.height(x - RING.x, z - RING.z), WATER - 0.25)), x: px, z: pz }
+      ? { m: slopeFrame(laid.map((L) => ({ wx: L.wx, wz: L.wz, ground: L.ground, standing: Math.abs(L.p.y * L.k) < 0.02 && !looseL.has(L) })), px, pz, (x, z) => Math.max(geo.height(x - RING.x, z - RING.z), WATER - 0.25)), x: px, z: pz, loose: looseL }
       : null;
     let top = 0, main: Laid = laid[0];
     const byKey = new Map<Key, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
