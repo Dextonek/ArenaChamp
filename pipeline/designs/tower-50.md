@@ -241,3 +241,10 @@ today's area, not a circle.
   floor and a red zone of the tactics stand 400 m under the ground, compiled with the warm-up and kept till the zone goes
   (`globalThis.__noPrewarm` leaves them out). Floor 46, the frame the first pack appears in, a fresh browser each run: 491 and 417 ms
   without, 173 and 149 ms with. What is left of it is the pack's own building (rigs, bars), not shaders.
+- **Tactics played on all fifty floors (2026-11-14, an agent).** Found and fixed in tactics.ts: a special came on top of a blow (a
+  warden's slam +52 %); runs' lines went through cover (now they end where the body first touches cover, an edge or roots, and stop when
+  blocked); the warden's charge never fired in reach (it steps back to 5 m once); knights stopped charging; melee units froze 1.42 m out.
+  War floors 48 to 50: the keep's elite named apart; War pars 1250 to 1340 s (the bot earns par in 18 of 20 runs). Walls probe
+  (`tactics-walls.py`): 0 faults over about 1400 runs (Wood roots held and changing, Deep, War, Sea). Route bot with tactics on, floors 1,
+  10, 11, 20, 21, 30, 31, 40, 41, 50, Bram and Lyra: all cleared, 7 falls in 20 runs (17 with tactics off). The first part (628c3ec)
+  went live on 2026-11-14 (e47791ff); the second (853693f: knights, the frozen units, the final pars) is merged, **not live**.
