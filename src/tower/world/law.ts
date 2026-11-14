@@ -147,7 +147,9 @@ function storm(z: ZoneCtx, d: Extract<LawDef, { kind: 'storm' }>): Law {
   const R = z.def.ring, shelter = d.shelter ?? 7, sight = d.sight ?? 5;
   const north = RING.z - R - d.width / 2, travel = 2 * R + d.width;
   const mat = new THREE.MeshBasicMaterial({ color: 0xc89a5a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
-  const geo = new THREE.BoxGeometry(R * 2.3, 7, d.width);
+  // As high as the land round it: 7 m on the old floors, up to 18 m on the large ones (their cliffs stand 9 to 19 m).
+  const H = Math.min(18, Math.max(7, R * 0.15));
+  const geo = new THREE.BoxGeometry(R * 2.3, H, d.width);
   const band = new THREE.Mesh(geo, mat);
   band.visible = false;
   // The wall's face (the south side, the way it goes): streaks of dust that read as a front from the camera.
@@ -164,9 +166,9 @@ function storm(z: ZoneCtx, d: Extract<LawDef, { kind: 'storm' }>): Law {
     return t;
   })();
   const faceMat = new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
-  const faceGeo = new THREE.PlaneGeometry(R * 2.3, 11);
+  const faceGeo = new THREE.PlaneGeometry(R * 2.3, H + 4);
   const face = new THREE.Mesh(faceGeo, faceMat);
-  face.position.set(RING.x, 5.5, 0);
+  face.position.set(RING.x, (H + 4) / 2, 0);
   face.visible = false;
   // Dust blowing through the band.
   const N = 260, dpos = new Float32Array(N * 3), dph = new Float32Array(N * 2);
@@ -216,11 +218,11 @@ function storm(z: ZoneCtx, d: Extract<LawDef, { kind: 'storm' }>): Law {
       } else faceMat.opacity += (0 - faceMat.opacity) * Math.min(1, dt * 3);
       mat.opacity += ((ph.active ? 0.3 : 0) - mat.opacity) * Math.min(1, dt * 3);
       if (ph.active) {
-        band.position.set(RING.x, 3.5, ph.zb);
+        band.position.set(RING.x, H / 2, ph.zb);
         const p = dgeo.attributes.position as THREE.BufferAttribute;
         for (let i = 0; i < N; i++) {
           const u = (dph[i * 2] + time * 0.35 + i * 0.013) % 1;
-          p.setXYZ(i, RING.x + (((i * 0.6180339) % 1) - 0.5) * R * 2.2 + Math.sin(time * 1.3 + dph[i * 2 + 1]) * 1.2, 0.4 + ((i * 7) % 60) / 10, ph.zb + (u - 0.5) * d.width);
+          p.setXYZ(i, RING.x + (((i * 0.6180339) % 1) - 0.5) * R * 2.2 + Math.sin(time * 1.3 + dph[i * 2 + 1]) * 1.2, 0.4 + (((i * 7) % 60) / 10) * (H / 7), ph.zb + (u - 0.5) * d.width);
         }
         p.needsUpdate = true;
       }
