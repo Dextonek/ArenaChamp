@@ -7,7 +7,7 @@
 //   python pipeline/tools/page-shots.py pipeline/tools/tower-models-sheet.js docs/tower/models --port 5254
 //
 // It returns <chapter>-lineup-game (the game's high three-quarter camera), <chapter>-lineup-front, <chapter>-sheet
-// (every figure alone) and per figure <chapter>-<name> (front, back, the game camera, the face). The people are read
+// (every figure alone; with `window._towerSet` = 'rulers' or 'enemies': <chapter>-rulers-game, -front, -sheet) and per figure <chapter>-<name> (front, back, the game camera, the face). The people are read
 // from public/models/tower/<id>_v4.glb (blender/tower/build.py --out public/models/tower); a figure with `url` from there.
 // `stand` is the hero whose way of holding the figure borrows (src/motion/real.ts REAL_STYLE: Sefu holds a staff
 // upright in the left hand, Auriel a shield on the left arm, Brannoc strikes with the right); the game's people use the
@@ -23,6 +23,9 @@ const { HeroFigure } = await import('/src/heroFigure.ts');
 const { HERO_KITS } = await import('/src/heroes.ts');
 // the pictures are named after the chapter of the first figure: <chapter>-lineup-game, <chapter>-sheet, <chapter>-<name>
 const CH = FIGS[0].id.split('_')[0];
+// `window._towerSet` ('rulers', 'enemies'): the line-ups are named <chapter>-<set>-game, -front and -sheet (default 'lineup' and 'sheet').
+const SET = window._towerSet ?? null;
+const NAME = (what) => (SET ? `${CH}-${SET}-${what === 'sheet' ? 'sheet' : what}` : what === 'sheet' ? `${CH}-sheet` : `${CH}-lineup-${what}`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const kitOf = (n) => HERO_KITS.find((k) => k.name === n);
 const pv = new HeroPreview();
@@ -97,10 +100,14 @@ const dir = new V3(0, 6, 5).normalize();
 camera.fov = 30;
 camera.position.copy(new V3(0, 1.4, 0).addScaledVector(dir, 13.8));
 camera.lookAt(0, 1.4, 0);
-out[`${CH}-lineup-game`] = shoot(1800, 620, names).toDataURL('image/jpeg', 0.9);
-camera.position.set(0, 2.3, 12.6);
-camera.lookAt(0, 2.15, 0);
-out[`${CH}-lineup-front`] = shoot(1800, 680, names).toDataURL('image/jpeg', 0.9);
+// giants (a ruler is drawn 2.2 times a hero, a big enemy at its unit's size): the camera stands back as far as they are tall
+const BIG = Math.max(1, ...row.map((r) => r.scale ?? 1)), K = 1 + (BIG - 1) * 0.55, WIDE = Math.max(1, x / 15);
+camera.position.copy(new V3(0, 1.4 * K, 0).addScaledVector(dir, 13.8 * Math.max(K, WIDE)));
+camera.lookAt(0, 1.4 * K, 0);
+out[NAME('game')] = shoot(1800, Math.round(620 * Math.min(1.5, K)), names).toDataURL('image/jpeg', 0.9);
+camera.position.set(0, 2.3 * K, 12.6 * Math.max(K, WIDE));
+camera.lookAt(0, 2.15 * K, 0);
+out[NAME('front')] = shoot(1800, Math.round(680 * Math.min(1.5, K)), names).toDataURL('image/jpeg', 0.9);
 
 // each alone: front, back, the game camera, the face
 const W = 300, H = 420;
@@ -151,6 +158,6 @@ for (let i = 0; i < FIGS.length; i++) {
   out[FIGS[i].id.replace(/_/g, '-')] = one.toDataURL('image/jpeg', 0.9);
 }
 for (const r of row) r.fig.group.visible = true;
-out[`${CH}-sheet`] = sheet.toDataURL('image/jpeg', 0.88);
+out[NAME('sheet')] = sheet.toDataURL('image/jpeg', 0.88);
 out.missing = missing;
 return out;

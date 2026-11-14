@@ -170,3 +170,19 @@ def rot(x=0.0, y=0.0, z=0.0):
     """An ellipsoid's turn (figkit takes a 4x4 matrix): about X, Y and Z in radians."""
     from mathutils import Euler
     return Euler((x, y, z)).to_matrix().to_4x4()
+
+
+def slab(f, key, p, out, w, h, t, tilt=0.0, seg=(12, 6)):
+    """A flat plate (bark, stone, a scale) lying on a surface at `p` facing `out`: `w` across, `h` up, `t` thick (radii).
+    `tilt` leans its top out from the surface (radians)."""
+    import math
+    from mathutils import Matrix, Vector
+    out = Vector(out)
+    out.z = 0.0
+    out = out.normalized() if out.length > 1e-6 else Vector((0, -1, 0))
+    up = Vector((0, 0, 1))
+    up = (up * math.cos(tilt) + out * math.sin(tilt)).normalized()
+    across = up.cross(out).normalized()
+    out = across.cross(up).normalized()
+    m = Matrix((across, out, up)).transposed().to_4x4()
+    f.ellipsoid(key, p, (w, t, h), seg=seg, rot=m)
