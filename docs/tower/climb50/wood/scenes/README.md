@@ -125,3 +125,9 @@ The probe does not see the tree crowns; the trees stand past the walkable edge, 
   rounds of three builds after a warm one; medians of nine): the scenes' own code, floor 11: 416 ms, 484 ms (+68); floor 14: 377 ms,
   499 ms (+122); the merge of the props +2 to +3 ms. Whole zone: floor 11 6917, 7446; floor 14 7800, 8092; single builds of the same
   code ranged 6590 to 10397 ms, so the scenes' own timer is the measure.
+
+### Frames
+
+Measured with the sea, floors 1, 6, 11 and 14 together: see the last section of `docs/tower/climb50/sea/scenes/README.md`. For the
+Wood: floor 11 (world-2) desktop 9.8, 6.4, 6.1, 6.3 and phone-4x 31.1, 28.9, 29.0, 29.0; floor 14 (gen-14) desktop 7.4, 7.3, 6.5, 6.4
+and phone-4x 32.3, 32.9, 32.8, 32.7 (tower-50, this, this, tower-50): inside the noise; draw calls -1 to +1, triangles +10k to +18k.

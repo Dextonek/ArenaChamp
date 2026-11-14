@@ -185,3 +185,21 @@ is there; it shows what the lead saw (a scene read in 13 to 32 % of road views) 
   259 ms, 392 ms (+133); the merge of the dressing +6 ms on both. The whole zone's build: floor 1 8695, 9688; floor 6 8410, 8851; single
   builds of the same code ranged 8052 to 12382 ms, so the whole-zone medians are mostly noise and the scenes' own timer is the measure.
   Unslowed the scenes take 57 to 67 ms a floor (about 45 before); the dressing gets about 100k vertices from them (71k before).
+
+### Frames (both chapters, measured together after both were done)
+
+`perf.py scenes --profiles desktop,phone-4x --scenes world-1,gen-6,world-2,gen-14` (floors 1, 6, 11, 14), tower-50 from a second checkout
+(`--root`) and this branch, alternating: tower-50, this, this, tower-50. The same fights in every run (prints unchanged). Draw calls +0
+to +2 on desktop (+5 on gen-6 at phone-4x, where the shadow pass draws more squares), triangles +6k to +18k. Medians in ms, in run order
+(tower-50, this, this, tower-50), and `step` (the simulation, which static props cannot change) as a sign of how busy the machine was:
+
+| Scene | desktop | phone-4x |
+|---|---|---|
+| world-1 (floor 1) | 9.8, 8.4, 7.6, 8.9 | 40.3, 35.9, 36.5, 35.9 |
+| gen-6 (floor 6) | 10.6, 9.6, 9.5, 9.1 | 40.2, 40.7, 36.8 (step 10.9), 32.8 (step 10.0) |
+| world-2 (floor 11) | 9.8, 6.4, 6.1, 6.3 | 31.1, 28.9, 29.0, 29.0 |
+| gen-14 (floor 14) | 7.4, 7.3, 6.5, 6.4 | 32.3, 32.9, 32.8, 32.7 |
+
+Plainly: on desktop and on phone-4x for floors 1, 11 and 14 the refined scenes are inside the noise (both ways). Floor 6 at phone-4x is
+the one to watch: level in the first pair (+0.5), 4 ms slower in the second, with the machine busier during that run (step +0.9) and 5
+more draw calls. The result files were deleted afterwards.
