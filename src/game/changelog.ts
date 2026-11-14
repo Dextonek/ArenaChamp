@@ -40,7 +40,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
     title: 'The Climb grows to fifty floors',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Online',
@@ -87,9 +87,9 @@ export const CHANGELOG: Release[] = [
     ],
   },
   {
-    date: '2026-11-13',
+    date: '2026-11-14',
     title: 'The Drowned Harbour by day',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Tower',
@@ -413,7 +413,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
     title: 'Balance: Sirix, Cantor and Nyx',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Balance',
