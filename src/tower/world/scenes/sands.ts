@@ -339,7 +339,11 @@ function makeProtos() {
   };
   // The shapes as they were before the props pass (2026-11-14), for the planner's measure only (`autoCover`): fixed parts moved a few cm
   // to meet their bodies, which shrank some footprints and let later scenes fit elsewhere. Measuring the old ones keeps every scene
-  // where it was; only what is drawn changed.
+  // where it was; only what is drawn changed. Made on a stream of their own: three.js draws every new object's id from `Math.random`,
+  // and the zone is built on the game's (a new object there changes the dice of every fight after it).
+  const gameRandom = Math.random;
+  Math.random = seeded(4417);
+  try {
   PLAN.set(shapes.sack, P([[ball(1, 8, 5).scale(0.42, 0.24, 0.3).translate(0, 0.2, 0), C.cream], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.46, 0.18, 0), C.cream], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.52, 0.18, 0), C.rope]]));
   PLAN.set(shapes.sackHide, P([[ball(1, 8, 5).scale(0.4, 0.26, 0.3).translate(0, 0.22, 0), C.hide], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.44, 0.2, 0), C.hide], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.5, 0.2, 0), C.rope]]));
   PLAN.set(shapes.lantern, P([
@@ -365,6 +369,7 @@ function makeProtos() {
       [cone(0.07, 0.2, 6).rotateZ(Math.PI / 2).translate(-0.4, 0.26, 0), C.clay], [ring(0.235, 0.024, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.26, 0), C.turquoise],
     ]));
   PLAN.set(shapes.waterskin, P([[ball(1, 10, 6).scale(0.32, 0.15, 0.2).translate(0, 0.15, 0), C.hide], [cyl(0.04, 0.06, 0.16, 6).rotateZ(-Math.PI / 2).translate(0.38, 0.14, 0), C.hide], [cyl(0.045, 0.045, 0.03, 6).rotateZ(-Math.PI / 2).translate(0.47, 0.14, 0), C.brass]]));
+  } finally { Math.random = gameRandom; }
   return shapes;
 }
 

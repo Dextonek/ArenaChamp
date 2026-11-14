@@ -310,7 +310,6 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
           kit.add(M.turquoise, cyl(r * 1.12, r * 1.12, 0.16, 16), o.ax, 0.35, o.az);
           for (const s of [-1, 1]) kit.add(M.wood, cyl(0.08, 0.1, 2.5, 6), o.ax + s * (r + 0.1), 0, o.az);
           kit.add(M.wood, box(0.12, 0.12, r * 2.7), o.ax, 2.45, o.az, Math.PI / 2).add(M.cloth, new THREE.TorusGeometry(0.28, 0.07, 6, 12), o.ax, 1.85, o.az, 0);
-          kit.add(M.wood, cyl(0.018, 0.018, 0.3, 5), o.ax, 2.17, o.az); // the coil on its rope from the beam (it hung in the air)
         } else if (kind === 'spring') {
           kit.add(M.sandstone, cyl(r, r * 1.12, 0.55, 16), o.ax, 0, o.az).add(M.water, cyl(r * 0.82, r * 0.82, 0.05, 16), o.ax, 0.52, o.az).add(M.gold, new THREE.TorusGeometry(r, 0.06, 6, 20).rotateX(Math.PI / 2).translate(0, 0.56, 0), o.ax, 0, o.az);
           glowSpots.push({ x: o.ax, y: 0.9, z: o.az, size: 1.6 });

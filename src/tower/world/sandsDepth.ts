@@ -262,11 +262,17 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
     const roadWell = (x: number, z: number) => { // a low round well, a turquoise band, a beam, a bucket
       put(C.sandstone, G.cyl, x, 0, z, 0, 0.9, 0.8, 0.9); put(C.lacquer, G.cyl, x, 0.79, z, 0, 0.7, 0.02, 0.7); put(C.turquoise, G.cyl, x, 0.32, z, 0, 0.93, 0.14, 0.93);
       for (const s of [-1, 1]) put(C.wood, G.cyl6, x + s * 0.95, 0, z, 0, 0.07, 2.2, 0.07);
-      put(C.wood, G.box, x, 2.15, z, 0, 2.1, 0.1, 0.1); put(C.clay, G.cyl, x + 0.3, 1.3, z, 0, 0.16, 0.24, 0.16); put(C.rope, G.cyl6, x + 0.3, 1.53, z, 0, 0.015, 0.63, 0.015); // the bucket on its rope (it hung in the air)
+      put(C.wood, G.box, x, 2.15, z, 0, 2.1, 0.1, 0.1); put(C.clay, G.cyl, x + 0.3, 1.3, z, 0, 0.16, 0.24, 0.16); put(C.rope, G.flatBox, x + 0.3, 1.845, z, 0, 0.025, 0.63, 0.025); // the bucket on its rope (it hung in the air)
       goldAt(new THREE.TorusGeometry(0.9, 0.05, 5, 18).rotateX(Math.PI / 2), x, 0.81, z);
       jars(x + 1.8, z + 0.6);
       solid(x, z, 1.4, 'well');
     };
+
+    // The wells that are cover (sandsZone.ts draws them): the rope from the beam to the coil hanging under it (2026-11-14, the props pass:
+    // the coil hung in the air). Here, in a shape every Sands floor already uses, so the build makes no new object: three.js draws every
+    // new object's id from the game's `Math.random`, and the zone is built on the game's stream.
+    const coverKinds = new Map(look.kinds);
+    look.pieces.forEach((pc, i) => { if (pc.look === 'barrel' && coverKinds.get(i) === 'well') put(C.rope, G.flatBox, pc.o.ax, 2.32, pc.o.az, 0, 0.03, 0.3, 0.03); });
 
     // --- the roads ----------------------------------------------------------------------------------------------------------------
     let since = 10 + rnd() * 10, sinceMile = 30 + rnd() * 10, sinceBones = 40 + rnd() * 40, carts = 0, wells = 0;
