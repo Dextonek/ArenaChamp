@@ -52,18 +52,20 @@ that this would lift over the knee is drawn flatter. Gold trim is drawn matte (b
 
 Every part keeps 3 m off the floor's spots (`floorKeep`: start, camp, lore, people, packs and patrols, waystones, caches, doors, quest
 steps), 2 m off the roads' middles, off the cover, the places' stands, the tidal flats as drawn, the depth's props, and the land's
-houses, jetties, boats, trees and the harbour file's props.
+houses, jetties, boats, trees and the harbour file's props (each by half its length and its radius).
 
 ## Numbers
 
-Scenes a floor (from the probe): 1: 26, 2: 22, 3: 22, 4: 25, 5: 23, 6: 27, 7: 24, 8: 20, 9: 24, 10: 25 (1 to 4 of them past the
-edge). Over the ten floors: pots 23, barrels 22, anchor 22, memorial 20, stall 20, flotsam 18, fight 18, fire 17, nets 17, washing
-15, cart 12, mooring 11, capsized 10, smugglers 9, rowboat 3, barrow 2, potstack 2, netframe 1. No kind is missing.
+Scenes a floor (from the probe): 1: 26, 2: 22, 3: 22, 4: 25, 5: 22, 6: 27, 7: 24, 8: 20, 9: 23, 10: 27 (1 to 4 of them past the
+edge). Over the ten floors: memorial 22, barrels 22, stall 21, pots 21, anchor 19, flotsam 19, fire 17, nets 17, washing 15, fight
+15, cart 12, mooring 11, capsized 10, smugglers 9, rowboat 4, barrow 2, potstack 1, netframe 1. The tall beach kinds are rare: the
+dry sand past the edge is 1.5 to 4 m wide. No kind is missing.
 
 ## Checks
 
 - **Overlap probe** (`pipeline/tools/scenes-probe.js`, run on the page: `await _scenesProbe([1, 2, ..., 10])`): builds each floor's zone
-  as the game does and checks every placed part's real corners against the floor's own data. Zero hits on all ten floors.
+  as the game does and checks every placed part's footprint, sampled every 0.5 m, against the floor's own data. Zero hits on all ten
+  floors.
 - **`_worldCheck`**, floors 1 to 10: nothing unreachable, 34,825 to 35,004 m2 reachable, most units near a spot 5, as before (it reads
   only the floor's data, which this pass does not touch).
 - **`npx tsc --noEmit -p .`** clean, **`npm run build`** passes.

@@ -15,8 +15,9 @@ import { WATER, rimAt, type Geo, type Key, type LandSpec } from '../land';
  *
  * Each kind is a list of parts in its own frame, built from geometry made once a floor, placed many times turned, mirrored and with
  * small variations (which baskets, how many fish, how many arrows), by the floor's own random stream (`seeded(SEED + spec.seed)`): the
- * zone's and the depth's streams are untouched, so nothing that was there moves. The parts go into the land's merged dressing (one
- * mesh a 24 m square whatever the colours; gold into the zone's kit): no new draw calls.
+ * zone's and the depth's streams are untouched, so nothing that was there moves. Each placed scene is baked into one geometry a colour
+ * and goes into the land's merged dressing (one mesh a 24 m square whatever the colours); its gold trim is drawn matte (`brass`) there,
+ * not in the zone's polished gold. A few more meshes where a scene lies in a square that had no dressing (10 to 14 on a floor).
  *
  * `?scenes=off` in the address leaves them out (for before-and-after pictures and A/B timing).
  */
@@ -441,7 +442,7 @@ const KINDS: Kind[] = [
       P.p('plank', S.box(0.3, 0.36, 1.0), 0, 0, 0, 0.2).p('gold', S.box(0.32, 0.03, 1.02), 0, 0.34, 0, 0.2);
       P.p('wood', S.ring(0.22, 0.04), -0.3, 0, 0.75, 0.2);
       for (const s of [-0.25, 0.25]) P.p('wood', S.log(0.03, 0.9, 6), 0.05, 0, -0.75 + s * 0.1, 1.77 + s);
-      P.p('cloth', S.k('saltheap', () => new THREE.ConeGeometry(0.6, 0.26, 12).translate(0, 0.13, 0)), 0.7, 0, -0.05, 0, 0, 1.3, 1, 0.9);
+      P.p('rope', S.k('saltheap', () => new THREE.ConeGeometry(0.6, 0.26, 12).translate(0, 0.13, 0)), 0.7, 0, -0.05, 0, 0, 1.3, 1, 0.9);
       P.p('wood', S.log(0.022, 1.7, 5), -0.6, 0, 0.9, 0.6).p('lacquer', S.box(0.05, 0.03, 0.45), -1.3, 0, 1.4, 0.6);
       if (r() < 0.5) basket(S, P, 1.1, 1.0, 0.28);
     },

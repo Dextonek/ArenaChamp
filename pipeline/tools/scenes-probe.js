@@ -4,7 +4,9 @@
 //   - the roads' middles (the painted dirt, 1.75 m each side of the line);
 //   - the cover (its radius; the outline's invisible edge walls are left out: the outline is checked on its own); the Wood's roots
 //     (its law's walls, both ways: 0.3 m);
-//   - the places' stands (their radius); the tidal flats as drawn; the depth's props (their reach) and the harbour file's props (1.2 m);
+//   - the places' stands (their radius); the tidal flats as drawn; the depth's props (their reach), the harbour file's props (half their
+//     length and their radius), the Wood's brooks (0.9 m);
+// Each part's footprint is sampled every 0.5 m (its corners and middle come from the scene's record).
 //   - the walkable outline: a ground scene must be inside it and low (0.55 m, knee height); a beach or sea scene must be past it.
 // Run on the tool or game page (or with pipeline/tools/world-shots.py):
 //   eval(await (await fetch('/pipeline/tools/scenes-probe.js')).text());
@@ -21,7 +23,7 @@
     const K = await import('/src/tower/world/keep.ts');
     const land = await import('/src/tower/world/land.ts');
     const common = await import('/src/arenas/common.ts');
-    const RING = common.RING;
+    const RING = common.RING, HO = (await import('/src/arenas/harbour.ts')).HARBOUR_OBSTACLES;
     const looks = {};
     try { looks[1] = (await import('/src/tower/world/floors/gen/harbour-big.ts')).HARBOUR.look; } catch (e) { /* none */ }
     try { const w = await import('/src/tower/world/floors/woodGrown.ts'); if (w.WOOD_11) looks[11] = w.WOOD_11.look; } catch (e) { /* none */ }
@@ -36,8 +38,8 @@
       const t0 = performance.now();
       const z = def.arena.build();
       const buildMs = Math.round(performance.now() - t0);
-      let scenes = null, marks = [];
-      z.group.traverse((o) => { if (o.userData?.seaScenes) scenes = o.userData.seaScenes; if (o.userData?.woodScenes) scenes = o.userData.woodScenes; if (o.userData?.depthMarks) marks = o.userData.depthMarks; });
+      let scenes = null, marks = [], brooks = [];
+      z.group.traverse((o) => { if (o.userData?.seaScenes) scenes = o.userData.seaScenes; if (o.userData?.woodScenes) scenes = o.userData.woodScenes; if (o.userData?.depthMarks) marks = o.userData.depthMarks; if (o.userData?.depth?.brooks) brooks = o.userData.depth.brooks.flatMap((b) => b.pts ?? []); });
       z.dispose();
       scenes = scenes ?? [];
       const keep = K.floorKeep(def);
@@ -53,14 +55,26 @@
         const where = `${s.kind} at (${s.x.toFixed(1)}, ${s.z.toFixed(1)})`;
         if (!s.beyond && s.top > 0.55) hits.push(`${where}: ${s.top} m tall on the walkable ground`);
         let worst = {};
-        for (const [x, zz] of s.pts) {
+        // each part is its four ground corners and its middle (scenes/*.ts): sample its footprint every 0.5 m, not just the corners
+        const pts = [];
+        for (let i = 0; i + 4 < s.pts.length + 1; i += 5) {
+          const [c0, c1, c2, c3] = s.pts.slice(i, i + 4);
+          const n1 = Math.max(1, Math.ceil(Math.max(Math.hypot(c1[0] - c0[0], c1[1] - c0[1]), Math.hypot(c3[0] - c2[0], c3[1] - c2[1])) / 0.5));
+          const n2 = Math.max(1, Math.ceil(Math.max(Math.hypot(c2[0] - c0[0], c2[1] - c0[1]), Math.hypot(c3[0] - c1[0], c3[1] - c1[1])) / 0.5));
+          for (let a = 0; a <= n1; a++) for (let b = 0; b <= n2; b++) {
+            const u = a / n1, w = b / n2;
+            pts.push([(1 - u) * (1 - w) * c0[0] + u * (1 - w) * c1[0] + (1 - u) * w * c2[0] + u * w * c3[0], (1 - u) * (1 - w) * c0[1] + u * (1 - w) * c1[1] + (1 - u) * w * c2[1] + u * w * c3[1]]);
+          }
+        }
+        for (const [x, zz] of pts) {
+          for (const [bx, bz] of brooks) if (Math.hypot(bx - x, bz - zz) < 0.9) worst.brook = 'in a brook';
           for (const k of keep) { const d = Math.hypot(k.x - x, k.z - zz); if (d < 3) worst.keep = Math.min(worst.keep ?? 9, d); }
           for (const r of roads) { const d = segDist(x, zz, ...r); if (d < 1.75) worst.road = Math.min(worst.road ?? 9, d); }
           for (const c of cover) { const d = segDist(x, zz, c.ax, c.az, c.bx, c.bz) - c.r; if (d < 0) worst.cover = Math.min(worst.cover ?? 9, d); }
           for (const c of walls) { const d = segDist(x, zz, c.ax, c.az, c.bx, c.bz) - c.r; if (d < 0.3) worst.roots = Math.min(worst.roots ?? 9, d); }
           for (const p of places) { const d = Math.hypot(p.x - x, p.z - zz) - p.r; if (d < 0) worst.place = `${p.id} ${d.toFixed(2)}`; }
           for (const m of marks) if (m.r < 25 && Math.hypot(m.x - x, m.z - zz) < m.r) worst.depthProp = `a depth prop ${Math.hypot(m.x - x, m.z - zz).toFixed(2)} from its middle (its reach ${m.r.toFixed(2)})`;
-          for (const pr of look.props ?? []) { const d = Math.hypot(RING.x + pr.dx - x, RING.z + pr.dz - zz); if (d < 1.2) worst.prop = `a harbour prop ${d.toFixed(2)}`; }
+          for (const pr of look.props ?? []) { const o = HO[pr.i], d = Math.hypot(RING.x + pr.dx - x, RING.z + pr.dz - zz), reach = o ? Math.hypot(o.bx - o.ax, o.bz - o.az) / 2 + o.r : 1.2; if (d < reach) worst.prop = `a harbour prop ${d.toFixed(2)} (its reach ${reach.toFixed(2)})`; }
           for (const f of look.flats ?? []) {
             const c = Math.cos(f.rot ?? 0), sn = Math.sin(f.rot ?? 0), dx = x - f.x, dz = zz - f.z, u = dx * c + dz * sn, w = -dx * sn + dz * c, R = f.rx + 2;
             if (!s.beyond && Math.hypot(u / R, w / (R * f.rz / f.rx)) < 1) worst.flat = 'in a tidal flat';

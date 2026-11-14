@@ -53,8 +53,8 @@ logcart 17, fallen 15, hunters 14, yard 9. No kind is missing.
 
 ## Checks
 
-- **Overlap probe** (`pipeline/tools/scenes-probe.js`, `await _scenesProbe([11, ..., 20])`): every placed part's real corners against
-  the floor's spots (3 m), the trails' middles, the cover, the roots' walls of both states (0.3 m), the places, the outline (ground
+- **Overlap probe** (`pipeline/tools/scenes-probe.js`, `await _scenesProbe([11, ..., 20])`): every placed part's footprint, sampled
+  every 0.5 m, against the brooks (0.9 m), the floor's spots (3 m), the trails' middles, the cover, the roots' walls of both states (0.3 m), the places, the outline (ground
   scenes inside and low, the yard outside) and the depth's solid props. Zero hits on all ten floors.
 - **`_worldCheck`**, floors 11 to 20, both states of the roots: nothing unreachable, 31,487 to 32,043 m2 reachable, most units near a
   spot 4 or 5, as before (it reads only the floor's data, which this pass does not touch).

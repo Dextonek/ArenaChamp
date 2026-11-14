@@ -18,8 +18,9 @@ import { rimAt } from '../land';
  * stories (a hive knocked over, not a hive).
  *
  * Each kind is a list of parts in its own frame from shapes made once a floor, placed turned, mirrored and varied by the floor's own
- * random stream (`seeded(SEED + look.seed)`): the zone's and the depth's streams are untouched, so nothing that was there moves. The parts
- * go into the zone's merged props (woodZone.ts `Props`: one mesh a square of ground whatever the colours; gold its own).
+ * random stream (`seeded(SEED + look.seed)`): the zone's and the depth's streams are untouched, so nothing that was there moves. Each
+ * placed scene is baked into one geometry a colour and goes into the zone's merged props (woodZone.ts `Props`: one mesh a square of
+ * ground whatever the colours); its gold trim is drawn matte (brass) there, not in the zone's polished gold.
  *
  * `?scenes=off` in the address leaves them out (for before-and-after pictures and A/B timing).
  */
