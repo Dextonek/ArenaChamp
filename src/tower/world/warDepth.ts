@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../arenas/common';
-import { Glows } from '../../arenas/real';
 import type { Battlefield, WarLook, WarMats } from './warZone';
 
 /**
@@ -11,7 +10,7 @@ import type { Battlefield, WarLook, WarMats } from './warZone';
  *
  * - Roads: milestones, banners on poles in the colours of the side they are on (torn), palisade stakes and a broken cart on the verge,
  *   arrows in the ground.
- * - The field: tired grass, arrows in clumps where a volley fell, dropped helmets and broken spears, pebbles.
+ * - The field: tired grass, arrows in clumps where a volley fell, dropped helmets and broken spears.
  * - Places, dressed as what they are: spears planted on a ridge, stone shot and timber at the works, spilled barrels at the wagons,
  *   drums on the hill, fascines and ladders before the siege line, a burned farm's beams and well, the hospital's cots and washing,
  *   the keep's rubble, the camp's logs, bedrolls and a rack of spears.
@@ -19,7 +18,7 @@ import type { Battlefield, WarLook, WarMats } from './warZone';
  *   their fires; watch fires on the hilltops; dead trees; columns of smoke; crows wheeling over the field.
  *
  * Merged by colour into one mesh a square of ground (`VDress`), or instanced (the grass, arrows, helmets, flames, crows): a few draw
- * calls in all; the glows are sprites, so few of them.
+ * calls in all. No glow sprites (each is a draw call of its own): the far flames and lit windows are emissive and the bloom lights them.
  */
 
 type Seg = { ax: number; az: number; bx: number; bz: number; r: number };
@@ -47,8 +46,10 @@ const PALETTE = {
 type Key = keyof typeof PALETTE;
 
 /** Geometry merged by colour per square of ground `CELL` m across: one mesh a square, whatever the colours (as land.ts's `Dress`). */
-const CELL = 32;
+const CELL = 48;
 class VDress {
+  private readonly cell: number;
+  constructor(cell = CELL) { this.cell = cell; }
   private cells = new Map<string, THREE.BufferGeometry[]>();
   private m = new THREE.Matrix4();
   private colors = new Map<Key, THREE.Color>();
@@ -67,7 +68,7 @@ class VDress {
     this.m.compose(this.v.set(x, y, z), this.q.setFromEuler(this.e.set(tilt, yaw, roll, 'YXZ')), this.s.set(sx, sy, sz));
     g.applyMatrix4(this.m);
     g.computeBoundingBox();
-    const ctr = g.boundingBox!.getCenter(this.v), key2 = `${Math.floor(ctr.x / CELL)}:${Math.floor(ctr.z / CELL)}`;
+    const ctr = g.boundingBox!.getCenter(this.v), key2 = `${Math.floor(ctr.x / this.cell)}:${Math.floor(ctr.z / this.cell)}`;
     let cell = this.cells.get(key2);
     if (!cell) this.cells.set(key2, (cell = []));
     cell.push(g);
@@ -92,8 +93,7 @@ class VDress {
 
 export function buildWarDepth(o: WarDepthIn) {
   const { look, geo, rnd } = o;
-  const near = new VDress(), far = new VDress();
-  const glows: { x: number; y: number; z: number; size?: number }[] = [];
+  const near = new VDress(), far = new VDress(120); // far off, one mesh a large square: few draws for the horizon
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 7) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rim = look.rim, rmax = Math.max(...rim);
@@ -117,8 +117,8 @@ export function buildWarDepth(o: WarDepthIn) {
     return true;
   };
 
-  // --- instanced things: grass, arrows, helmets, broken spears, pebbles, far flames -------------------------------------------------
-  const lists = { tuft: [] as THREE.Matrix4[], arrow: [] as THREE.Matrix4[], helm: [] as THREE.Matrix4[], spear: [] as THREE.Matrix4[], pebble: [] as THREE.Matrix4[], flame: [] as THREE.Matrix4[], tent: [] as THREE.Matrix4[], tentR: [] as THREE.Matrix4[], tentB: [] as THREE.Matrix4[] };
+  // --- instanced things: grass, arrows, helmets, broken spears, far flames --------------------------------------------------------
+  const lists = { tuft: [] as THREE.Matrix4[], arrow: [] as THREE.Matrix4[], helm: [] as THREE.Matrix4[], spear: [] as THREE.Matrix4[], flame: [] as THREE.Matrix4[] };
   const qq = new THREE.Quaternion(), ee = new THREE.Euler();
   const put = (list: THREE.Matrix4[], x: number, y: number, z: number, s: number, sy = s, yaw = rnd() * 6.28, tilt = 0, roll = 0) =>
     list.push(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), qq.setFromEuler(ee.set(tilt, yaw, roll, 'YXZ')).clone(), new THREE.Vector3(s, sy, s)));
@@ -225,7 +225,7 @@ export function buildWarDepth(o: WarDepthIn) {
     }
   }
 
-  // --- the field: grass, arrows where a volley fell, helmets and broken spears, pebbles (instanced) --------------------------------
+  // --- the field: grass, arrows where a volley fell, helmets and broken spears (instanced) --------------------------------
   const area = 0.5 * Math.sin((Math.PI * 2) / rim.length) * rim.reduce((s, r, i) => s + r * rim[(i + 1) % rim.length], 0);
   const tufts = Math.round(area / 10);
   for (let k = 0; k < tufts * 3 && lists.tuft.length < tufts; k++) {
@@ -247,10 +247,6 @@ export function buildWarDepth(o: WarDepthIn) {
     const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
     if (free(x, z, 0.8, { road: 2.2, place: 0.3, inside: 1 })) put(lists.spear, x, 0.05, z, 1, 1, rnd() * 6, Math.PI / 2 - 0.04, 0);
   }
-  for (let k = 0; k < area / 50 && lists.pebble.length < area / 90; k++) {
-    const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
-    if (free(x, z, 0.2, { road: 1.4, inside: 0.5 })) put(lists.pebble, x, 0.03, z, 0.12 + rnd() * 0.18, 0.08 + rnd() * 0.1);
-  }
 
   // --- past the outline: grass on the bank and the hills, dead trees, the far camps, watch fires, the enemy's keep ------------------
   /** A point `b` m past the outline in direction `a` (radians, atan2(dz, dx)), in the world. */
@@ -259,7 +255,7 @@ export function buildWarDepth(o: WarDepthIn) {
     const n = rim.length, t = ((((a / (Math.PI * 2)) % 1) + 1) % 1) * n, i = Math.floor(t) % n, f = t - Math.floor(t), s = f * f * (3 - 2 * f);
     return rim[i] + (rim[(i + 1) % n] - rim[i]) * s;
   }
-  for (let k = 0; k < 2400 && lists.tuft.length < tufts + Math.round(rmax * 7); k++) {
+  for (let k = 0; k < 2400 && lists.tuft.length < tufts + Math.round(rmax * 5); k++) {
     const p = outAt(rnd() * 6.28, 3 + Math.pow(rnd(), 1.3) * 70);
     if (geo.steepness(p.x - RING.x, p.z - RING.z) > 0.6 || behindLine(p.x, p.z)) continue;
     put(lists.tuft, p.x, H(p.x, p.z) - 0.05, p.z, 0.8 + rnd() * 0.7, 0.7 + rnd() * 0.8);
@@ -285,12 +281,12 @@ export function buildWarDepth(o: WarDepthIn) {
       const a = base + (rnd() - 0.5) * 0.9 + (c - 0.5) * 0.5, p = outAt(a, 50 + rnd() * 60), yaw = a + Math.PI / 2;
       for (let row = 0; row < 3; row++) for (let t = 0; t < 5; t++) {
         const x = p.x + Math.cos(yaw) * (t - 2) * 5 + Math.cos(a) * row * 6, z = p.z + Math.sin(yaw) * (t - 2) * 5 + Math.sin(a) * row * 6;
-        put(colour === 'crimson' ? lists.tentR : lists.tentB, x, H(x, z) - 0.1, z, 1 + rnd() * 0.2, 1, rnd() * 3);
+        const ty = H(x, z) - 0.1, s = 1 + rnd() * 0.2, ry = rnd() * 3;
+        far.add('canvas', new THREE.ConeGeometry(2.4, 3.4, 6).translate(0, 1.7, 0), x, ty, z, ry, s).add(colour, new THREE.CylinderGeometry(1.9, 2.42, 0.6, 6, 1, true).translate(0, 0.3, 0), x, ty, z, ry, s);
         if ((row + t) % 4 === 0) put(lists.flame, x + 2.5, H(x + 2.5, z + 2) + 0.2, z + 2, 0.9);
       }
       const fy = H(p.x, p.z);
       far.add('wood', cyl(0.12, 0.16, 9, 6), p.x, fy, p.z).add(colour, new THREE.PlaneGeometry(1.8, 2.6).translate(0.9, -1.3, 0), p.x, fy + 8.8, p.z, rnd() * 3);
-      glows.push({ x: p.x, y: fy + 1.5, z: p.z, size: 7 });
     }
   }
   // Watch fires on the hilltops: a fire basket on a tall pole, seen from across the field.
@@ -301,7 +297,6 @@ export function buildWarDepth(o: WarDepthIn) {
     if (y < 8) continue;
     far.add('dark', cyl(0.18, 0.22, 5, 6), p.x, y, p.z).add('iron', cyl(0.6, 0.3, 0.6, 8), p.x, y + 5, p.z);
     put(lists.flame, p.x, y + 5.5, p.z, 1.6);
-    glows.push({ x: p.x, y: y + 6, z: p.z, size: 9 });
     made++;
   }
   // The enemy's keep on the ridge behind the siege line: curtain walls, square towers, a great tower, dark windows, the two banners.
@@ -320,7 +315,8 @@ export function buildWarDepth(o: WarDepthIn) {
       far.add('wood', cyl(0.12, 0.12, 5, 5), p.x, y + 22, cz).add(s === look.crimson ? 'crimson' : 'azure', new THREE.PlaneGeometry(2.4, 3.6).translate(1.2, -1.8, 0), p.x, y + 26.8, cz, 0);
       far.add('iron', box(1.6, 2.6, 0.2), p.x, y + 1, p.z);
     }
-    for (const [lx, lz, yy] of [[0, 6.7, 12], [0, 6.7, 17], [-w / 2, d / 2 + 2.8, 6], [w / 2, d / 2 + 2.8, 6]]) glows.push({ x: cx + lx, y: y + yy, z: cz + lz, size: 2 });
+    // lit windows (emissive, no glow sprite: a sprite is a draw call of its own; the bloom lights them)
+    for (const [lx, lz, yy] of [[0, 6.7, 12], [0, 6.7, 17], [-w / 2, d / 2 + 2.8, 6], [w / 2, d / 2 + 2.8, 6]]) put(lists.flame, cx + lx, y + yy - 0.5, cz + lz, 1.2, 1.2, 0);
     // its gate faces the field: a dark arch under a lit window
     far.add('iron', box(4, 5.5, 0.4), cx, y, cz + d / 2 + 1.2);
   }
@@ -336,7 +332,7 @@ export function buildWarDepth(o: WarDepthIn) {
     if (columns.some((c) => Math.hypot(c.x - p.x, c.z - p.z) < 50)) continue;
     columns.push({ x: p.x, y: H(p.x, p.z), z: p.z, h: 28 + rnd() * 22, r: 2.2 + rnd() * 1.6 });
   }
-  const PUFFS = 14;
+  const PUFFS = 18;
   const smoke = new THREE.InstancedMesh(puffGeo, smokeMat, columns.length * PUFFS);
   smoke.castShadow = smoke.receiveShadow = false;
   smoke.frustumCulled = false;
@@ -345,8 +341,9 @@ export function buildWarDepth(o: WarDepthIn) {
   const drift = (time: number) => {
     columns.forEach((c, ci) => {
       for (let i = 0; i < PUFFS; i++) {
-        const t = ((i / PUFFS + time * 0.012 + ci * 0.13) % 1), up = t * c.h, s = c.r * (0.6 + 2.2 * t);
-        v3.set(c.x + Math.sin(t * 5 + ci) * 1.5 + t * t * 12, c.y + up, c.z + Math.cos(t * 4 + ci) * 1.2 - t * t * 4);
+        // each puff rises, swells and leans with the wind (from the west), a little off the column's line by its own number
+        const t = ((i / PUFFS + time * 0.012 + ci * 0.13) % 1), up = t * c.h, s = c.r * (0.7 + 3.2 * t), j = ((i * 7919 + ci * 104729) % 97) / 97 - 0.5;
+        v3.set(c.x + j * c.r * 1.2 + t * t * 16, c.y + up, c.z + j * c.r * 0.8 - t * t * 5);
         m4.compose(v3, q4, s3.set(s, s * 0.8, s));
         smoke.setMatrixAt(ci * PUFFS + i, m4);
       }
@@ -365,11 +362,12 @@ export function buildWarDepth(o: WarDepthIn) {
   crows.frustumCulled = false;
   const flocks = [0, 1].map(() => ({ x: RING.x + (rnd() - 0.5) * rmax, z: RING.z - rnd() * rmax * 0.6 }));
   const flyers = Array.from({ length: CROWS }, (_, i) => ({ f: i % 2, r: 6 + rnd() * 12, h: 14 + rnd() * 9, sp: 0.3 + rnd() * 0.25, ph: rnd() * 6.28 }));
+  const tilt = new THREE.Matrix4();
   const fly = (time: number) => {
     flyers.forEach((b, i) => {
       const f = flocks[b.f], a = b.ph + time * b.sp, x = f.x + Math.cos(a) * b.r + Math.sin(time * 0.05 + b.f * 3) * 20, z = f.z + Math.sin(a) * b.r;
       const flap = Math.sin(time * 9 + i) * 0.35;
-      m4.makeRotationY(-a).multiply(new THREE.Matrix4().makeRotationZ(flap * 0.3)).setPosition(x, b.h + Math.sin(time * 1.3 + i) * 0.6, z);
+      m4.makeRotationY(-a).multiply(tilt.makeRotationZ(flap * 0.3)).setPosition(x, b.h + Math.sin(time * 1.3 + i) * 0.6, z);
       crows.setMatrixAt(i, m4);
     });
     crows.instanceMatrix.needsUpdate = true;
@@ -399,25 +397,18 @@ export function buildWarDepth(o: WarDepthIn) {
     o.into.add(im);
     o.own.push(geom);
   };
-  const blade = (a: number, h: number) => new THREE.ConeGeometry(0.07, h, 3).translate(0, h / 2, 0).rotateZ(0.28).rotateY(a);
+  const blade = (a: number, h: number) => new THREE.ConeGeometry(0.07, h, 3, 1, true).translate(0, h / 2, 0).rotateZ(0.28).rotateY(a); // no base: 3 triangles
   inst(mergeGeometries([tint(blade(0, 0.55), '#6a6a40'), tint(blade(2.1, 0.45), '#5a6038'), tint(blade(4.2, 0.62), '#7a7048')])!, lists.tuft);
   // an arrow: a shaft and its fletching, standing in the ground at a slant (the instance's tilt)
   inst(mergeGeometries([tint(new THREE.CylinderGeometry(0.012, 0.012, 0.75, 3).translate(0, 0.32, 0), '#5a4430'), tint(new THREE.BoxGeometry(0.06, 0.14, 0.004).translate(0, 0.64, 0), '#e2dccc')])!, lists.arrow);
-  inst(mergeGeometries([tint(new THREE.SphereGeometry(0.18, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, 0.02, 0), '#7e828c'), tint(new THREE.TorusGeometry(0.18, 0.02, 4, 10).rotateX(Math.PI / 2).translate(0, 0.03, 0), '#c9a24a')])!, lists.helm);
+  inst(mergeGeometries([tint(new THREE.SphereGeometry(0.18, 7, 3, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, 0.02, 0), '#7e828c'), tint(new THREE.CylinderGeometry(0.19, 0.19, 0.03, 7, 1, true).translate(0, 0.03, 0), '#c9a24a')])!, lists.helm);
   inst(mergeGeometries([tint(new THREE.CylinderGeometry(0.03, 0.035, 1.6, 4).translate(0, 0.8, 0), '#4a3220'), tint(new THREE.ConeGeometry(0.05, 0.26, 4).translate(0, 1.72, 0), '#8a8e98')])!, lists.spear);
-  inst(tint(new THREE.IcosahedronGeometry(1, 0), '#6a6662'), lists.pebble);
-  const tentGeo = (cap: string) => mergeGeometries([tint(new THREE.ConeGeometry(2.4, 3.4, 6).translate(0, 1.7, 0), '#c8bea4'), tint(new THREE.CylinderGeometry(1.9, 2.42, 0.6, 6).translate(0, 0.3, 0), cap)])!;
-  inst(tentGeo('#9a2c2c'), lists.tentR);
-  inst(tentGeo('#2c4c9a'), lists.tentB);
   inst(new THREE.ConeGeometry(0.4, 1.1, 6).translate(0, 0.55, 0), lists.flame, flameMat);
 
   near.build(o.into, o.own, true);
   far.build(o.into, o.own, false);
-  const g2 = new Glows(glows, 0xff9a48, 1.4);
-  o.into.add(g2.group);
-  o.own.push(g2);
 
   return {
-    update(_dt: number, time: number) { drift(time); fly(time); g2.update(time); },
+    update(_dt: number, time: number) { drift(time); fly(time); },
   };
 }

@@ -151,7 +151,8 @@ function paint(look: WarLook, geo: Battlefield, L: number) {
       g.fill();
     };
     const area = (L / 112) ** 2;
-    // trodden patches of earth, mud in the low places, scorch where something burned
+    // trodden patches of earth, mud in the low places, scorch where something burned (soft-edged: hard lobes read as a low-poly floor)
+    g.filter = `blur(${Math.max(2, Math.round(0.5 * ppm))}px)`;
     for (let i = 0; i < 160 * area; i++) {
       const dx = (rnd() - 0.5) * L, dz = (rnd() - 0.5) * L;
       if (geo.beyond(dx, dz) > 2) continue;
@@ -173,6 +174,7 @@ function paint(look: WarLook, geo: Battlefield, L: number) {
       g.fillStyle = grad;
       g.beginPath(); g.arc(X(dx), Z(dz), r * ppm, 0, Math.PI * 2); g.fill();
     }
+    g.filter = 'none';
     // The roads: a band of trodden earth, wheel ruts, the old paving in two rows of slabs, a few gone.
     g.lineCap = g.lineJoin = 'round';
     for (const path of look.paths) {
@@ -235,6 +237,8 @@ function materials(own: { dispose(): void }[]) {
     rockA: mat(0x5e5a58, 0.92, { flatShading: true }), rockB: mat(0x6c6660, 0.92, { flatShading: true }), rockC: mat(0x4c4a4c, 0.92, { flatShading: true }),
     stone: mat(0x7a766e, 0.85), charred: mat(0x3a3430, 0.9), wood: mat(0x4a3220, 0.72), darkWood: mat(0x2c211a, 0.8), plank: mat(0x6b4a2e, 0.75),
     lacquer: mat(0x1d1b21, 0.45), cream: mat(0xd8cfb4, 0.85, { side: THREE.DoubleSide }), white: mat(0xe8e2d2, 0.85, { side: THREE.DoubleSide }),
+    // the tents' canvas a shade down from the cream: lit by the low sun, cream and white tents bloomed to a white glare
+    canvas: mat(0x9e9480, 0.95, { side: THREE.DoubleSide }), linen: mat(0xb4ae9e, 0.95, { side: THREE.DoubleSide }),
     crimson: mat(0x9a2c2c, 0.8, { side: THREE.DoubleSide }), azure: mat(0x2c4c9a, 0.8, { side: THREE.DoubleSide }),
     steel: mat(0x8a8e98, 0.42, { metalness: 0.55 }), iron: mat(0x2a2c32, 0.55, { metalness: 0.5 }), straw: mat(0xb89a5a, 0.9), sack: mat(0x9a8a66, 0.9),
     gold: mat(0xc9a24a, 0.32, { metalness: 0.85, emissive: 0xffb050, emissiveIntensity: 0.18 }),
@@ -393,7 +397,7 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
       case 'barrel':
         if (kind === 'drum') {
           kit.add(M.wood, cyl(r, r * 0.92, h, 14), o.ax, 0, o.az).add(M.gold, cyl(r * 1.04, r * 1.04, 0.07, 14), o.ax, h * 0.15, o.az).add(M.gold, cyl(r * 1.04, r * 1.04, 0.07, 14), o.ax, h * 0.85, o.az);
-          kit.add(M.cream, cyl(r * 0.97, r * 0.97, 0.05, 14), o.ax, h, o.az).add(sideCloth(o.ax), cyl(r * 1.01, r * 1.01, h * 0.4, 14), o.ax, h * 0.3, o.az);
+          kit.add(M.canvas, cyl(r * 0.97, r * 0.97, 0.05, 14), o.ax, h, o.az).add(sideCloth(o.ax), cyl(r * 1.01, r * 1.01, h * 0.4, 14), o.ax, h * 0.3, o.az);
         } else if (kind === 'hay') {
           kit.add(M.straw, new THREE.SphereGeometry(r, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, h / r, 1), o.ax, 0, o.az).add(M.charred, new THREE.SphereGeometry(r * 1.01, 12, 4, 0, Math.PI * 2, Math.PI / 2 - 0.5, 0.5).scale(1, h / r, 1), o.ax, 0, o.az, rnd() * 3);
         } else {
@@ -401,7 +405,7 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
         }
         return;
       case 'tent': {
-        const white = kind === 'whitetent', cloth = white ? M.white : M.cream, band = white ? M.gold : sideCloth(o.ax);
+        const white = kind === 'whitetent', cloth = white ? M.linen : M.canvas, band = white ? M.gold : sideCloth(o.ax);
         kit.add(cloth, new THREE.ConeGeometry(r * 1.3, h * 1.3, 8).translate(0, h * 0.65, 0), o.ax, 0, o.az, rnd() * 3).add(band, new THREE.CylinderGeometry(r * 1.06, r * 1.32, 0.4, 8).translate(0, 0.2, 0), o.ax, 0, o.az);
         kit.add(M.gold, cyl(0.05, 0.05, h * 1.8, 5), o.ax, 0, o.az);
         if (!white) kit.add(band, new THREE.PlaneGeometry(0.5, 0.36).translate(0.25, 0, 0), o.ax, h * 1.7, o.az, rnd() * 3);
@@ -469,7 +473,11 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
             const t = (i + 0.5) / k, x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t, hh = h * (0.15 + 0.45 * rnd());
             kit.add(mat, box(r * 2, hh, len / k + 0.02), x, h * 0.55, z, yaw);
           }
-          if (kind === 'farmwall') kit.add(M.darkWood, box(0.2, 0.2, len * 0.8), mx, h * 0.8, mz, yaw, 1, 1, 1, 0.3); // a fallen beam
+          if (kind === 'farmwall') {
+            // the roof burned away: charred rafters still leaning from the wall's top, and a chimney stack on the long wall
+            for (const t of [0.2, 0.55, 0.85]) kit.add(M.darkWood, box(0.18, 0.18, 4.2).translate(0, 0, 2.1), o.ax + (o.bx - o.ax) * t, h * 0.62, o.az + (o.bz - o.az) * t, yaw + Math.PI / 2 + (rnd() - 0.5) * 0.3, 1, 1, 1, 0.42 + rnd() * 0.25);
+            if (len > 7) kit.add(M.stone, box(0.9, h + 1.6, 0.9), mx, 0, mz, yaw).add(M.charred, box(1.0, 0.25, 1.0), mx, h + 1.6, mz, yaw);
+          }
         } else {
           kit.add(M.stone, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(M.gold, box(r * 2.2, 0.1, len + r * 2.2), mx, h, mz, yaw);
         }
@@ -531,7 +539,14 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
   own.push(rain);
 
   const depthOn = DEPTH && (globalThis as unknown as { __warDepth?: boolean }).__warDepth !== false;
-  const depth = depthOn ? buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M }) : null;
+  // Built on its own random stream: three.js draws on `Math.random` for every object's id, so a depth built on the game's own stream
+  // changed the dice of every fight after it (the perf tool's A/B played two different fights).
+  let depth: ReturnType<typeof buildWarDepth> | null = null;
+  if (depthOn) {
+    const gameRandom = Math.random;
+    Math.random = seeded(991 + look.seed);
+    try { depth = buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M }); } finally { Math.random = gameRandom; }
+  }
 
   return {
     group: g,
