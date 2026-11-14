@@ -55,6 +55,8 @@ const GOLD = '#c9a24a', GLASS = '#ffcf80', FLAME = '#ffb050', SHARD = '#9a72e8';
 type Part = [THREE.BufferGeometry, string];
 const box = (w: number, h: number, d: number, x = 0, y = h / 2, z = 0) => new THREE.BoxGeometry(w, h, d).translate(x, y, z);
 const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
+/** A cylinder centred on its middle (`cyl` stands on its base): for the ones laid on their side. */
+const rod = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n);
 const ball = (r: number, w = 8, hs = 6) => new THREE.SphereGeometry(r, w, hs);
 const ring = (R: number, t: number, rs = 4, ts = 14, arc = Math.PI * 2) => new THREE.TorusGeometry(R, t, rs, ts, arc);
 const cone = (r: number, h: number, n = 8) => new THREE.ConeGeometry(r, h, n).translate(0, h / 2, 0);
@@ -95,15 +97,15 @@ function kit(parts: Part[]): Kit {
 let KITS: ReturnType<typeof makeKits> | null = null;
 function makeKits() {
   const K = kit;
-  const pickParts = (): Part[] => [[cyl(0.03, 0.03, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.035, 0), C.wood], [box(0.62, 0.06, 0.07, 0, 0.045, 0.46), C.rail], [box(0.09, 0.09, 0.09, 0, 0.045, 0.4), GOLD]];
+  const pickParts = (): Part[] => [[rod(0.03, 0.03, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.035, 0), C.wood], [box(0.62, 0.06, 0.07, 0, 0.045, 0.46), C.rail], [box(0.09, 0.09, 0.09, 0, 0.045, 0.4), GOLD]];
   const wheel = (r: number): Part[] => [[cyl(r, r, 0.09, 12).rotateZ(Math.PI / 2), C.darkWood], [cyl(r * 0.35, r * 0.35, 0.11, 8).rotateZ(Math.PI / 2), C.iron]];
   return {
     unitWood: K([[new THREE.BoxGeometry(1, 1, 1), C.wood]]),
     unitRope: K([[new THREE.BoxGeometry(1, 1, 1), C.rope]]),
     unitPlank: K([[new THREE.BoxGeometry(1, 1, 1), C.plank]]),
     // --- the miners' last camp
-    bedroll: K([[box(0.78, 0.1, 1.9), C.cloth], [box(0.8, 0.11, 0.5, 0, 0.055, -0.55), C.wine], [cyl(0.13, 0.13, 0.62, 8).rotateZ(Math.PI / 2).translate(0, 0.16, -0.78), C.cream], [box(0.8, 0.02, 0.05, 0, 0.11, 0.3), GOLD]]),
-    rolled: K([[cyl(0.15, 0.15, 0.8, 10).rotateZ(Math.PI / 2).translate(0, 0.15, 0), C.cloth], [ring(0.155, 0.02, 4, 12).rotateY(Math.PI / 2).translate(0.25, 0.15, 0), C.rope], [ring(0.155, 0.02, 4, 12).rotateY(Math.PI / 2).translate(-0.25, 0.15, 0), C.rope]]),
+    bedroll: K([[box(0.78, 0.1, 1.9), C.cloth], [box(0.8, 0.11, 0.5, 0, 0.055, -0.55), C.wine], [rod(0.13, 0.13, 0.62, 8).rotateZ(Math.PI / 2).translate(0, 0.16, -0.78), C.cream], [box(0.8, 0.02, 0.05, 0, 0.11, 0.3), GOLD]]),
+    rolled: K([[rod(0.15, 0.15, 0.8, 10).rotateZ(Math.PI / 2).translate(0, 0.15, 0), C.cloth], [ring(0.155, 0.02, 4, 12).rotateY(Math.PI / 2).translate(0.25, 0.15, 0), C.rope], [ring(0.155, 0.02, 4, 12).rotateY(Math.PI / 2).translate(-0.25, 0.15, 0), C.rope]]),
     fireRing: K([
       ...Array.from({ length: 8 }, (_, k) => { const a = (k / 8) * Math.PI * 2; return [ico(0.14).scale(1, 0.6, 1).translate(Math.cos(a) * 0.48, 0.06, Math.sin(a) * 0.48), k % 2 ? C.rockLight : C.pale] as Part; }),
       [cyl(0.38, 0.38, 0.015, 12), C.ash], [cyl(0.05, 0.05, 0.62, 6).rotateZ(Math.PI / 2).rotateY(0.6).translate(0, 0.07, 0), C.char], [cyl(0.05, 0.05, 0.55, 6).rotateZ(Math.PI / 2).rotateY(-0.7).translate(0, 0.11, 0), C.char],
@@ -128,7 +130,7 @@ function makeKits() {
       [ico(0.15).translate(0.15, 0.06, -0.38), C.rockDark], [ico(0.13).translate(-0.25, 0.05, -0.3), C.ore], [ico(0.16).translate(0.55, 0.06, -0.15), C.ore],
     ]),
     chips: K([[oct(0.07, 0.24).rotateZ(0.4).translate(0.05, 0.02, 0), SHARD], [oct(0.06, 0.2).rotateX(-0.5).translate(-0.12, 0.02, 0.1), SHARD], [oct(0.05, 0.16).rotateZ(-0.6).translate(0.02, 0.02, -0.14), SHARD]]),
-    wheelset: K([[cyl(0.05, 0.05, 1.3, 6).rotateZ(Math.PI / 2).translate(0, 0.3, 0), C.iron], ...wheel(0.3).map(([g, c]) => [g.translate(0.55, 0.3, 0), c] as Part), ...wheel(0.3).map(([g, c]) => [g.translate(-0.55, 0.3, 0), c] as Part)]),
+    wheelset: K([[rod(0.05, 0.05, 1.3, 6).rotateZ(Math.PI / 2).translate(0, 0.3, 0), C.iron], ...wheel(0.3).map(([g, c]) => [g.translate(0.55, 0.3, 0), c] as Part), ...wheel(0.3).map(([g, c]) => [g.translate(-0.55, 0.3, 0), c] as Part)]),
     rail: K([[box(0.09, 0.12, 3.2, 0, 0.06), C.rail], [box(0.09, 0.12, 2.0, 0, 0, 0).rotateX(0.18).translate(0.62, 0.2, 0.7), C.rail], [box(0.26, 0.14, 1.4, 0, 0.07, -0.9).rotateY(1.45), C.wood], [box(0.26, 0.14, 1.4, 0, 0.07, 0.6).rotateY(1.75), C.wood]]),
     // --- a collapse: timbers fallen, rock come down; a frame leaned on the rock; a miner's helmet with its lamp out
     timber: K([[box(0.24, 0.24, 3.0, 0, 0.12), C.wood], [box(0.26, 0.05, 0.26, 0, 0.12, 1.45).rotateX(Math.PI / 2).translate(0, 0, 0), C.darkWood]]),
@@ -150,25 +152,26 @@ function makeKits() {
     lid: K([[box(0.72, 0.05, 0.52), C.plank], [box(0.72, 0.052, 0.06, 0, 0.026, 0.15), C.darkWood], [box(0.72, 0.052, 0.06, 0, 0.026, -0.15), C.darkWood]]),
     tarp: K([[box(1.6, 0.02, 1.2, 0, 0.01), C.cloth], [box(1.6, 0.022, 0.08, 0, 0.012, 0.5), GOLD]]),
     stumps: K([[oct(0.18, 0.32).translate(0, -0.05, 0), C.violet], [oct(0.14, 0.24).translate(0.32, -0.04, 0.1), C.violet], [oct(0.12, 0.2).translate(-0.24, -0.04, 0.18), C.violet], [cyl(0.2, 0.18, 0.02, 6).translate(0, 0.2, 0), SHARD], [cyl(0.15, 0.13, 0.02, 6).translate(0.32, 0.14, 0.1), SHARD]]),
-    sledge: K([[cyl(0.03, 0.03, 0.9, 6).rotateX(Math.PI / 2).translate(0, 0.04, 0), C.wood], [box(0.32, 0.14, 0.14, 0, 0.07, 0.48), C.iron], [box(0.04, 0.03, 0.22, 0.3, 0.015, -0.1), C.rail], [box(0.04, 0.03, 0.22, 0.4, 0.015, 0.05).rotateY(0.6), C.rail]]),
+    sledge: K([[rod(0.03, 0.03, 0.9, 6).rotateX(Math.PI / 2).translate(0, 0.04, 0), C.wood], [box(0.32, 0.14, 0.14, 0, 0.07, 0.48), C.iron], [box(0.04, 0.03, 0.22, 0.3, 0.015, -0.1), C.rail], [box(0.04, 0.03, 0.22, 0.4, 0.015, 0.05).rotateY(0.6), C.rail]]),
     // --- a survey left behind: a map weighted with stones, a spyglass, a compass, the tripod fallen (or standing against the rock)
     map: K([
       [box(1.0, 0.012, 0.7, 0, 0.006), C.map], [box(0.7, 0.014, 0.02, 0, 0.012, 0.1).rotateY(0.4), C.ink], [box(0.5, 0.014, 0.02, 0.1, 0.012, -0.12).rotateY(-0.7), C.ink], [box(0.02, 0.014, 0.4, -0.25, 0.012, 0), C.ink],
       [cyl(0.05, 0.05, 0.016, 8).translate(0.2, 0.012, 0.15), C.wine],
       ...[[0.45, 0.3], [-0.45, 0.3], [0.45, -0.3], [-0.45, -0.3]].map(([x, z]) => [ico(0.08).scale(1, 0.6, 1).translate(x, 0.04, z), C.rockLight] as Part),
     ]),
-    spyglass: K([[cyl(0.035, 0.05, 0.62, 10).rotateZ(Math.PI / 2).translate(0, 0.05, 0), GOLD], [cyl(0.052, 0.052, 0.06, 10).rotateZ(Math.PI / 2).translate(0.2, 0.05, 0), C.iron], [cyl(0.07, 0.07, 0.02, 12).translate(0.1, 0, 0.3), GOLD], [cyl(0.055, 0.055, 0.025, 12).translate(0.1, 0.005, 0.3), C.cream]]),
-    tripodLying: K([...[-0.12, 0, 0.12].map((a) => [cyl(0.025, 0.025, 1.5, 5).rotateZ(Math.PI / 2).rotateY(a).translate(0, 0.03, 0), C.wood] as Part), [cyl(0.08, 0.08, 0.1, 10).rotateZ(Math.PI / 2).translate(0.78, 0.08, 0), GOLD]]),
+    spyglass: K([[rod(0.035, 0.05, 0.62, 10).rotateZ(Math.PI / 2).translate(0, 0.05, 0), GOLD], [rod(0.052, 0.052, 0.06, 10).rotateZ(Math.PI / 2).translate(0.2, 0.05, 0), C.iron], [cyl(0.07, 0.07, 0.02, 12).translate(0.1, 0, 0.3), GOLD], [cyl(0.055, 0.055, 0.025, 12).translate(0.1, 0.005, 0.3), C.cream]]),
+    tripodLying: K([...[-0.12, 0, 0.12].map((a) => [rod(0.025, 0.025, 1.5, 5).rotateZ(Math.PI / 2).rotateY(a).translate(0, 0.03, 0), C.wood] as Part), [rod(0.08, 0.08, 0.1, 10).rotateZ(Math.PI / 2).translate(0.78, 0.08, 0), GOLD]]),
     tripod: K([
       ...[0, 2.1, 4.2].map((a) => [cyl(0.025, 0.025, 1.45, 5).translate(0, -1.45, 0).rotateZ(0.28).rotateY(a).translate(0, 1.45, 0), C.wood] as Part),
-      [cyl(0.09, 0.09, 0.08, 10).translate(0, 1.38, 0), GOLD], [cyl(0.04, 0.06, 0.5, 10).rotateZ(Math.PI / 2).translate(0, 1.55, 0), GOLD], [box(0.12, 0.12, 0.08, 0, 1.5), C.iron],
+      [cyl(0.09, 0.09, 0.08, 10).translate(0, 1.38, 0), GOLD], [rod(0.04, 0.06, 0.5, 10).rotateZ(Math.PI / 2).translate(0, 1.55, 0), GOLD], [box(0.12, 0.12, 0.08, 0, 1.5), C.iron],
     ]),
     board: K([[box(1.0, 0.7, 0.05, 0, 0, 0).rotateX(-0.25).translate(0, 0.45, 0), C.wood], [box(0.86, 0.56, 0.02, 0, 0, 0).rotateX(-0.25).translate(0, 0.46, 0.035), C.map], [box(0.5, 0.02, 0.01, 0, 0, 0).rotateX(-0.25).translate(0, 0.5, 0.05), C.ink]]),
     // --- a winch with its chain snapped (against the rock), the skip overturned and its ore out
-    winch: K([[box(0.14, 1.1, 0.9, -0.7, 0.55), C.wood], [box(0.14, 1.1, 0.9, 0.7, 0.55), C.wood], [cyl(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), C.rail], [box(0.06, 0.45, 0.06, 0.82, 0.68, 0.18), C.iron], [cyl(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(-0.6, 0.85, 0), GOLD], [cyl(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(0.6, 0.85, 0), GOLD]]),
+    winch: K([[box(0.14, 1.1, 0.9, -0.7, 0.55), C.wood], [box(0.14, 1.1, 0.9, 0.7, 0.55), C.wood], [rod(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), C.rail], [box(0.06, 0.45, 0.06, 0.82, 0.68, 0.18), C.iron], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(-0.6, 0.85, 0), GOLD], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(0.6, 0.85, 0), GOLD]]),
     chain: K(Array.from({ length: 12 }, (_, k) => [ring(0.08, 0.022, 4, 8).rotateX(k % 2 ? Math.PI / 2 : 0).rotateY(k % 2 ? 0 : Math.PI / 2).translate(0, k % 2 ? 0.03 : 0.08, k * 0.13 + Math.sin(k * 0.9) * 0.05).rotateY(Math.sin(k * 0.5) * 0.2), C.rail] as Part)),
     hook: K([[ring(0.12, 0.03, 4, 10, Math.PI * 1.4).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.iron], [box(0.05, 0.05, 0.2, 0.12, 0.03, -0.1), C.iron]]),
-    skip: K([[box(0.8, 0.5, 0.6, 0, 0, 0).rotateZ(Math.PI / 2 - 0.15).translate(0, 0.38, 0), C.iron], [box(0.82, 0.05, 0.62, 0, 0, 0).rotateZ(Math.PI / 2 - 0.15).translate(-0.24, 0.42, 0), GOLD]]),
+    // the skip tipped onto its side, its mouth to the ore (low: it lies on open floor before the winch)
+    skip: K([[box(0.8, 0.5, 0.6, 0, 0, 0).rotateZ(0.25).translate(0, 0.25, 0), C.iron], [box(0.05, 0.52, 0.62, 0, 0, 0).rotateZ(0.25).translate(-0.4, 0.15, 0), GOLD]]),
     // --- a shrine of stacked stones with a candle
     cairn: K([[cyl(0.42, 0.46, 0.14, 7), C.rockLight], [cyl(0.32, 0.36, 0.12, 7).translate(0, 0.14, 0), C.pale], [cyl(0.22, 0.26, 0.1, 7).translate(0, 0.26, 0), C.rockLight], [cyl(0.14, 0.17, 0.08, 7).translate(0, 0.36, 0), C.pale]]),
     candle: K([[cyl(0.035, 0.035, 0.12, 8), C.cream], [cone(0.025, 0.07, 6).translate(0, 0.12, 0), FLAME]]),
@@ -181,9 +184,11 @@ function makeKits() {
       [ring(1, 0.035, 4, 24).rotateX(Math.PI / 2).scale(0.85, 1, 2.3).translate(0, 0.43, 0), GOLD],
       [box(0.03, 0.5, 0.03, 0, 0.65, 1.95), C.iron], [box(0.2, 0.24, 0.2, 0, 0.82, 2.0), GLASS], [cone(0.17, 0.12, 4).rotateY(Math.PI / 4).translate(0, 0.94, 2.0), GOLD],
     ]),
-    oar: K([[cyl(0.03, 0.03, 2.0, 6).rotateZ(Math.PI / 2), C.wood], [box(0.5, 0.03, 0.16, 1.1, 0), C.wood]]),
+    oar: K([[rod(0.03, 0.03, 2.0, 6).rotateZ(Math.PI / 2), C.wood], [box(0.5, 0.03, 0.16, 1.1, 0), C.wood]]),
     crateFloat: K([[box(0.6, 0.5, 0.6), C.plank], [box(0.62, 0.05, 0.62, 0, 0.12), C.darkWood], [box(0.62, 0.05, 0.62, 0, 0.38), C.darkWood]]),
     // --- the refinement (2026-11-14, "continue more refine"): larger, low main pieces that read from the game's camera
+    // a wheel set off its cart, lying: the axle and its two wheels flat on the floor
+    wheelsLying: K([[rod(0.05, 0.05, 1.3, 6).rotateZ(Math.PI / 2).translate(0, 0.08, 0), C.iron], ...[0.55, -0.55].flatMap((x) => [[cyl(0.3, 0.3, 0.09, 12).translate(x, 0, 0.05 * Math.sign(x)), C.darkWood], [cyl(0.105, 0.105, 0.11, 8).translate(x, 0, 0.05 * Math.sign(x)), C.iron]] as Part[])]),
     // a low ore tub (1.2 x 0.75 m, 0.52 high on its wheels), its rim gilt; upside down; its load
     tub: K([
       [box(1.2, 0.34, 0.72, 0, 0.33), C.rail], [box(1.22, 0.1, 0.74, 0, 0.3), C.plank], [box(1.24, 0.03, 0.76, 0, 0.5), GOLD],
@@ -199,12 +204,12 @@ function makeKits() {
       [box(0.08, 0.1, 4, 0.4, 0.13), C.rail], [box(0.08, 0.1, 4, -0.4, 0.13), C.rail],
       ...[-1.75, -1.05, -0.35, 0.35, 1.05, 1.75].map((z) => [box(1.3, 0.08, 0.22, 0, 0.04, z), C.wood] as Part),
     ]),
-    lever: K([[box(0.16, 0.12, 0.3, 0, 0.06), C.iron], [cyl(0.025, 0.025, 1.0, 6).rotateX(Math.PI / 2).translate(0, 0.04, 0.6), C.iron], [ball(0.06, 8, 5).translate(0, 0.05, 1.1), GOLD]]),
+    lever: K([[box(0.16, 0.12, 0.3, 0, 0.06), C.iron], [rod(0.025, 0.025, 1.0, 6).rotateX(Math.PI / 2).translate(0, 0.04, 0.6), C.iron], [ball(0.06, 8, 5).translate(0, 0.05, 1.1), GOLD]]),
     // the cage of a lift, fallen at the shaft's foot: crushed flat on open ground; on its side against the rock
     cageFlat: K([
       [box(1.5, 0.06, 1.5, 0, 0.03), C.iron], [box(1.54, 0.03, 0.06, 0, 0.07, 0.74), GOLD], [box(1.54, 0.03, 0.06, 0, 0.07, -0.74), GOLD],
       ...[-0.5, -0.17, 0.17, 0.5].map((x) => [box(0.05, 0.05, 1.5, x, 0.09), C.rail] as Part),
-      [box(1.5, 0.05, 1.5, 0, 0, 0).rotateZ(0.22).translate(0.35, 0.3, 0.1), C.rail], [box(1.52, 0.03, 0.05, 0, 0, 0).rotateZ(0.22).translate(0.35, 0.33, 0.84), GOLD],
+      [box(1.5, 0.05, 1.5, 0, 0, 0).rotateZ(0.22).translate(0.35, 0.22, 0.1), C.rail], [box(1.52, 0.03, 0.05, 0, 0, 0).rotateZ(0.22).translate(0.35, 0.25, 0.84), GOLD],
       [box(0.05, 0.05, 1.7, 0, 0, 0).rotateY(0.5).translate(-0.9, 0.05, 0.3), C.rail], [box(0.05, 0.05, 1.6, 0, 0, 0).rotateY(-0.3).translate(-1.1, 0.05, -0.4), C.rail],
     ]),
     cageSide: K([
@@ -228,7 +233,7 @@ function makeKits() {
     ]),
     // the camp's things: a tarp spread, a barrel lying, a plank table fallen flat with its legs broken off
     tarpBig: K([[box(3.0, 0.02, 2.3, 0, 0.01), C.cloth], [box(3.0, 0.024, 0.3, 0, 0.012, 0.6), C.cream], [box(3.04, 0.026, 0.06, 0, 0.013, 1.13), GOLD], [box(3.04, 0.026, 0.06, 0, 0.013, -1.13), GOLD]]),
-    barrel: K([[cyl(0.26, 0.26, 0.8, 12).rotateZ(Math.PI / 2).translate(0, 0.26, 0), C.plank], [cyl(0.27, 0.27, 0.05, 12).rotateZ(Math.PI / 2).translate(0.28, 0.26, 0), C.iron], [cyl(0.27, 0.27, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.28, 0.26, 0), C.iron], [cyl(0.2, 0.2, 0.02, 10).rotateZ(Math.PI / 2).translate(0.41, 0.26, 0), GOLD]]),
+    barrel: K([[rod(0.26, 0.26, 0.8, 12).rotateZ(Math.PI / 2).translate(0, 0.26, 0), C.plank], [rod(0.27, 0.27, 0.05, 12).rotateZ(Math.PI / 2).translate(0.28, 0.26, 0), C.iron], [rod(0.27, 0.27, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.28, 0.26, 0), C.iron], [rod(0.2, 0.2, 0.02, 10).rotateZ(Math.PI / 2).translate(0.41, 0.26, 0), GOLD]]),
     tableFlat: K([[box(1.7, 0.06, 0.85, 0, 0.03), C.plank], [box(1.72, 0.065, 0.06, 0, 0.033, 0.4), C.darkWood], [box(1.72, 0.065, 0.06, 0, 0.033, -0.4), C.darkWood], [box(0.08, 0.08, 0.7, 1.2, 0.04, 0.5).rotateY(0.4), C.wood], [box(0.08, 0.08, 0.7, -1.3, 0.04, -0.4).rotateY(-0.6), C.wood]]),
     // a collapse's great heap (4 x 3 m, under the knee) and the barrow tipped by it
     heap: K([
@@ -311,7 +316,7 @@ const KINDS: Record<string, Make> = {
     if (o.backed) rc.s(K.cartSide, 0, 0, -0.1, (r() - 0.5) * 0.2).item(0, -0.1, 0.95, 1.05).at(0, 0);
     else {
       rc.s(K.tubUpside, 0.2, 0, -0.3, r() * 0.6 - 0.3, 1.45, 1, 1.45).item(0.2, -0.3, 1.1, 0.53).at(0.2, -0.3);
-      rc.s(K.wheelset, 2.3, 0, -1.1, r() * 6, 1, 1, 1, 0, Math.PI / 2 - 0.2).item(2.3, -1.1, 0.75, 0.35);
+      rc.s(K.wheelsLying, 2.3, 0, -1.1, r() * 6).item(2.3, -1.1, 0.95, 0.2);
     }
     rc.s(K.ore, -0.5, 0, z0 + 0.9, r() * 6, 1.4).item(-0.5, z0 + 0.9, 0.95, 0.32);
     rc.s(K.ore, 0.9, 0, z0 + 1.6, r() * 6, 1.0).item(0.9, z0 + 1.6, 0.7, 0.24);
@@ -332,23 +337,35 @@ const KINDS: Record<string, Make> = {
     rc.s(K.timber, 0.3, 0, z0 + 2.4, 1.6 + r() * 0.4, 0.9).item(0.3, z0 + 2.4, 1.45, 0.25);
     rc.s(K.rubble, 2.4, 0, z0 + 1.9, r() * 6, 0.7).item(2.4, z0 + 1.9, 0.75, 0.32);
     rc.s(K.helmet, -1.7, 0.1, z0 + 2.4, r() * 6, 1.2, 1.2, 1.2, 0.4, 0.5).item(-1.7, z0 + 2.4, 0.35, 0.33);
-    if (r() < 0.6) rc.s(K.barrow, -2.6, 0, z0 + 1.0, r() * 6).item(-2.6, z0 + 1.0, 0.7, 0.53);
+    if (r() < 0.6) rc.s(K.barrow, -2.6, 0, z0 + 1.0, r() * 6, 0.8).item(-2.6, z0 + 1.0, 0.7, 0.55);
     else rc.s(K.lampGround, -2.4, 0, z0 + 1.2, 0, 1, 1, 1, 1.3, 0.3).item(-2.4, z0 + 1.2, 0.35, 0.3);
     rc.paint('fan', 0, z0 + 0.6, 4.6, 0.9, Math.PI / 2 + (r() - 0.5) * 0.4, G.dust, 0.4).paint('stain', 0, z0 + 0.6, 3.6, 2.8, 0, G.dust, 0.22);
   },
   // A crystal harvest: open crates of glowing shards (their glow is the shards' own), the lid off, shards spilled on a tarp, cut
   // stumps, the sledge and chisels, a barrow; violet dust on the floor round them.
   harvest: (rc, K, r) => {
+    if (r() < 0.4) {
+      // the second way: the vein itself, cut open, its stumps standing in a cluster with the shards round them and one crate filled
+      for (const [x, z, sc] of [[0, 0, 1.6], [0.7, 0.4, 1.3], [-0.6, 0.5, 1.2], [0.2, -0.6, 1.1]] as const) rc.s(K.stumps, x, 0, z, r() * 6, sc).item(x, z, 0.4 * sc, 0.33 * sc);
+      rc.at(0, 0);
+      rc.s(K.shards, 0.4, 0.02, 1.4, r() * 6, 1.3).s(K.shards, -1.2, 0.02, -0.2, r() * 6).s(K.chips, 1.3, 0.02, -0.6, r() * 6);
+      rc.s(K.crateShards, -1.6, 0.02, 1.2, r() * 6, 1.2, 1.1, 1.2).item(-1.6, 1.2, 0.6, 0.55);
+      rc.s(K.sledge, 1.6, 0, 1.3, r() * 6, 1.2).item(1.6, 1.3, 0.65, 0.15);
+      rc.s(K.lid, -2.3, 0, 0.2, r() * 3, 1.2, 1, 1.2, 0.06);
+      rc.paint('stain', 0, 0.2, 3.0, 2.4, 0, G.violet, 0.35);
+      rc.trail = 'prints';
+      return;
+    }
     rc.s(K.tarpBig, 0.4, 0, 0.6, r() * 0.6 - 0.3, 0.8).item(0.4, 0.6, 1.5, 0.05).at(0.4, 0.6);
-    rc.s(K.crateShards, -0.6, 0.02, 0.2, r() * 0.6, 1.25).item(-0.6, 0.2, 0.6, 0.5);
-    rc.s(K.crateShards, 0.6, 0.02, -0.1, 1.3 + r() * 0.5, 1.25).item(0.6, -0.1, 0.6, 0.5);
-    if (r() < 0.7) rc.s(K.crateShards, 1.5, 0, 1.3, r() * 6, 1.2).item(1.5, 1.3, 0.6, 0.48);
+    rc.s(K.crateShards, -0.6, 0.02, 0.2, r() * 0.6, 1.25, 1.1, 1.25).item(-0.6, 0.2, 0.6, 0.55);
+    rc.s(K.crateShards, 0.6, 0.02, -0.1, 1.3 + r() * 0.5, 1.25, 1.1, 1.25).item(0.6, -0.1, 0.6, 0.55);
+    if (r() < 0.7) rc.s(K.crateShards, 1.5, 0, 1.3, r() * 6, 1.2, 1.1, 1.2).item(1.5, 1.3, 0.6, 0.55);
     rc.s(K.lid, -1.8, 0, 1.1, r() * 3, 1.2, 1, 1.2, 0.06);
     rc.s(K.shards, 0.0, 0.02, 1.2, r() * 6, 1.3).s(K.chips, 0.9, 0.02, 1.6, r() * 6);
     rc.s(K.stumps, 2.6, 0, -0.6, r() * 6, 1.4).item(2.6, -0.6, 0.7, 0.35);
     rc.s(K.stumps, -2.4, 0, -0.4, r() * 6, 1.1).item(-2.4, -0.4, 0.55, 0.28);
     rc.s(K.sledge, -0.8, 0, 2.1, r() * 6, 1.2).item(-0.8, 2.1, 0.65, 0.15);
-    if (r() < 0.5) rc.s(K.barrow, 2.4, 0, 1.6, r() * 6).item(2.4, 1.6, 0.7, 0.53);
+    if (r() < 0.5) rc.s(K.barrow, 2.4, 0, 1.6, r() * 6, 0.8).item(2.4, 1.6, 0.7, 0.55);
     rc.paint('stain', 0.2, 0.6, 3.6, 2.6, 0, G.violet, 0.3).paint('fan', 2.6, -0.6, 2.4, 0.8, Math.PI / 2, G.violet, 0.35);
     rc.trail = 'prints';
   },
@@ -378,8 +395,10 @@ const KINDS: Record<string, Make> = {
     rc.s(K.winch, 0, 0, -0.1, (r() - 0.5) * 0.2, 1.35).item(0, -0.1, 1.2, 1.6).at(0, 0);
     rc.s(K.chain, 0.4, 0, 0.7, 0.2 + r() * 0.4, 1.4).item(0.8, 1.6, 1.15, 0.12);
     rc.s(K.hook, 1.2, 0, 2.9, r() * 6, 1.4);
-    rc.s(K.skip, -1.7, 0, 1.8, 0.4 + r() * 0.4, 1.3).item(-1.7, 1.8, 0.7, 0.55);
-    rc.s(K.ore, -0.9, 0, 2.7, r() * 6, 1.2).item(-0.9, 2.7, 0.8, 0.26);
+    if (r() < 0.6) {
+      rc.s(K.skip, -1.7, 0, 1.8, 0.4 + r() * 0.4, 1.15, 0.85, 1.15).item(-1.7, 1.8, 0.7, 0.55);
+      rc.s(K.ore, -0.9, 0, 2.7, r() * 6, 1.2).item(-0.9, 2.7, 0.8, 0.26);
+    } else rc.s(K.coil, -1.6, 0, 2.0, r() * 6, 1.3).item(-1.6, 2.0, 0.85, 0.24).s(K.helmet, -0.6, 0.1, 2.8, r() * 6, 1.1, 1.1, 1.1, 0.4, 0.5).item(-0.6, 2.8, 0.33, 0.3);
     rc.s(K.sheave, 2.4, 0, 1.4, r() * 6).item(2.4, 1.4, 1.0, 0.25);
     rc.item(1.2, 2.9, 0.35, 0.06);
     rc.paint('fan', -1.3, 1.9, 3.0, 0.7, Math.PI / 2, G.ore, 0.55).paint('stain', 0.4, 1.4, 3.2, 2.2, 0, G.tramp, 0.35);
@@ -387,8 +406,13 @@ const KINDS: Record<string, Make> = {
   // A shrine of stacked stones: a candle on top (its flame unlit, it adds no light), stubs at its foot, coins and a shard left, a ring
   // of small stones round it.
   shrine: (rc, K, r) => {
-    rc.s(K.cairn, 0, 0, 0, r() * 6, 1.6, 1.3, 1.6).item(0, 0, 0.76, 0.56).at(0, 0);
-    rc.s(K.candle, 0, 0.53, 0, 0, 1.2);
+    if (r() < 0.6) rc.s(K.cairn, 0, 0, 0, r() * 6, 1.6, 1.25, 1.6).item(0, 0, 0.76, 0.56).at(0, 0);
+    else {
+      // the second way: a flat offering stone, a ring of candles round it
+      rc.s(K.cairn, 0, 0, 0, r() * 6, 2.0, 0.45, 2.0).item(0, 0, 0.95, 0.2).at(0, 0);
+      for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + 0.3; rc.s(K.candle, Math.cos(a) * 1.05, 0, Math.sin(a) * 1.05, 0, 0.9); }
+    }
+    rc.s(K.candle, -0.15, 0, 0.75, 0, 1.2); // (the candle on top would stand past the knee: they are all at its foot)
     rc.s(K.candle, 0.7, 0, 0.4, 0, 0.9).s(K.candle, -0.65, 0, 0.45, 0, 0.8).s(K.candle, 0.1, 0, -0.85, 0, 0.9);
     rc.s(K.offering, 0, 0, 0.85, r() * 6, 1.5);
     for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; rc.s(K.stone, Math.cos(a) * 1.35, 0, Math.sin(a) * 1.35, r() * 6, 0.8 + r() * 0.4); }
@@ -405,6 +429,16 @@ const KINDS: Record<string, Make> = {
   // A derailed train at a rail junction: a spur of rails and its branch, the points' lever lying; three low ore tubs, the first still
   // on the rails, the second jack-knifed off them, the third upside down with its ore spilled; ballast and ore dust on the floor.
   junction: (rc, K, r) => {
+    if (r() < 0.4) {
+      // the second way: no points, a straight spur; the three tubs jack-knifed along it, ore heaped between them, the buffer knocked down
+      rc.s(K.rails, 0, 0, 0, 0).s(K.rails, 0, 0, 4, 0).item(0, -1.4, 1.0, 0.14).item(0, 0.4, 1.0, 0.14).item(0, 2.2, 1.0, 0.14).item(0, 4.0, 1.0, 0.14).item(0, 5.6, 0.7, 0.14);
+      for (const [x, z, yaw, up] of [[0.5, 4.4, Math.PI / 2 + 0.5, 1], [-0.6, 2.5, Math.PI / 2 - 0.6, 1], [0.7, 0.4, Math.PI / 2 + 0.7, 0]] as const) rc.s(up ? K.tub : K.tubUpside, x, 0, z, yaw, 1.25, 1, 1.25).item(x, z, 0.95, 0.55);
+      rc.at(-0.6, 2.5);
+      rc.s(K.ore, -0.3, 0, 3.5, r() * 6, 1.0).s(K.ore, 0.4, 0, 1.4, r() * 6, 0.9).item(0, 2.4, 1.6, 0.3);
+      rc.s(K.unitWood, 0.2, 0.07, -2.2, 0.6, 1.3, 0.14, 0.26).s(K.unitWood, -0.4, 0.07, -2.6, -0.4, 1.3, 0.14, 0.26).item(0, -2.4, 0.9, 0.14);
+      rc.paint('band', 0, 2.2, 7.6, 1.5, Math.PI / 2, G.dust, 0.32).paint('fan', 0, 2.4, 3.2, 0.9, 0, G.ore, 0.5);
+      return;
+    }
     const br = 0.4 + r() * 0.2;
     rc.s(K.rails, 0, 0, 0, 0).s(K.rails, 0, 0, 4, 0).item(0, -1.4, 1.0, 0.14).item(0, 0.4, 1.0, 0.14).item(0, 2.2, 1.0, 0.14).item(0, 4.0, 1.0, 0.14).item(0, 5.6, 0.7, 0.14);
     rc.s(K.rails, Math.sin(br) * 2.0, 0, 2.0 + Math.cos(br) * 2.0, br).item(Math.sin(br) * 1.2, 2.0 + Math.cos(br) * 1.2, 0.9, 0.14).item(Math.sin(br) * 3.2, 2.0 + Math.cos(br) * 3.2, 0.9, 0.14);
@@ -439,6 +473,17 @@ const KINDS: Record<string, Make> = {
   // A camp flooded where the black lake rose: puddles standing on the floor, the tarp drowned in the largest, crates and a barrel half
   // in the water, a bedroll soaked, a lamp on its side. Only by the lake.
   flooded: (rc, K, r) => {
+    if (r() < 0.4) {
+      // the second way: the water higher, one great pool; a tub upside down in it, barrels and bedrolls adrift, a lamp on the shore
+      rc.paint('puddle', 0, 0.4, 4.2, 3.0, r() * 0.6, G.water, 0.88).paint('puddle', -2.8, -1.4, 1.3, 0.9, r() * 3, G.water, 0.8);
+      rc.s(K.tubUpside, 0.3, -0.12, 0.4, r() * 6, 1.25, 1, 1.25).item(0.3, 0.4, 0.95, 0.42).at(0.3, 0.4);
+      rc.s(K.barrel, -1.6, -0.1, 1.2, r() * 6).item(-1.6, 1.2, 0.6, 0.43).s(K.barrel, 2.0, -0.12, -0.6, r() * 6).item(2.0, -0.6, 0.6, 0.41);
+      rc.s(K.bedroll, 1.6, -0.02, 1.8, r() * 6).item(1.6, 1.8, 1.0, 0.1);
+      rc.s(K.crateFloat, -0.8, -0.25, -1.2, r() * 6, 0.9, 0.9, 0.9, 0.2, 0.15).item(-0.8, -1.2, 0.5, 0.25);
+      rc.s(K.lampGround, -2.9, 0, 0.8, 0, 1, 1, 1, 1.4, 0.2).item(-2.9, 0.8, 0.35, 0.3);
+      rc.trail = 'prints';
+      return;
+    }
     rc.paint('puddle', 0, 0, 3.4, 2.4, r() * 0.6, G.water, 0.85).paint('puddle', 2.6, 1.6, 1.5, 1.0, r() * 3, G.water, 0.8).paint('puddle', -2.4, 1.4, 1.2, 0.9, r() * 3, G.water, 0.8);
     rc.s(K.tarpBig, -0.2, -0.005, 0.1, r() * 0.6 - 0.3, 0.9, 1, 0.9, 0.04).item(-0.2, 0.1, 1.75, 0.05).at(0, 0);
     rc.s(K.crateFloat, 1.2, -0.2, -0.4, r() * 6, 0.9, 0.9, 0.9, 0.15, 0.2).item(1.2, -0.4, 0.5, 0.3);
@@ -461,6 +506,69 @@ const ECHOES: Record<string, (rc: Recipe, K: Ks, r: () => number) => void> = {
   sleeper: (rc, K, r) => { rc.s(K.unitWood, 0, 0.07, 0, r() * 6, 0.26, 0.14, 1.4).item(0, 0, 0.75, 0.14); },
   coil: (rc, K, r) => { rc.s(K.coil, 0, 0, 0, r() * 6, 0.8).item(0, 0, 0.55, 0.18); },
 };
+
+/** For the shape check (pipeline/tools/scenes-shape-sd.js): the kinds and their shapes, to measure every part against its footprint. */
+export const __shapes = { KINDS, ECHOES, Recipe, autoCover, shapes: () => (KITS ??= makeKits()) };
+
+/** A shape's telling points (kept per shape): its extremes in 26 directions and an even sample, at most 64 (autoCover's). */
+const hulls = new WeakMap<object, Float32Array>();
+const hullOf = (p: Proto) => {
+  const pts: number[] = [], A = p.pos, n = A.length / 3;
+  for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+    if (!dx && !dy && !dz) continue;
+    let best = -1e9, bi = 0;
+    for (let i = 0; i < A.length; i += 3) { const d = A[i] * dx + A[i + 1] * dy + A[i + 2] * dz; if (d > best) { best = d; bi = i; } }
+    pts.push(A[bi], A[bi + 1], A[bi + 2]);
+  }
+  const step = Math.max(1, Math.ceil(n / 38));
+  for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]);
+  return new Float32Array(pts);
+};
+/**
+ * The footprint made true to the parts (2026-11-14). The planner first tries a scene on its declared circles (cheap: most tries fail
+ * there); once it fits, each part is measured in the scene's frame. An upright part (turned only about the vertical) reaches no further
+ * than its shape's own reach round its origin, and its top is exact: one circle and one height, from numbers kept per shape. A tilted
+ * part uses the reach in any direction, and its top from its telling points (`hullOf`). A part not inside one circle of the scene (or
+ * taller than that circle says) adds its own circle; a tall part adds small circles only where its telling points pass the scene's
+ * circles, each as high as its points there. The scene must then fit again (checked: pipeline/tools/scenes-shape-sd.js).
+ */
+const stats = new WeakMap<object, number[]>();
+function autoCover(rc: Recipe) {
+  const items = rc.items.slice();
+  const cells = new Map<number, number>();
+  for (const op of rc.ops) {
+    let st = stats.get(op.p);
+    if (!st) {
+      st = [0, -1e9, 0]; // reach round the origin across the ground, top, reach in any direction
+      for (const A of (Object.values(op.p) as Proto[]).map((q) => q.pos)) for (let i = 0; i < A.length; i += 3) { st[0] = Math.max(st[0], Math.hypot(A[i], A[i + 2])); st[1] = Math.max(st[1], A[i + 1]); st[2] = Math.max(st[2], Math.hypot(A[i], A[i + 1], A[i + 2])); }
+      stats.set(op.p, st);
+    }
+    let P = hulls.get(op.p);
+    if (!P) hulls.set(op.p, (P = (() => { const parts = (Object.values(op.p) as Proto[]).map(hullOf); const out = new Float32Array(parts.reduce((s2, q) => s2 + q.length, 0)); let o2 = 0; for (const q of parts) { out.set(q, o2); o2 += q.length; } return out; })()));
+    const upright = op.tilt === 0 && op.roll === 0;
+    const cy = Math.cos(op.yaw), sy = Math.sin(op.yaw), cx = Math.cos(op.tilt), sx = Math.sin(op.tilt), cz = Math.cos(op.roll), sz = Math.sin(op.roll);
+    // three.js Euler 'YXZ': R = Ry * Rx * Rz
+    const R0 = cy * cz + sy * sx * sz, R1 = -cy * sz + sy * sx * cz, R2 = sy * cx, R3 = cx * sz, R4 = cx * cz, R5 = -sx, R6 = -sy * cz + cy * sx * sz, R7 = sy * sz + cy * sx * cz, R8 = cy * cx;
+    const r = upright ? Math.max(op.sx, op.sz) * st[0] : Math.max(op.sx, op.sy, op.sz) * st[2];
+    let top = op.y + op.sy * st[1];
+    if (!upright) { top = -1e9; for (let i = 0; i < P.length; i += 3) top = Math.max(top, op.y + R3 * P[i] * op.sx + R4 * P[i + 1] * op.sy + R5 * P[i + 2] * op.sz); top += 0.02; }
+    if (items.some((it) => Math.hypot(op.x - it.x, op.z - it.z) + r <= it.r + 0.02 && (top <= KNEE || it.h >= top - 0.02))) continue;
+    if (top <= KNEE) { rc.items.push({ x: op.x, z: op.z, r: r + 0.02, h: Math.max(0, top) }); continue; }
+    // a tall part: small circles where its telling points pass the scene's circles (or stand above what they say)
+    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r);
+    for (let i = 0; i < P.length; i += 3) {
+      const vx = P[i] * op.sx, vy = P[i + 1] * op.sy, vz = P[i + 2] * op.sz;
+      const x = op.x + R0 * vx + R1 * vy + R2 * vz, y = op.y + R3 * vx + R4 * vy + R5 * vz, z = op.z + R6 * vx + R7 * vy + R8 * vz;
+      let ok = false;
+      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.25 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
+      if (ok) continue;
+      const key = Math.floor(x) * 4096 + Math.floor(z);
+      cells.set(key, Math.max(cells.get(key) ?? 0, y + 0.02));
+    }
+  }
+  for (const [key, y] of cells) { const gx = Math.round(key / 4096), gz = key - gx * 4096; rc.items.push({ x: gx + 0.5, z: gz + 0.5, r: 0.8, h: Math.max(0, y) }); }
+  return rc;
+}
 
 const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
   const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
@@ -497,7 +605,9 @@ export function deepScenes(o: DeepScenesIn) {
   const cover = look.pieces.map((p) => p.o);
   const near = (x: number, z: number, ax: number, az: number, bx: number, bz: number, d: number) =>
     !((ax - x > d && bx - x > d) || (x - ax > d && x - bx > d) || (az - z > d && bz - z > d) || (z - az > d && z - bz > d));
-  const trackClear = (x: number, z: number) => { let m = 1e9; for (const s of tracks) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); return m; };
+  // the lists the room checks read: the whole floor's, or (inside `fits`) only what is near the scene being tried
+  let tN = tracks, cN: typeof cover = [], kN = keep, pN = look.places, sN = props;
+  const trackClear = (x: number, z: number) => { let m = 1e9; for (const s of tN) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); return m; };
   const trackPoint = (x: number, z: number) => {
     let m = 1e9, px = x, pz = z;
     for (const s of tracks) {
@@ -507,10 +617,11 @@ export function deepScenes(o: DeepScenesIn) {
     }
     return { x: px, z: pz, d: m };
   };
-  const coverClear = (x: number, z: number) => { let m = 1e9; for (const c of cover) if (near(x, z, c.ax, c.az, c.bx, c.bz, 30)) m = Math.min(m, segDist(x, z, c.ax, c.az, c.bx, c.bz) - c.r); return m; };
-  const keepClear = (x: number, z: number) => { let m = 1e9; for (const k of keep) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); return m; };
-  const placeClear = (x: number, z: number) => { let m = 1e9; for (const p of look.places) m = Math.min(m, Math.hypot(x - p.x, z - p.z) - p.r); return m; };
-  const propClear = (x: number, z: number) => { let m = 1e9; for (const s of props) m = Math.min(m, Math.hypot(x - s.x, z - s.z) - s.r); return m; };
+  const coverClear = (x: number, z: number) => { let m = 1e9; for (const c of cN) if (near(x, z, c.ax, c.az, c.bx, c.bz, 30)) m = Math.min(m, segDist(x, z, c.ax, c.az, c.bx, c.bz) - c.r); return m; };
+  const keepClear = (x: number, z: number) => { let m = 1e9; for (const k of kN) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); return m; };
+  const placeClear = (x: number, z: number) => { let m = 1e9; for (const p of pN) m = Math.min(m, Math.hypot(x - p.x, z - p.z) - p.r); return m; };
+  const propClear = (x: number, z: number) => { let m = 1e9; for (const s of sN) m = Math.min(m, Math.hypot(x - s.x, z - s.z) - s.r); return m; };
+  cN = cover;
   const poolClear = (x: number, z: number) => {
     let m = 1e9;
     for (const f of look.pools) {
@@ -580,8 +691,16 @@ export function deepScenes(o: DeepScenesIn) {
   const fits = (items: SceneItem[], gap = 1.5) => {
     const b = bound(items);
     if (!clearOf(items, b, placed, gap) || !clearOf(items, b, echoes, 0.8)) return false;
-    for (const it of items) if (!roomFor(it)) return false;
-    return true;
+    // only what is near this scene takes part in the room checks (the same answers: the rest is further than any margin)
+    const R = b.r + 6, nearSeg = (q: { ax: number; az: number; bx: number; bz: number }, pad: number) => { const d = R + pad; return !((q.ax - b.cx > d && q.bx - b.cx > d) || (b.cx - q.ax > d && b.cx - q.bx > d) || (q.az - b.cz > d && q.bz - b.cz > d) || (b.cz - q.az > d && b.cz - q.bz > d)); };
+    if (items.length >= 4) {
+      tN = tracks.filter((q) => nearSeg(q, 0)); cN = cover.filter((q) => nearSeg(q, q.r + 3)); kN = keep.filter((k) => Math.hypot(k.x - b.cx, k.z - b.cz) <= R);
+      pN = look.places.filter((q) => Math.hypot(q.x - b.cx, q.z - b.cz) - q.r <= R); sN = props.filter((q) => Math.hypot(q.x - b.cx, q.z - b.cz) - q.r <= R);
+    }
+    let ok = true;
+    for (const it of items) if (!roomFor(it)) { ok = false; break; }
+    tN = tracks; cN = cover; kN = keep; pN = look.places; sN = props;
+    return ok;
   };
   const keepRec = (list: SceneRec[], r: SceneRec) => { list.push(r); bounds.set(r, bound(r.items)); };
   const M = new THREE.Matrix4(), L = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), S = new THREE.Vector3();
@@ -605,8 +724,14 @@ export function deepScenes(o: DeepScenesIn) {
       let rc = t === 0 ? o2.rc : undefined;
       if (!rc) { rc = new Recipe(); KINDS[kind](rc, K, rnd, { backed, far }); }
       const yaw = yaw0 + (t === 0 ? 0 : (rnd() - 0.5) * (o2.spread ?? 0.8));
-      const items = world(rc, x, z, yaw, far);
+      let items = world(rc, x, z, yaw, far);
       if (!fits(items)) continue;
+      if (!far) {
+        // the circles the measuring added must have room too (the declared ones have)
+        const n0 = rc.items.length;
+        autoCover(rc);
+        if (rc.items.length > n0) { items = world(rc, x, z, yaw, far); if (!fits(items.slice(n0))) continue; }
+      }
       emit(rc, x, far ? waterLevel : 0, z, yaw);
       const main = toWorld(rc.main.x, rc.main.z, x, z, yaw);
       keepRec(placed, rec(kind, where, x, z, yaw, items, main));
@@ -721,8 +846,12 @@ export function deepScenes(o: DeepScenesIn) {
       const side = rnd() < 0.5 ? 1 : -1, offd = 3.4 + rnd() * 1.2, x = cx - uz * side * offd, z = cz + ux * side * offd;
       const e = new Recipe(), kind = EK[Math.floor(rnd() * EK.length)];
       ECHOES[kind](e, K, rnd);
-      const yaw = rnd() * 6, items = world(e, x, z, yaw, false);
-      if (!fits(items, 0.8)) continue;
+      const yaw = rnd() * 6;
+      let items = world(e, x, z, yaw, false);
+      if (!fits(items, 0.8)) { gap -= 4; continue; } // no room here: the next try a few metres on
+      const n0 = e.items.length;
+      autoCover(e); items = world(e, x, z, yaw, false);
+      if (!fits(items.slice(n0), 0.8)) continue;
       emit(e, x, 0, z, yaw);
       for (const p of e.paints) paints.push({ ...p, ...toWorld(p.x, p.z, x, z, yaw), yaw });
       keepRec(echoes, { ...rec(`echo:${kind}`, 'verge', x, z, yaw, items, { x, z }), echo: true });

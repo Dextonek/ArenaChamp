@@ -56,6 +56,8 @@ const C = {
 type Part = [THREE.BufferGeometry, string];
 const box = (w: number, h: number, d: number, x = 0, y = h / 2, z = 0) => new THREE.BoxGeometry(w, h, d).translate(x, y, z);
 const cyl = (r0: number, r1: number, h: number, n = 10) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
+/** A cylinder centred on its middle (`cyl` stands on its base): for the ones laid on their side. */
+const rod = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n);
 const ball = (r: number, w = 10, hs = 7) => new THREE.SphereGeometry(r, w, hs);
 const ring = (R: number, t: number, rs = 3, ts = 14, arc = Math.PI * 2) => new THREE.TorusGeometry(R, t, Math.min(rs, 3), ts, arc); // thin trims and rims: three sides read the same from the game's camera
 const cone = (r: number, h: number, n = 10) => new THREE.ConeGeometry(r, h, n).translate(0, h / 2, 0);
@@ -119,7 +121,7 @@ function makeProtos() {
     crateOpen: P([
       [box(0.6, 0.05, 0.6), C.plank], [box(0.6, 0.45, 0.05, 0, 0.27, 0.275), C.plank], [box(0.6, 0.45, 0.05, 0, 0.27, -0.275), C.plank],
       [box(0.05, 0.45, 0.5, 0.275, 0.27), C.plank], [box(0.05, 0.45, 0.5, -0.275, 0.27), C.plank], [box(0.62, 0.05, 0.62, 0, 0.12), C.lacquer],
-      [cyl(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.38, -0.12), C.wine], [cyl(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.4, 0.1), C.turquoise],
+      [rod(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.38, -0.12), C.wine], [rod(0.1, 0.1, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 0.4, 0.1), C.turquoise],
     ]),
     lid: P([[box(0.62, 0.05, 0.62), C.plank], [box(0.62, 0.052, 0.08, 0, 0.026, 0.2), C.lacquer], [box(0.62, 0.052, 0.08, 0, 0.026, -0.2), C.lacquer]]),
     sack: P([[ball(1, 8, 5).scale(0.42, 0.24, 0.3).translate(0, 0.2, 0), C.cream], [cyl(0.08, 0.1, 0.14, 7).rotateZ(Math.PI / 2).translate(0.46, 0.18, 0), C.cream], [ring(0.09, 0.022, 4, 8).rotateY(Math.PI / 2).translate(0.52, 0.18, 0), C.rope]]),
@@ -129,7 +131,7 @@ function makeProtos() {
     heapGrain: P([[cone(0.62, 0.22, 12), C.grain]]),
     heapTurq: P([[cone(0.5, 0.18, 12), C.turquoise]]),
     lantern: P([
-      [cyl(0.12, 0.12, 0.3, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.lacquer], [cyl(0.105, 0.105, 0.16, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.glass],
+      [rod(0.12, 0.12, 0.3, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.lacquer], [rod(0.105, 0.105, 0.16, 8).rotateZ(Math.PI / 2).translate(0, 0.12, 0), C.glass],
       [cone(0.13, 0.12, 8).rotateZ(-Math.PI / 2).translate(0.15, 0.12, 0), C.brass], [ring(0.08, 0.014, 4, 10).rotateY(Math.PI / 2).translate(0.32, 0.12, 0), C.brass],
     ]),
     wheelFlat: P(wheelParts(0.7, C.wood).map(([g, c]) => [g.rotateX(-Math.PI / 2).translate(0, 0.08, 0), c] as Part)),
@@ -175,14 +177,14 @@ function makeProtos() {
     basket: P([[cyl(0.26, 0.21, 0.34, 12), C.rope], [ring(0.26, 0.025, 4, 14).rotateX(Math.PI / 2).translate(0, 0.34, 0), C.brass], [cyl(0.23, 0.23, 0.02, 12).translate(0, 0.28, 0), C.sandDark]]),
     basketLying: P([[cyl(0.26, 0.21, 0.34, 12).rotateZ(Math.PI / 2).translate(-0.17, 0.25, 0), C.rope], [ring(0.26, 0.025, 4, 14).rotateY(Math.PI / 2).translate(0.17, 0.25, 0), C.brass], [cone(0.45, 0.14, 10).translate(0.55, 0, 0), C.sandDark]]),
     ladder: P([[box(0.06, 0.06, 2.6, 0.22, 0.03), C.wood], [box(0.06, 0.06, 2.6, -0.22, 0.03), C.wood], ...[-1.1, -0.73, -0.36, 0, 0.37, 0.74, 1.1].map((z) => [box(0.5, 0.04, 0.05, 0, 0.065, z), C.plank] as Part)]),
-    shovel: P([[cyl(0.025, 0.025, 1.3, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.24, 0.02, 0.3, 0, 0.02, 0.78), C.steel], [box(0.18, 0.04, 0.05, 0, 0.03, -0.66), C.brass]]),
-    pick: P([[cyl(0.025, 0.025, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.6, 0.05, 0.06, 0, 0.04, 0.46), C.steel], [box(0.08, 0.07, 0.08, 0, 0.04, 0.46), C.brass]]),
+    shovel: P([[rod(0.025, 0.025, 1.3, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.24, 0.02, 0.3, 0, 0.02, 0.78), C.steel], [box(0.18, 0.04, 0.05, 0, 0.03, -0.66), C.brass]]),
+    pick: P([[rod(0.025, 0.025, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.wood], [box(0.6, 0.05, 0.06, 0, 0.04, 0.46), C.steel], [box(0.08, 0.07, 0.08, 0, 0.04, 0.46), C.brass]]),
     sherds: P([[box(0.14, 0.02, 0.1, 0, 0.01, 0).rotateY(0.4), C.clay], [box(0.1, 0.02, 0.12, 0.25, 0.012, 0.1).rotateY(-0.3), C.turquoise], [box(0.12, 0.02, 0.08, -0.2, 0.012, 0.18), C.clay], [box(0.09, 0.02, 0.09, 0.05, 0.012, -0.25), C.cream]]),
     // --- the dry well
     block: P([[box(0.62, 0.42, 0.36), C.sandstone], [box(0.64, 0.05, 0.38, 0, 0.44), C.turquoise]]),
     hole: P([[cyl(0.8, 0.8, 0.02, 20), C.lacquer]]),
     postLying: P([[box(0.14, 0.14, 1.7, 0, 0.07), C.wood], [box(0.18, 0.04, 0.18, 0, 0.07, 0.86).rotateX(Math.PI / 2), C.brass]]),
-    drum: P([[cyl(0.15, 0.15, 1.2, 10).rotateZ(Math.PI / 2).translate(0, 0.2, 0), C.rope], [cyl(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(0.62, 0.2, 0), C.wood], [cyl(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.62, 0.2, 0), C.wood], [box(0.05, 0.05, 0.36, 0.7, 0.2, 0.16), C.iron], [box(0.05, 0.05, 0.16, 0.76, 0.2, 0.34), C.iron]]),
+    drum: P([[rod(0.15, 0.15, 1.2, 10).rotateZ(Math.PI / 2).translate(0, 0.2, 0), C.rope], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(0.62, 0.2, 0), C.wood], [rod(0.2, 0.2, 0.05, 12).rotateZ(Math.PI / 2).translate(-0.62, 0.2, 0), C.wood], [box(0.05, 0.05, 0.36, 0.7, 0.2, 0.16), C.iron], [box(0.05, 0.05, 0.16, 0.76, 0.2, 0.34), C.iron]]),
     bucketLying: P([[cyl(0.2, 0.16, 0.32, 12).rotateZ(Math.PI / 2).translate(-0.16, 0.2, 0), C.wood], [ring(0.2, 0.02, 4, 14).rotateY(Math.PI / 2).translate(0.15, 0.2, 0), C.brass], [ring(0.18, 0.02, 4, 14).rotateY(Math.PI / 2).translate(-0.06, 0.19, 0), C.brass]]),
     jarLying: P([[ball(0.3, 10, 7).scale(1, 1.25, 1).rotateZ(Math.PI / 2).translate(0, 0.28, 0), C.clay], [cyl(0.1, 0.13, 0.16, 8).rotateZ(Math.PI / 2).translate(-0.44, 0.28, 0), C.clay], [ring(0.31, 0.025, 4, 16).rotateY(Math.PI / 2).translate(0.05, 0.28, 0), C.turquoise]]),
     // --- the travellers' rest
@@ -200,7 +202,7 @@ function makeProtos() {
     ]),
     kettle: P([[ball(0.13, 10, 7).scale(1, 0.85, 1).translate(0, 0.13, 0), C.iron], [cyl(0.018, 0.03, 0.13, 6).rotateZ(-0.8).translate(0.15, 0.15, 0), C.iron], [ring(0.1, 0.012, 4, 10, Math.PI).translate(0, 0.22, 0), C.brass]]),
     pack: P([[box(0.5, 0.32, 0.28), C.hide], [box(0.52, 0.05, 0.3, 0, 0.33), C.hide], [box(0.52, 0.18, 0.03, 0, 0.24, 0.15), C.hide], [box(0.07, 0.08, 0.02, 0, 0.2, 0.17), C.brass]]),
-    staff: P([[cyl(0.03, 0.03, 1.8, 6).rotateZ(Math.PI / 2).translate(0, 0.03, 0), C.wood], [cyl(0.04, 0.04, 0.08, 6).rotateZ(Math.PI / 2).translate(0.9, 0.03, 0), C.brass]]),
+    staff: P([[rod(0.03, 0.03, 1.8, 6).rotateZ(Math.PI / 2).translate(0, 0.03, 0), C.wood], [rod(0.04, 0.04, 0.08, 6).rotateZ(Math.PI / 2).translate(0.9, 0.03, 0), C.brass]]),
     // a lean-to against a rock: its back up on the rock (-z), two poles in front (+z)
     leanTo: P([
       [cyl(0.045, 0.05, 1.05, 6).translate(1.3, 0, 0.9), C.wood], [cyl(0.045, 0.05, 1.05, 6).translate(-1.3, 0, 0.9), C.wood],
@@ -239,20 +241,20 @@ function makeProtos() {
     shield: P([[cyl(0.48, 0.48, 0.05, 16), C.wine], [cyl(0.34, 0.34, 0.06, 14), C.turquoise], [ball(0.1, 8, 6).scale(1, 0.6, 1).translate(0, 0.06, 0), C.brass], [ring(0.48, 0.028, 4, 26).rotateX(Math.PI / 2).translate(0, 0.04, 0), C.brass]]),
     sword: P([[box(0.06, 0.014, 0.85, 0, 0.02, 0.45), C.steel], [box(0.26, 0.03, 0.045, 0, 0.025, 0), C.brass], [box(0.04, 0.04, 0.18, 0, 0.025, -0.11), C.wood], [ball(0.036, 6, 4).translate(0, 0.03, -0.22), C.brass]]),
     helmet: P([[new THREE.SphereGeometry(0.2, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2), C.iron], [ring(0.2, 0.025, 4, 16).rotateX(Math.PI / 2), C.brass], [box(0.03, 0.06, 0.32, 0, 0.21), C.wine]]),
-    spearHalf: P([[cyl(0.022, 0.022, 1.1, 6).rotateZ(Math.PI / 2).translate(0, 0.025, 0), C.wood], [cone(0.045, 0.24, 4).rotateZ(-Math.PI / 2).translate(0.55, 0.03, 0), C.steel], [cyl(0.03, 0.03, 0.05, 6).rotateZ(Math.PI / 2).translate(0.53, 0.03, 0), C.brass]]),
-    spearButt: P([[cyl(0.022, 0.022, 0.9, 6).rotateZ(Math.PI / 2).translate(0, 0.025, 0), C.wood]]),
+    spearHalf: P([[rod(0.022, 0.022, 1.1, 6).rotateZ(Math.PI / 2).translate(0, 0.025, 0), C.wood], [cone(0.045, 0.24, 4).rotateZ(-Math.PI / 2).translate(0.55, 0.03, 0), C.steel], [rod(0.03, 0.03, 0.05, 6).rotateZ(Math.PI / 2).translate(0.53, 0.03, 0), C.brass]]),
+    spearButt: P([[rod(0.022, 0.022, 0.9, 6).rotateZ(Math.PI / 2).translate(0, 0.025, 0), C.wood]]),
     // --- a shrine at a fork
     cairn: P([[cyl(0.5, 0.55, 0.16, 7), C.rockB], [cyl(0.38, 0.42, 0.14, 7).translate(0, 0.16, 0), C.sandstone], [cyl(0.24, 0.28, 0.12, 7).translate(0, 0.3, 0), C.rockA], [box(0.14, 0.02, 0.86, 0, 0.43), C.turquoise], [box(0.14, 0.02, 0.3, 0, 0, 0).rotateX(1.0).translate(0, 0.33, 0.5), C.turquoise]]),
     bowl: P([[cyl(0.13, 0.09, 0.07, 8), C.clay], [ball(0.05, 5, 3).translate(0.03, 0.08, 0), C.red], [ball(0.045, 5, 3).translate(-0.04, 0.08, 0.03), C.ochre], [ring(0.13, 0.012, 3, 10).rotateX(Math.PI / 2).translate(0, 0.07, 0), C.brass]]),
     candles: P([[cyl(0.03, 0.03, 0.14, 6), C.ivory], [cyl(0.03, 0.03, 0.09, 6).translate(0.08, 0, 0.04), C.ivory], [cyl(0.03, 0.03, 0.11, 6).translate(-0.06, 0, 0.06), C.ivory], [cyl(0.005, 0.005, 0.03, 4).translate(0, 0.14, 0), C.lacquer]]),
-    standard: P([[cyl(0.03, 0.03, 2.6, 6).rotateZ(Math.PI / 2).translate(0, 0.03, 0), C.wood], [cone(0.06, 0.2, 6).rotateZ(-Math.PI / 2).translate(1.3, 0.03, 0), C.brass], [box(1.1, 0.02, 0.8, 0.55, 0.012, 0.42), C.wine], [box(1.1, 0.022, 0.12, 0.55, 0.014, 0.72), C.brass], [box(0.4, 0.024, 0.4, 0.55, 0.016, 0.42).rotateY(Math.PI / 4), C.turquoise]]),
+    standard: P([[rod(0.03, 0.03, 2.6, 6).rotateZ(Math.PI / 2).translate(0, 0.03, 0), C.wood], [cone(0.06, 0.2, 6).rotateZ(-Math.PI / 2).translate(1.3, 0.03, 0), C.brass], [box(1.1, 0.02, 0.8, 0.55, 0.012, 0.42), C.wine], [box(1.1, 0.022, 0.12, 0.55, 0.014, 0.72), C.brass], [box(0.4, 0.024, 0.4, 0.55, 0.016, 0.42).rotateY(Math.PI / 4), C.turquoise]]),
     rugSmall: P([[box(1.3, 0.012, 0.8, 0, 0.006), C.wine], [box(1.1, 0.012, 0.6, 0, 0.012), C.turquoise], [box(0.3, 0.012, 0.3, 0, 0.018).rotateY(Math.PI / 4), C.cream]]),
     plate: P([[cyl(0.17, 0.17, 0.015, 16).rotateX(-1.2).translate(0, 0.16, 0), C.brass]]),
     // --- a grave
     mound: P([[ball(1, 14, 8).scale(0.8, 0.26, 1.5), C.sandDark]]),
     stone: P([[new THREE.IcosahedronGeometry(0.14, 0).scale(1, 0.65, 1).translate(0, 0.05, 0), C.rockB]]),
     // --- the ribs of a great beast (past the edge): a vertebra (the spine along x), a rib arching over z, the skull
-    vertebra: P([[cyl(0.2, 0.2, 0.34, 8).rotateZ(Math.PI / 2), C.bone], [cone(0.07, 0.38, 6).translate(0, 0.15, 0), C.bone]]),
+    vertebra: P([[rod(0.2, 0.2, 0.34, 8).rotateZ(Math.PI / 2), C.bone], [cone(0.07, 0.38, 6).translate(0, 0.15, 0), C.bone]]),
     rib: P([[ring(1, 0.075, 5, 16, Math.PI * 0.9).rotateY(Math.PI / 2), C.bone]]),
     skull: P([
       [ball(0.5, 12, 8).scale(1.7, 0.66, 0.8).translate(0, 0.25, 0), C.bone], [ball(0.1, 6, 4).translate(-0.2, 0.42, 0.3), C.lacquer], [ball(0.1, 6, 4).translate(-0.2, 0.42, -0.3), C.lacquer],
@@ -265,7 +267,7 @@ function makeProtos() {
       [box(2.7, 0.14, 1.5, 0, 0.2), C.plank], [box(2.74, 0.05, 0.08, 0, 0.29, 0.72), C.brass], [box(2.74, 0.05, 0.08, 0, 0.29, -0.72), C.brass],
       [box(2.6, 0.06, 0.5, 0, 0.05, 1.05).rotateX(0.12), C.wood], [box(2.6, 0.06, 0.5, 0, 0.05, -1.05).rotateX(-0.12), C.wood],
       [box(0.5, 0.06, 1.4, -1.6, 0.05), C.wood], [box(2.4, 0.03, 0.06, 0, 0.28, 0.25), C.lacquer], [box(2.4, 0.03, 0.06, 0, 0.28, -0.25), C.lacquer],
-      [cyl(0.06, 0.06, 1.8, 6).rotateX(Math.PI / 2).translate(0.9, 0.08, 0), C.iron], [box(1.9, 0.1, 0.1, 2.3, 0.06, 0.1).rotateY(0.15), C.wood], [box(0.12, 0.08, 0.9, 3.2, 0.06, 0.25), C.wood],
+      [rod(0.06, 0.06, 1.8, 6).rotateX(Math.PI / 2).translate(0.9, 0.08, 0), C.iron], [box(1.9, 0.1, 0.1, 2.3, 0.06, 0.1).rotateY(0.15), C.wood], [box(0.12, 0.08, 0.9, 3.2, 0.06, 0.25), C.wood],
     ]),
     // a striped awning torn down (3.2 x 2.4 m), its two colourways
     awningA: P([...[0, 1, 2, 3, 4, 5].map((k) => [box(3.2, 0.03, 0.4, 0, 0.015, -1.0 + k * 0.4), k % 2 ? C.cream : C.wine] as Part), [box(3.24, 0.034, 0.12, 0, 0.017, 1.24), C.turquoise], [box(3.24, 0.034, 0.05, 0, 0.018, -1.22), C.brass]]),
@@ -273,14 +275,14 @@ function makeProtos() {
     // a nomad's tent fallen flat: its striped cloth draped over the ridge pole (5.4 x 4.2 m, under knee height), the pole's ends out
     tentFlat: P([
       ...drape(5.4, 4.2, 6, (k) => (k === 0 || k === 5 ? C.turquoise : k % 2 ? C.cream : C.wine), (x, z) => 0.05 + 0.4 * Math.exp(-(z * z) / 0.55) * Math.max(0, 1 - (x / 2.75) ** 6) + 0.05 * Math.max(0, Math.sin(x * 2.3 + z * 0.8))),
-      [cyl(0.05, 0.05, 6.4, 6).rotateZ(Math.PI / 2).translate(0, 0.42, 0), C.wood], [cyl(0.07, 0.07, 0.06, 6).rotateZ(Math.PI / 2).translate(3.2, 0.42, 0), C.brass], [cyl(0.07, 0.07, 0.06, 6).rotateZ(Math.PI / 2).translate(-3.2, 0.42, 0), C.brass],
+      [rod(0.05, 0.05, 6.4, 6).rotateZ(Math.PI / 2).translate(0, 0.42, 0), C.wood], [rod(0.07, 0.07, 0.06, 6).rotateZ(Math.PI / 2).translate(3.2, 0.42, 0), C.brass], [rod(0.07, 0.07, 0.06, 6).rotateZ(Math.PI / 2).translate(-3.2, 0.42, 0), C.brass],
       [box(5.44, 0.02, 0.06, 0, 0.06, 2.08), C.brass], [box(5.44, 0.02, 0.06, 0, 0.06, -2.08), C.brass],
     ]),
     // the tent half standing against a rock: the back pole still up (-z, by the rock), the cloth sloping down to the sand in front
     tentHalf: P([
       ...drape(4.4, 4.4, 6, (k) => (k === 0 ? C.turquoise : k % 2 ? C.cream : C.wine), (x, z) => 0.05 + 1.55 * Math.max(0, Math.min(1, (0.3 - z) / 2.3)) ** 1.25 * (1 - 0.45 * (x / 2.2) ** 2)),
       [cyl(0.055, 0.06, 1.68, 6).translate(0, 0, -1.95), C.wood], [cyl(0.08, 0.08, 0.08, 6).translate(0, 1.66, -1.95), C.brass],
-      [cyl(0.045, 0.045, 4.6, 6).rotateZ(Math.PI / 2).translate(0, 1.58, -1.95), C.wood],
+      [rod(0.045, 0.045, 4.6, 6).rotateZ(Math.PI / 2).translate(0, 1.58, -1.95), C.wood],
     ]),
     // an amphora buried to its shoulders (its top half shows) and one lying whole, one broken
     amphoraTop: P([
@@ -296,24 +298,24 @@ function makeProtos() {
     // the water-wheel standing in its channel against a rock, its face to the camera (its axle along z, on two posts)
     wheelUp: P([
       ...bigWheel(1.6).map(([g, c]) => [g.translate(0, -0.25, 0).rotateX(Math.PI / 2).translate(0, 1.72, 0), c] as Part),
-      [box(0.2, 1.8, 0.2, 0, 0.9, 0.55), C.wood], [box(0.2, 1.8, 0.2, 0, 0.9, -0.55), C.wood], [cyl(0.07, 0.07, 1.4, 6).rotateX(Math.PI / 2).translate(0, 1.72, 0), C.iron],
+      [box(0.2, 1.8, 0.2, 0, 0.9, 0.55), C.wood], [box(0.2, 1.8, 0.2, 0, 0.9, -0.55), C.wood], [rod(0.07, 0.07, 1.4, 6).rotateX(Math.PI / 2).translate(0, 1.72, 0), C.iron],
     ]),
     kerb: P([[box(0.8, 0.22, 0.4, 0, 0.11), C.sandstone], [box(0.82, 0.04, 0.42, 0, 0.24), C.ivory], [box(0.82, 0.045, 0.08, 0, 0.245, 0.17), C.turquoise]]),
     trough: P([[box(1.7, 0.4, 0.66, 0, 0.2), C.sandstone], [box(1.5, 0.02, 0.46, 0, 0.405), C.pit], [box(1.72, 0.04, 0.68, 0, 0.42).translate(0, 0, 0), C.brass], [box(0.08, 0.36, 0.7, 0.35, 0.2).rotateZ(0.05), C.pitRim]]),
     // a column's drums lying in a row, its capital set down
-    colDrum: P([[cyl(0.27, 0.27, 0.8, 12).rotateZ(Math.PI / 2).translate(0, 0.27, 0), C.ivory], [cyl(0.28, 0.28, 0.08, 12).rotateZ(Math.PI / 2).translate(0.36, 0.27, 0), C.turquoise]]),
+    colDrum: P([[rod(0.27, 0.27, 0.8, 12).rotateZ(Math.PI / 2).translate(0, 0.27, 0), C.ivory], [rod(0.28, 0.28, 0.08, 12).rotateZ(Math.PI / 2).translate(0.36, 0.27, 0), C.turquoise]]),
     capital: P([[box(0.78, 0.2, 0.78, 0, 0.1), C.ivory], [cyl(0.3, 0.36, 0.26, 12).translate(0, 0.2, 0), C.ivory], [box(0.8, 0.04, 0.8, 0, 0.2), C.brass]]),
     // a chariot's car upside down (its wine-painted front), its shaft and yoke
     chariot: P([
       [box(1.15, 0.42, 0.9, 0, 0.21), C.plank], [box(0.03, 0.36, 0.86, 0.59, 0.21), C.wine], [box(1.19, 0.04, 0.94, 0, 0.02), C.brass], [box(1.19, 0.04, 0.94, 0, 0.42), C.lacquer],
-      [cyl(0.04, 0.04, 2.6, 6).rotateZ(Math.PI / 2).translate(1.9, 0.05, 0.1), C.wood], [box(0.1, 0.08, 1.1, 3.15, 0.05, 0.1), C.wood], [box(0.12, 0.09, 0.12, 3.15, 0.06, 0.6), C.brass], [box(0.12, 0.09, 0.12, 3.15, 0.06, -0.4), C.brass],
+      [rod(0.04, 0.04, 2.6, 6).rotateZ(Math.PI / 2).translate(1.9, 0.05, 0.1), C.wood], [box(0.1, 0.08, 1.1, 3.15, 0.05, 0.1), C.wood], [box(0.12, 0.09, 0.12, 3.15, 0.06, 0.6), C.brass], [box(0.12, 0.09, 0.12, 3.15, 0.06, -0.4), C.brass],
     ]),
     // a camel saddle set down: a frame under a wine cloth, two pommels capped in brass
     saddle: P([
       [box(0.9, 0.14, 0.62, 0, 0.07), C.wood], [box(1.0, 0.04, 0.9, 0, 0.16), C.wine], [box(1.02, 0.042, 0.12, 0, 0.165, 0.3), C.cream], [box(1.02, 0.042, 0.12, 0, 0.165, -0.3), C.cream],
       [cyl(0.05, 0.06, 0.32, 6).translate(0.36, 0.16, 0), C.wood], [cyl(0.05, 0.06, 0.32, 6).translate(-0.36, 0.16, 0), C.wood], [ball(0.07, 8, 5).translate(0.36, 0.48, 0), C.brass], [ball(0.07, 8, 5).translate(-0.36, 0.48, 0), C.brass],
     ]),
-    rugRolled: P([[cyl(0.16, 0.16, 1.4, 10).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.wine], [cyl(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(0.5, 0.16, 0), C.turquoise], [cyl(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(-0.5, 0.16, 0), C.turquoise], [cyl(0.1, 0.1, 1.42, 8).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.cream]]),
+    rugRolled: P([[rod(0.16, 0.16, 1.4, 10).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.wine], [rod(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(0.5, 0.16, 0), C.turquoise], [rod(0.165, 0.165, 0.12, 10).rotateZ(Math.PI / 2).translate(-0.5, 0.16, 0), C.turquoise], [rod(0.1, 0.1, 1.42, 8).rotateZ(Math.PI / 2).translate(0, 0.16, 0), C.cream]]),
     waterskin: P([[ball(1, 10, 6).scale(0.32, 0.15, 0.2).translate(0, 0.15, 0), C.hide], [cyl(0.04, 0.06, 0.16, 6).rotateZ(-Math.PI / 2).translate(0.38, 0.14, 0), C.hide], [cyl(0.045, 0.045, 0.03, 6).rotateZ(-Math.PI / 2).translate(0.47, 0.14, 0), C.brass]]),
     // a covered wagon sunk to its axles: the cream canvas on wooden hoops (its length along x)
     wagonCover: P([
@@ -385,7 +387,7 @@ const KINDS: Record<string, Make> = {
     } else if (v === 0) {
       rc.s(P.cartBed, 0, 0, 0, (r() - 0.5) * 0.3).item(-0.5, 0, 1.45, 0.36).item(1.0, 0, 1.0, 0.36).item(2.7, 0.2, 0.7, 0.12).at(0, 0);
       rc.s(P.wheelFlat, -0.6, 0.02, 2.0, r() * 3, 1, 1, 1, 0.06).item(-0.6, 2.0, 0.8, 0.22);
-      rc.s(P.wheelFlat, 1.5, 0.3, -1.7, r() * 3, 1, 1, 1, 0.42).item(1.5, -1.7, 0.85, 0.55);
+      rc.s(P.wheelFlat, 1.5, 0.12, -1.7, r() * 3, 1, 1, 1, 0.22).item(1.5, -1.7, 0.85, 0.45);
     }
     const z0 = v === 2 ? 2.0 : 0;
     const aw = r() < 0.5 ? P.awningA : P.awningB;
@@ -406,7 +408,7 @@ const KINDS: Record<string, Make> = {
       rc.paint('fan', x + 0.2, z, 1.6 + r() * 0.8, 0.5, Math.atan2(z - cz, x) + (r() - 0.5) * 0.6, hc, 0.55);
     }
     rc.s(P.lantern, -0.9, 0, cz + 2.6, r() * 6).item(-0.9, cz + 2.6, 0.3, 0.25);
-    for (let k = 0, n = 4 + Math.floor(r() * 5); k < n; k++) rc.s(P.arrow, -1.5 + r() * 4, 0, cz - 0.4 + r() * 3.4, r() * 6, 1.1, 1.1, 1.1, 0.35 + r() * 0.3);
+    for (let k = 0, n = 4 + Math.floor(r() * 5); k < n; k++) rc.s(P.arrow, -1.5 + r() * 4, 0, cz - 0.4 + r() * 3.4, r() * 6, 1.05, 1.05, 1.05, 0.35 + r() * 0.3);
     rc.item(0.4, cz + 1.0, 3.2, 0.5); // the arrows and the loose things between
     rc.paint('stain', 0.3, cz + 0.4, 4.6, 3.4, r() * 0.6 - 0.3, G.tramp, 0.3);
     rc.trail = v === 1 ? 'prints' : 'ruts';
@@ -434,7 +436,7 @@ const KINDS: Record<string, Make> = {
     rc.s(P.spearHalf, 0.9, 0, -2.1, a).s(P.spearButt, -0.6, 0, -2.4, a + 0.5).item(0.2, -2.2, 1.1, 0.06);
     for (let k = 0, n = 9 + Math.floor(r() * 7); k < n; k++) {
       const x = -3.0 + r() * 6.0, z = -0.8 + r() * 3.8;
-      rc.s(P.arrow, x, 0, z, 2.6 + (r() - 0.5) * 0.6, 1.15, 1.15, 1.15, 0.3 + r() * 0.35);
+      rc.s(P.arrow, x, 0, z, 2.6 + (r() - 0.5) * 0.6, 1.05, 1.05, 1.05, 0.3 + r() * 0.35);
     }
     rc.item(0, 1.1, 3.3, 0.5);
     for (let k = 0; k < 3; k++) rc.paint('stain', -1.5 + k * 1.5 + r(), 0.4 + r() * 1.2, 2.2 + r(), 1.4 + r() * 0.6, r() * 3, G.tramp, 0.26);
@@ -483,7 +485,7 @@ const KINDS: Record<string, Make> = {
     rc.f(P.hole, 0, 0.01, 0, 0, 1.3, 1, 1.3);
     const ga = ((gap + 0.5) / 9) * Math.PI * 2, side = r() < 0.5 ? 1 : -1;
     if (v === 0) {
-      rc.s(P.block, Math.sin(ga) * 2.3, 0, Math.cos(ga) * 2.3, ga + 0.6, 1.1, 1.1, 1.1, 0.15, 0.1).item(Math.sin(ga) * 2.3, Math.cos(ga) * 2.3, 0.5, 0.52);
+      rc.s(P.block, Math.sin(ga) * 2.3, 0, Math.cos(ga) * 2.3, ga + 0.6, 1.0, 1.0, 1.0, 0.12, 0.08).item(Math.sin(ga) * 2.3, Math.cos(ga) * 2.3, 0.5, 0.52);
       rc.s(P.postLying, side * 2.2, 0, -0.4, 0.2 * side, 1.2).item(side * 2.2, -0.4, 1.05, 0.17);
       rc.s(P.postLying, side * 2.9, 0, 0.8, -0.5 * side, 1.2).item(side * 2.9, 0.8, 1.05, 0.17);
       rc.s(P.drum, side * 1.8, 0, 2.2, 0.4 * side).item(side * 1.8, 2.2, 0.75, 0.4);
@@ -491,7 +493,7 @@ const KINDS: Record<string, Make> = {
       rc.s(P.bucketLying, -side * 2.0, 0, 1.4, r() * 6).item(-side * 2.0, 1.4, 0.4, 0.4);
       rc.s(P.trough, -side * 2.8, 0, -0.9, Math.PI / 2 + (r() - 0.5) * 0.4).item(-side * 2.8, -0.9, 0.95, 0.46);
     } else {
-      for (let k = 0; k < 4; k++) { const a = ga + 0.6 + k * 1.3, d = 2.4 + r() * 0.5; rc.s(k % 2 ? P.jarLying : P.potClay, Math.sin(a) * d, 0, Math.cos(a) * d, r() * 6, k % 2 ? 1 : 0.56).item(Math.sin(a) * d, Math.cos(a) * d, 0.45, 0.54); }
+      for (let k = 0; k < 4; k++) { const a = ga + 0.6 + k * 1.3, d = 2.4 + r() * 0.5; rc.s(k % 2 ? P.jarLying : P.potClay, Math.sin(a) * d, 0, Math.cos(a) * d, r() * 6, k % 2 ? 0.88 : 0.56).item(Math.sin(a) * d, Math.cos(a) * d, 0.45, 0.54); }
       for (let k = 0; k < 3; k++) { const a = ga - 0.9 - k * 0.7, d = 2.6; rc.s(P.waterskin, Math.sin(a) * d, 0, Math.cos(a) * d, r() * 6).item(Math.sin(a) * d, Math.cos(a) * d, 0.45, 0.3); }
       rc.f(P.rugSmall, side * 0.4, 0.004, 2.7, 0.2, 1.2).item(side * 0.4, 2.7, 0.8, 0.03);
     }
@@ -528,15 +530,15 @@ const KINDS: Record<string, Make> = {
   sundial: (rc, P, r) => {
     const v = r() < 0.5 ? 0 : 1, s = r() < 0.5 ? 1 : -1;
     if (v === 0) {
-      rc.s(P.dial, 0, 0, 0, r() * 6, 1.25).item(0, 0, 1.05, 0.45);
-      rc.s(P.stump, s * 2.8, 0, -0.8, r(), 1.15).item(s * 2.8, -0.8, 0.62, 0.62);
+      rc.s(P.dial, 0, 0, 0, r() * 6, 1.25, 0.85, 1.25).item(0, 0, 1.05, 0.55);
+      rc.s(P.stump, s * 2.8, 0, -0.8, r(), 1.15, 0.9, 1.15).item(s * 2.8, -0.8, 0.62, 0.55);
       rc.s(P.shaft, s * 3.1, 0, 1.3, Math.PI / 2 + 0.25 * s, 1.1, 1.1, 1.3, 0, 0.04).item(s * 2.4, 1.2, 0.7, 0.53).item(s * 3.8, 1.5, 0.7, 0.53).at(s * 3.1, 1.3);
       rc.s(P.shaftShort, s * 1.3, 0, 2.6, 0.9 * s, 1.1).item(s * 1.3, 2.6, 0.75, 0.52);
       rc.s(P.pyramidion, -s * 0.9, 0, 3.0, Math.PI + 0.5 * s, 1.1).item(-s * 0.9, 3.0, 0.68, 0.44);
       rc.paint('fan', s * 2.8, -0.6, 3.6, 0.6, s > 0 ? Math.PI / 2 : Math.PI / 2, G.dust, 0.42);
     } else {
       const n = 4 + Math.floor(r() * 2);
-      rc.s(P.stump, -s * 2.4, 0, -0.2, r() * 0.3, 1.1).item(-s * 2.4, -0.2, 0.6, 0.6);
+      rc.s(P.stump, -s * 2.4, 0, -0.2, r() * 0.3, 1.1, 0.9, 1.1).item(-s * 2.4, -0.2, 0.6, 0.55);
       for (let k = 0; k < n; k++) { const x = -s * 1.2 + s * k * 0.95, z = (r() - 0.5) * 0.3 + k * 0.12; rc.s(P.colDrum, x, 0, z, (r() - 0.5) * 0.3 + (s < 0 ? Math.PI : 0)).item(x, z, 0.5, 0.54); }
       rc.at(s * (n * 0.95) * 0.3, 0.2);
       rc.s(P.capital, s * (n * 0.95 - 0.4), 0, 1.0 + r() * 0.4, r()).item(s * (n * 0.95 - 0.4), 1.2, 0.55, 0.5);
@@ -592,7 +594,7 @@ const KINDS: Record<string, Make> = {
     rc.s(P.wagon, 0, -0.22, 0, yaw, s, s, s, 0.06, 0.08).item(0, 0, 1.7 * s, 1.05 * s).at(0, 0);
     if (cover) rc.s(P.wagonCover, 0, -0.22, 0, yaw, s, s, s, 0.06, 0.08).item(0, 0, 1.7 * s, 1.75 * s);
     else { rc.s(P.sack, 1.6 * s, 0, 1.3, r() * 6).s(P.sackHide, 0.6, 0, 1.6, r() * 6).item(1.1 * s, 1.45, 0.8, 0.32); rc.s(P.heapGrain, 1.3 * s, 0, 1.9, 0, 1.2).paint('fan', 1.2, 1.4, 2.4, 0.6, Math.PI / 2, G.grain, 0.5); }
-    rc.s(P.drift, 0.4, -0.15, -0.6, 0.3, 2.4 * s, 0.7 * s, 1.3 * s);
+    rc.s(P.drift, 0.4, -0.15, -0.6, 0.3, 2.4 * s, (o.far ? 0.7 : 0.6) * s, 1.3 * s);
     rc.s(P.drift, 1.6 * s, -0.1, 0.4, 0.3, 1.2 * s, 0.45 * s, 1.1 * s).item(1.6 * s, 0.4, 1.1 * s, 0.45 * s);
     if (o.far) rc.pole(P.poleWood, -1.3 * s, 0.35, 0.1, -2.8 * s, 1.2 * s, 0.4, 0.06).item(-2.2 * s, 0.3, 0.5, 1.2 * s);
     else rc.pole(P.poleWood, -1.3, 0.35, 0.1, -2.9, 0.08, 0.5, 0.06).item(-2.2, 0.3, 0.75, 0.4);
@@ -602,10 +604,14 @@ const KINDS: Record<string, Make> = {
   // Pots stacked at a tomb's door, one smashed and its grain spilled (smaller than the cover's jars, so no one takes them for cover).
   pots: (rc, P, r) => {
     const kinds = [P.potClay, P.potCream, P.potTurq];
-    const at: [number, number, number][] = [[-0.5, 0, -0.1], [0, 0, -0.15], [0.5, 0, -0.1], [-0.25, 0.53, -0.12], [0.25, 0.53, -0.12]];
-    if (r() < 0.6) at.push([0, 1.06, -0.12]);
+    // stacked by the door; or the second way, set in a row along the rock with gaps where two were smashed
+    const row = r() < 0.4;
+    const at: [number, number, number][] = row ? [[-1.4, 0, -0.1], [-0.7, 0, -0.12], [0.7, 0, -0.1], [1.4, 0, -0.14]] : [[-0.5, 0, -0.1], [0, 0, -0.15], [0.5, 0, -0.1], [-0.25, 0.53, -0.12], [0.25, 0.53, -0.12]];
+    if (!row && r() < 0.6) at.push([0, 1.06, -0.12]);
+    if (row) rc.s(P.potBroken, 0, 0, 0.1, r() * 6, 0.8).item(0, 0.1, 0.65, 0.24);
     at.forEach(([x, y, z], k) => rc.s(kinds[(k + Math.floor(r() * 3)) % 3], x, y, z, r() * 6, 0.68 + r() * 0.06));
-    rc.item(0, -0.1, 0.9, at.length > 5 ? 1.75 : 1.25).at(0, 0);
+    if (row) rc.item(-1.05, -0.1, 0.8, 0.7).item(1.05, -0.1, 0.8, 0.7).at(0, 0);
+    else rc.item(0, -0.1, 0.9, at.length > 5 ? 1.75 : 1.25).at(0, 0);
     rc.s(P.potBroken, 1.1, 0, 0.6, r() * 6, 0.8).item(1.15, 0.65, 0.65, 0.24);
     rc.s(kinds[Math.floor(r() * 3)], -1.15, 0.22, 0.5, r() * 6, 0.68, 0.68, 0.68, Math.PI / 2).item(-1.15, 0.5, 0.5, 0.45);
     if (r() < 0.6) rc.s(P.amphoraLying, -0.4, 0, 1.5, r() * 6, 0.9).item(-0.4, 1.5, 0.55, 0.47);
@@ -630,7 +636,7 @@ const KINDS: Record<string, Make> = {
   // corner out from under it, a brass lamp, a pot rolled away. Against a rock, the tent half standing, its back pole still up.
   tent: (rc, P, r, o) => {
     if (o.backed) {
-      rc.s(P.tentHalf, 0, 0, 0, (r() - 0.5) * 0.15).item(0, -1.3, 1.0, 1.75).item(-1.5, -0.9, 0.7, 1.2).item(1.5, -0.9, 0.7, 1.2).item(-1.3, 1.2, 1.4, 0.4).item(1.3, 1.2, 1.4, 0.4).at(0, 0);
+      rc.s(P.tentHalf, 0, 0, 0, (r() - 0.5) * 0.15).item(0, -1.3, 1.0, 1.75).item(-1.5, -0.9, 0.7, 1.2).item(1.5, -0.9, 0.7, 1.2).item(-1.3, -1.75, 0.75, 1.55).item(1.3, -1.75, 0.75, 1.55).item(-2.05, -1.9, 0.45, 1.65).item(2.05, -1.9, 0.45, 1.65).item(0, 1.9, 0.85, 0.3).item(-2.0, -0.6, 0.7, 0.95).item(2.0, -0.6, 0.7, 0.95).item(-2.0, 0.6, 0.7, 0.4).item(2.0, 0.6, 0.7, 0.4).item(-1.9, 1.7, 0.6, 0.2).item(1.9, 1.7, 0.6, 0.2).item(-2.05, -1.35, 0.5, 1.2).item(2.05, -1.35, 0.5, 1.2).item(-1.3, 1.2, 1.4, 0.4).item(1.3, 1.2, 1.4, 0.4).at(0, 0);
     } else {
       rc.s(P.tentFlat, 0, 0, 0, (r() - 0.5) * 0.2).item(-1.35, -1.05, 1.75, 0.5).item(1.35, -1.05, 1.75, 0.5).item(-1.35, 1.05, 1.75, 0.5).item(1.35, 1.05, 1.75, 0.5).item(3.15, 0, 0.3, 0.45).item(-3.15, 0, 0.3, 0.45).at(0, 0);
       const side = r() < 0.5 ? 1 : -1;
@@ -685,7 +691,7 @@ const KINDS: Record<string, Make> = {
       }
       for (let x = -5.5; x <= 5.5; x += 1.6) rc.item(x, -2.3, 1.25, 0.26);
       rc.s(P.kerb, 1.4, -0.05, -2.2, 0.9, 1, 1, 1, 0.3);
-      rc.s(P.wheelBig, 0.4, 0, 0.9, r() * 6, 1, 1, 1, 0.05).item(0.4, 0.9, 1.7, 0.5).at(0.4, 0.9);
+      rc.s(P.wheelBig, 0.4, -0.03, 0.9, r() * 6, 1, 1, 1, 0.03).item(0.4, 0.9, 1.7, 0.5).at(0.4, 0.9);
       rc.s(P.postLying, -2.6, 0, 1.2, 1.2 + r() * 0.4, 1.5, 1.5, 1.5).item(-2.6, 1.2, 1.3, 0.22);
       rc.s(P.trough, 3.4, 0, 1.6, (r() - 0.5) * 0.5).item(3.4, 1.6, 0.95, 0.46);
       rc.paint('stain', 0.4, 0.9, 3.0, 2.6, 0, G.tramp, 0.22);
@@ -697,12 +703,75 @@ const KINDS: Record<string, Make> = {
 const ECHOES: Record<string, (rc: Recipe, P: Pr, r: () => number) => void> = {
   crate: (rc, P, r) => { rc.s(P.crate, 0, 0, 0, r() * 6).item(0, 0, 0.45, 0.52); if (r() < 0.5) rc.s(P.lid, 0.7, 0, 0.3, r() * 6, 1, 1, 1, 0.06); rc.paint('stain', 0, 0, 1.2, 0.9, r() * 3, G.tramp, 0.22); },
   sack: (rc, P, r) => { const [hk, hc] = SPICE[Math.floor(r() * 4)]; rc.s(P.sack, 0, 0, 0, r() * 6).item(0, 0, 0.5, 0.3).s(P[hk] as Proto, 0.5, 0, 0.1, 0, 0.6); rc.paint('fan', 0.3, 0, 1.3, 0.5, r() * 6, hc, 0.5); },
-  jar: (rc, P, r) => { rc.s(P.jarLying, 0, 0, 0, r() * 6).item(0, 0, 0.5, 0.56); rc.f(P.sherds, 0.5, 0.02, 0.3, r() * 6); },
-  arrows: (rc, P, r) => { for (let k = 0; k < 3 + Math.floor(r() * 3); k++) rc.s(P.arrow, (r() - 0.5) * 1.4, 0, (r() - 0.5) * 1.4, 2.6 + (r() - 0.5) * 0.6, 1.15, 1.15, 1.15, 0.3 + r() * 0.35); rc.item(0, 0, 1.05, 0.5); },
+  jar: (rc, P, r) => { rc.s(P.jarLying, 0, 0, 0, r() * 6, 0.88).item(0, 0, 0.5, 0.55); rc.f(P.sherds, 0.5, 0.02, 0.3, r() * 6); },
+  arrows: (rc, P, r) => { for (let k = 0; k < 3 + Math.floor(r() * 3); k++) rc.s(P.arrow, (r() - 0.5) * 1.4, 0, (r() - 0.5) * 1.4, 2.6 + (r() - 0.5) * 0.6, 1.05, 1.05, 1.05, 0.3 + r() * 0.35); rc.item(0, 0, 1.05, 0.5); },
   wheel: (rc, P, r) => { rc.s(P.wheelFlat, 0, 0.02, 0, r() * 3, 0.85, 0.85, 0.85, 0.06).item(0, 0, 0.7, 0.2); rc.paint('stain', 0, 0, 1.2, 1.0, 0, G.tramp, 0.2); },
   basket: (rc, P, r) => { rc.s(P.basketLying, 0, 0, 0, r() * 6).item(0.2, 0, 0.6, 0.3); },
   amphora: (rc, P, r) => { rc.s(P.amphoraLying, 0, 0, 0, r() * 6).item(0, 0, 0.6, 0.52); rc.paint('stain', 0, 0, 1.0, 0.8, 0, G.drift, 0.4); },
 };
+
+/** For the shape check (pipeline/tools/scenes-shape-sd.js): the kinds and their shapes, to measure every part against its footprint. */
+export const __shapes = { KINDS, ECHOES, Recipe, autoCover, shapes: () => (PROTOS ??= makeProtos()) };
+
+/** A shape's telling points (kept per shape): its extremes in 26 directions and an even sample, at most 64 (autoCover's). */
+const hulls = new WeakMap<object, Float32Array>();
+const hullOf = (p: Proto) => {
+  const pts: number[] = [], A = p.pos, n = A.length / 3;
+  for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+    if (!dx && !dy && !dz) continue;
+    let best = -1e9, bi = 0;
+    for (let i = 0; i < A.length; i += 3) { const d = A[i] * dx + A[i + 1] * dy + A[i + 2] * dz; if (d > best) { best = d; bi = i; } }
+    pts.push(A[bi], A[bi + 1], A[bi + 2]);
+  }
+  const step = Math.max(1, Math.ceil(n / 38));
+  for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]);
+  return new Float32Array(pts);
+};
+/**
+ * The footprint made true to the parts (2026-11-14). The planner first tries a scene on its declared circles (cheap: most tries fail
+ * there); once it fits, each part is measured in the scene's frame. An upright part (turned only about the vertical) reaches no further
+ * than its shape's own reach round its origin, and its top is exact: one circle and one height, from numbers kept per shape. A tilted
+ * part uses the reach in any direction, and its top from its telling points (`hullOf`). A part not inside one circle of the scene (or
+ * taller than that circle says) adds its own circle; a tall part adds small circles only where its telling points pass the scene's
+ * circles, each as high as its points there. The scene must then fit again (checked: pipeline/tools/scenes-shape-sd.js).
+ */
+const stats = new WeakMap<object, number[]>();
+function autoCover(rc: Recipe) {
+  const items = rc.items.slice();
+  const cells = new Map<number, number>();
+  for (const op of rc.ops) {
+    let st = stats.get(op.p);
+    if (!st) {
+      st = [0, -1e9, 0]; // reach round the origin across the ground, top, reach in any direction
+      for (const A of [op.p.pos]) for (let i = 0; i < A.length; i += 3) { st[0] = Math.max(st[0], Math.hypot(A[i], A[i + 2])); st[1] = Math.max(st[1], A[i + 1]); st[2] = Math.max(st[2], Math.hypot(A[i], A[i + 1], A[i + 2])); }
+      stats.set(op.p, st);
+    }
+    let P = hulls.get(op.p);
+    if (!P) hulls.set(op.p, (P = hullOf(op.p)));
+    const upright = op.tilt === 0 && op.roll === 0;
+    const cy = Math.cos(op.yaw), sy = Math.sin(op.yaw), cx = Math.cos(op.tilt), sx = Math.sin(op.tilt), cz = Math.cos(op.roll), sz = Math.sin(op.roll);
+    // three.js Euler 'YXZ': R = Ry * Rx * Rz
+    const R0 = cy * cz + sy * sx * sz, R1 = -cy * sz + sy * sx * cz, R2 = sy * cx, R3 = cx * sz, R4 = cx * cz, R5 = -sx, R6 = -sy * cz + cy * sx * sz, R7 = sy * sz + cy * sx * cz, R8 = cy * cx;
+    const r = upright ? Math.max(op.sx, op.sz) * st[0] : Math.max(op.sx, op.sy, op.sz) * st[2];
+    let top = op.y + op.sy * st[1];
+    if (!upright) { top = -1e9; for (let i = 0; i < P.length; i += 3) top = Math.max(top, op.y + R3 * P[i] * op.sx + R4 * P[i + 1] * op.sy + R5 * P[i + 2] * op.sz); top += 0.02; }
+    if (items.some((it) => Math.hypot(op.x - it.x, op.z - it.z) + r <= it.r + 0.02 && (top <= KNEE || it.h >= top - 0.02))) continue;
+    if (top <= KNEE) { rc.items.push({ x: op.x, z: op.z, r: r + 0.02, h: Math.max(0, top) }); continue; }
+    // a tall part: small circles where its telling points pass the scene's circles (or stand above what they say)
+    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r);
+    for (let i = 0; i < P.length; i += 3) {
+      const vx = P[i] * op.sx, vy = P[i + 1] * op.sy, vz = P[i + 2] * op.sz;
+      const x = op.x + R0 * vx + R1 * vy + R2 * vz, y = op.y + R3 * vx + R4 * vy + R5 * vz, z = op.z + R6 * vx + R7 * vy + R8 * vz;
+      let ok = false;
+      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.25 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
+      if (ok) continue;
+      const key = Math.floor(x) * 4096 + Math.floor(z);
+      cells.set(key, Math.max(cells.get(key) ?? 0, y + 0.02));
+    }
+  }
+  for (const [key, y] of cells) { const gx = Math.round(key / 4096), gz = key - gx * 4096; rc.items.push({ x: gx + 0.5, z: gz + 0.5, r: 0.8, h: Math.max(0, y) }); }
+  return rc;
+}
 
 const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
   const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
@@ -738,7 +807,23 @@ export function sandsScenes(o: SandsScenesIn) {
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
   for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1] });
   const cover = look.pieces.map((p) => p.o);
-  const roadClear = (x: number, z: number) => { let m = 1e9; for (const s of roads) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); return m; };
+  // The room checks look only at the 8 m cells round their point (every margin they test is under 8 m; the places, few and wide, are
+  // all checked). A grid made once a floor: a road, a rock or a prop in every cell its box touches.
+  type Cell = { k: typeof keep; s: typeof solids; r: typeof roads; c: typeof cover };
+  const grid = new Map<number, Cell>(), CS = 8;
+  const cellAt = (gx: number, gz: number) => { const key = gx * 4096 + gz; let c = grid.get(key); if (!c) grid.set(key, (c = { k: [], s: [], r: [], c: [] })); return c; };
+  const span = (x0: number, z0: number, x1: number, z1: number, put: (c: Cell) => void) => {
+    for (let gx = Math.floor(Math.min(x0, x1) / CS); gx <= Math.floor(Math.max(x0, x1) / CS); gx++) for (let gz = Math.floor(Math.min(z0, z1) / CS); gz <= Math.floor(Math.max(z0, z1) / CS); gz++) put(cellAt(gx, gz));
+  };
+  for (const k of keep) span(k.x, k.z, k.x, k.z, (c) => c.k.push(k));
+  for (const q of solids) span(q.x - q.r, q.z - q.r, q.x + q.r, q.z + q.r, (c) => c.s.push(q));
+  for (const q of roads) span(q.ax, q.az, q.bx, q.bz, (c) => c.r.push(q));
+  for (const q of cover) span(Math.min(q.ax, q.bx) - q.r, Math.min(q.az, q.bz) - q.r, Math.max(q.ax, q.bx) + q.r, Math.max(q.az, q.bz) + q.r, (c) => c.c.push(q));
+  const around = (x: number, z: number, f: (c: Cell) => void) => {
+    const gx = Math.floor(x / CS), gz = Math.floor(z / CS);
+    for (let a = gx - 1; a <= gx + 1; a++) for (let b = gz - 1; b <= gz + 1; b++) { const c = grid.get(a * 4096 + b); if (c) f(c); }
+  };
+  const roadClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const s of c.r) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); }); return m; };
   /** The nearest point on a road's middle line. */
   const roadPoint = (x: number, z: number) => {
     let m = 1e9, px = x, pz = z;
@@ -749,17 +834,10 @@ export function sandsScenes(o: SandsScenesIn) {
     }
     return { x: px, z: pz, d: m };
   };
-  const coverClear = (x: number, z: number) => {
-    let m = 1e9;
-    for (const c of cover) {
-      if ((c.ax - x > 30 && c.bx - x > 30) || (x - c.ax > 30 && x - c.bx > 30) || (c.az - z > 30 && c.bz - z > 30) || (z - c.az > 30 && z - c.bz > 30)) continue; // far: not the nearest that matters
-      m = Math.min(m, segDist(x, z, c.ax, c.az, c.bx, c.bz) - c.r);
-    }
-    return m;
-  };
-  const keepClear = (x: number, z: number) => { let m = 1e9; for (const k of keep) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); return m; };
+  const coverClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const q of c.c) m = Math.min(m, segDist(x, z, q.ax, q.az, q.bx, q.bz) - q.r); }); return m; };
+  const keepClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const k of c.k) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); }); return m; };
   const placeClear = (x: number, z: number) => { let m = 1e9; for (const p of look.places) m = Math.min(m, Math.hypot(x - p.x, z - p.z) - p.r); return m; };
-  const solidClear = (x: number, z: number) => { let m = 1e9; for (const s of solids) m = Math.min(m, Math.hypot(x - s.x, z - s.z) - s.r); return m; };
+  const solidClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const q of c.s) m = Math.min(m, Math.hypot(x - q.x, z - q.z) - q.r); }); return m; };
   const beyond = (x: number, z: number) => land.beyond(x - RING.x, z - RING.z);
   /** A rock (or a wall) right north of the point's edge: the camera looks north, so a tall thing there hides nobody. */
   const backedAt = (x: number, z: number, r: number) => coverClear(x, z - r - 0.6) < 0.5 && coverClear(x, z) < r + 1.2;
@@ -776,7 +854,7 @@ export function sandsScenes(o: SandsScenesIn) {
   const off = Object.keys(KINDS).filter((k) => !['ribs', 'jackal', 'shrine', 'pots'].includes(k));
   cap[off[Math.floor(rnd() * off.length)]] = 1; // a kind this floor has little of
   for (let k = 0; k < 2; k++) cap[off[Math.floor(rnd() * off.length)]] += 1; // and two it has more of
-  const MAX = 32; // on the walkable sand; up to three more past the edge
+  const MAX = 28; // on the walkable sand; up to three more past the edge
   let farN = 0;
   const left = (k: string) => (cap[k] ?? 0) - (used.get(k) ?? 0);
 
@@ -786,6 +864,10 @@ export function sandsScenes(o: SandsScenesIn) {
   };
   /** One part's room on the walkable sand: off the spots, the roads' middles, the cover, the courts, the depth's props, the outline. */
   const roomFor = (it: SceneItem) => {
+    // the quick and the most often failing first (the same answer in any order)
+    if (keepClear(it.x, it.z) < it.r + 3.2) return false;
+    if (roadClear(it.x, it.z) < it.r + 2.2) return false;
+    if (placeClear(it.x, it.z) < it.r + 2.6) return false;
     const b = beyond(it.x, it.z);
     if (it.far) {
       if (b < it.r + 4 || b > 26) return false;
@@ -796,9 +878,6 @@ export function sandsScenes(o: SandsScenesIn) {
       if (coverClear(it.x, it.z) < it.r + 0.15) return false;
       if (it.h > KNEE && !backedAt(it.x, it.z, it.r)) return false;
     }
-    if (keepClear(it.x, it.z) < it.r + 3.2) return false;
-    if (roadClear(it.x, it.z) < it.r + 2.2) return false;
-    if (placeClear(it.x, it.z) < it.r + 2.6) return false;
     if (solidClear(it.x, it.z) < it.r + 0.4) return false;
     return true;
   };
@@ -824,8 +903,9 @@ export function sandsScenes(o: SandsScenesIn) {
   const fits = (items: SceneItem[], gap = 1.5) => {
     const b = bound(items);
     if (!clearOf(items, b, placed, gap) || !clearOf(items, b, echoes, 0.8)) return false;
-    for (const it of items) if (!roomFor(it)) return false;
-    return true;
+    let ok = true;
+    for (const it of items) if (!roomFor(it)) { ok = false; break; }
+    return ok;
   };
   const keepRec = (list: SceneRec[], r: SceneRec) => { list.push(r); bounds.set(r, bound(r.items)); };
   const M = new THREE.Matrix4(), L = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), V = new THREE.Vector3(), S = new THREE.Vector3();
@@ -855,8 +935,12 @@ export function sandsScenes(o: SandsScenesIn) {
         const back = 3.4 + room * f, ex = rp.x - ux * back + (rnd() - 0.5) * 0.6, ez = rp.z - uz * back + (rnd() - 0.5) * 0.6;
         const e = new Recipe();
         (rc.trail === 'arrows' ? ECHOES.arrows : kind === 'amphorae' ? ECHOES.amphora : rnd() < 0.5 ? ECHOES.crate : ECHOES.sack)(e, P, rnd);
-        const yaw = rnd() * 6, items = world(e, ex, ez, yaw, false);
+        const yaw = rnd() * 6;
+        let items = world(e, ex, ez, yaw, false);
         if (!fits(items, 0.6)) continue;
+        const n0 = e.items.length;
+        autoCover(e); items = world(e, ex, ez, yaw, false);
+        if (!fits(items.slice(n0), 0.6)) continue;
         emit(e, ex, 0, ez, yaw);
         for (const p of e.paints) paints.push({ ...p, ...toWorld(p.x, p.z, ex, ez, yaw), yaw });
         keepRec(echoes, { ...rec('echo', 'trail', ex, ez, yaw, items, { x: ex, z: ez }), echo: true });
@@ -870,12 +954,18 @@ export function sandsScenes(o: SandsScenesIn) {
     for (const sc of placed) if (Math.hypot(sc.x - x, sc.z - z) < (sc.kind === kind ? 30 : 13)) return false;
     // quick noes before the parts are made: a scene's middle is never on a spot, a rock, a court or past the edge
     if (keepClear(x, z) < 3.2 || (!far && (coverClear(x, z) < 0.3 || placeClear(x, z) < 2 || beyond(x, z) > -2))) return false;
-    for (let t = 0; t < 3; t++) {
+    for (let t = 0, tries = backed ? 3 : 2; t < tries; t++) {
       let rc = t === 0 ? o2.rc : undefined;
       if (!rc) { rc = new Recipe(); KINDS[kind](rc, P, rnd, { backed, far }); }
       const yaw = yaw0 + (t === 0 ? 0 : (rnd() - 0.5) * (o2.spread ?? 0.8));
-      const items = world(rc, x, z, yaw, far);
+      let items = world(rc, x, z, yaw, far);
       if (!fits(items)) continue;
+      if (!far) {
+        // the circles the measuring added must have room too (the declared ones have)
+        const n0 = rc.items.length;
+        autoCover(rc);
+        if (rc.items.length > n0) { items = world(rc, x, z, yaw, far); if (!fits(items.slice(n0))) continue; }
+      }
       let y = 0;
       if (far) { y = 1e9; for (const it of items) for (const [ox, oz] of [[0, 0], [it.r, 0], [-it.r, 0], [0, it.r], [0, -it.r]]) y = Math.min(y, land.height(it.x + ox - RING.x, it.z + oz - RING.z)); y -= 0.15; }
       emit(rc, x, y, z, yaw);
@@ -923,7 +1013,7 @@ export function sandsScenes(o: SandsScenesIn) {
     for (const kind of want) {
       const needsBack = kind === 'pots';
       let done = false;
-      for (let k = 0; k < 24 && !done; k++) {
+      for (let k = 0; k < 16 && !done; k++) {
         const a = rnd() * Math.PI * 2, d = pl.r + 5 + rnd() * 8, x = pl.x + Math.cos(a) * d, z = pl.z + Math.sin(a) * d;
         if (needsBack) {
           // a rock near the place's edge with free sand south of it
@@ -949,7 +1039,7 @@ export function sandsScenes(o: SandsScenesIn) {
       const sides = [side, -side].filter((sd) => { const x = cx - uz * sd * 7, z = cz + ux * sd * 7; return beyond(x, z) < -4 && keepClear(x, z) > 5 && placeClear(x, z) > 3 && coverClear(x, z) > 1.5; });
       if (!sides.length) { since -= 6; continue; }
       let ok = false;
-      for (const kind of pick(ROADSIDE).slice(0, 4)) {
+      for (const kind of pick(ROADSIDE).slice(0, 3)) {
         for (const [sd, extra] of [[sides[0], 0.6], [sides[0], 2.0], [sides[1] ?? 0, 0.6]]) {
           if (!sd) continue;
           const rc = new Recipe(); KINDS[kind](rc, P, rnd, { backed: false, far: false });
@@ -975,7 +1065,7 @@ export function sandsScenes(o: SandsScenesIn) {
   }
   // 6. The open sand between the places.
   const rmax = Math.max(...rim);
-  for (let k = 0, open = 0; k < 1200 && open < 6; k++) {
+  for (let k = 0, open = 0; k < 700 && open < 5; k++) {
     const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
     if (beyond(x, z) > -8 || roadClear(x, z) < 7 || placeClear(x, z) < 6 || keepClear(x, z) < 6 || coverClear(x, z) < 2) continue;
     if (placed.some((sc) => Math.hypot(sc.x - x, sc.z - z) < 13)) continue;
@@ -988,14 +1078,18 @@ export function sandsScenes(o: SandsScenesIn) {
     const len = Math.hypot(s.bx - s.ax, s.bz - s.az), ux = (s.bx - s.ax) / (len || 1), uz = (s.bz - s.az) / (len || 1);
     for (let d = 2; d < len - 2; d += 2) {
       gap += 2;
-      if (gap < 14 + rnd() * 8 || echoes.length >= 22) continue;
+      if (gap < 16 + rnd() * 8 || echoes.length >= 16) continue;
       const cx = s.ax + ux * d, cz = s.az + uz * d;
       if (placed.some((sc) => Math.hypot(sc.x - cx, sc.z - cz) < 9)) continue;
       const side = rnd() < 0.5 ? 1 : -1, off = 3.2 + rnd() * 1.2, x = cx - uz * side * off, z = cz + ux * side * off;
       const e = new Recipe(), kind = EK[Math.floor(rnd() * EK.length)];
       ECHOES[kind](e, P, rnd);
-      const yaw = rnd() * 6, items = world(e, x, z, yaw, false);
-      if (!fits(items, 0.8)) continue;
+      const yaw = rnd() * 6;
+      let items = world(e, x, z, yaw, false);
+      if (!fits(items, 0.8)) { gap -= 4; continue; } // no room here: the next try a few metres on
+      const n0 = e.items.length;
+      autoCover(e); items = world(e, x, z, yaw, false);
+      if (!fits(items.slice(n0), 0.8)) continue;
       emit(e, x, 0, z, yaw);
       for (const p of e.paints) paints.push({ ...p, ...toWorld(p.x, p.z, x, z, yaw), yaw });
       keepRec(echoes, { ...rec(`echo:${kind}`, 'verge', x, z, yaw, items, { x, z }), echo: true });
