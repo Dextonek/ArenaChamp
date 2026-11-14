@@ -56,30 +56,32 @@ tuned number (`tunedAs`) running from 4 (floor 31) to 5 (floor 40, as the War's 
 
 ## The checks (route bot, one run each, hero Lyra (ranged) and Bram (melee), on the final data)
 
-All 20 cleared, every one inside its par. Game seconds, falls:
+All 20 cleared, every one inside par x 1.5 and all but one (floor 37, Lyra) inside the par itself. Every fall was a lost gate duel;
+nobody fell in the zones. Game seconds, falls:
 
 | Floor | Par | Lyra | Bram |
 |---|---|---|---|
-| 31 | 1980 | 840 s, 0 | 891 s, 0 |
-| 32 | 2024 | 1925 s, 0 | 1300 s, 1 (a gate duel lost) |
-| 33 | 2068 | 1361 s, 0 | 1246 s, 0 |
-| 34 | 2112 | 1320 s, 0 | 1199 s, 0 |
-| 35 | 2156 | 1819 s, 5 (five gate duels lost to Hank, the sixth won) | 1339 s, 0 |
-| 36 | 2200 | 1555 s, 0 | 1343 s, 0 |
-| 37 | 2244 | 1295 s, 0 | 1431 s, 0 |
-| 38 | 2288 | 1340 s, 0 | 1119 s, 0 |
-| 39 | 2332 | 1507 s, 0 | 1343 s, 0 |
-| 40 | 2376 | 1294 s, 0 | 1352 s, 0 |
+| 31 | 1980 | 1207 s, 0 | 979 s, 1 |
+| 32 | 2024 | 1580 s, 0 | 1565 s, 1 |
+| 33 | 2068 | 1262 s, 0 | 1156 s, 0 |
+| 34 | 2112 | 1758 s, 0 | 1207 s, 0 |
+| 35 | 2156 | 1702 s, 2 (two gate duels lost to Hank) | 1360 s, 1 |
+| 36 | 2200 | 2006 s, 0 | 1540 s, 0 |
+| 37 | 2244 | 2350 s, 0 | 1375 s, 0 |
+| 38 | 2288 | 1835 s, 0 | 1194 s, 0 |
+| 39 | 2332 | 1267 s, 0 | 1314 s, 0 |
+| 40 | 2376 | 1501 s, 0 | 1351 s, 0 |
 
-No floor began again. The rulers all fell at the first try; on floor 40 the Sun Warden (tier 2) fell to Lyra in 106 s (30 % health
-left) and to Bram in 138 s (80 %). Alone, outside the climb (floor 10's crown set to tier 2, 8 fights each at full health): Lyra won 6
+No floor began again. The rulers all fell at the first try; on floor 40 the Sun Warden (tier 2) fell to Lyra in 84 s (full health
+left) and to Bram in 141 s (60 %). Alone, outside the climb (floor 10's crown set to tier 2, 8 fights each at full health): Lyra won 6
 of 8, Bram 2 of 8 (as at tier 1: 2 of 8); a loss comes back as a loss, never a hang.
 
 `_worldCheck` on all ten: nothing unreachable, at most 4 to 6 units near any spot, about 33,000 m2 of walkable ground each (floor 1:
 6,349).
 
-Speed (`perf.py scenes`, median frame, desktop / phone-4x): floor 1 9.9 / 29.8 ms; floor 35 8.1 / 25.3 ms; floor 31 8.1 / 20.7 ms.
-The longest single frame, the zone being built, is worse: floor 35 0.8 s / 3.8 s against floor 1's 0.14 s / 0.63 s.
+Speed (`perf.py scenes`, median frame, desktop / phone-4x): floor 1 8.9 / 28.9 ms; floor 35 7.8 / 26.1 ms; floor 31 7.9 / 19.7 ms.
+The longest single frame, the zone being built, is worse: floor 35 0.76 s / 3.9 s, floor 31 0.24 s / 1.0 s, against floor 1's
+0.14 s / 0.6 s.
 
 ## What the route bot taught (and the generator now does)
 
@@ -99,6 +101,7 @@ The longest single frame, the zone being built, is worse: floor 35 0.8 s / 3.8 s
 - The pools' elite is leashed at 34 m, not 24: a ranged hero steps back as it shoots, and the Lantern Thief gave up, healed on its way
   home, woke again and won (floor 36, Lyra, three falls). No pack grows by a unit of the generator's own: the fights grow by the
   floor's tuned number only.
+- Tracks leave a hall by its mouth, never under its wall (the Sands' lesson; a check refuses a layout with one).
 - Ridges are low (1.3 to 2.2 m) and the halls' walls 2.4 m: a ridge 3 to 5 m tall hid a hero standing just north of it.
 
 ## To make them again
