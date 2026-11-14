@@ -62,6 +62,8 @@ const state = {
   lobby: null as LobbyState | null,
   lobbySeat: 0,
   queue: { on: false, since: 0, size: 0 },
+  /** How many wait in the duel queue (the hub's `queue_size`, and `lobbies`), shown before Find match is pressed; -1 not known yet. */
+  queueWaiting: -1,
   /** The hero the queue was joined with (a random pick is drawn then). */
   queueHero: '',
   /** The open row of the heroes table ('' when none). */
@@ -427,7 +429,7 @@ function menuScreen() {
   const mode: PlayMode = guest ? 'cpu' : busy ? 'online' : playMode;
   const choice = cpuChoice(), hero = kitOf(choice);
   preview.show(hero?.model, hero);
-  const tab = (m: PlayMode, ic: keyof typeof ICONS, title: string, sub: string) => el('button', {
+  const tab = (m: PlayMode, ic: keyof typeof ICONS, title: string, sub: string, extra: HTMLElement | null = null) => el('button', {
     class: `mode${mode === m ? ' on' : ''}`, disabled: m === 'cpu' && busy, title: m === 'cpu' && busy ? 'Leave the queue or your lobby first' : '',
     onclick: () => {
       if (m === 'online' && guest) return go('login');
@@ -436,12 +438,12 @@ function menuScreen() {
       safeSet('play.mode', m);
       render();
     },
-  }, icon(ic), el('span', {}, el('b', {}, title), el('small', {}, sub)));
+  }, icon(ic), el('span', {}, el('b', {}, title), el('small', {}, sub), extra));
   return el('div', { class: 'hs' },
     heroShowcase(hero),
     el('section', { class: 'card hs-roster', 'data-keep-scroll': 'roster' },
       el('div', { class: 'modes' },
-        tab('online', 'play', 'Online match', guest ? 'Log in to fight a real player' : 'Against the next player in the queue'),
+        tab('online', 'play', 'Online match', guest ? 'Log in to fight a real player' : 'Against the next player in the queue', guest ? null : queueCount()),
         tab('cpu', 'cpu', 'CPU duel', 'Offline practice, five levels')),
       mode === 'cpu' ? cpuOptions(choice) : null,
       el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Choose your hero'), el('span', { class: 'muted small' }, `${kits.length} heroes`)),
@@ -665,6 +667,17 @@ function queueBar() {
   );
   updateQueueText(bar);
   return bar;
+}
+/** How many wait in the duel queue, as a small line (`.qcount`, kept up to date in place by `queue_size`). */
+function queueCount() {
+  return el('small', { class: 'qcount' }, queueWords());
+}
+function queueWords() {
+  const n = state.queueWaiting;
+  return n < 0 ? '' : n === 0 ? 'No one in the queue right now' : `${n} ${n === 1 ? 'player' : 'players'} in the queue`;
+}
+function showQueueCount() {
+  for (const e of root.querySelectorAll('.qcount')) e.textContent = queueWords();
 }
 /** The search text, in the queue bar or the Play screen's own bar. */
 function updateQueueText(scope: ParentNode = root) {
@@ -1475,6 +1488,7 @@ net.on('lobbies', (m) => {
   state.lobbies = m.list;
   state.raids = m.raids ?? [];
   state.live = m.live ?? [];
+  if (typeof m.queue === 'number' && m.queue !== state.queueWaiting) { state.queueWaiting = m.queue; showQueueCount(); }
   if ((state.screen === 'lobbies' || state.screen === 'raid') && !match.active && !watch.active && !coop.active && !raid.active) render();
 });
 net.on('lobby', (m) => {
@@ -1495,6 +1509,10 @@ net.on('lobby', (m) => {
   }
   if (!m.lobby && state.screen === 'lobby') state.screen = wasRaid ? 'raid' : 'lobbies';
   if (!match.active) render();
+});
+net.on('queue_size', (m) => {
+  state.queueWaiting = m.size;
+  showQueueCount();
 });
 net.on('queue', (m) => {
   state.queue = { on: m.on, since: m.since, size: m.size };

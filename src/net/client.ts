@@ -138,9 +138,11 @@ export type ServerMsg =
   // The week's boards: the best raid runs with others, and the highest Tower floors as the players' pages reported them.
   | { t: 'boards'; week: string; raid: RaidRow[]; tower: TowerRow[] }
   | { t: 'error'; error: string }
-  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[]; live?: LiveDuel[] }
+  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[]; live?: LiveDuel[]; queue?: number }
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
   | { t: 'queue'; on: boolean; since: number; size: number }
+  // How many wait in the duel queue, to everyone signed in and idle, when it changes.
+  | { t: 'queue_size'; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
   | { t: 'match_fight'; countdown: number; round?: number }
   | {

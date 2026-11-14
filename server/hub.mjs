@@ -1025,7 +1025,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       id: d.id, names: d.players.map((p) => p.name), heroes: d.players.map((p) => p.hero), round: d.round, score: d.score.slice(),
       watchers: d.watchers?.size ?? 0, since: d.startedAt || d.created,
     }));
-    return { t: 'lobbies', list, raids, live };
+    return { t: 'lobbies', list, raids, live, queue: queue.length };
   }
 
   function broadcastLobbies() {
@@ -1089,6 +1089,20 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (i >= 0) queue.splice(i, 1);
     c.queued = null;
     for (const q of queue) sendQueue(q);
+    queueSize();
+  }
+
+  /**
+   * How many wait in the queue, for everyone signed in and idle (the Play screen shows it before Find match is pressed): sent
+   * when the count changes. The queued have their own `queue` message; the count also rides on `lobbies` (`queue`), so a player
+   * back from a duel has it at once.
+   */
+  let queueSaid = -1;
+  function queueSize() {
+    if (queue.length === queueSaid) return;
+    queueSaid = queue.length;
+    const text = JSON.stringify({ t: 'queue_size', size: queue.length });
+    for (const c of clients) if (c.name && !c.match && !c.watching && !c.queued) sendText(c, text);
   }
 
   // --- the Climb's open world, stage 1: presence (pipeline/designs/climb-open-world.md) ---------------------------------
@@ -1222,6 +1236,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
     }
     for (const q of queue) sendQueue(q);
+    queueSize();
   }
 
   // --- matches --------------------------------------------------------------------------------------------

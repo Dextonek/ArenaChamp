@@ -418,6 +418,8 @@
 .mode span { display: flex; flex-direction: column; min-width: 0; }
 .mode b { font: 700 16px var(--display); letter-spacing: 0.05em; color: var(--text); }
 .mode small { font-size: 12px; }
+.mode small.qcount { color: #9df0b4; }
+.mode small.qcount:empty { display: none; }
 .mode:hover:not(:disabled):not(.on) { border-color: var(--line-gold); transform: translateY(-1px); color: var(--text); }
 .mode.on {
   border-color: var(--gold-hi); color: var(--text);

@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
+    title: 'A map of the floor, and who waits to duel',
+    live: false,
+    items: [
+      {
+        tag: 'Online',
+        title: 'See who waits to duel',
+        text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-14',
     title: 'The Climb grows to fifty floors',
     live: true,
     items: [
