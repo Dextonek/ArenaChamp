@@ -78,8 +78,9 @@ The pictures were taken with `pipeline/tools/world-shots.py` on `/game`, with th
 
 The scenes' first pass timed a whole Deep floor's build at 8 to 10 s on the phone profile, while the notes above give about 3.5 s for
 floor 35 and 1 s for floor 31. **Why the numbers differ:** the 1 s and 3.5 s are perf.py's longest *frame* in the world scene, not the
-build. `arena.build()` itself, timed with the processor slowed 4 times (each floor built once at full speed first), took 8.2 to 9.3 s
-on floors 31 and 35 alike, with a real graphics card or in software alike.
+build: the world scene sets the floor up before its frames are timed, and its longest frame is part of that setup at most.
+`arena.build()` itself, timed with the processor slowed 4 times (each floor built once at full speed first), took 8.2 to 9.3 s
+on floors 31 and 35 alike, with a real graphics card or in software alike: far more than any frame perf.py reported for them.
 
 **What costs what** (a processor profile of floor 35's build, slowed 4 times; 7.8 s in all):
 

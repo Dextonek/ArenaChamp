@@ -106,74 +106,92 @@ a few sticks. What changed (`src/tower/world/scenes/deep.ts`; `deepDepth.ts` and
 canvas, one line each: the canvas is made in the zone file and nowhere else):
 
 - **Main pieces that read, under the knee:** the camp on a 3 x 2.3 m tarp (or its plank table fallen flat), the cart's ore tub upside
-  down and 1.45 times wider with its ore fanned out, the collapse as a great heap of fallen rock (4 x 3 m) in paler stone than the
-  trodden floor (it was dark on dark) under its fallen timbers, the harvest with three crates of shards on a tarp, the survey's map twice
-  the size and a measuring line pegged out 5 m across the floor; the winch drawn 1.35 times with its chain run out, its skip, and the
-  pulley wheel fallen flat.
+  down and 1.45 times wider with its ore fanned out and its wheel set lying, the collapse as a great heap of fallen rock (4 x 3 m) in
+  paler stone than the trodden floor (it was dark on dark) under its fallen timbers, the harvest with three crates of shards on a tarp
+  (or the vein itself cut open, its stumps standing), the survey's map twice the size and a measuring line pegged out 5 m across the
+  floor; the winch drawn 1.35 times with its chain run out, the skip tipped on its side (or the rope's coil) and the pulley fallen flat.
 - **Three new kinds:** a **derailed train** at a rail junction (a spur of rails and its branch on their sleepers, the points' lever
-  lying, three ore tubs: one still on the rails, one jack-knifed off them, one upside down with its ore spilled), a **lift's cage** fallen
-  at the shaft's foot (the shaft's mouth ringed with stones and a gold line, the cage crushed flat, the cable coiled, the head-frame's
-  pulley wheel; against a rock, the cage on its side), a **flooded camp** where the black lake rose (puddles with pale rims, the tarp
-  drowned, crates and a barrel half in the water, a bedroll, a lamp on its side), only by the lake's edge.
+  lying, three ore tubs: one still on the rails, one jack-knifed off them, one upside down with its ore spilled; or a straight spur with
+  all three zigzagged along it and the buffer knocked down), a **lift's cage** fallen at the shaft's foot (the shaft's mouth ringed with
+  stones and a gold line, the cage crushed flat, the cable coiled, the head-frame's pulley wheel; against a rock, the cage on its side),
+  a **flooded camp** where the black lake rose (puddles with pale rims, the tarp drowned, crates and a barrel half in the water, a
+  bedroll, a lamp on its side; or one great pool with a tub upside down in it), only by the lake's edge.
+- **Two ways of being for every kind** but the wreck (past the edge only); the shrine also as a flat offering stone ringed with candles.
 - **A ground of their own,** painted into the cave floor's canvas before it is drawn (no geometry, no draw calls, never on a place):
   ash round the fires, trodden ground, ore dust fanned from the spills, rock dust from the collapse, violet dust at the harvests,
   puddles; footprints or a drag mark from a scene back to its track.
-- **Echoes:** about 20 single props a floor on the tracks' verges between the scenes (ore and chips, a dropped lamp, a pick, a sack, a
+- **Echoes:** 20 single props a floor on the tracks' verges between the scenes (ore and chips, a dropped lamp, a pick, a sack, a
   helmet, a loose sleeper, a coil of rope).
 - **More of them:** one every 26 to 36 m of track (was 40 to 55, at most seven), either verge; the places' surroundings take the new
   kinds (the yard a derailed train, the shaft a fallen cage, the shore a flooded camp); up to 30 on the walkable floor (was 24); the
   wreck placed early so the caps never leave it out.
+- **Made true to the shapes** (as in the Sands, `pipeline/tools/scenes-shape-sd.js`): each scene's footprint also takes its parts'
+  measured reach and height; parts on open ground trimmed under the knee (the wheel set, the barrow, the crates, the crushed cage, the
+  cairn, whose candle on top stood at 0.76 m and now stands at its foot); cylinders laid on their side centred (the rolled bedroll,
+  the wheel set's axle, the winch's drum, the oar, the spyglass, the picks). 0 vertices outside the footprint, 0 above what it declares.
 
 ### The views probe (the same as the Sands', `pipeline/tools/scenes-probe-sd.js`; echo props not counted)
 
 | Floor | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Scenes before / after | 20 / 28 | 20 / 30 | 21 / 29 | 22 / 30 | 23 / 31 | 20 / 31 | 19 / 29 | 21 / 31 | 22 / 27 | 20 / 29 |
+| Scenes before / after | 20 / 27 | 20 / 30 | 21 / 29 | 22 / 30 | 23 / 31 | 20 / 29 | 19 / 29 | 21 / 31 | 22 / 27 | 20 / 29 |
 | Echo props after | 20 | 20 | 20 | 20 | 20 | 20 | 20 | 20 | 20 | 20 |
-| Track views, in frame (%) | 70 / 81 | 66 / 86 | 72 / 84 | 69 / 87 | 83 / 88 | 69 / 95 | 71 / 88 | 81 / 93 | 87 / 85 | 74 / 92 |
-| All views, in frame (%) | 51 / 65 | 48 / 66 | 57 / 71 | 56 / 67 | 67 / 77 | 58 / 79 | 58 / 72 | 61 / 73 | 63 / 70 | 57 / 72 |
-| Track views, inner 80% (%) | 49 / 56 | 48 / 59 | 50 / 60 | 52 / 78 | 62 / 68 | 49 / 78 | 55 / 77 | 56 / 74 | 65 / 63 | 49 / 73 |
-| All views, inner 80% (%) | 36 / 48 | 34 / 51 | 39 / 53 | 42 / 54 | 46 / 56 | 38 / 57 | 39 / 56 | 43 / 54 | 45 / 51 | 40 / 54 |
+| Track views, in frame (%) | 70 / 84 | 66 / 95 | 72 / 86 | 69 / 88 | 83 / 86 | 69 / 91 | 71 / 83 | 81 / 95 | 87 / 90 | 74 / 82 |
+| All views, in frame (%) | 51 / 67 | 48 / 71 | 57 / 71 | 56 / 67 | 67 / 72 | 58 / 74 | 58 / 70 | 61 / 74 | 63 / 74 | 57 / 69 |
+| Track views, inner 80% (%) | 49 / 72 | 48 / 80 | 50 / 70 | 52 / 76 | 62 / 64 | 49 / 72 | 55 / 61 | 56 / 81 | 65 / 71 | 49 / 68 |
+| All views, inner 80% (%) | 36 / 49 | 34 / 54 | 39 / 52 | 42 / 52 | 46 / 53 | 38 / 52 | 39 / 51 | 43 / 57 | 45 / 53 | 40 / 53 |
 
 The aim (70% of track views, 45% of all) is met in frame on every floor; in the inner 80% of the screen all views meet it on every
-floor and track views on five (31, 32, 33, 35 and 39 stay at 56 to 68%; floor 39's went from 65 to 63%).
+floor and track views on seven (35, 37 and 40 reach 64, 61 and 68%).
 
 ### The checks
 
-- **Overlap probe:** 0 hits on all ten floors.
+- **Overlap probe:** 0 hits on all ten floors; **shape check:** 0 outside, 0 too tall.
 - **`_worldCheck`, floors 31 to 40:** the same as before: nothing unreachable, reachable 33,301 to 33,964 m², most units near any point
   4 or 5.
-- **Build time on the phone profile** (processor slowed 4 times; old and new code alternated in one session, two builds each): the
-  scenes' own time 48 to 66 ms before, 46 to 100 ms after (about +25 ms); the whole depth (`buildDeepDepth`, which also copies the
-  scenes into its meshes) 191 to 275 ms before, 200 to 330 ms after. Both well inside the +150 ms bar and the build's own swing.
+- **Nothing moved:** with the scenes switched off, floors 31 and 35 build byte for byte the same under the tower-50 code and this one.
+- **Build time on the phone profile** (processor slowed 4 times; old and new code alternated, the machine loaded by other agents): the
+  scenes' own time, each code's fastest builds, 37 ms before and 66 ms after on floor 31, 28 and 42 ms on floor 35; earlier runs under a
+  steadier load gave about +25 to +90 ms. Inside the +150 ms bar. (The whole floor now builds in about a third of the time: see the
+  depth's README.)
 - Pictures: `refine/fNN-sheet.jpg` (floors 31, 35, 38; before left, after right; mid and close from the game's camera with the dark
   law's layer hidden, as in the first pass) and the single pictures beside them; `refine/f35-wide-*` at the game's farthest zoom.
 
 ### Speed (both chapters' refinement)
 
 `perf.py scenes --profiles desktop,phone-4x --scenes world-3,gen-26,world-4,gen-35`, 1500 frames each, the tower-50 code (old) and the
-refined (new) alternated (A1 old, B1 new, A2 old, B2 new), then two more pairs on phone-4x for world-3, gen-26 and world-4, other agents
-running at the same time. Median / p99 frame (ms):
+refined (new) alternated, other agents running at the same time. Median / p99 frame (ms).
 
-| Profile, scene | A1 old | B1 new | A2 old | B2 new | A3 old | B3 new | A4 old | B4 new | draws old / new | triangles old / new | fight print |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| desktop world-3 | 12.4 / 33.2 | 14.6 / 33.8 | 13.1 / 29.6 | 14.1 / 47.6 | | | | | 187 / 187 | 395k / 421k | d69d7802 |
-| desktop gen-26 | 10.3 / 31.2 | 10.7 / 38 | 9.8 / 30.6 | 9.3 / 33.6 | | | | | 250 / 250 | 402k / 433k | 361c2602 |
-| desktop world-4 | 8.4 / 18.8 | 8.6 / 28.2 | 6.5 / 18.5 | 8 / 19.5 | | | | | 154 / 154 | 325k / 337k | a9a39789 |
-| desktop gen-35 | 8 / 22.4 | 10.4 / 24.6 | 8.4 / 18.5 | 8.5 / 18.6 | | | | | 171 / 171 | 348k / 356k | 5f524a6f |
-| phone-4x world-3 | 50.7 / 163.9 | 58.5 / 167.6 | 54.5 / 173.5 | 62 / 159 | 50.5 / 123.3 | 44.2 / 116.1 | 46.7 / 114.3 | 45.7 / 115.1 | 194 / 195 | 396k / 427k | d69d7802 |
-| phone-4x gen-26 | 43.3 / 151.9 | 45.1 / 213.5 | 41.5 / 154.6 | 46.2 / 222.3 | 34.9 / 153.8 | 36.5 / 140.3 | 39.2 / 165.3 | 34.8 / 137.8 | 254 / 255 | 404k / 433k | 361c2602 |
-| phone-4x world-4 | 34.2 / 90.2 | 40.8 / 90.5 | 35.9 / 90.6 | 37.1 / 104.4 | 32.4 / 73 | 29.8 / 61 | 30.7 / 62.6 | 31.7 / 86.8 | 157 / 157 | 326k / 337k | a9a39789 |
-| phone-4x gen-35 | 40.4 / 231.2 | 40.7 / 101.9 | 37.8 / 105.5 | 34.4 / 70.9 | | | | | 174 / 174 | 348k / 356k | 5f524a6f |
+On the final code (A1 old, B1 new, A2 old, B2 new):
+
+| Profile, scene | A1 old | B1 new | A2 old | B2 new | draws old / new | triangles old / new | fight print |
+|---|---|---|---|---|---|---|---|
+| desktop world-3 | 18.1 / 40.3 | 9.2 / 26.1 | 10.9 / 24.2 | 13.2 / 34.2 | 187 / 187 | 395k / 411k | d69d7802 |
+| desktop gen-26 | 14.4 / 69.4 | 5.9 / 23.4 | 9.7 / 35.8 | 10.3 / 34.6 | 250 / 250 | 402k / 425k | 361c2602 |
+| desktop world-4 | 10.6 / 22.3 | 5.6 / 14.3 | 11.4 / 22 | 9.2 / 18.1 | 154 / 154 | 325k / 340k | a9a39789 |
+| desktop gen-35 | 11.5 / 23.1 | 5 / 13.7 | 5.4 / 13.7 | 9.5 / 18.4 | 171 / 171 | 348k / 360k | 5f524a6f |
+| phone-4x world-3 | 71.3 / 578.8 | 30.7 / 72.6 | 32.1 / 79.9 | 38.6 / 151.1 | 194 / 194 | 396k / 412k | d69d7802 |
+| phone-4x gen-26 | 25.9 / 173 | 24.4 / 97.6 | 25.1 / 103.6 | 33.5 / 136.9 | 254 / 255 | 404k / 425k | 361c2602 |
+| phone-4x world-4 | 20.6 / 63.2 | 17.5 / 43 | 19 / 42.8 | 28.3 / 67.6 | 157 / 157 | 326k / 340k | a9a39789 |
+| phone-4x gen-35 | 25.6 / 82.5 | 27 / 72.6 | 29.3 / 64.7 | 25.9 / 53.5 | 174 / 174 | 348k / 360k | 5f524a6f |
+
+On an earlier layout of the same refinement (before the footprints were measured; four pairs on the phone profile):
+
+| Profile, scene | A1 old | B1 new | A2 old | B2 new | A3 old | B3 new | A4 old | B4 new | draws old / new | fight print |
+|---|---|---|---|---|---|---|---|---|---|---|
+| desktop world-3 | 12.4 / 33.2 | 14.6 / 33.8 | 13.1 / 29.6 | 14.1 / 47.6 | | | | | 187 / 187 | d69d7802 |
+| desktop gen-26 | 10.3 / 31.2 | 10.7 / 38 | 9.8 / 30.6 | 9.3 / 33.6 | | | | | 250 / 250 | 361c2602 |
+| phone-4x world-3 | 50.7 / 163.9 | 58.5 / 167.6 | 54.5 / 173.5 | 62 / 159 | 50.5 / 123.3 | 44.2 / 116.1 | 46.7 / 114.3 | 45.7 / 115.1 | 194 / 195 | d69d7802 |
+| phone-4x gen-26 | 43.3 / 151.9 | 45.1 / 213.5 | 41.5 / 154.6 | 46.2 / 222.3 | 34.9 / 153.8 | 36.5 / 140.3 | 39.2 / 165.3 | 34.8 / 137.8 | 254 / 255 | 361c2602 |
+| phone-4x world-4 | 34.2 / 90.2 | 40.8 / 90.5 | 35.9 / 90.6 | 37.1 / 104.4 | 32.4 / 73 | 29.8 / 61 | 30.7 / 62.6 | 31.7 / 86.8 | 157 / 157 | a9a39789 |
 
 - **The same fights** in every run (the prints match each other and the first pass's).
-- **Draw calls: the same** on desktop; one more on the phone profile on world-3 and gen-26 (a scene lands in a 96 m square of the
-  Sands' depth that had nothing in it). Triangles: about 26k to 31k more on a Sands floor, 8k to 12k on a Deep floor.
-- **Frame times: inside the noise, but read with care.** In the first two pairs the new Sands floors were slower on the phone profile
-  (world-3: 58.5 and 62 ms against 50.7 and 54.5; gen-26 45.1 and 46.2 against 43.3 and 41.5) and desktop world-3 by 1 to 2 ms. The next
-  two pairs went the other way (world-3: 44.2 and 45.7 against 50.5 and 46.7; gen-26 36.5 and 34.8 against 34.9 and 39.2). Over the four
-  pairs the old and new means are 50.6 and 52.6 ms (world-3), 39.7 and 40.7 ms (gen-26), 33.3 and 34.9 ms (world-4). The A runs alone
-  differ by up to 8 ms. No cost shows above that, but a cost of 1 to 2 ms could hide in it.
+- **Draw calls: the same** on desktop; one more on the phone profile on gen-26 (a scene in a 96 m square of the Sands' depth that had
+  nothing in it). Triangles: about 16k to 23k more on a Sands floor, 12k on a Deep floor.
+- **Frame times: inside the noise, which is large.** On the final code B1 is faster than A1 everywhere and B2 slower than A2 on most:
+  the A runs alone differ by up to 7 ms on desktop and 39 ms on the phone (world-3). On the earlier layout the first two phone pairs
+  leaned slower (world-3 58.5 and 62 against 50.7 and 54.5), the next two the other way; over its four pairs the means were 50.6 and
+  52.6 ms (world-3), 39.7 and 40.7 (gen-26), 33.3 and 34.9 (world-4). No cost shows above the noise; a cost of 1 to 2 ms could hide in it.
 - The perf result files were deleted afterwards.
 
 Why the whole Deep floor takes seconds to build, and the fix (2026-11-14): `docs/tower/climb50/deep/depth/README.md`, "The floor build's time".

@@ -78,7 +78,9 @@ scenes are small: they are made to be found while walking, at the game's camera.
 ## The refinement (2026-11-14, "continue more refine")
 
 The lead, on the first pass: too small to read from the game's camera, floating on the sand, too few in view, the wagon and the jackal
-small dark shapes. What changed (`src/tower/world/scenes/sands.ts`; `sandsDepth.ts` only hands the scenes the ground's canvas):
+small dark shapes. What changed (`src/tower/world/scenes/sands.ts`; in `sandsDepth.ts` two things, both where the cost or the canvas
+lives: it hands the scenes the ground's canvas, and its merge takes the scenes' copies as ready typed blocks, the same vertices in the
+same order, hashed the same, because growing plain arrays one number at a time was a third of the scenes' build time on the phone):
 
 - **A main piece that reads, on the ground a hero walks on** (all under knee height): the caravan's cart bed fallen flat off its wheels,
   a striped awning torn down; a great standard fallen, or a chariot upside down; a dig of 4 x 3 m, or a 6 m trench with its finds laid
@@ -88,60 +90,64 @@ small dark shapes. What changed (`src/tower/world/scenes/sands.ts`; `sandsDepth.
   ropes slack to their pegs; against a rock, half standing on its back pole), a line of **amphorae** half buried (or a heap of them by
   their split crate), a **water-wheel** fallen by its dry channel (3.2 m across, lying flat by the channel's cracked bed between low
   kerbs; against a rock, standing upright at the channel's head, its face to the camera).
-- **Two or three ways of being for every kind** (above), so floors 22 and 29 do not repeat.
+- **Two or three ways of being for every kind** but the ribs (past the edge only), so floors 22 and 29 do not repeat; the pots by a
+  tomb now also stand in a row with two smashed.
 - **The jackal** 1.45 times larger with three gold bands of its headdress round its head and a pale drift painted round it; a second way
   with the statue's broken base and forepaws. **The wagon** carries a cream canvas on its hoops (or, the second way, its sacks spill
   into the drift), 1.15 times larger.
-- **A ground of their own**, painted into the sand's canvas before it goes to the graphics card (no geometry, no draw calls; about 1 ms
+- **A ground of their own**, painted into the sand's canvas before it goes to the graphics card (no geometry, no draw calls, about 1 ms
   a floor, never inside a court): trampled sand under each scene, spice fanned out from the split sacks in red, ochre and grain, pale
   drifts, spoil, the channel's cracked bed; and what leads back to the road: two wheel ruts from a cart or a wagon, footprints, a drag
   mark from the tent.
-- **Echoes:** single props on the road's verges between the scenes (a crate, a sack and its spilled spice, a jar, a basket, a wheel,
-  arrows): about 22 a floor, every 14 to 22 m where no scene is near; and on the way from a fight to its road, arrows stuck in the
-  sand; where a cart's ruts leave the road, a crate or sack dropped on the verge.
+- **Echoes:** 16 single props a floor on the roads' verges between the scenes (a crate, a sack and its spilled spice, a jar, a basket,
+  a wheel, arrows), every 16 to 24 m where no scene is near; arrows stuck in the sand on the way from a fight to its road; a crate or a
+  sack dropped where a cart's ruts leave the road.
 - **More of them, where players walk:** one every 26 to 38 m of road (was 45 to 60), either verge; the places' surroundings take a tent,
-  a water-wheel, amphorae as well; up to 32 on the walkable sand (was 24) and up to three past the edge, placed early so they are never
-  left out (one of each kind).
-- Kerbs and the well's blocks keep the turquoise to a thin line (a full turquoise cap read loud).
+  a water-wheel or amphorae as well; up to 28 on the walkable sand (was 24) and up to three past the edge, placed early so they are
+  never left out (one of each kind).
+- Kerbs keep the turquoise to a thin line (a full turquoise cap read loud).
+- **Made true to the shapes.** A check that measures every vertex of every part (`pipeline/tools/scenes-shape-sd.js`) found that the
+  footprints the probe trusts were hand-set circles, and some parts reached up to 2.8 m past them or stood above the knee on open sand
+  (a tilted wheel at 0.69 m, the sundial at 0.8 m, arrows, the well's jar; some of it from the first pass). Now each scene's footprint
+  also takes its parts' measured reach and height (`autoCover`), the open-ground parts are trimmed under the knee, and cylinders laid on
+  their side are centred (the tent's ridge pole had run 6.4 m to one side; the standard's pole, the spears, the staff and the well's drum
+  were half a length off). The check: 0 vertices outside the footprint, 0 above what it declares, on every kind and way, 80 draws each.
 
 ### The views probe
 
-`pipeline/tools/scenes-probe-sd.js` now also puts the game's camera (heroMode.ts: (0, 15, 10.5) times the zoom 1.25, looking at the
-hero's feet, 50 degrees, 16:9) at a point every 8 m along every road and on an 8 m grid over the walkable ground, and counts a view when a
-scene's main piece is in frame. The literal bar (in frame anywhere) was already met by the first pass on most floors, while the lead saw
-"most views show none": a scene at the screen's very edge is 40 m off at the top corners and not seen at a glance. So the work was steered
-by the **inner 80% of the screen**; both are given. Echo props are not counted.
+`pipeline/tools/scenes-probe-sd.js` puts the game's camera (heroMode.ts: (0, 15, 10.5) times the zoom 1.25, looking at the hero's feet,
+50 degrees, 16:9) at a point every 8 m along every road and on an 8 m grid over the walkable ground, and counts a view when a scene's
+main piece is in frame. The literal bar (in frame anywhere) was already met by the first pass on most floors, while the lead saw "most
+views show none": a scene at the screen's very edge is 40 m off at the top corners and not seen at a glance. So the work was steered by
+the **inner 80% of the screen**; both are given. Echo props are not counted.
 
 | Floor | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Scenes before / after | 24 / 29 | 20 / 30 | 21 / 33 | 20 / 34 | 23 / 31 | 20 / 33 | 21 / 32 | 23 / 32 | 22 / 32 | 20 / 31 |
-| Echo props after | 20 | 22 | 22 | 22 | 22 | 22 | 22 | 22 | 22 | 22 |
-| Road views, in frame (%) | 62 / 87 | 60 / 87 | 79 / 88 | 80 / 94 | 84 / 77 | 73 / 85 | 72 / 91 | 71 / 81 | 78 / 89 | 73 / 89 |
-| All views, in frame (%) | 54 / 71 | 56 / 72 | 57 / 75 | 57 / 77 | 59 / 68 | 57 / 75 | 56 / 76 | 59 / 69 | 57 / 79 | 62 / 67 |
-| Road views, inner 80% (%) | 50 / 74 | 39 / 59 | 69 / 77 | 62 / 73 | 58 / 70 | 50 / 64 | 55 / 76 | 55 / 67 | 57 / 68 | 57 / 71 |
-| All views, inner 80% (%) | 39 / 52 | 40 / 51 | 42 / 56 | 39 / 60 | 43 / 52 | 38 / 56 | 42 / 56 | 43 / 53 | 39 / 56 | 42 / 50 |
+| Scenes before / after | 24 / 29 | 20 / 29 | 21 / 30 | 20 / 31 | 23 / 27 | 20 / 31 | 21 / 29 | 23 / 30 | 22 / 30 | 20 / 29 |
+| Echo props after | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 |
+| Road views, in frame (%) | 62 / 92 | 60 / 75 | 79 / 92 | 80 / 87 | 84 / 83 | 73 / 91 | 72 / 78 | 71 / 85 | 78 / 81 | 73 / 88 |
+| All views, in frame (%) | 54 / 76 | 56 / 74 | 57 / 73 | 57 / 67 | 59 / 68 | 57 / 76 | 56 / 71 | 59 / 69 | 57 / 64 | 62 / 69 |
+| Road views, inner 80% (%) | 50 / 79 | 39 / 62 | 69 / 78 | 62 / 73 | 58 / 63 | 50 / 68 | 55 / 66 | 55 / 73 | 57 / 64 | 57 / 72 |
+| All views, inner 80% (%) | 39 / 54 | 40 / 52 | 42 / 52 | 39 / 49 | 43 / 49 | 38 / 57 | 42 / 52 | 43 / 52 | 39 / 47 | 42 / 49 |
 
-The aim (70% of road views, 45% of all) is met in frame on every floor and in the inner 80% on seven floors of ten for the roads (22,
-26 and 28 at 59 to 67%) and on all ten for all views. Floor 25's road views in frame went down (84 to 77%) while its inner ones went up.
+The aim (70% of road views, 45% of all) is met in frame on every floor. In the inner 80% of the screen all views meet it on every floor,
+road views on five (21, 23, 24, 28, 30); the other five reach 62 to 68%. Floor 25's road views in frame went from 84 to 83%.
 
 ### The checks
 
 - **Overlap probe:** 0 hits on all ten floors (every part of every scene and echo against the floor's spots, roads, cover, courts and
-  stands, the outline and knee height).
+  stands, the outline and knee height); **shape check:** 0 outside, 0 too tall.
 - **`_worldCheck`, floors 21 to 30:** the same as before: nothing unreachable, reachable 33,938 to 34,305 m², most units near any point 5
   (floor 21: 3).
+- **Nothing moved:** with the scenes switched off (`window.__noScenes`), floors 21 and 26 build byte for byte the same (every vertex
+  attribute, instance matrix and painted map hashed) under the tower-50 code and this one.
 - **Build time on the phone profile** (the processor slowed 4 times, as perf.py's phone-4x; each floor built once at full speed first),
-  the scenes' own time, the old and the new code back to back in the same session, alternating (new, old, new, old; two builds each):
-
-  | Floor | old (ms) | new (ms) |
-  |---|---|---|
-  | 21 | 71, 115, 75, 65 | 173, 190, 183, 186 |
-  | 26 | 52, 82, 52, 63 | 164, 162, 176, 163 |
-
-  About +105 ms a floor (the bar: +150). Most of it is copying the larger scenes' vertices into the merged meshes (about 150k vertices a
-  floor); the shapes were thinned for it (three-sided trims, coarser sacks, wheels and amphorae) and the planner gives up early where a
-  verge has no room. The whole floor build swings by more than a second from one build to the next, so it cannot show this.
+  the scenes' own time, the tower-50 code and this one alternated in one session: the machine was loaded by other agents and the same
+  build swung from 60 to 400 ms between runs, so the fairest reading is each code's fastest builds: floor 21 82 ms before, 91 ms after;
+  floor 26 57 ms before, 62 ms after. An alternation under a steadier load one step before the final code (the same planner, before the
+  last shape fixes) gave +95 ms on floor 21 and about +128 ms on floor 26 (the bar: +150). Most of the cost is copying
+  the scenes' vertices into the merged meshes and the room checks; the shapes were thinned (three-sided trims, coarser sacks, wheels and
+  amphorae), the checks read a grid of 8 m cells, and a verge with no room is left for a few metres.
+- **Frame speed:** in the Deep's README ("Speed (both chapters' refinement)").
 - Pictures: `refine/fNN-sheet.jpg` (floors 21, 26, 29; before left, after right; mid at the game's zoom 1.25, close at 0.7) and the
   single pictures beside them; `refine/f26-wide-*` at the game's farthest zoom.
-
-- **Frame speed:** both chapters were measured in one A/B (four alternating pairs on the phone profile); the table is in `docs/tower/climb50/deep/scenes/README.md` ("Speed (both chapters' refinement)"): the same draw calls on desktop (one more on the phone profile), the same fights, frame times inside the noise.
