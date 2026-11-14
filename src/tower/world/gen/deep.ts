@@ -245,11 +245,14 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     .map((p) => L.reserve(L.spot(p, 4, 1.5, clear), 2.5));
 
   // Two named enemies (floor 31: the Pale One alone): one walks a loop round the middle, one the west side. Their ways are kept clear.
-  const patrol1: V[] = [-60, 30, 120, 210].map((a) => L.spot(add(middle, polar(a + range(-15, 15), range(18, 26))), 3, 2, (q) => farFromPacks(q, 16)));
+  // Small loops walked slowly: a named enemy's home is where its patrol is now (packs.ts), and it gives up 24 m from it, so on a loop 50 to
+  // 75 m round (the first bake's) a slow fight drifted from it, it walked off healing, and a melee hero never felled it (floor 34, Bram).
+  const loop = (c: V, ok: (q: V) => boolean) => [45, 135, 225, 315].map((a) => L.spot(add(c, polar(a + range(-15, 15), range(8, 10))), 2, 2, ok));
+  const patrol1: V[] = loop(middle, (q) => farFromPacks(q, 16));
   for (let i = 0; i < 4; i++) L.lane(patrol1[i], patrol1[(i + 1) % 4], 1.8);
-  const patrol2: V[] = home ? [] : [at(range(-125, -115), 0.5), at(range(-95, -85), 0.52), at(range(-65, -55), 0.52), at(range(-40, -30), 0.5)].map((p) => L.spot(p, 4, 2, (q) => packSpots.every((s) => dist(s, q) > 20)));
-  for (let i = 1; i < patrol2.length; i++) L.lane(patrol2[i - 1], patrol2[i], 1.8);
-  const patrol2Loop = [...patrol2, ...patrol2.slice(1, 3).reverse()];
+  const patrol2: V[] = home ? [] : loop(at(range(-95, -70), 0.5), (q) => packSpots.every((s) => dist(s, q) > 20));
+  for (let i = 0; i < patrol2.length; i++) L.lane(patrol2[i], patrol2[(i + 1) % patrol2.length], 1.8);
+  const patrol2Loop = patrol2;
   const patrolPts = [...patrol1, ...patrol2];
 
   // Waystones: one by each place but the yard, on the camp's side of it, clear of the packs (and further from the lurkers, whom the dark
@@ -342,7 +345,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       { id: 'h2', at: H2.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
       { id: 'h3', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }] },
       { id: 'pools', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
-      { id: 'pale', at: patrol1[0], mix: [{ kind: 'pale', n: 1 }], named: { name: 'The Pale One', speed: 1.5, patrol: patrol1, bounty: { shards: 45, relic: true } } },
+      { id: 'pale', at: patrol1[0], mix: [{ kind: 'pale', n: 1 }], named: { name: 'The Pale One', speed: 1.0, patrol: patrol1, bounty: { shards: 45, relic: true } } },
     ]
     : [
       { id: 'a', at: H1.c, leash: 24, mix: [{ kind: 'mite', n: 3 + moreMites }, { kind: 'golem', n: 1 }] },
@@ -350,8 +353,8 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       { id: 'c', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }, { kind: 'mite', n: moreMites }].filter((x) => x.n > 0) },
       { id: 'y', at: Y.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
       { id: 'd', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 + moreMites }], elite: 'thief' },
-      { id: 'named1', at: patrol1[0], mix: [{ kind: 'named1', n: 1 }], named: { name: named1, speed: 1.5, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },
-      { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'named2', n: 1 }], named: { name: named2, speed: 1.6, patrol: patrol2Loop, bounty: { shards: shard(40), relic: false } } },
+      { id: 'named1', at: patrol1[0], mix: [{ kind: 'named1', n: 1 }], named: { name: named1, speed: 1.0, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },
+      { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'named2', n: 1 }], named: { name: named2, speed: 1.0, patrol: patrol2Loop, bounty: { shards: shard(40), relic: false } } },
     ];
 
   // --- the set pieces: the ruler (the Prism Mother's moves, another body and name), the gate, the trial, the rival ------------------

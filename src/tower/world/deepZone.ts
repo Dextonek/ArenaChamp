@@ -382,7 +382,7 @@ export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: 
   own.push(plane, map, groundMat);
   // the black water: still, a little glossy, lit only by what glows over it
   const waterGeo = new THREE.PlaneGeometry(SIZE, SIZE).rotateX(-Math.PI / 2);
-  const waterMat = new THREE.MeshStandardMaterial({ color: 0x070b16, roughness: 0.12, metalness: 0.4, envMapIntensity: 0.6 });
+  const waterMat = new THREE.MeshStandardMaterial({ color: 0x03050b, roughness: 0.06, metalness: 0, envMapIntensity: 0.08 });
   const waterMesh = new THREE.Mesh(waterGeo, waterMat);
   waterMesh.position.set(RING.x, WATER, RING.z);
   g.add(waterMesh);
