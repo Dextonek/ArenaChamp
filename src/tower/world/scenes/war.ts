@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import type { Battlefield, WarLook } from '../warZone';
 
@@ -53,7 +54,7 @@ export interface WarScenesLog { seed: number; floor?: number; scenes: WarScene[]
  * sees the game's, whichever copy of the module the dev server handed each). */
 const G = globalThis as unknown as { __warScenesLog?: Map<number, WarScenesLog> };
 export const warScenesLog: Map<number, WarScenesLog> = G.__warScenesLog ?? (G.__warScenesLog = new Map());
-export const warScenesOn = () => (globalThis as unknown as { __warScenes?: boolean }).__warScenes !== false;
+export const warScenesOn = () => (globalThis as unknown as { __warScenes?: boolean }).__warScenes !== false && !scenesOff();
 
 /** Knee height: the most a scene in the walkable ground may rise. */
 export const KNEE = 0.6;

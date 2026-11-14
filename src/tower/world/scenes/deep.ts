@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import { rimAt } from '../land';
 import type { DeepLook } from '../deepZone';
@@ -34,7 +35,7 @@ export interface SceneItem { x: number; z: number; r: number; h: number; far: bo
 export interface SceneRec { kind: string; where: string; x: number; z: number; yaw: number; items: SceneItem[] }
 
 /** For the before-and-after pictures and the speed A/B: `VITE_NO_SCENES=1` at the dev server, or `window.__noScenes = true` before a floor is built. */
-export const scenesOff = () => import.meta.env.VITE_NO_SCENES === '1' || !!(globalThis as { __noScenes?: boolean }).__noScenes;
+export { scenesOff };
 
 /** The Deep's colours (deepDepth.ts's, the heroes' palette; violet is the Deep's own); `G` gold, `L` lit. */
 const C = {

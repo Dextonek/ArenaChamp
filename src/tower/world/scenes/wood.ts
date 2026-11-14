@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import type { WoodLook } from '../gen/wood';
 import { rimAt } from '../land';
@@ -362,9 +363,7 @@ const BY_PLACE: Record<string, string[]> = {
 /** Kinds for the trails' verges and the open glades. */
 const ROADSIDE = ['woodcut', 'hunters', 'logcart', 'hive', 'gatherer', 'trap', 'offering', 'wall', 'fallen', 'fight', 'picnic'];
 
-export function scenesOff() {
-  return typeof location !== 'undefined' && /[?&]scenes=off\b/.test(location.search);
-}
+export { scenesOff };
 
 /** Plans and adds the scenes of one Wood floor; returns where they stand (for the probe). */
 export function buildWoodScenes(o: WoodScenesIn): Placed[] {

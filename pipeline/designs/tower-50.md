@@ -211,3 +211,12 @@ today's area, not a circle.
   - On floor 46 an AI goal at (0, -76) cannot be reached, so the whole field is searched every frame. That is a rule question.
   - `pipeline/rustfull/guard.py` already failed before this change, on the engine files edited since its last stamp. Its Rust port needs
     a look before it is trusted again.
+- **Scenes, all fifty floors (2026-11-14).** The user: "lets go through all floors and lets add some depth again, like props on the maps,
+  make actual scenarios". Three agents, a chapter's scenes each in `src/tower/world/scenes/<chapter>.ts`, called last from the chapter's
+  depth (looks only, their own random stream, nothing that was there moves): small groups of props that tell what happened (a stall knocked
+  over, a camp left in a hurry, an ambushed caravan, the miners' last camp, where the lines met). Sea 20 to 27 a floor, Wood 20 to 29,
+  Sands 20 to 24, Deep 19 to 23, War 16 to 25 (the most on 48 to 50). Anything above the knee stands against cover or past the edge. The
+  floors' keep spots (`floorKeep`) now reach every chapter's depth. Overlap probes (`pipeline/tools/scenes-probe.js`, `scenes-probe-sd.js`,
+  `war-scenes-probe.js`): 0 hits on every floor; `_worldCheck` unchanged on all fifty. Cost: a floor's build 0.05 to 0.28 s longer on the
+  phone profile; frames inside the noise (the War's and the Deep's in the depth's own batch, matte and shadowless). One switch for all:
+  `?scenes=off`, `VITE_NO_SCENES=1` or `globalThis.__noScenes` (`scenes/off.ts`). Pictures and numbers: `docs/tower/climb50/<chapter>/scenes/`.

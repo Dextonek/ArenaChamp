@@ -61,6 +61,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'Something happened here',
+        text: 'Every floor now has twenty or so little scenes along its roads and in its open ground: on the coast a fish stall knocked over and a ship wrecked on the far rocks; in the Wood an axe left in a half-split log and a hunter\'s camp left in a hurry; in the Sands what an ambush left of a caravan, an abandoned dig and a great beast\'s ribs; in the Deep the miners\' last camp and a boat half sunk in the black lake, its lantern still lit; in the War the shields of both armies where the lines met, a field hospital and a burned-out farm.',
+      },
+      {
+        tag: 'Tower',
         title: 'Each chapter has its own way',
         text: 'In the Wood, walls of roots close some passes by turns. In the Sands, a wall of sand crosses the valley: wait it out behind a rock, and keep the caravan in a rock\'s lee. In the Deep, only crystals, lamps and touched waystones give light. In the War, take a banner and its soldiers fight beside you.',
       },

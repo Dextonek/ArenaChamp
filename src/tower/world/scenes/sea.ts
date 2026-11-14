@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import { WATER, rimAt, type Geo, type Key, type LandSpec } from '../land';
 
@@ -525,9 +526,7 @@ const BY_PLACE: Record<string, string[]> = {
 /** Kinds for the roads' verges and the open ground. */
 const ROADSIDE = ['cart', 'fire', 'nets', 'pots', 'fight', 'flotsam', 'anchor', 'washing', 'barrels', 'stall', 'memorial'];
 
-export function scenesOff() {
-  return typeof location !== 'undefined' && /[?&]scenes=off\b/.test(location.search);
-}
+export { scenesOff };
 
 /** Plans and adds the scenes of one sea floor; returns where they stand (for the probe). */
 export function buildSeaScenes(o: SeaScenesIn): Placed[] {
