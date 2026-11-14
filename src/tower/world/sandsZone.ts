@@ -73,7 +73,7 @@ function noiseOf(seed: number) {
 // --- the palette (sRGB): the ground's colours, a shade duller than the heroes ------------------------------------------------
 const SAND: RGB = [178, 142, 100], SAND_LIGHT: RGB = [192, 158, 112], SAND_DARK: RGB = [150, 114, 80], DUNE: RGB = [196, 160, 110];
 const STRATA: RGB[] = [[132, 72, 50], [156, 94, 62], [172, 118, 78], [112, 60, 44]];
-const FLAG: RGB = [128, 108, 90], ROAD: RGB = [118, 96, 78], TILE: RGB = [40, 128, 124], EARTH: RGB = [124, 92, 66];
+const FLAG: RGB = [128, 108, 90], ROAD: RGB = [118, 96, 78], TILE: RGB = [40, 128, 124];
 /** The strata's height (m): the cliffs are steps of this height. */
 const STEP = 2.6;
 
@@ -85,8 +85,6 @@ function desert(rim: number[], dunes: 1 | -1 | 0, seed: number) {
   const duneSide = (dx: number, dz: number) => (dunes === 0 ? 0 : smooth(0.12, 0.5, (dunes * dx) / (Math.hypot(dx, dz) || 1)));
   /** 1 in the south (the camera's side): no wall there near the edge. */
   const south = (dx: number, dz: number) => smooth(0.2, 0.7, dz / (Math.hypot(dx, dz) || 1));
-  /** A staircase: flat treads and steep risers of `STEP`. */
-  const steps = (h: number) => { const f = h / STEP, i = Math.floor(f); return (i + smooth(0.6, 0.95, f - i)) * STEP; };
   const height = (dx: number, dz: number) => {
     const b = beyond(dx, dz);
     if (b <= 0.3) return 0;
@@ -94,7 +92,7 @@ function desert(rim: number[], dunes: 1 | -1 | 0, seed: number) {
     const bank = 0.7 * smooth(0.3, 3.2, b);
     // the canyon's wall: a first cliff a few metres past the edge, then a second further out; stepped
     const near = smooth(1.2, 6.5, b) * (9 + 10 * fbm2(dx * 0.025, dz * 0.025)), far = smooth(26, 42, b) * (8 + 12 * fbm(dx * 0.012 + 4, dz * 0.012));
-    const wall = steps(near + far) * (1 - so * (1 - smooth(22, 48, b)));
+    const wall = (near + far) * (1 - so * (1 - smooth(22, 48, b)));
     // a low ledge in the south, near the edge
     const ledge = so * smooth(1, 4, b) * 1.4;
     // the dunes: long swells and crests
@@ -107,13 +105,15 @@ function desert(rim: number[], dunes: 1 | -1 | 0, seed: number) {
     const e = 0.6;
     return Math.hypot(height(dx + e, dz) - height(dx - e, dz), height(dx, dz + e) - height(dx, dz - e)) / (2 * e);
   };
-  /** The ground's own colour: sand, darker in hollows; on a cliff the strata of its height. */
+  /** The ground's own colour: sand, darker in hollows; on a cliff the strata of its height, in level bands (a stepped cliff, tried
+   * first, streaked against the ground's 2.1 m grid). */
   const color = (dx: number, dz: number, h: number): RGB => {
     let c = mix(SAND, SAND_LIGHT, fbm(dx * 0.04 + 1, dz * 0.04 + 2));
     c = mix(c, SAND_DARK, 0.45 * smooth(0.55, 0.8, fbm2(dx * 0.02 + 11, dz * 0.02 + 4)));
     c = mix(c, DUNE, duneSide(dx, dz) * smooth(1, 6, beyond(dx, dz)));
-    const steep = steepness(dx, dz), band = STRATA[((Math.floor((h + 0.3) / STEP) % 4) + 4) % 4];
-    c = mix(c, band, smooth(0.45, 0.95, steep));
+    const steep = steepness(dx, dz), f = (h + 0.3) / STEP, i = Math.floor(f), t = smooth(0.8, 1, f - i);
+    const band = mix(STRATA[((i % 4) + 4) % 4], STRATA[(((i + 1) % 4) + 4) % 4], t);
+    c = mix(c, band, smooth(0.3, 0.8, steep) * smooth(0.6, 2, h));
     return c;
   };
   return { beyond, duneSide, south, height, steepness, color, fbm, fbm2 };
@@ -179,10 +179,11 @@ function paint(look: SandsLook, geo: Desert, L: number) {
     for (const p of look.places) {
       const dx = p.x - RING.x, dz = p.z - RING.z, cx = X(dx), cz = Z(dz), r = p.r;
       if (p.kind === 'camp') {
-        const grad = g.createRadialGradient(cx, cz, 0, cx, cz, (r + 2) * ppm);
-        grad.addColorStop(0, rgb(EARTH)); grad.addColorStop(r / (r + 2), rgb(EARTH)); grad.addColorStop(1, 'rgba(124,92,66,0)');
+        // trodden earth round the fire, soft-edged and light
+        const rr = r * 0.75, grad = g.createRadialGradient(cx, cz, 0, cx, cz, (rr + 2) * ppm);
+        grad.addColorStop(0, 'rgba(150,114,82,0.7)'); grad.addColorStop(rr / (rr + 2), 'rgba(150,114,82,0.45)'); grad.addColorStop(1, 'rgba(150,114,82,0)');
         g.fillStyle = grad;
-        g.beginPath(); g.arc(cx, cz, (r + 2) * ppm, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(cx, cz, (rr + 2) * ppm, 0, Math.PI * 2); g.fill();
         continue;
       }
       g.save(); g.beginPath(); g.arc(cx, cz, r * ppm, 0, Math.PI * 2); g.clip();
@@ -415,16 +416,18 @@ export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt
       const m = out(a, 1.4), q = W(m.dx, m.dz), yy = geo.height(m.dx, m.dz);
       kit.add(M.sandstone, new THREE.CylinderGeometry(0.28, 0.4, 1.3, 4).rotateY(Math.PI / 4).translate(0, 0.65, 0), q.x, yy - 0.15, q.z).add(M.gold, new THREE.ConeGeometry(0.32, 0.36, 4).rotateY(Math.PI / 4).translate(0, 1.33, 0), q.x, yy - 0.15, q.z);
     } else {
-      const s = 0.6 + rnd() * (geo.south(o.dx, o.dz) > 0.5 ? 0.7 : 1.4);
-      kit.add(rocks[k % 3], ico0, p.x, y + s * 0.2, p.z, rnd() * 6, s * 1.3, s * 0.85, s * 1.1, (rnd() - 0.5) * 0.4);
+      // sat into the slope: as low as the ground round it
+      const s = 0.6 + rnd() * (geo.south(o.dx, o.dz) > 0.5 ? 0.7 : 1.4), low = Math.min(y, geo.height(o.dx * 0.985, o.dz * 0.985), geo.height(o.dx * 1.015, o.dz * 1.015));
+      kit.add(rocks[k % 3], ico0, p.x, low + s * 0.1, p.z, rnd() * 6, s * 1.3, s * 0.85, s * 1.1, (rnd() - 0.5) * 0.4);
     }
   }
-  // Bastions of rock on the cliffs, just past the edge (not in the south): stacked, the walls' near face.
+  // Buttes on the cliffs past the edge (not in the south).
   for (let k = 0; k < around / 9; k++) {
-    const a = rnd() * Math.PI * 2, o = out(a, 5 + rnd() * 9);
+    const a = rnd() * Math.PI * 2, o = out(a, 12 + rnd() * 12); // on the cliff top, not its face
     if (geo.duneSide(o.dx, o.dz) > 0.3 || geo.south(o.dx, o.dz) > 0.3) continue;
     const p = W(o.dx, o.dz);
-    butte(kit, p.x, p.z, 3 + rnd() * 3, 7 + rnd() * 8, geo.height(o.dx, o.dz) - 1, k, false);
+    const r0 = 3 + rnd() * 3, low = Math.min(...[0, 1, 2, 3].map((j) => geo.height(o.dx + Math.cos(j * 1.57) * r0, o.dz + Math.sin(j * 1.57) * r0)));
+    butte(kit, p.x, p.z, r0, 7 + rnd() * 8, low - 0.8, k, false);
   }
   // Mesas far off in the haze (no shadows).
   for (let k = 0; k < 34; k++) {

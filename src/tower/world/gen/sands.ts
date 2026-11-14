@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, FloorDef, LawDef, PackDef, PersonDef
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { SandsDecor, SandsKind, SandsLook } from '../sandsZone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Sands chapter's generator (pipeline/designs/tower-50.md): floors 22 to 30 made from floor 21's parts (the Storm Canyon: its look,
@@ -81,7 +81,8 @@ function stormOf(k: number, ring: number): Extract<LawDef, { kind: 'storm' }> {
     kind: 'storm', name: 'The storm',
     blurb: `Every ${every} seconds a wall of sand ${width} m deep crosses from the north. Inside it you see a few steps and it hurts, unless you stand behind a rock.`,
     every, lasts, warn: 8, burn: r4(0.04 + 0.01 * k), width, shelter: 7, sight: r2(5 - k),
-    wraiths: { kind: 'wraith', n: 2, every: r2(4 - k), most: k >= 0.5 ? 5 : 4 },
+    // at most four wraiths at once: five beside an awake pack in a storm felled the route bot at floor 28's dig
+    wraiths: { kind: 'wraith', n: 2, every: r2(4 - 0.5 * k), most: 4 },
   };
 }
 
@@ -220,8 +221,11 @@ class Sands {
     L.reserve(p.stand, 3);
   }
 
-  /** The edge of a place towards a point. */
-  edge(p: Place, to: V): V { const e = add(p.c, unit({ x: to.x - p.c.x, z: to.z - p.c.z }), p.r - 1); return { x: r2(e.x), z: r2(e.z) }; }
+  /** The edge of a place towards a point; the tombs are left by their mouth (their sides are a wall of rock, which roads ran through). */
+  edge(p: Place, to: V): V {
+    const e = p.kind === 'tombs' ? add(p.c, toMid(p.c), p.r + 1) : add(p.c, unit({ x: to.x - p.c.x, z: to.z - p.c.z }), p.r - 1);
+    return { x: r2(e.x), z: r2(e.z) };
+  }
   road(a: V, b: V, bends = 1, amp = 4) { const r = this.L.road(a, b, bends, amp, 2.6); this.roads.push(r); return r; }
 
   /** Big rocks standing in the wadi (the canyon's bastions: shelter from the storm, and a way across has to bend), then small cover. */
@@ -257,6 +261,19 @@ class Sands {
       dunes: open === 0 ? 0 : (open * m) as 1 | -1, seed,
     };
   }
+}
+
+/**
+ * A road with a point every `step` m: an escort walks only while the hero is near (quests.ts), and the bot walks to its next point, so
+ * points far apart had the bot run ahead, the caravan stop and the bot walk back, over and over (floor 21's first caravan took 19 minutes).
+ */
+function dense(pts: V[], step = 6): V[] {
+  const out: V[] = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], k = Math.max(1, Math.round(dist(a, b) / step));
+    for (let j = 1; j <= k; j++) out.push({ x: r2(a.x + ((b.x - a.x) * j) / k), z: r2(a.z + ((b.z - a.z) * j) / k) });
+  }
+  return out;
 }
 
 /** A quest step's spots into the world. */
@@ -382,11 +399,19 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
   for (let i = 1; i < 4; i++) L.lane(patrol2[i - 1], patrol2[i], 1.8);
   const patrol2Loop = [...patrol2, ...patrol2.slice(1, 3).reverse()];
 
-  // The caravan's road: from the tombs (B) to the camp along the roads.
+  // The caravan's road: from the tombs (B) to the caravanserai (V) next to them, along the roads. Short on purpose: a storm sends the
+  // hero to a lee, the caravan left standing in the open is felled by the storm and its wraiths and starts its road again, so a road
+  // that cannot be walked between two storms (the first, from the tombs to the camp, 230 m) was walked again and again.
   const leadFrom = add(B.stand, toMid(B.c), 5);
-  const leadPath = roadRoute(S.roads, add(B.stand, toMid(B.c), 6), C(0, -3)).map((p) => ({ x: r2(p.x), z: r2(p.z) }));
-  leadPath.push(C(0, -3));
+  const leadPath = dense(roadRoute(S.roads, add(B.stand, toMid(B.c), 6), S.edge(Vl, B.c)).map((p) => ({ x: r2(p.x), z: r2(p.z) })));
   for (let i = 1; i < leadPath.length; i++) L.lane(leadPath[i - 1], leadPath[i], 1.6);
+  // The caravan waits in a rock's lee (a piece just north of it): a storm burns it as it burns the hero, and one waiting in the open
+  // fell after four or five storms and stood again at the start of its road, mid-walk too (floors 22 and 27's first routes).
+  // (Placed by hand, not by `spot`: north of it is still the tombs' kept ground.)
+  const leeAt = [3, 3.6, 4.2, 4.8, 2.6].flatMap((dz) => [0, 0.4, -0.4].map((dx) => ({ x: r2(leadFrom.x + dx), z: r2(leadFrom.z - dz) })))
+    .find((q) => !L.hitsCover(q, 1.6) && leadPath.every((w, i) => i === 0 || segDist(q, leadPath[i - 1], w) > 2.4) && inside(rim, q) > 4);
+  if (!leeAt) throw new Error(`floor ${n}: no lee for the caravan`);
+  L.pill('rock', leeAt, 1.2, 2.4);
   const leadNpc = pick(NPCS);
 
   // --- big rocks and scattered cover in what is left --------------------------------------------------------------------------
@@ -403,8 +428,8 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
     { id: 'd', at: D.c, leash: 24, mix: [{ kind: 'raider', n: 2 }], elite: 'chief' },
     { id: 'b', at: B.c, leash: 24, mix: [{ kind: 'raider', n: late ? 1 : 2 }, { kind: 'slinger', n: late ? 3 : 2 }] },
     { id: 'f', at: Fp.c, leash: 24, mix: [{ kind: 'raider', n: 2 }, { kind: 'slinger', n: 1 }] },
-    { id: 'named1', at: patrol1[0], mix: [{ kind: 'mother', n: 1 }], named: { name: named1, speed: 1.6, patrol: patrol1, bounty: { shards: shard(40), relic: true } } },
-    { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'rider', n: 1 }], named: { name: named2, speed: 1.7, patrol: patrol2Loop, bounty: { shards: shard(35), relic: false } } },
+    { id: 'named1', at: patrol1[0], leash: 24, mix: [{ kind: 'mother', n: 1 }], named: { name: named1, speed: 1.6, patrol: patrol1, bounty: { shards: shard(40), relic: true } } },
+    { id: 'named2', at: patrol2Loop[0], leash: 24, mix: [{ kind: 'rider', n: 1 }], named: { name: named2, speed: 1.7, patrol: patrol2Loop, bounty: { shards: shard(35), relic: false } } },
   ];
 
   // --- the set pieces: the ruler (the Scarab Colossus's moves, another body and name), the gate, the trial, the rival ---------------
@@ -479,8 +504,8 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       ] as Step[],
       outro: ['The count is done. Take your share.'], reward: reward(45, { boon: true }),
     },
-    { id: 'g2', name: `${poss(leadNpc)} Caravan`, giver: 'giver', intro: [`${poss(leadNpc)} caravan waits by ${lower(B.name)} and will not move without a guard. Walk it to the camp; stand close and it follows the road.`],
-      steps: [{ verb: 'lead', text: `Lead the caravan from ${lower(B.name)} to the camp`, name: 'The caravan', look: 'cart', speed: 2.2, from: leadFrom, r: 3, path: leadPath } as Step], outro: [`The caravan is in. ${leadNpc} pays in what they carry.`], reward: reward(45) },
+    { id: 'g2', name: `${poss(leadNpc)} Caravan`, giver: 'giver', intro: [`${poss(leadNpc)} caravan waits by ${lower(B.name)} and will not move without a guard. Walk it to ${lower(Vl.name)}; stand close and it follows the road. Not in a storm: it will not live through one in the open.`],
+      steps: [{ verb: 'lead', text: `Lead the caravan from ${lower(B.name)} to ${lower(Vl.name)}`, name: 'The caravan', look: 'cart', speed: 2.2, from: leadFrom, r: 3, path: leadPath } as Step], outro: [`The caravan is in. ${leadNpc} pays in what they carry.`], reward: reward(45) },
     { id: 'g3', name: 'The Watch Fires', giver: 'villager', intro: [`Two watch fires stand cold: at ${lower(Cl.name)} and at ${lower(E.name)}. Light both, standing by each a moment, and we will see the storm coming.`],
       steps: [{ verb: 'light', text: `Light the fires at ${lower(Cl.name)} and ${lower(E.name)}`, things: [{ id: 'fire1', at: Cl.stand }, { id: 'fire2', at: E.stand }], seconds: 2 } as Step], outro: ['Now we see it coming. Take this, from the last storm.'], reward: reward(35, { boon: true }) },
   ];
@@ -587,7 +612,13 @@ export function makeCanyonFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   const patrol: V[] = [-45, 45, 135, 225].map((a) => L.spot(polar(a + L.range(-10, 10), L.range(20, 26)), 3, 2, awayFromPacks(24)));
   for (let i = 0; i < 4; i++) L.lane(patrol[i], patrol[(i + 1) % 4], 1.8);
   const leadFrom = L.reserve(C(12, 1), 2.5);
-  const leadPath = [...wadi.slice(1)];
+  L.pill('crate', C(12, -2.3), 0.9, 1.4); // the caravan waits in its lee (a storm burns it as it burns the hero)
+  // From the caravan, round the crate whose lee it waits in, onto the wadi; a point every 6 m (no long first leg for the bot to run ahead on).
+  // About 90 m of it: as on the made floors, a road the caravan cannot walk between two storms was walked again and again.
+  const wadiPath = dense([leadFrom, C(14.8, -1.2), C(14.8, -6.5), C(5, -9.5), ...wadi.slice(1)]).slice(1);
+  let walked = dist(leadFrom, wadiPath[0]);
+  const leadPath = [wadiPath[0]];
+  for (let i = 1; i < wadiPath.length && walked < 90; i++) { walked += dist(wadiPath[i - 1], wadiPath[i]); leadPath.push(wadiPath[i]); }
   for (let i = 1; i < leadPath.length; i++) L.lane(leadPath[i - 1], leadPath[i], 1.6);
 
   S.scatter({ big: 14, small: 60, keepOff: places.map((p) => ({ c: p.c, r: p.r + 2 })) });
@@ -601,7 +632,7 @@ export function makeCanyonFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
     { id: 'ridge', at: packSpot.ridge, leash: 24, mix: [{ kind: 'slinger', n: 3 }] },
     { id: 'fort', at: packSpot.fort, leash: 24, mix: [{ kind: 'raider', n: 2 }], elite: 'chief' },
     { id: 'gate', at: packSpot.gate, leash: 24, mix: [{ kind: 'raider', n: 2 }, { kind: 'slinger', n: 1 }] },
-    { id: 'mother', at: patrol[0], mix: [{ kind: 'mother', n: 1 }], named: { name: 'The Dune Mother', speed: 1.6, patrol, bounty: { shards: 40, relic: true } } },
+    { id: 'mother', at: patrol[0], leash: 24, mix: [{ kind: 'mother', n: 1 }], named: { name: 'The Dune Mother', speed: 1.6, patrol, bounty: { shards: 40, relic: true } } },
   ];
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
     { id: 'pip', hero: 'Pip', name: 'Pip', role: 'keeper', at: C(-2.6, 2.4), face: 0.4, greet: ['Courier. I carry what is needed, and nothing here has water. Three wells have gone dry, a caravan is waiting, and the raiders hold the gate in the north.'], quests: ['main', 'bounty'] },
@@ -617,7 +648,7 @@ export function makeCanyonFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
         { ...water(to1, 'west well') },
         { ...water(to2, 'east well') },
         { ...water(to3, 'north well') },
-        { verb: 'lead', text: 'Lead the caravan from the camp up the canyon', name: 'The caravan', look: 'cart', speed: 2.2, from: leadFrom, r: 3, path: leadPath },
+        { verb: 'lead', text: 'Lead the caravan from the camp up the canyon, between two storms', name: 'The caravan', look: 'cart', speed: 2.2, from: leadFrom, r: 3, path: leadPath },
         { verb: 'fell', text: 'Clear the raiders from the gate', packs: ['gate'] },
         { verb: 'open', text: 'Go to the raiders’ gate', door: 'lair' },
       ] as Step[],

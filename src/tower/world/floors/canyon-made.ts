@@ -1103,6 +1103,18 @@ export const CANYON_21: Omit<GenFloor, 'pieces'> = {
     }
    },
    {
+    "look": "crate",
+    "o": {
+     "ax": 12,
+     "az": 120.23,
+     "bx": 12,
+     "bz": 120.23,
+     "r": 0.9,
+     "height": 1.4,
+     "kind": "pillar"
+    }
+   },
+   {
     "look": "rock",
     "o": {
      "ax": 48.41,
@@ -2049,39 +2061,39 @@ export const CANYON_21: Omit<GenFloor, 'pieces'> = {
     "tower"
    ],
    [
-    98,
-    "jars"
-   ],
-   [
     99,
     "jars"
    ],
    [
-    106,
+    100,
     "jars"
    ],
    [
-    112,
+    107,
     "jars"
    ],
    [
-    119,
+    113,
     "jars"
    ],
    [
-    131,
+    120,
     "jars"
    ],
    [
-    136,
+    132,
     "jars"
    ],
    [
-    138,
+    137,
     "jars"
    ],
    [
-    145,
+    139,
+    "jars"
+   ],
+   [
+    146,
     "jars"
    ]
   ],
@@ -2616,6 +2628,7 @@ export const CANYON_21: Omit<GenFloor, 'pieces'> = {
      "x": -16.58,
      "z": -12.57
     },
+    "leash": 24,
     "mix": [
      {
       "kind": "mother",
@@ -2782,7 +2795,7 @@ export const CANYON_21: Omit<GenFloor, 'pieces'> = {
      },
      {
       "verb": "lead",
-      "text": "Lead the caravan from the camp up the canyon",
+      "text": "Lead the caravan from the camp up the canyon, between two storms",
       "name": "The caravan",
       "look": "cart",
       "speed": 2.2,
@@ -2793,24 +2806,68 @@ export const CANYON_21: Omit<GenFloor, 'pieces'> = {
       "r": 3,
       "path": [
        {
+        "x": 14.8,
+        "z": 121.33
+       },
+       {
+        "x": 14.8,
+        "z": 116.03
+       },
+       {
+        "x": 9.9,
+        "z": 114.53
+       },
+       {
+        "x": 5,
+        "z": 113.03
+       },
+       {
+        "x": 4.07,
+        "z": 106.93
+       },
+       {
+        "x": 3.13,
+        "z": 100.82
+       },
+       {
+        "x": 2.2,
+        "z": 94.72
+       },
+       {
+        "x": 1.27,
+        "z": 88.62
+       },
+       {
+        "x": 0.33,
+        "z": 82.51
+       },
+       {
         "x": -0.6,
         "z": 76.41
        },
        {
-        "x": 5.87,
-        "z": 37.39
+        "x": 0.32,
+        "z": 70.84
        },
        {
-        "x": -1.94,
-        "z": -1.85
+        "x": 1.25,
+        "z": 65.26
        },
        {
-        "x": 5.42,
-        "z": -40.85
+        "x": 2.17,
+        "z": 59.69
        },
        {
-        "x": 3.03,
-        "z": -80
+        "x": 3.1,
+        "z": 54.11
+       },
+       {
+        "x": 4.02,
+        "z": 48.54
+       },
+       {
+        "x": 4.95,
+        "z": 42.96
        }
       ]
      },
