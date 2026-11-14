@@ -198,3 +198,8 @@ today's area, not a circle.
   - The squad now walks straight in the open and moves its order on only after 2.5 m (laws.ts).
 - **The navigator's speed on large floors** has gone to an agent: same routes to the last point, proved by an old-against-new test.
   Still running: depth for the Deep.
+- **Depth for the Deep, merged (2026-11-14):** deepDepth.ts, looks only, adding 11 to 13 new glows a floor so the dark still matters.
+  Before-and-after pictures are in docs/tower/climb50/deep/depth/ (index.html shows them side by side). Speed: no slower in two
+  back-to-back pairs on desktop and the phone profile. To get there its props cast no shadows and its gold is matte. Every chapter now
+  has its depth pass. **To look at later:** floor 35 takes about 3.5 s to build on the phone profile against floor 31's 1 s; a profile
+  of floor 35 would show why.
