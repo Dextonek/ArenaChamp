@@ -22,6 +22,13 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
 - **Running (worktree agents):** (1) the Climb's open world stage 2: shared packs, scaling with players, respawn (PROTOCOL 18);
   (2) the Climb's rulers and enemies get their own models (15 + 15; Blender); (3) the engine mechanics the twenty new heroes need
   (`pipeline/designs/heroes20-engine.md`), no hero yet.
+- **Built, not live: the lore in the game** (2026-11-14, the user: "put the lore into game, small hero lore, from where, how old"):
+  each hero's open row on the Heroes screen shows faction, home, age, line, legend and ties; the Play card shows faction and home;
+  the loading screen names the tie when two linked heroes meet. Source `docs/lore/LORE.md` (every roster hero now has `- home:` and
+  `- age:`), game data by `python pipeline/tools/lore-game.py` -> `src/game/lore.ts` (loaded on first need).
+- **Queued for the next Blender turn (after the rulers and enemies): the faction look check.** The user: "if we need to remake some
+  heroes to match their region, do it". First line-ups of each faction's members side by side, and a proposal of what to change
+  (a faction colour or sigil on a hero, or a remake) for the user's yes; then the changes.
 - **The twenty new heroes: the user said "all of them, matched to the lore" (2026-11-14).** Plan: the engine mechanics now (3 above);
   the looks (gate 2) in batches of five in Blender once the rulers' and enemies' Blender work ends, each faction's colours and its legend in
   the figure, line-ups for the user's yes; then spells, CPU and balance per hero in the build order of `docs/heroes/kits20/`.
