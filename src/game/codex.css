@@ -54,3 +54,7 @@
   .cx-list { grid-template-columns: 1fr; }
   .cx-bookbtn { padding: 5px 10px; font-size: 12px; }
 }
+/* the map's labels (its SVG is lore-page.py's map_svg, which styles them by class on the lore page) */
+.cx-map svg .num { font: 700 9px ui-serif, Georgia, serif; fill: #a89870; text-anchor: middle; }
+.cx-map svg .pl { font: 700 10.5px ui-sans-serif, system-ui, sans-serif; fill: #f2e6c8; text-anchor: middle; }
+.cx-map svg .fl { font: 600 8.5px ui-sans-serif, system-ui, sans-serif; text-anchor: middle; }
