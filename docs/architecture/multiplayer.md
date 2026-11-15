@@ -393,7 +393,22 @@ told to a newcomer and to a claim; back after 3 minutes, not before, not while s
 Two tabs on the dev server with local test accounts: [docs/tower/openworld/stage2/](../tower/openworld/stage2/) (the drift between the
 two screens, the numbers, the hand-over, the respawn, pictures).
 
-SPEED_TABLE
+Speed (`perf.py scenes --scenes gen-2,gen-2-fight-3,gen-2-fight-7`, 1500 frames, this computer's card, 2026-11-15). `gen-2-fight-3`
+and `-7` put three or seven made-up others in the hero's fight, each with three made-up packs of three fighting round the hero as copies
+(the worst case: every pack within a few metres), and the hero's own packs fighting them all. Median frame (ms), draw calls:
+
+| Profile | Alone | 3 others, 9 packs | 7 others, 21 packs |
+|---|---|---|---|
+| desktop | 12.1, 251 calls | 15.0, 424 calls | 22.2, 465 calls |
+| phone-4x | 65.5 (39-43 in quieter runs) | 63.6 (52 in another run with this build) | 69.3 |
+
+The first runs drew every copy (24, the raised cap) with its shadow: 778 draw calls, desktop 30 ms, phone-4x 71 and 86 ms. Hence the
+budget of 6 copies with no shadow. The phone-4x numbers moved by 25 ms from run to run on the same build (the computer was busy), so they
+say little beyond this: the floor alone already takes more than a frame there, and the copies, the others' figures and the fight's
+work on every hero add about 170 to 215 draw calls, 1 to 2 ms of step on desktop. The duel and the raid play as before: `duel-temple`
+prints 90b1abaa, as before the change; `raid-party` prints 34f75b29 instead of e83903c0, and so does the commit before this work with a
+dead, never-called function added to src/net/world.ts: the raid scene's print follows how the code is loaded, not what this code does
+(stage 1 saw it come out as one of two prints).
 
 ## The hero shop, raid ranks and the week's boards
 

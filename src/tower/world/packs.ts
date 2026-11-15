@@ -430,8 +430,8 @@ export class Pack {
       if (this.mode === 'owned') return;
       const was = this.mode;
       this.mode = 'owned';
-      if (this.state === 'cleared' || this.state === 'unborn') {
-        // Handed on while its units are not drawn here: they come where the owner last had them.
+      if (this.state === 'cleared' || this.state === 'unborn' || !this.units.length) {
+        // Handed on while its units are not drawn here (far, or past the copies' budget): they come where the owner last had them.
         if (this.state === 'cleared') for (const s of this.slots) s.alive = true;
         this.state = 'unborn';
         if (!this.spawn()) { this.mode = 'local'; this.env.link?.sendRelease(this); return; }
@@ -677,7 +677,9 @@ export class Pack {
     const r3 = (v: number) => Math.round(v * 1000) / 1000, r2 = (v: number) => Math.round(v * 100) / 100;
     const u = this.slots.map((s) => {
       const x = s.unit;
-      if (!s.alive || !x?.alive) return 0 as const;
+      if (!s.alive) return 0 as const;
+      // Alive but not drawn here (a moment after a hand-over): where it stands by the last word, never as fallen.
+      if (!x?.alive) return [r3(s.spot.x), r3(s.spot.z), 0, Math.round(s.hp), Math.round(s.max), 0, -1, -1, s.shots];
       cx += x.pos.x; cz += x.pos.z; n++;
       const walk = Math.hypot(x.pos.x - s.lx, x.pos.z - s.lz) > 0.05 ? 1 : 0;
       s.lx = x.pos.x; s.lz = x.pos.z;
