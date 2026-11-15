@@ -6,7 +6,6 @@ The three agents below were restarted in their own threads from their saved comm
 - **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
   clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
 - **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
-  - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
   Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
 - **Done and merged, not live (2026-11-15):** the Climb's open world stage 2, shared packs and scaling with players (PROTOCOL 18;
   `pipeline/designs/climb-open-world.md`, pictures `docs/tower/openworld/stage2/`). Signed-in players on a floor fight the same packs;
@@ -28,6 +27,16 @@ The three agents below were restarted in their own threads from their saved comm
   week, before its Tower report). Now 329 server checks pass.
 - **Running (2026-11-15):** the leftovers: grass tufts off cliff slopes, the War's scenes seated on their hills, and the raid perf
   print made the same run after run (it varies on identical code), plus the Climb's perf baseline retaken.
+- **Done and merged, not live (2026-11-15): the Climb's own rulers (15) and enemies (15) as models** (page
+  `docs/tower/models/index.html`, 100 pictures; `public/models/tower/`, 11.5 MB for all 30, a floor loads about 1.5 MB). Three rulers a
+  chapter, each on three floors under its own name and tint; three enemies a chapter (melee, ranged or casting, the big one); beasts,
+  wraiths, escorts and guards stay drawn in code. Route bot clears floors 1, 11, 21, 31, 41, every ruler on the first try. Phone-4x
+  within noise on floors 1, 11, 31; **floors 21 and 41 on phone not settled** (machine too loaded; one pair on 21 read 49.9 vs 24.3 ms):
+  `python pipeline/tools/perf.py scenes --profiles phone-4x --scenes world-3,world-5` on a quiet machine. Climb prints moved (floor 1
+  d862aa08, 31 19e8c310, 12 72213473), partly from three.js's random ids when a model file is parsed. **Waiting on the user:** a look at
+  the line-ups; the names and which floors share a ruler, the Wood's and the Deep's enemy picks are the agent's calls. Left as is: the
+  bowman's crossbow and the lurker's claws are small at rest, the slinger's and net caster's hoods read as caps, a ruler's basic
+  attack is still its stand-in hero's.
 - **Done and merged, not live (2026-11-15): the deep lore.** Twelve peoples of the Dial (Aubade folk, Dune folk, Gloaming folk,
   Northerners, Coast folk, Kilnborn, Wood folk, mole-folk, the Ninefold, Briarkin, the Long Dead, the Fallborn); the codex
   `docs/lore/codex/` (106 files, LORE.md + codex about 129,500 words from 13,790: history, realms, the Climb's chapters, bestiary and
