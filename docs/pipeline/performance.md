@@ -87,8 +87,16 @@ run to run on the same code (e83903c0, 34f75b29, b53a2f62, 9c4a9c48), with the m
 function added somewhere. The game reads the clock in its rules: a raid partner's trees (`timberNow` in
 `src/traits/timber.ts`, the clock when no trait writes one) grow at "planted + 1.2 s", and with a different start that
 came out on one frame or the next. And three.js rolls the same seeded dice for the id of every object it makes (four rolls
-each), so a tree built a frame early shifted every die after it. Two things follow for the game's code: anything that
-builds objects on a clock moves the fight's dice, and a print can only be trusted when nothing in a scene runs on real time.
+each), so a tree built a frame early shifted every die after it. The same for a model file that finished loading during the
+fight: it lands at one of the tool's pauses between frames (every 20th frame), and which one is real time's choice. So what
+comes in during those pauses now rolls dice of its own, and the fight's dice are rolled by the frames alone. Two things
+follow for the game's code: anything that builds objects on a clock moves the fight's dice, and a print can only be
+trusted when nothing in a scene runs on real time.
+
+The prints of every scene on desktop, taken after this fix on the code with the Climb's own rulers' and enemies' models,
+are in `docs/perf/data/prints.json` (`perf-show.py prints <yours>` says "same fight" or "ANOTHER FIGHT"). The older
+result files (`after.json` and the rest, 2026-11-13) hold timings worth comparing, but their raid prints are not a
+reference: those were taken while the print still moved.
 
 To find where two runs part: `--set "{\"trace\": {\"from\": 0, \"to\": -1, \"states\": false}}"` writes the number of dice
 rolled each frame (`trace.rolls` in the result file) and the files that came in during the frames. Lay two runs' `rolls` side
