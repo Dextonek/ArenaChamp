@@ -161,23 +161,40 @@ HP and `#u` tells the owner's screen; there its own replays of the attacker's hi
 
 Lyra and Isolde, two bots, Isolde keeping 7 m away and stepping from side to side; a test layer on both pages
 (`online-case.js`) uses every engine message. Each screen's view sampled ten times a second and laid over the other's by the
-wall clock: 938 paired samples, two rounds, no page errors, the longest message name 11 characters of 16.
+wall clock: 1,163 paired samples, two rounds, no page errors, the longest message name 11 characters of 16 (the final run, on
+the code as committed; an earlier run gave the same picture with 938).
 
 | What | Decided on | Agree | Changes followed | Behind (median / most) |
 |---|---|---|---|---|
-| Sleep | Isolde's screen | 98.8% | 26 of 26 | 0 / 93 ms |
-| Sealed key | Lyra's screen | 99.8% | 12 of 12 | 17 / 181 ms |
-| Leash (drawn) | Isolde's screen | 98.1% | 17 of 19 | 0 / 96 ms |
-| Cover broken | Isolde's client | 99.9% | 6 of 6 | 0 / 77 ms |
-| Token's holder | the screen of the one hit | 99.9% | 8 of 9 | 0 / 25 ms |
-| Wards | both, from the cast | 99.6% | 43 of 43 | 8 / 181 ms |
-| HP (for scale) | | 99.5%, 97.9% | | |
+| Sleep | Isolde's screen | 99.9% | 40 of 40 | 16 / 32 ms |
+| Sealed key | Lyra's screen | 99.8% | 4 of 4 | 89 / 96 ms |
+| Leash (drawn) | Isolde's screen | 100% | 29 of 29 | 21 / 32 ms |
+| Cover broken | Isolde's client | 100% | 9 of 9 | 12 / 21 ms |
+| Token's holder | the screen of the one hit | 99.9% | 4 of 4 | 6 / 89 ms |
+| Wards | both, from the cast | 99.7% | 54 of 54 | 0 / 92 ms |
+| HP (for scale) | | 99.6%, 100% | | |
 
-The few samples apart are the edges of a change (a sample taken between the two screens' moments). The changes not followed
-came at a round's end: the hub drops `stacks` once a round is over (`match.state !== 'fight'`), so a pass on the killing blow
+The few samples apart are the edges of a change (a sample taken between the two screens' moments). In the earlier run two changes were not
+followed, both at a round's end: the hub drops `stacks` once a round is over (`match.state !== 'fight'`), so a pass on the killing blow
 never reaches the other screen. It does not matter there (the next round starts clean), but a hero's rule must not count on a
 message sent after the round ends. The first run of this check found a real bug: the hit that put a hero to sleep woke it again
 in the same step; fixed (`Duel.resolve` reads "asleep" before the hit's own hooks).
+
+## Nothing else changed (the checks, 2026-11-15)
+
+| Check | Before (ef6fc16) | After |
+|---|---|---|
+| `perf.py scenes --profiles desktop --scenes duel-temple,raid-party`: duel-temple's print | 90b1abaa | 90b1abaa |
+| the same, raid-party's print | e83903c0 | e83903c0, b53a2f62, 34f75b29 over six runs: the scene does not repeat its fight on this computer now; the untouched commit, measured the same day with `--root`, printed 34f75b29 three times |
+| `sim.py hero Lyra` (96 fights) | 55.2% +-9.9 | 52.1% +-10.0 |
+| `sim.py hero Isolde` (80 fights) | 33.8% +-10.4 | 37.5% +-10.6 |
+| `npx tsc --noEmit -p .`, `npm run build` | pass | pass |
+| `npm run test:server` | 306 ok | 303 ok, then "FAIL shop: timeout waiting for boards" (below) |
+| `rustfull/guard.py` | fails (engine files, Brannoc, Sirix) | fails as before, and also lists `src/effects/status.ts`, `src/traits/runtime.ts`, `src/traits/types.ts` (additions only) |
+
+The server test's one failure is the date, not this work (no server file changed): its "week turns" case moves the server's
+clock a day forward and then reports a climb for the real week; on a Sunday that day is already next week, the hub refuses the
+report (`server/hub.mjs`, `m.week !== isoWeek(now()).id`) and the test waits in vain. It passes again from Monday.
 
 ## Left for later, with a simpler spell that keeps the idea
 

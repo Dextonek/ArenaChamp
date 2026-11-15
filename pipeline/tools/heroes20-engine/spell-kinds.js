@@ -11,4 +11,4 @@ for (const k of kits) {
     rows.push(`${k.name.padEnd(18)} ${s.name.padEnd(22)} ${String(mode).padEnd(7)} ${String(s.aim ?? '').padEnd(5)} r${s.range} ${['dash', 'escape', 'save', 'parry', 'barrier', 'summon', 'cc'].filter((f) => s[f]).join(',')}${s.buff ? ',buff' : ''} -> ${shape}`);
   }
 }
-return { heroes: kits.length, count, rows };
+return { ok: kits.length === 40 && Object.values(count).every((n) => n > 0), heroes: kits.length, count, rows };
