@@ -2,7 +2,7 @@
 title: The fight engine's new mechanics for the twenty new heroes
 tags: [design, engine, heroes, traits, network]
 updated: 2026-11-14
-status: in progress (one writer on the shared engine files; no hero, no kit, nothing a player sees)
+status: built and tested, 17 of 20 pieces; 3 left with a simpler version (no hero, no kit, nothing a player sees)
 ---
 
 # The engine pieces the twenty new heroes need
@@ -44,8 +44,9 @@ engine channel over the `stacks` relay (below), **none** means nothing travels.
 | 19 | A summon that can be turned | Hesk | the enemy's screen counts the hits | # | whose the golem is | large | **large** (in `effects/summon.ts`, which another agent touches) |
 | 20 | Two places counted as one in every hit test | Thessa | the victim's screen | cast (the pins) | to step off a pin | large | **large** (every spell tests its own hits) |
 
-Twelve of the twenty need nothing more than 1 to 8 (Nebet, Campana, Ostrel, Saga, Sahar, Lithea, Arden, Lian, Ramet, and,
-with the channel, Asenet, Kohaku, Morwen); the rest are named in the table.
+**Where it stands (2026-11-15):** 1 to 17 are built and tested, so seventeen heroes need no more engine work: Nebet, Campana,
+Ostrel, Saga, Sahar, Lithea, Arden, Lian, Ramet, Asenet, Kessa, Kohaku, Vela, Itzel, Orren, Morwen and Tova. 18 to 20 (Corbel,
+Hesk, Thessa) are left with what they need and a simpler spell each that the built pieces already allow (below).
 
 ### What the code says against the sheets
 
@@ -61,10 +62,10 @@ with the channel, Asenet, Kohaku, Morwen); the rest are named in the table.
 - **Tova is smaller than "large"**: breakable walls (`def.breakable`, `Duel.blastWalls`), `removeCover` and the arena's
   `coverFall` look (Ash's pillars) are there. What is new is HP per piece against one hero's spells and telling the other
   screen (15).
-- **Placed things with HP do not agree online** (17): the crystal of `crystalPillar.ts` is a summoned unit, and each screen
-  runs its own copy of the units. A hit on a unit is not filtered online (`hitFilter` drops only the hero; `hitUnit` lands the
-  other player's replayed casts), so each screen counts its own hits on its own copy. The sheets assumed bells, statues,
-  lanterns and the kite could be built "as the crystal is". See the section below for the measured difference.
+- **Placed things with HP do not always agree online** (17): the crystal of `crystalPillar.ts` is a summoned unit, and each
+  screen runs its own copy of the units and judges the hits on its own copy. Spells and bolts play on both screens and are
+  judged alike; a basic attack on a unit stays on the attacker's screen. The sheets assumed bells, statues, lanterns and the
+  kite could be built "as the crystal is". See "Placed things online" for the measurement and the fix.
 - **Bolts stop at both sides' walls with two bolt walls**: a `BoltWall` stops the other side's bolts; a ward is one wall
   owned by each side, so nothing in `projectile.ts` changes (10).
 - **Kessa's swap moves farther than the 4 m pull cap**: it is a dash of each hero on its own screen to the other's place as
@@ -93,24 +94,165 @@ over -64..+64 m), a clock three (0.01 s up to 466 s).
 
     case 'mech': relay(c, match, { t: 'peer_mech', k: String(m.k).slice(0, 2), d: String(m.d).slice(0, 40), n: clamp(m.n, 0, 9999) })
 
-with a smoke case "mech relayed". The client side would only need `MechNet.send` to use it. Until then `#` over `stacks`
+with a smoke case "mech relayed". The client side would only need `MechHost.send` in `Duel` to use it. Until then `#` over `stacks`
 needs no change on the hub.
 
 ## The mechanics, as built
 
-(Filled in as each is built: API, look, online, CPU, test.)
+All in `src/mech/` (`index.ts` the pieces, `geom.ts` the pure helpers, `net.ts` the channel, `fx.ts` the plain look), wired
+into `src/duel.ts` (the `Mech` of the round, its host, the hit pipeline, the CPU), `src/arena.ts` (walk and dash hooks),
+`src/heroMode.ts` (the player's keys and aim) and `src/traits/` (the hooks). "Look" is the plain one `fx.ts` draws on both
+screens; a hero draws its own over it. Picture of all of them at once: `pipeline/tools/heroes20-engine/looks.js`.
+
+| # | Piece | API (a trait's `t`, or `mechFor(ctx.caster)` in a spell) | Look | Online | CPU | Test |
+|---|---|---|---|---|---|---|
+| 1 | Enemy HP | `t.enemyHp()`, `t.enemyMaxHp()` | — | HP is synced | — | `small.js` |
+| 2 | Facing | `t.mech.faces('self' \| 'enemy', at, halfDeg)`; `faces(from, yaw, at, halfDeg)` in `geom.ts` | — | yaw comes with every move | a CPU faces where it walks (measured: it faces its enemy about half the time in a fight) | `small.js` |
+| 3 | Trail | `new Trail()`: `sample(time, x, z)` every frame, `prints`, `scent()` (since the last gap), `along(a, b)` (metres of a flight within 1 m of it), `cut()` | the hero's marks | each screen samples the positions it has | `enemyAvoid` the prints | `small.js` |
+| 4 | Lines, strips | `crosses(p0, p1, a, b)`, `crossesCircle(p0, p1, c, r)`, `toSegment`, `stripStep(p, a, b, width, speed, dt)` (then `t.carryEnemy` / `t.carrySelf`) | the hero's marks | marks from the cast | `enemyAvoid` | `small.js` |
+| 5 | Cast origin | `Trait.castOrigin(t, slot)`: `{x, z}` or null | the aim strip and reach ring start there | the kite is placed from a cast point | `pickSpell` measures that slot's reach from it | `cpu.js` |
+| 6 | What the CPU avoids or believes | `Trait.enemyAvoid(t)`: `[{ o: Obstacle, sight?: true }]` | — | — | the enemy CPU routes round them; with `sight` it believes it cannot see or shoot through (a mirage) | `cpu.js` |
+| 7 | Bar cuts | `Trait.barCuts(t)`: HP values | a cut with a pale edge, over the head and in the top bar | read `own()`/`hp()`, both screens | — | `small.js` |
+| 8 | Channel | `MechHost.send`; `Mech.receive` | — | `#` over `stacks`, also on a watcher's screen | — | `online.py` |
+| 9 | Sleep | `t.mech.sleepEnemy(seconds, { bonus, cap })` (from `dealt` / `victimTick`), `t.mech.enemyAsleep()`; `Trait.aiHoldAttack(t)` | a violet ring at the feet, ASLEEP | `#z` (start, wake) | a sleeper does nothing (it is a stun); `aiHold` + `aiHoldAttack` let a CPU Vela wait | `sleep.js` |
+| 10 | Wards | `t.mech.ward(a, b, seconds)` or `ward(c, null, seconds, { r })`; `wardBlocks(a, b)` | a pale ribbon or ring | built from the cast on both screens | wards are no sight for its bolts and one-target spells | `wards.js` |
+| 11 | Leash, swap | `t.mech.leashEnemy(r, seconds, { breakOnDash, slow, anchor, onBreak })`, `leashSelf(anchor, r, seconds)`, `t.mech.swap(seconds, reach)` | a chain at waist height | the leash is kept by the leashed hero's screen and `#l` tells the other to draw it; the swap: each screen dashes the heroes it moves to the places the cast message recorded | the clamp holds it | `leash.js` |
+| 12 | Sealed key, kind of a spell | `t.mech.sealEnemy(slot, seconds)`, `t.mech.enemyLastCast()` (slot, time, `shape`), `spellShape(spell, mode)` | a lock and its seconds on the player's key | `#s` | a sealed key is cooling | `seal.js`, `spell-kinds.js` |
+| 13 | Token | `t.mech.token(key, holder, at?)` (make it on both screens, in a hook that runs on both: `marks`), `.claim(holder, at?, start)`, `.holder`, `.state`, `.onChange`; `Mech.hitsOn(side, since)` for a late pass | a gold diamond over the holder, or on the floor | `#k` with a version and the claim's start: the same number from both screens settles on the earlier start (a tie: seat 0); an older one is dropped | read `.holder` in `aiHold` / `aiGoal` | `token.js` |
+| 14 | One-sided ground | `t.mech.chasm(obstacle, seconds)` (the enemy may not walk across) | a black strip with ember edges | built from the cast | the enemy CPU's route plans round it; the player's click-walk too | `chasm.js` |
+| 15 | Arena cover | `t.mech.hurtCover(i, damage, from?)`, `coverLeft(i)`, `coverNear(p, r)` | the arena's own fall (`coverFall`) where it has one | decided on the hurting hero's client, `#c` | sight and routes read the live list | `cover.js` |
+| 16 | Attractor | `t.mech.attractor(x, z, r, seconds, onCatch)` | a faint blue ring | built from the cast; each screen bends the bolts it flies | its bolts may be caught | `attractor.js` |
+| 17 | Placed things | `t.mech.placed(summonHandle)` (in the spell, at the cast) | the spell's | the attacker's screen counts their HP and `#u` tells the owner's screen, which ignores its own replays | as today | `online.py placed` |
+
+Rules worth knowing:
+
+- **Sleep** is a stun underneath (so everything that obeys a stun obeys it), kept apart from `StatusKind`. It takes the stun's
+  rules first (immunity, a lock already running cuts it) and may then run to 1.5 s, past a stun's 1.2 s cap. The hit that puts a
+  hero to sleep does not wake it (found online: the first version woke the sleeper in the same hit). Hazards wake without the bonus.
+- **Wards** test an area hit from the zone's own centre (a lane: its start; a cone: its tip) to the victim; a hit with no drawn
+  zone from where it aimed. Basic attacks and trait hits pass.
+- **Leashes** hold walks (`Arena.walk`, `moveFoe`) and dashes; a knock or a carry that takes the hero past the end is dragged
+  back at 6 m/s. The remote hero is never held here: its own screen holds it.
+- **A swap** moves each hero on the screen that moves it: online the caster's client moves her to where she saw the enemy, the
+  enemy's screen moves its hero to where she stood: both from the cast message, so both screens agree.
+- **Cover**: an arena without a `coverFall` look (most of them have none for pillars) takes the piece away without a fall; the
+  hero builder of Tova will want each arena's cover to have one.
 
 ## Placed things online
 
-(The measurement and the fix, or the reason it waits.)
+Bells (Campana), statues (Lithea), lanterns (Vela), the kite (Lian) and the golem (Hesk) are summoned units with HP, made as
+`crystalPillar.ts` makes its crystal. Each screen runs its own copy of every unit, and a hit on a unit is judged on the screen
+where it is seen: a spell or a bolt plays on both screens and is judged alike on both (a placed thing stands still), but a basic
+attack on a unit is not sent to the other screen at all (`Duel.setupTraits`, `onAttack`: "Attacks on units stay local").
+
+Measured with Opaline's crystal and Brannoc, two bots on one dev server (`online.py crystal`, then `online.py placed`):
+
+- As the game is (crystal): 144 paired samples with a crystal on either screen; they differed only for a sample at a crystal's
+  rise and fall. Brannoc's spells hit it once (80 to 41), seen alike on both screens.
+- With hits made on Brannoc's screen alone (25 every 1.5 s, as a basic attack on a unit is) and the crystal registered with
+  `placed`: Opaline's screen showed every one of them (80, 55, 30, 5 on both screens); 94 paired samples, 5 apart, each one
+  sample behind at a hit. Without `placed` those hits would never reach her screen.
+
+So: a spell registers its placed thing with `mechFor(ctx.caster)?.placed(handle)` at the cast. The attacker's screen counts its
+HP and `#u` tells the owner's screen; there its own replays of the attacker's hits no longer count (`Duel.hitUnit`). Nothing in
+`src/effects/summon.ts` changed: it already takes a hit "passed" from another screen.
+
+## The two-screen check (`online.py mech`)
+
+Lyra and Isolde, two bots, Isolde keeping 7 m away and stepping from side to side; a test layer on both pages
+(`online-case.js`) uses every engine message. Each screen's view sampled ten times a second and laid over the other's by the
+wall clock: 938 paired samples, two rounds, no page errors, the longest message name 11 characters of 16.
+
+| What | Decided on | Agree | Changes followed | Behind (median / most) |
+|---|---|---|---|---|
+| Sleep | Isolde's screen | 98.8% | 26 of 26 | 0 / 93 ms |
+| Sealed key | Lyra's screen | 99.8% | 12 of 12 | 17 / 181 ms |
+| Leash (drawn) | Isolde's screen | 98.1% | 17 of 19 | 0 / 96 ms |
+| Cover broken | Isolde's client | 99.9% | 6 of 6 | 0 / 77 ms |
+| Token's holder | the screen of the one hit | 99.9% | 8 of 9 | 0 / 25 ms |
+| Wards | both, from the cast | 99.6% | 43 of 43 | 8 / 181 ms |
+| HP (for scale) | | 99.5%, 97.9% | | |
+
+The few samples apart are the edges of a change (a sample taken between the two screens' moments). The changes not followed
+came at a round's end: the hub drops `stacks` once a round is over (`match.state !== 'fight'`), so a pass on the killing blow
+never reaches the other screen. It does not matter there (the next round starts clean), but a hero's rule must not count on a
+message sent after the round ends. The first run of this check found a real bug: the hit that put a hero to sleep woke it again
+in the same step; fixed (`Duel.resolve` reads "asleep" before the hit's own hooks).
 
 ## Left for later, with a simpler spell that keeps the idea
 
-(Filled in for any of 18 to 20 not built.)
+These three are as large as their sheets said. Each needs changes across systems the other pieces did not touch; the
+simpler version keeps the hero's idea with the pieces built here.
+
+**18. Standing on top of cover (Corbel).** What it needs: a hero inside an obstacle (walks push everyone out of cover:
+`pushOut` in `keepInside`, the navigator, the AI's routes); his figure raised to the cover's top and held there (`HeroFigure`, the
+camera, the hit size); melee spells and basic attacks that skip him (every melee effect tests its own reach, and `Attacker`
+homes); his own sight from the top, past the cover he stands on (`lineOfSight`, `coverStop`, the aim strip); the CPU taught to
+perch and to answer a percher; and his client telling the other screen where he is (`#p`), since a position inside cover
+looks like a lost update there. **Simpler:** Take Perch lands him on the cover's edge, just outside it (no walking rule
+changes), raised in look only, held still up to 6 s (`t.hold`); while perched the duel blocks basic attacks on him and hits of
+a melee kit's spells (a check in `Duel.resolve`, decided on his own screen, told with `t.show`); Stone Spit from there is a bolt
+like any. He loses "seeing over the cover", keeps "out of reach of blades, on the cover".
+
+**19. A summon that can be turned (Hesk).** What it needs: a unit that changes sides mid-life. A unit's side is fixed when it is
+made (its world, its victims, its bolts' tags, the side lists of `SummonSystem`), in `src/effects/summon.ts`, which another
+agent touches; and each screen's copy must flip at the same moment. The count of enemy hits is already solved by `placed`
+(the attacker's screen counts and tells). **Simpler:** three hits from the enemy *scratch out the word*: the golem stands
+idle and harmless for 4 s (`t.unitRate(() => 0)` on its owner's client, the notches as `t.show`), and his W rewrites it as the
+sheet says. The answer is the same (turn it when it stands near him, or ignore it), it just never fights for the enemy.
+
+**20. Two places counted as one in every hit test (Thessa).** What it needs: one shared test of "where may this hero be hit
+from", used by every hit: the duel's zone checks (`inCastReach` in `hitPlayer`, `opponentHit`, `hitUnit`), the bolts'
+victims (`ProjectileWorld.victims` could list a hero twice, once at the other pin: `hitSet` keeps it to one hit), basic
+attacks (`Attacker`), and the many spells that test their enemies' positions themselves before they call `ctx.hit` (Fragile,
+for one, hits "every enemy whose live position is inside"): each of those would have to ask the shared test instead. That is a
+change in most of the 160 spell files. **Simpler:** the seam carries *her own* spells only: a spell of hers that lands at one
+pin also lands at the other (her spells test both pins themselves; the duel's checks see a second zone at the far pin), and
+her Needle moves the far pin to where it hit (told by the screen that decided the hit, `t.noteOwner`). She keeps "a hit at one
+place is a hit at another"; the enemy's spells no longer pass through the seam, so her weakness ("she is exposed the same
+way") goes, and her sheet's answer becomes only "step 2 m off a pin".
+
+## What a hero builder needs to know
+
+- Reach the pieces from a trait with `t.mech`, from a spell with `mechFor(ctx.caster)`. Call a "decided on the victim's screen"
+  piece (sleep, seal, leash of the enemy, token pass by a hit) from `dealt` or `victimTick`; call "own client" pieces (cover,
+  `leashSelf`, a pick-up) from `tick`, `afterCast` or `recastAct`. Elsewhere it does nothing online, by design.
+- Build anything both screens must have (wards, one-sided ground, attractors, the kite's spot) inside the spell from the cast
+  (`sentFrom`, `point`), at the moment it lands, or from `noteCast`'s record: not from a trait hook that runs on one screen.
+- Make a token on both screens in a hook that runs on both (`marks`), with the same first holder named by side
+  (`t.side`, `t.mech.enemySide`).
+- Register a placed thing with `placed(handle)` at the cast; otherwise a basic attack on it counts on one screen only.
+- No message reaches the other screen after a round ends.
+- Give the CPU what it needs: `enemyAvoid` for ground it should walk round (or take for cover), `castOrigin` for a slot cast
+  from elsewhere, `aiHoldAttack` when an attack would spoil a set-up.
+- The plain looks (`src/mech/fx.ts`) are placeholders: draw the hero's own over them (marks, parts), and if one should go,
+  say so; `drawMech` draws only what is alive.
+- `spellShape` reads a spell's flags; for a few spells it guesses (a self spell with no reach is a "shield": Smoke Veil, the
+  Hat Trick). Kohaku's builder should check the list (`spell-kinds.js`) and add an override where it is wrong.
+- Arenas whose pillars have no `coverFall` look lose a broken pillar without a fall: Tova's builder needs one per arena.
 
 ## Tests
 
 `pipeline/tools/heroes20-engine/`: one tool-page script per mechanic, each the body of an async function for
 `python pipeline/tools/page-shots.py <script> <out> --port 5261`. Each puts a test trait in `TRAITS` under an existing
 hero's name for that page only (no file changes: the record is exported and mutable), sets up a CPU duel, plays the
-mechanic and returns what it saw. The online checks run two headless game pages against one dev server.
+mechanic and returns what it saw. `python pipeline/tools/heroes20-engine/run.py all` runs them all (dev server on 5261) and
+prints each check; pictures and results go to `pipeline/sim/out/heroes20-engine/` (git-ignored). The online checks,
+`online.py mech | crystal | placed`, run two headless game pages against their own dev server on 5262 (the hero shop off);
+the bots' throwaway accounts land in `server/data/` (git-ignored): delete them afterwards.
+
+| Test | What it shows |
+|---|---|
+| `harness.js` | a test trait put in front of a hero's own fires in a running duel |
+| `small.js` | enemy HP, facing, a strip that carries, crossing, the trail, bar cuts |
+| `sleep.js` | a sleep left alone runs 1.5 s; a hit ends it early with +25% (30 at most) |
+| `wards.js` | bolts of both sides stop; a one-target spell fails with its cooldown spent; an area hit does not reach past; feet cross |
+| `leash.js` | a CPU and the player's hero held; a dash breaks one, keeps inside another; a swap of places |
+| `seal.js`, `spell-kinds.js` | no sealed key is cast, the lock on the key; the kind of every spell |
+| `token.js` | a pass by a hit, a claim's message read back, two claims of one number settled alike |
+| `chasm.js` | the CPU goes round, its maker walks across, a dash crosses |
+| `cover.js` | 150 HP, the fall, sight and paths through, the next round stands it again |
+| `attractor.js` | the other side's bolt caught, its own passes, none without it |
+| `cpu.js` | a CPU walks round what it is told, takes a mirage for cover, casts from an origin, holds attacks |
+| `looks.js` | the plain look of every piece at once |
+| `online.py` | the two screens, above |
