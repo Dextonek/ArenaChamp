@@ -100,9 +100,11 @@ Oak), the Deep's (its caster is the golem: the lurker, now a cave hunter, the La
 Raider Chief's figure.
 
 **Rulers in the game** (`src/tower/world/pieces/rulerModels.ts`): `withRulerModel` decorates a floor's pieces (`piecesOf`, no rebake)
-with the ruler's `model` and `body` (its hit size, measured on the model). The stand-in hero's kit stays for the numbers and the
+with the ruler's `model` and `body` (its hit size, measured on the model at rest: the height to its top, the trunk's radius between
+waist and chest, kept between 0.4 and 0.6). The stand-in hero's kit stays for the numbers and the
 distance it keeps, so the moves, health and timings are the floor's; the figure, the hit size and the hold (a staff upright in the left
-hand for the Wood's and the Deep's casters and the Crow King) are new. A chapter's first floor shows its first ruler untinted; the
+hand for the Wood's and the Deep's casters and the Crow King) are new; the kit's basic attack (its kind and look) is still the
+stand-in's (a ruler fights with its moves, whose poses the figure plays). A chapter's first floor shows its first ruler untinted; the
 made floors keep their tint at 0.22 (a hero stand-in had 0.5: its colours were not the ruler's).
 
 **Enemies in the game** (`src/tower/world/foeKinds.ts`, `foeModels.ts`): a table from the spec's `look` to a model, its height, its
@@ -129,7 +131,8 @@ all six floors measured.
 
 **The first pack** (`src/tower/world/prewarm.ts`): when a floor's fight begins its model files load, one figure of each stands with
 the code figures under the ground, and once they have landed they are compiled for the frame's target (the renderer is taken from a
-mesh that draws nothing); they go back to the pool when the zone goes, so the first pack takes them ready-made.
+mesh that draws nothing). Each file's pool is filled ahead with seven figures (a side has at most six live units), so a pack
+takes figures ready-made and never clones one mid-fight; the prewarm's own figure goes back to the pool when the zone goes.
 
 ## The plan for all 50 floors (people, rulers and enemies done)
 

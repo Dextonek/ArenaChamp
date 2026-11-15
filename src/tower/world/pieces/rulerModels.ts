@@ -17,28 +17,32 @@ import type { PiecesDef, RulerDef } from './types';
 export interface RulerModel {
   /** `models/tower/<id>_v4.glb`. */
   id: string;
-  /** Its hit size at a hero's size (radius and height, m); the fight multiplies it by the ruler's `scale`. */
+  /**
+   * Its hit size at a hero's size (radius and height, m); the fight multiplies it by the ruler's `scale`. Measured on the posed-at-rest
+   * model as the game draws it (1.3 times its own size): the height to its top; the radius of its trunk between waist and chest, kept
+   * between 0.4 and 0.6 (a cloak, wing-cases or a weapon held low widen the trunk's ring past the body).
+   */
   body: { radius: number; height: number };
   /** What its arms do when they do not strike (`REAL_STYLE`): a staff upright in the left hand. */
   hold?: RealStyle['hold'];
 }
 
 export const RULER_MODELS: Record<string, RulerModel> = {
-  sea_admiral: { id: 'sea_admiral', body: { radius: 0.56, height: 2.5 } },
-  sea_queen: { id: 'sea_queen', body: { radius: 0.52, height: 2.6 } },
-  sea_judge: { id: 'sea_judge', body: { radius: 0.56, height: 2.6 } },
-  wood_elder: { id: 'wood_elder', body: { radius: 0.56, height: 2.7 }, hold: 'torch' },
-  wood_briar: { id: 'wood_briar', body: { radius: 0.5, height: 2.6 }, hold: 'torch' },
-  wood_antler: { id: 'wood_antler', body: { radius: 0.56, height: 2.9 } },
-  sands_scarab: { id: 'sands_scarab', body: { radius: 0.58, height: 2.5 } },
-  sands_sphinx: { id: 'sands_sphinx', body: { radius: 0.55, height: 2.6 } },
-  sands_jackal: { id: 'sands_jackal', body: { radius: 0.52, height: 2.7 } },
-  deep_prism: { id: 'deep_prism', body: { radius: 0.5, height: 2.7 }, hold: 'torch' },
-  deep_lamp: { id: 'deep_lamp', body: { radius: 0.55, height: 2.6 }, hold: 'torch' },
-  deep_seam: { id: 'deep_seam', body: { radius: 0.58, height: 2.6 } },
-  war_marshal: { id: 'war_marshal', body: { radius: 0.56, height: 2.6 } },
-  war_siege: { id: 'war_siege', body: { radius: 0.6, height: 2.5 } },
-  war_crow: { id: 'war_crow', body: { radius: 0.52, height: 2.7 }, hold: 'torch' },
+  sea_admiral: { id: 'sea_admiral', body: { radius: 0.4, height: 2.38 } },
+  sea_queen: { id: 'sea_queen', body: { radius: 0.45, height: 2.57 } },
+  sea_judge: { id: 'sea_judge', body: { radius: 0.4, height: 2.54 } },
+  wood_elder: { id: 'wood_elder', body: { radius: 0.4, height: 2.49 }, hold: 'torch' },
+  wood_briar: { id: 'wood_briar', body: { radius: 0.46, height: 2.65 }, hold: 'torch' },
+  wood_antler: { id: 'wood_antler', body: { radius: 0.6, height: 3.12 } },
+  sands_scarab: { id: 'sands_scarab', body: { radius: 0.6, height: 2.55 } },
+  sands_sphinx: { id: 'sands_sphinx', body: { radius: 0.4, height: 2.7 } },
+  sands_jackal: { id: 'sands_jackal', body: { radius: 0.6, height: 2.66 } },
+  deep_prism: { id: 'deep_prism', body: { radius: 0.54, height: 2.65 }, hold: 'torch' },
+  deep_lamp: { id: 'deep_lamp', body: { radius: 0.4, height: 2.46 }, hold: 'torch' },
+  deep_seam: { id: 'deep_seam', body: { radius: 0.6, height: 2.36 } },
+  war_marshal: { id: 'war_marshal', body: { radius: 0.6, height: 2.48 } },
+  war_siege: { id: 'war_siege', body: { radius: 0.42, height: 2.46 } },
+  war_crow: { id: 'war_crow', body: { radius: 0.6, height: 2.56 }, hold: 'torch' },
 };
 
 /** Which ruler stands on which floor (the made floors' names in the comments). The first of a chapter's is on its first floor. */

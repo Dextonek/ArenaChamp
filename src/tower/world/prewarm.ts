@@ -17,7 +17,8 @@ import { codeLookOf } from './looks';
  * The kinds drawn from a model (foeKinds.ts) have their file loaded here too, and one figure of each stands with the others. A file
  * that lands after the warm-up has run is compiled on its own: the renderer is taken from a mesh that draws nothing (`onBeforeRender`
  * hands it over, with the target and the camera the scene is drawn with), and the loaded figures are compiled for that target, outside
- * the frame. The figures go back to their files' pools when the zone goes, so the first pack takes them ready-made.
+ * the frame. Loading a file also fills its pool with the figures a pack can need (foeModels.ts `preloadFoe`), so the first pack takes
+ * figures ready-made; the one standing here goes back to the pool when the zone goes.
  * `globalThis.__noPrewarm = true` before a floor starts leaves it all out (for the A/B).
  */
 export function prewarmFoes(api: GameApi, enemies: Record<string, EnemySpec>) {

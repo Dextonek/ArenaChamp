@@ -29,7 +29,7 @@ def build():
     z = R.z
     P.hair(R, "Hair_SimpleParted", "#8c8a88", beard="Hair_Beard")
 
-    R.fitted("Plate", ["spine", "clavicle", "upperarm", "lowerarm"], "plate", offset=0.014)
+    R.fitted("Plate", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "plate", offset=0.014)
     R.fitted("Legs", ["thigh", "calf"], "plate", offset=0.01)
     R.boots("plate", top=z["ankle"] + 0.12, toe="gold", offset=0.014)
     P.gloves(R, "plate")
