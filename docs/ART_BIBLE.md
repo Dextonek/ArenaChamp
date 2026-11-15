@@ -132,6 +132,22 @@ When something new is made and is better than these, swap it in here.
    user pick, instead of asking abstract questions.
 8. **Record what was learned** here (a new rule, a new reference) or in `VFX_PRINCIPLES.md` (a new technique).
 
+### Outside tools the user allows: the ArtCraft "Craft" apps (2026-11-15)
+The user said Arena of Kits may use the free, open-source ArtCraft apps (https://getartcraft.com/apps; Rust, driven by an agent
+through CLI, JSON control or MCP) for art and sound. Most are alpha: work on copies and keep the current assets as the fallback.
+Only the launcher is installed (`C:/Users/erich/AppData/Local/Programs/ArtCraft/Launcher/artcraft-launcher.exe`); install an app
+when a task needs it (TextureCraft: `texturecraft-0.6.1-windows-x64.msi`, https://github.com/storytold/texturecraft/releases/tag/v0.6.1).
+Read `https://craft.wiki/apps/<app>/ai-agents/` before relying on one.
+- **VectorCraft:** spell icons (40 heroes x 4), portraits and UI frames in one style; the biggest win.
+- **TextureCraft** (https://craft.wiki/apps/texturecraft/ai-agents/): light touches only, never gritty (section 1): baked AO for depth
+  on weapons and costumes, gold kept to edges by the curvature mask, covering the painted underwear on the Quaternius skin. Export
+  small (1K JPEG) to stay inside a model's 300-600 KB. MCP: `claude mcp add texturecraft -- texturecraft-cli mcp --read-root .
+  --write-root .` (it needs the roots); live: `texturecraft --control 7878`, then `texturecraft-cli mcp --bridge 7878`; CLI:
+  `texturecraft-cli new model.glb model.tcraft --resolution 2048`, `bake` (saves the project in place), `export ... --format png`,
+  `render ... --samples 256`, `texturecraft-cli commands`.
+- **FilmCraft:** hero showcase clips and trailers. **SoundCraft:** spell and hit sounds.
+- **Not EffectCraft:** the project's own VFX tool does that.
+
 ### Do / don't
 | Do | Don't |
 |---|---|
