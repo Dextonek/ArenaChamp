@@ -223,3 +223,9 @@ export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, al
   }
   return kit;
 });
+
+// A sample for the user's yes (docs/icons/sample): `?icons=vc` swaps in the VectorCraft spell icons for the heroes
+// that have them. Without the flag the module is not even loaded.
+if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('icons') === 'vc') {
+  void import('./icons/vc').then((m) => m.useVcIcons(HERO_KITS));
+}
