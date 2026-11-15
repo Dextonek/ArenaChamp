@@ -85,7 +85,7 @@ def blocks(lines, head):
 
 def read(path):
     sec = parse(path.read_text(encoding='utf-8'))
-    lore = {'prose': {}, 'places': [], 'factions': {}, 'ftie': [], 'heroes': [], 'ties': []}
+    lore = {'prose': {}, 'places': [], 'factions': {}, 'ftie': [], 'heroes': [], 'ties': [], 'peoples': {}}
     for name in ('The world', 'The Noonfall', 'Why heroes come to the Ring', 'The Tower and the Climb (a proposal)'):
         lore['prose'][name] = paragraphs(sec[name])
     for ln in sec['Places']:
@@ -110,6 +110,19 @@ def read(path):
                 rest.append(ln)
         f['text'] = paragraphs(rest)
         lore['factions'][fid] = f
+    # The peoples (since 2026-11-15): `### id | Name | kind` (kind: human, changed or other), `- key: value` lines, then the text.
+    for head, body in blocks(sec.get('Peoples', []), '### '):
+        pid, name, kind = head
+        pe = {'id': pid, 'name': name, 'kind': kind, 'text': []}
+        rest = []
+        for ln in body:
+            m = re.match(r'- (\w+): (.*)', ln)
+            if m and not rest:
+                pe[m.group(1)] = m.group(2).strip()
+            else:
+                rest.append(ln)
+        pe['text'] = paragraphs(rest)
+        lore['peoples'][pid] = pe
     for ln in sec['Faction ties']:
         if ln.startswith('- '):
             a, b, kind, what = [p.strip() for p in ln[2:].split('|')]
@@ -118,19 +131,27 @@ def read(path):
         name, title, theme, fac, pron, status = head
         line = ''
         rest = []
-        home, spot, age = '', '', ''
+        home, spot, age, people, kin = '', '', '', '', ''
         for ln in body:
-            if ln.startswith('> '):
+            if ln.startswith('- people: '):
+                bits = [x.strip() for x in ln[10:].split('|', 1)]
+                people, kin = bits[0], (bits[1] if len(bits) > 1 else '')
+            elif ln.startswith('- '):
+                # any other `- key:` line is a fact, never part of the legend
+                m = re.match(r'- (\w+): (.*)', ln)
+                if m and m.group(1) == 'home':
+                    home, spot = [x.strip() for x in m.group(2).split('|', 1)]
+                elif m and m.group(1) == 'age':
+                    age = m.group(2).strip()
+                else:
+                    raise SystemExit(f'{name}: unknown line in LORE.md: {ln}')
+            elif ln.startswith('> '):
                 line = ln[2:].strip()
-            elif ln.startswith('- home: '):
-                home, spot = [x.strip() for x in ln[8:].split('|', 1)]
-            elif ln.startswith('- age: '):
-                age = ln[7:].strip()
             else:
                 rest.append(ln)
         lore['heroes'].append({'name': name, 'title': title, 'theme': theme, 'faction': fac, 'pronoun': pron,
                                'status': status, 'line': line, 'legend': ' '.join(paragraphs(rest)),
-                               'home': home, 'spot': spot, 'age': age})
+                               'home': home, 'spot': spot, 'age': age, 'people': people, 'kin': kin})
     for ln in sec['Ties']:
         if not ln.startswith('- '):
             continue
