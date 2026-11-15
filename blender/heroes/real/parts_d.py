@@ -1,7 +1,7 @@
 """Shared parts of the revamps (docs/lore/codex/revamp.md, 2026-11-15): the marks of a hero's people built on the pack's
 body. Crystal grown out of the skin (Opaline, Gloaming folk), cracks of light along the skin (Brannoc, Kilnborn),
-antlers (Hank, Wood folk), pointed ears (Grandma Ironknit, Briarkin). Each is placed from the body's own surface
-(`Real.surface`), at the pack body's own size."""
+antlers (Hank, Wood folk). Each is placed from the body's own surface (`Real.surface`), at the pack body's own size.
+(Grandma Ironknit's ears are built in real/yarn.py the way the twins' are, real/parts_c.py.)"""
 import math
 import random
 

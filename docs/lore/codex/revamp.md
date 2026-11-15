@@ -1,7 +1,7 @@
 ---
 title: The revamp plan
 tags: [lore, codex, heroes, revamp, plan]
-status: a plan for the user's yes; no model is changed by it
+status: the six revamps are built (2026-11-15; not pushed, not live); the touches are still a plan
 updated: 2026-11-15
 ---
 
@@ -9,8 +9,8 @@ updated: 2026-11-15
 
 The user, 2026-11-14: "I think we need revamps of some heroes now, they seem all the same, like human and stuff ... and let's
 match heroes to lore". This page gives every hero its people ([the peoples](peoples/README.md)) and says whether its figure
-should change to show it. **Nothing here is built.** The plan goes to the user for a yes; the models are made later, one at a
-time in Blender, starting with one sample. Back to the [codex](README.md).
+should change to show it. The user said yes to it on 2026-11-15 ("lets rework those that need to match the lore"): **the six
+revamps are built** (before and after: `docs/heroes/revamp/index.html`); the sixteen touches are not. Back to the [codex](README.md).
 
 Three answers:
 - **No:** the figure already reads as its people.
@@ -243,5 +243,4 @@ the Sea's five to sea-tan and tide lines. Nothing else is needed.
 
 No kit, no spell, no number, no trait. No hero's title. No colour that a spell uses. The rule that a staff goes in the left hand
 and a weapon in the right. The pack's body and clips. The game's people labels (on the Play card and the Lore panel) are shown
-from the lore as soon as the lore ships, before any model changes; six of them (the revamps) describe a figure the player will
-not see until the revamp is made.
+from the lore as soon as the lore ships; the six revamps' figures ship with them.

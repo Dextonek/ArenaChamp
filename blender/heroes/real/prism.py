@@ -39,7 +39,6 @@ def build():
 
     # the gown: a scooped neckline that shows the collarbones (the crystal grows there)
     neck, rise, wide = z["chest"] + 0.07, 0.11, 0.13
-    print("OPALINE z", {k: round(v, 3) for k, v in z.items()})
 
     def cut(x):
         return neck + rise * min(1.0, abs(x) / wide) ** 1.7

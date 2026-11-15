@@ -78,12 +78,13 @@ def build():
     bm.to_mesh(hair.data)
     bm.free()
     f, hc, hr = R.head_piece()
-    knot = hc + V(0, hr * 0.98, hr * 0.15)
-    f.ellipsoid(hk, knot, (0.05, 0.045, 0.042), seg=(14, 10))
-    f.ellipsoid(hk, knot + V(0, -0.02, -0.03), (0.06, 0.05, 0.035), seg=(14, 8))
-    f.torus("streak", knot + V(0, 0.0, -0.012), 0.044, 0.008, normal=(0, 0.6, -0.8), seg=(18, 6))
-    f.torus("gold", knot + V(0, 0.004, -0.02), 0.046, 0.004, normal=(0, 0.6, -0.8), seg=(18, 5))
-    f.ellipsoid("glass", knot + V(0.03, 0.03, 0.02), (0.008, 0.008, 0.008), seg=(8, 6))
+    # the knot high at the back of the crown, clear of the collar: a twisted bun, bound in sea-green and gold
+    knot = hc + V(0, hr * 1.42, hr * 0.5)
+    f.ellipsoid(hk, knot, (0.058, 0.05, 0.05), seg=(16, 10))
+    f.ellipsoid(hk, knot + V(0, -0.03, -0.035), (0.062, 0.05, 0.04), seg=(14, 8))
+    f.torus("streak", knot + V(0, -0.006, -0.02), 0.05, 0.009, normal=(0, 0.75, -0.66), seg=(18, 6))
+    f.torus("gold", knot + V(0, -0.002, -0.03), 0.052, 0.0045, normal=(0, 0.75, -0.66), seg=(18, 5))
+    f.ellipsoid("glass", knot + V(0.035, 0.03, 0.02), (0.009, 0.009, 0.009), seg=(8, 6))
 
     R.fitted("Tunic", ["spine", "pelvis", "clavicle"], "coat")
     R.fitted("Sleeves", ["upperarm"], "coat", offset=0.007)
@@ -98,7 +99,7 @@ def build():
         f.torus("lining", c + (w - e).normalized() * 0.016, r + 0.008, 0.009, normal=(w - e), seg=(20, 6))
 
     # the coat's skirt to the knee, open in front over a short dark tunic
-    R.skirt("dark", hem=z["hip"] - 0.14, flare=1.25, depth=1.2)
+    R.skirt("dark", hem=z["hip"] - 0.14, flare=1.12, depth=1.0)
     hem = z["knee"] - 0.02
     R.skirt("coat", hem=hem, flare=1.6, depth=1.2, arc=(0.4, 2 * PI - 0.4), trim="gold", grow=1.05, seg=40)
     R.band("dark", z["waist"], height=0.07, grow=1.13, how=R.hang_w(z["waist"], hem))
