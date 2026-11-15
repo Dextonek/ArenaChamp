@@ -667,6 +667,17 @@ async function packCases() {
     ok((await e.c.next('pack_respawn')).pack === 'a', 'after 3 minutes with nobody near: the pack comes back (pack_respawn)');
     for (const x of [b, c, d, e]) x.c.close();
 
+    // Alone, an owner quiet for a while (a tab put away) keeps its pack: nobody near could take it.
+    const g = await walker('pal', -63, 67);
+    g.c.send({ t: 'pack_claim', pack: 'd', x: -63.8, z: 67.9 });
+    const gOwn = await g.c.next('pack_owner');
+    clock += 6000;
+    g.c.send({ t: 'world_move', x: -63, z: 66, yaw: 0, walk: true, hp: 1 });
+    await pause(200);
+    ok(gOwn.owner === g.r.you && (g.c.got.pack_owner ?? 0) === 1, 'alone, an owner quiet for 6 s keeps its pack (nobody near to take it)');
+    g.c.close();
+    await pause(100);
+
     // Alone on the floor, a cleared pack never comes back.
     const f = await walker('pip', 80, 29);
     const ff = f.r.shard === '2.1' ? null : f;

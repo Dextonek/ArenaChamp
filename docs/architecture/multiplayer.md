@@ -333,8 +333,9 @@ packs. Gatekeepers and rulers behind doors are still each player's own (stage 3)
 - **Hand-over.** When the owner leaves the shard (a closed tab, a dropped connection, a door, Leave) or sends nothing for 4 s (a tab put
   away), each of its packs goes to the oldest member within 40 m of it, one heard from in the last 4 s first, as the Raid's boss brain is
   handed on (`pack_owner` with the new owner). That screen already draws the copies: they become its own units where they stand, with
-  their health, and fight on. With nobody near, nobody runs it (`pack_owner` with owner 0): each screen has it to itself again, and it
-  walks home and heals.
+  their health, and fight on. With nobody near, an owner that left lets it go (`pack_owner` with owner 0): each screen has it to
+  itself again, and it walks home and heals; an owner that is only quiet keeps it (a player alone who puts its tab away for a moment
+  comes back to its fight as it was).
 - **Leashed home.** A pack its owner's screen sees give up and come home asleep is let go (`pack_release`): the next to wake it claims
   it again, for the players near then.
 - **Cleared and back.** The owner says when the last unit fell (`pack_clear`); the shard hears `pack_cleared` (copies still standing
@@ -362,7 +363,9 @@ packs. Gatekeepers and rulers behind doors are still each player's own (stage 3)
   owner's (the report goes at once when a zone begins). Waves the zone makes for itself (a hold's, the Sands' dust wraiths) are not
   shared: each screen has its own. A respawned pack pays its shards again. A named enemy's patrol is shared only while it fights.
   With more than 6 copies near (three or more other packs in one place), the farthest are not drawn here, though their owner's screen
-  may still strike this hero with them.
+  may still strike this hero with them. The hub keeps no record of a pack that came back, so a player whose zone is built again (after a
+  door, a fall that begins the floor again) sees a pack its own run cleared as cleared, where the others see it back, until someone
+  wakes it (then this screen draws it again).
 - **Test switches.** `game.html?others=7&packs=3` (or the perf scenes `gen-2-fight-3`, `gen-2-fight-7`): made-up others, each with
   three made-up packs fighting round the hero as copies, through the same `pack_state` path a real owner's reports take, and this
   hero's own packs fighting the made-up others too.
@@ -389,7 +392,8 @@ a pack id the floor does not have is refused; the fight counted when a second pl
 owner's report reaches the member near the pack, clamped, and not one 150 m off; a non-owner's report and blow are dropped; a hit goes
 to the owner with the hitter's id, 60 in a second cut to 40, a hit past 600 cut; the owner's blow goes to the hero it struck, its hold
 cut to 3 s; the owner leaves and the pack goes to the member near it, still set for two; an owner quiet for 4 s is replaced; cleared,
-told to a newcomer and to a claim; back after 3 minutes, not before, not while someone stands within 30 m, never alone in a shard).
+told to a newcomer and to a claim; back after 3 minutes, not before, not while someone stands within 30 m, never alone in a shard;
+alone, a quiet owner keeps its pack).
 Two tabs on the dev server with local test accounts: [docs/tower/openworld/stage2/](../tower/openworld/stage2/) (the drift between the
 two screens, the numbers, the hand-over, the respawn, pictures).
 

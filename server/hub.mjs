@@ -1325,10 +1325,12 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
 
   /**
    * The pack's owner is gone (left, went quiet): the oldest member near it takes it on, one heard from lately first (as `nextBrain`
-   * hands the Raid's boss on); with nobody near, nobody runs it and every screen has it to itself again (the record goes).
-   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   * hands the Raid's boss on); with nobody near, nobody runs it and every screen has it to itself again (the record goes). `quiet`: the
+   * owner is still in the shard but said nothing for a while: with nobody near to take the pack, it keeps it (a player alone who put
+   * its tab away for a moment comes back to its fight as it was).
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t @param {boolean} [quiet]
    */
-  function packHandOn(shard, p, t) {
+  function packHandOn(shard, p, t, quiet = false) {
     const was = p.owner;
     /** @type {Client | null} */
     let next = null;
@@ -1341,6 +1343,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       any ??= x;
     }
     next ??= any;
+    if (!next && quiet) return;
     if (!next) {
       shard.packs.delete(p.id);
       tellShard(shard, { t: 'pack_owner', pack: p.id, owner: 0, n: p.n }, null);
@@ -1368,7 +1371,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         tellShard(shard, { t: 'pack_respawn', pack: p.id }, null);
         continue;
       }
-      if (t - p.lastAt > PK.quietMs) { packHandOn(shard, p, t); continue; }
+      if (t - p.lastAt > PK.quietMs) { packHandOn(shard, p, t, true); continue; }
       packCount(shard, p, t);
     }
   }

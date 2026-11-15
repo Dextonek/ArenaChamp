@@ -14,29 +14,29 @@
     "kind": "docker",
     "hp": 71,
     "max": 71,
-    "x": 78.16,
-    "z": 30.12
+    "x": 77.69,
+    "z": 30.11
    },
    {
     "kind": "docker",
     "hp": 71,
     "max": 71,
-    "x": 75.64,
-    "z": 29.81
+    "x": 75.23,
+    "z": 29.62
    },
    {
     "kind": "netter",
     "hp": 50,
     "max": 50,
-    "x": 77.65,
+    "x": 77.66,
     "z": 29.22
    },
    {
     "kind": "crab",
     "hp": 171,
     "max": 171,
-    "x": 79.29,
-    "z": 28.49
+    "x": 79.04,
+    "z": 28.6
    }
   ],
   "zones": 0
@@ -56,29 +56,29 @@
     "kind": "docker",
     "hp": 113,
     "max": 113,
-    "x": 77.35,
-    "z": 30.02
+    "x": 77.27,
+    "z": 30.24
    },
    {
     "kind": "docker",
     "hp": 113,
     "max": 113,
-    "x": 75.41,
-    "z": 29.74
+    "x": 74.95,
+    "z": 29.47
    },
    {
     "kind": "netter",
     "hp": 81,
     "max": 81,
-    "x": 79.02,
-    "z": 27.35
+    "x": 79.07,
+    "z": 27.4
    },
    {
     "kind": "crab",
     "hp": 274,
     "max": 274,
-    "x": 77.83,
-    "z": 29.45
+    "x": 77.72,
+    "z": 29.64
    }
   ],
   "zones": 0
@@ -99,29 +99,29 @@
      "kind": "docker",
      "hp": 113,
      "max": 113,
-     "x": 76.77,
-     "z": 30.36
+     "x": 76.91,
+     "z": 30.59
     },
     {
      "kind": "docker",
      "hp": 113,
      "max": 113,
-     "x": 75.41,
-     "z": 29.74
+     "x": 74.95,
+     "z": 29.47
     },
     {
      "kind": "netter",
      "hp": 81,
      "max": 81,
-     "x": 79.23,
-     "z": 26.86
+     "x": 79.37,
+     "z": 27.05
     },
     {
      "kind": "crab",
      "hp": 274,
      "max": 274,
      "x": 77.52,
-     "z": 30.38
+     "z": 30.16
     }
    ],
    "zones": 0
@@ -141,29 +141,29 @@
      "kind": "docker",
      "hp": 113,
      "max": 113,
-     "x": 76.76,
-     "z": 30.36
+     "x": 76.91,
+     "z": 30.59
     },
     {
      "kind": "docker",
      "hp": 113,
      "max": 113,
-     "x": 75.41,
-     "z": 29.74
+     "x": 74.95,
+     "z": 29.47
     },
     {
      "kind": "netter",
      "hp": 81,
      "max": 81,
-     "x": 79.23,
-     "z": 26.86
+     "x": 79.38,
+     "z": 27.05
     },
     {
      "kind": "crab",
      "hp": 274,
      "max": 274,
-     "x": 77.51,
-     "z": 30.38
+     "x": 77.52,
+     "z": 30.16
     }
    ],
    "zones": 0
@@ -187,15 +187,15 @@
      "kind": "netter",
      "hp": 49,
      "max": 81,
-     "x": 79.23,
-     "z": 26.86
+     "x": 79.37,
+     "z": 27.05
     },
     {
      "kind": "crab",
-     "hp": 99,
+     "hp": 149,
      "max": 274,
-     "x": 77.51,
-     "z": 30.44
+     "x": 77.87,
+     "z": 30.21
     }
    ],
    "zones": 1
@@ -217,15 +217,15 @@
      "kind": "netter",
      "hp": 49,
      "max": 81,
-     "x": 79.23,
-     "z": 26.86
+     "x": 79.38,
+     "z": 27.05
     },
     {
      "kind": "crab",
-     "hp": 99,
+     "hp": 149,
      "max": 274,
-     "x": 77.51,
-     "z": 30.44
+     "x": 77.85,
+     "z": 30.21
     }
    ],
    "zones": 1
@@ -235,26 +235,26 @@
   "raw": {
    "n": 128,
    "median": 0.0,
-   "p95": 0.124,
-   "max": 0.272
+   "p95": 0.094,
+   "max": 0.265
   },
   "shifted100": {
-   "n": 120,
+   "n": 117,
    "median": 0.0,
-   "p95": 0.031,
-   "max": 0.067
+   "p95": 0.027,
+   "max": 0.052
   },
   "samples": [
-   45,
-   43
+   44,
+   44
   ]
  },
  "after_a": {
   "a": {
    "hp": 510,
    "max": 520,
-   "x": 70,
-   "z": 24.6,
+   "x": 69.9,
+   "z": 24.3,
    "kills": 3,
    "shards": 15,
    "cleared": [
@@ -270,7 +270,7 @@
    "lives": 3,
    "falls": 0,
    "stats": {
-    "reports": 61,
+    "reports": 63,
     "heard": 0,
     "hitsSent": 0,
     "hitsHeard": 12,
@@ -279,19 +279,19 @@
     "shareTaken": 0
    },
    "log": [
-    "14.57s a: appears",
-    "14.63s a: wakes (near)",
-    "14.63s a: runs here now (woke it), set for 1",
-    "15.8s a: set for 2 players: health x1.60, blows x1.15",
-    "21.58s a: cleared (counted here)"
+    "14.49s a: appears",
+    "14.55s a: wakes (near)",
+    "14.55s a: runs here now (woke it), set for 1",
+    "15.85s a: set for 2 players: health x1.60, blows x1.15",
+    "21.56s a: cleared (counted here)"
    ],
    "you": null
   },
   "b": {
    "hp": 435,
    "max": 580,
-   "x": 74.4,
-   "z": 28.6,
+   "x": 74.2,
+   "z": 28.2,
    "kills": 4,
    "shards": 20,
    "cleared": [
@@ -308,7 +308,7 @@
    "falls": 0,
    "stats": {
     "reports": 0,
-    "heard": 61,
+    "heard": 62,
     "hitsSent": 12,
     "hitsHeard": 0,
     "hurtsSent": 0,
@@ -316,31 +316,31 @@
     "shareTaken": 0.2519
    },
    "log": [
-    "2.68s named2: appears",
-    "2.78s a: drawn here, run by 6, set for 1",
-    "3.66s a: appears",
-    "3.66s a: set for 2 players: health x1.60, blows x1.15",
-    "9.46s a: cleared (counted here)"
+    "2.93s named2: appears",
+    "2.93s a: drawn here, run by 1, set for 1",
+    "4.03s a: appears",
+    "4.03s a: set for 2 players: health x1.60, blows x1.15",
+    "9.77s a: cleared (counted here)"
    ],
    "you": null
   }
  },
  "drift_b": {
   "raw": {
-   "n": 166,
-   "median": 0.17,
-   "p95": 0.363,
-   "max": 0.389
+   "n": 170,
+   "median": 0.172,
+   "p95": 0.36,
+   "max": 0.445
   },
   "shifted100": {
-   "n": 166,
-   "median": 0.015,
-   "p95": 0.061,
-   "max": 0.11
+   "n": 170,
+   "median": 0.02,
+   "p95": 0.066,
+   "max": 0.132
   },
   "samples": [
-   40,
-   141
+   41,
+   142
   ]
  },
  "handover": {
@@ -359,8 +359,8 @@
      "kind": "docker",
      "hp": 22,
      "max": 113,
-     "x": 29.58,
-     "z": -43.97
+     "x": 29.63,
+     "z": -44.04
     },
     null,
     {
@@ -368,21 +368,21 @@
      "hp": 81,
      "max": 81,
      "x": 29.63,
-     "z": -49.88
+     "z": -49.98
     },
     {
      "kind": "netter",
      "hp": 81,
      "max": 81,
      "x": 28.89,
-     "z": -49.8
+     "z": -49.86
     },
     {
      "kind": "crab",
-     "hp": 247,
+     "hp": 246,
      "max": 274,
-     "x": 28.02,
-     "z": -45.41
+     "x": 28.18,
+     "z": -45.24
     }
    ],
    "zones": 0
@@ -404,35 +404,35 @@
      "kind": "netter",
      "hp": 81,
      "max": 81,
-     "x": 30.23,
-     "z": -47.67
+     "x": 30.57,
+     "z": -46.83
     },
     {
      "kind": "netter",
-     "hp": 67,
+     "hp": 68,
      "max": 81,
-     "x": 29.49,
-     "z": -47.51
+     "x": 29.86,
+     "z": -46.58
     },
     {
      "kind": "crab",
-     "hp": 83,
+     "hp": 96,
      "max": 274,
-     "x": 30.51,
-     "z": -42.63
+     "x": 31.09,
+     "z": -41.96
     }
    ],
    "zones": 0
   },
-  "flip_ms_after_close": 135,
-  "max_step_across": 0.391,
-  "max_step_mirror": 0.391,
-  "max_step_owned": 0.309,
+  "flip_ms_after_close": 322,
+  "max_step_across": 0.373,
+  "max_step_mirror": 0.373,
+  "max_step_owned": 0.336,
   "status": {
    "hp": 338,
    "max": 580,
-   "x": 36,
-   "z": -41.9,
+   "x": 34,
+   "z": -36.1,
    "kills": 9,
    "shards": 45,
    "cleared": [
@@ -449,25 +449,25 @@
    "lives": 3,
    "falls": 0,
    "stats": {
-    "reports": 92,
-    "heard": 107,
-    "hitsSent": 16,
+    "reports": 85,
+    "heard": 111,
+    "hitsSent": 18,
     "hitsHeard": 0,
     "hurtsSent": 0,
     "hurtsTaken": 12,
     "shareTaken": 0.33470000000000005
    },
    "log": [
-    "2.68s named2: appears",
-    "2.78s a: drawn here, run by 6, set for 1",
-    "3.66s a: appears",
-    "3.66s a: set for 2 players: health x1.60, blows x1.15",
-    "9.46s a: cleared (counted here)",
-    "10.85s b: drawn here, run by 6, set for 1",
-    "11.43s b: set for 2 players: health x1.60, blows x1.15",
-    "11.54s b: appears",
-    "16.57s b: runs here now (handed on), set for 2",
-    "26.33s b: cleared (counted here)"
+    "2.93s named2: appears",
+    "2.93s a: drawn here, run by 1, set for 1",
+    "4.03s a: appears",
+    "4.03s a: set for 2 players: health x1.60, blows x1.15",
+    "9.77s a: cleared (counted here)",
+    "11.24s b: drawn here, run by 1, set for 1",
+    "11.81s b: set for 2 players: health x1.60, blows x1.15",
+    "11.93s b: appears",
+    "17.44s b: runs here now (handed on), set for 2",
+    "26.64s b: cleared (counted here)"
    ],
    "you": null
   },
@@ -509,7 +509,7 @@
   ],
   "zones": 0
  },
- "respawn_s": 179.8,
+ "respawn_s": 180.1,
  "respawned": {
   "a": {
    "id": "a",
@@ -624,10 +624,10 @@
    "log": [
     "2.1s a: cleared by others",
     "2.1s b: cleared by others",
-    "43.18s named2: appears",
-    "154.92s named2: appears",
-    "160.21s a: back",
-    "161.26s a: appears"
+    "42.72s named2: appears",
+    "154.83s named2: appears",
+    "154.83s a: back",
+    "155.9s a: appears"
    ],
    "you": null
   },
@@ -652,27 +652,27 @@
    "lives": 3,
    "falls": 0,
    "stats": {
-    "reports": 92,
-    "heard": 107,
-    "hitsSent": 16,
+    "reports": 85,
+    "heard": 111,
+    "hitsSent": 18,
     "hitsHeard": 0,
     "hurtsSent": 0,
     "hurtsTaken": 12,
     "shareTaken": 0.33470000000000005
    },
    "log": [
-    "3.66s a: appears",
-    "3.66s a: set for 2 players: health x1.60, blows x1.15",
-    "9.46s a: cleared (counted here)",
-    "10.85s b: drawn here, run by 6, set for 1",
-    "11.43s b: set for 2 players: health x1.60, blows x1.15",
-    "11.54s b: appears",
-    "16.57s b: runs here now (handed on), set for 2",
-    "26.33s b: cleared (counted here)",
-    "42.98s named2: appears",
-    "154.3s named2: appears",
-    "188.94s a: back",
-    "190s a: appears"
+    "4.03s a: appears",
+    "4.03s a: set for 2 players: health x1.60, blows x1.15",
+    "9.77s a: cleared (counted here)",
+    "11.24s b: drawn here, run by 1, set for 1",
+    "11.81s b: set for 2 players: health x1.60, blows x1.15",
+    "11.93s b: appears",
+    "17.44s b: runs here now (handed on), set for 2",
+    "26.64s b: cleared (counted here)",
+    "43.41s named2: appears",
+    "154.79s named2: appears",
+    "189.84s a: back",
+    "190.92s a: appears"
    ],
    "you": null
   }
