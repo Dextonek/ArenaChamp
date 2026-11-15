@@ -42,10 +42,11 @@ now, which includes a planted tree for every felled one, planted by the buyer.
 
 ## People and appearance
 
-Wood folk of the Wood's edge, sworn to the Moot, and Noon-touched: twenty-two at the Fall, he looks forty-two. Huge and quiet, with a braided brown beard,
-a leather brow band, a moss-green tunic under a fur mantle, and the one-bit axe held low with its edge aglow green. Today he has no horns. In the
-[revamp plan](../revamp.md) he is a revamp: broad branching antlers, sawn flat at every tip, ruddy freckled skin and moss-green eyes, so that he becomes
-the Horned, and stands apart from every other workman in the Ring.
+Wood folk of the Wood's edge, sworn to the Moot, and Noon-touched: twenty-two at the Fall, he looks forty-two. Huge and quiet, with ruddy
+skin, moss-green eyes and a braided brown beard. Out of his hair, behind the leather brow band, rise the antlers of the sworn: broad and
+branching, sweeping out and back, and sawn flat at every tip, the pale cut wood showing, because he cuts them back each spring and plants
+the tips. A moss-green tunic under a fur mantle, and the one-bit axe held low with its edge aglow green. He is the Horned now, and stands
+apart from every other workman in the Ring.
 
 ## Voice
 

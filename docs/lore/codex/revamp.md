@@ -45,7 +45,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 | 2 | Mr. Ledger | the Long Dead | **revamp, built** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
 | 3 | Kaia | Coast folk | **revamp, built** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
 | 4 | Brannoc | Kilnborn | **revamp, built** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
-| 5 | Hank | Wood folk | **revamp** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
+| 5 | Hank | Wood folk | **revamp, built** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
 | 6 | Grandma Ironknit | Briarkin | **revamp** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
 | 7 | Wick | Northerners | touch | Deep umber skin, white braids under the hood, star lines on the jaw |
 | 8 | Silvane | Gloaming folk | touch | Eyeshine (silver), skin cooled to blue-grey, dark lips |
@@ -157,6 +157,10 @@ show. His beard, red on the old model, is ash as the lore always said.
   Kilnborn body, taken in on purpose. His [page](heroes/brannoc.md) has it.
 
 ### 5. Hank, the Moss Hewer (Wood folk)
+
+**Built 2026-11-15** (`blender/heroes/real/timber.py`). As built: the antlers raise the model's top by 0.2 m (about 0.25 in
+the game), above his hit height (`HERO_BODIES` unchanged). His freckles are not drawn: the skin texture is too coarse on the face
+for dots, and his beard covers most of it.
 
 - **Figure:** the same huge woodcutter, braided beard, moss-green tunic, fur mantle and one-bit axe held low. New: **antlers**,
   broad and branching, sawn flat at every tip, because he cuts them back each spring and plants the tips (a felled tree must be

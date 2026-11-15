@@ -632,7 +632,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A woodcutter's hut at the Walking Wood's edge",
   "age": "Looks 42. He was 22 and already felling trees when the sun fell (Noon-touched).",
   "line": "\"Timber. Mind your heads.\"",
-  "legend": "When the Walking Wood walks into a village, someone has to ask it to leave, and Hank asks with an axe. He is the Moot's woodcutter: huge and quiet, with a braided beard, a moss-green tunic, a fur mantle and a great axe whose edges glow green. He grows trees too, fast, because a felled tree must be paid back with a planted one. Fenna calls him a butcher and he calls her a gardener; both are right, and they have shared a fire every winter for twenty years. He hunts with Arden and drinks with Bo. He fights in the Ring for the villages at the Wood's edge, which have no champion of their own.",
+  "legend": "When the Walking Wood walks into a village, someone has to ask it to leave, and Hank asks with an axe. He is the Moot's woodcutter: huge and quiet, with a braided beard, a moss-green tunic, a fur mantle and a great axe whose edges glow green. He grows trees too, fast, because a felled tree must be paid back with a planted one, and he wears the Moot's antlers sawn short: he plants the tips. Fenna calls him a butcher and he calls her a gardener; both are right, and they have shared a fire every winter for twenty years. He hunts with Arden and drinks with Bo. He fights in the Ring for the villages at the Wood's edge, which have no champion of their own.",
   "ties": [
    {
     "other": "Fenna",
