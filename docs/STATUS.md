@@ -1,11 +1,11 @@
 # Status
 
-## PAUSED by the user (2026-11-14, late): "lets for now stop doing this project, just pause it"
+## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
 
-Nothing is running: the three agents were stopped and no loops or servers are left. To pick up again, read this section first.
+The three agents below were restarted in their own threads from their saved commits and are running again; the deep lore starts when one finishes (three at most).
 - **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
   clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
-- **Stopped mid-work, saved as a "Paused mid-work" commit on each branch (unfinished, unchecked, NOT merged):**
+- **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
   - `t3/climb-shared-packs` (open world stage 2, shared packs; PROTOCOL 18), last commit 95ef7b0;
   - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
   - `t3/heroes20-engine-mechanics` (engine pieces for the 20 new kits), last commit 1281b37.
