@@ -33,6 +33,11 @@ The three agents below were restarted in their own threads from their saved comm
   the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
   change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
   Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
+- **Running (2026-11-15): the heroes reworked to match the lore** (the user: "lets look at all heroes and the lore and lets rework
+  those that need to match the lore": a yes to `docs/lore/codex/revamp.md`). One Blender agent, in order: the six revamps (Opaline,
+  Mr. Ledger, Kaia, Brannoc, Hank, Grandma Ironknit; one commit each, page `docs/heroes/revamp/index.html`), then the sixteen
+  touches (Wick, Silvane, Bram, Tempo, Vesper, Ada, Whistler, Cleaver, Barry, Zephyr, Marin, Cantor, Pip, Shiori, Zambini, Anka) as a
+  second agent after it. The eighteen others already match.
 - **Done, NOT merged (samples on their branches), waiting on the user (2026-11-15): the ArtCraft apps** (the user: "use the art
   craft tools"; `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums
   checked, in `C:/Users/erich/AppData/Local/Programs/ArtCraft/VectorCraft/` and `.../TextureCraft/` (delete the folder to remove).
