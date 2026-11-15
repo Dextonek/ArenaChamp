@@ -296,14 +296,15 @@ async function shopCases() {
       const pia = await enter(srv.to, 'pia'), quin = await enter(srv.to, 'quin');
       await duel(pia, quin, STARTERS[0], STARTERS[1]);
       const [d1] = await longDuel(pia, quin);
+      // This week's Tower report, sent before the clock moves: a day forward from a Sunday is already the next week.
+      pia.send({ t: 'tower_report', floor: 3, hero: STARTERS[0], week });
+      await pia.next('boards');
       skew.ms += 86400000;
       await duel(pia, quin, STARTERS[0], STARTERS[1]);
       const [d2] = await longDuel(pia, quin);
       const e = SHOP.earn;
       ok(d1.earned === e.duel + e.win + e.firstWin && d2.earned === d1.earned, 'the first win of the next UTC day pays again');
       // The week turns: other heroes are free, last week's are locked again, and the boards start empty.
-      pia.send({ t: 'tower_report', floor: 3, hero: STARTERS[0], week });
-      await pia.next('boards');
       skew.ms = 7 * 86400000;
       pia.forget('shop');
       const next = isoWeek(Date.now() + skew.ms).id;

@@ -6,11 +6,20 @@ The three agents below were restarted in their own threads from their saved comm
 - **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
   clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
 - **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
-  - `t3/climb-shared-packs` (open world stage 2, shared packs; PROTOCOL 18), last commit 95ef7b0;
   - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
   - `t3/heroes20-engine-mechanics` (engine pieces for the 20 new kits), last commit 1281b37.
   Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
-- **Not started:** the deep lore, peoples and Codex (brief: `docs/lore/briefs/deep-lore.md`; the aim is in the user's
+- **Done and merged, not live (2026-11-15):** the Climb's open world stage 2, shared packs and scaling with players (PROTOCOL 18;
+  `pipeline/designs/climb-open-world.md`, pictures `docs/tower/openworld/stage2/`). Signed-in players on a floor fight the same packs;
+  the first to wake a pack runs it, it passes to the oldest player near if they leave; packs grow with the players in the fight
+  (health x(1+0.6 per extra), blows x(1+0.15)); a kill counts for all who hit it in its last 10 s; a cleared pack respawns after 3 min
+  when two or more are on the floor. Tested in two real tabs (screens agree within 0.1 m; hand-over in 0.3 s). 23 new server
+  checks. Known: the phone frame with others' packs is not measured cleanly (the floor alone is already over a frame on phone-4x);
+  the raid perf print moved (34f75b29, follows how the code loads, not the change); after any change to a floor's packs run
+  `node pipeline/tools/climb-packs.mjs`. Stage 3 (doors and bosses together) is described in the design; waits on the user's look.
+- **Fixed:** the server test "shop: timeout waiting for boards" failed on Sundays (the test moved its clock a day, into the next
+  week, before its Tower report). Now 329 server checks pass.
+- **Starting (2026-11-15):** the deep lore, peoples and Codex (brief: `docs/lore/briefs/deep-lore.md`; the aim is in the user's
   words in CLAUDE.md's lesson "Every hero matches the lore"), then the hero revamps in Blender.
 
 _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Cloudflare version e47791ff, PROTOCOL 16, shop still off): fifty floors in five chapters at five times the ground, the depth and scenes passes, the packs' tactics, the open world's stage 1 (signed-in players on a floor see each other), the harbour by day, faster floor builds. Not live yet: the tactics' second pass (knights charge again, no unit frozen just out of reach, the War's final pars), merged after the deploy. Next: the user's look at the open world, then its stage 2 (fighting the same packs together). Before that: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
