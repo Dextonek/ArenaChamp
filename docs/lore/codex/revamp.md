@@ -46,7 +46,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 | 3 | Kaia | Coast folk | **revamp, built** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
 | 4 | Brannoc | Kilnborn | **revamp, built** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
 | 5 | Hank | Wood folk | **revamp, built** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
-| 6 | Grandma Ironknit | Briarkin | **revamp** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
+| 6 | Grandma Ironknit | Briarkin | **revamp, built** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
 | 7 | Wick | Northerners | touch | Deep umber skin, white braids under the hood, star lines on the jaw |
 | 8 | Silvane | Gloaming folk | touch | Eyeshine (silver), skin cooled to blue-grey, dark lips |
 | 9 | Bram | Kilnborn | touch | Ash-grey skin, pale amber eyes |
@@ -171,6 +171,9 @@ for dots, and his beard covers most of it.
   year since. Fenna says it is the only thing he plants willingly. His [page](heroes/hank.md) has it.
 
 ### 6. Grandma Ironknit, the Weaver (Briarkin)
+
+**Built 2026-11-15** (`blender/heroes/real/yarn.py`). As built: the ears are made the way the twins' are, longer, out through
+the hood's rim; the fingers are longer from the knuckles (skin and bones, so the clips still bend them); the dapple is faint.
 
 - **Figure:** still tiny, old and kind, in the dark wine shawl with the rose bands, the spindle with the three glowing spools,
   the two long needles and Mr. Biscuit. New: long pointed ears through the hood's rolled edge; eyes of one colour, silver from lid

@@ -1091,7 +1091,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A cottage at the Walking Wood's edge, on the Frostfall road",
   "age": "Looks 70. She was 50 and already spinning when the sun fell (Noon-touched).",
   "line": "\"Sit down, dear. You're coming unravelled.\"",
-  "legend": "The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner in a dark hooded shawl knitted in bands of rose thread, with two needles as long as swords and a grey cat called Mr. Biscuit, and she knits lives into the cloth of the Dial at Frostfall. She raised Pim and Pom when they turned up on her doorstep, taught Thessa to sew, and fifty years ago turned down Mr. Ledger, who wanted to write her into his book; she knitted him a scarf instead, and he still wears it under the collar. In the Ring she ties her lines across the floor and sends the cat.",
+  "legend": "The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner, fae of the Spindle court, with long pointed ears through her hood and silver eyes, in a dark shawl knitted in bands of rose thread, with two needles as long as swords and a grey cat called Mr. Biscuit, and she knits lives into the cloth of the Dial at Frostfall. She raised Pim and Pom when they turned up on her doorstep, taught Thessa to sew, and fifty years ago turned down Mr. Ledger, who wanted to write her into his book; she knitted him a scarf instead, and he still wears it under the collar. In the Ring she ties her lines across the floor and sends the cat.",
   "ties": [
    {
     "other": "Mr. Ledger",
