@@ -2,8 +2,9 @@ import type { HeroKit } from '../heroes';
 
 /**
  * A SAMPLE, not the game's icons (docs/icons/sample/index.html): with `?icons=vc` in the URL, the heroes drawn with
- * VectorCraft (pipeline/icons/vectorcraft/) show those icons in the spell bar, the heroes table and the shop. Without the
- * flag this module is never loaded and nothing changes.
+ * VectorCraft (pipeline/icons/vectorcraft/) show those icons (variant A) wherever a spell's `icon` is drawn; checked in the
+ * duel's spell bar (docs/icons/sample/bar/). Without the flag this module is never loaded and nothing changes. Take it out
+ * (and the hook in heroes.ts) before any merge: with it, a build carries one more lazy chunk and the sample's SVGs.
  *
  * Each icon is one SVG file (about 4-18 KB), loaded as an image and drawn into the slot's canvas. `HeroSpell.icon` draws
  * synchronously, once, so a slot built before its image has decoded is drawn again into the same canvas when it has.

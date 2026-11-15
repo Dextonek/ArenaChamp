@@ -13,13 +13,18 @@ a list of VectorCraft commands run headless by
 (`--scale 2`: the 64 pt artboard comes out as 128 px, the size the game draws its slot icons at). Exports go to
 `docs/icons/sample/<hero>-<slot>.svg|png`. VectorCraft is at VC below (portable 0.24.1); set VECTORCRAFT_CLI to move it.
 
-The family rules (one frame, one light, one line weight) live in this file, so all icons follow them:
+Each icon is made twice: A (`<slot>.json`, `<hero>-<slot>.*`) inside the frame, and B (`<slot>-b.json`, `<hero>-<slot>-b.*`)
+the same picture scaled 118% about the centre, so its big shapes break over the frame's edge.
+
+The family rules (one frame, one light, one outline) live in this file, so all icons follow them:
 - Artboard 64 x 64. Frame: the hero's dark ground, lit from the upper left, and an octagon medallion with a gold edge
   that fits inside both the desktop slot (a rounded square) and the phone slot (a circle).
-- Light from the upper left: every fill is a gradient from the light colour at the upper left to the body colour at the
-  lower right, and every main shape casts a soft ink shadow down and to the right.
-- One line weight: every main shape has an ink outline 2.5 pt wide outside its fill (a 5 pt stroke on a copy under it),
-  1.25 px at 32 px. Nothing that must be seen is thinner than 3 pt.
+- Light from the upper left: most fills are gradients from the light colour at the upper left to the body colour at the
+  lower right, and main shapes cast a soft ink shadow down and to the right. (Exceptions: the fan's pleats are lit from
+  the pivot out, fire hottest at the edge; the comet fades along its path.)
+- Outline: main shapes have an ink outline 2.5 pt wide outside the fill (a 5 pt stroke on a copy under it), 1.25 px at
+  32 px; small parts (stars, the rivet, the cuff) take 2.4-3 pt. Gold lines and highlights are thinner (1.3-1.8 pt):
+  they are detail, not what the icon says.
 - Colours: the hero's palette row (docs/ART_BIBLE.md section 2); gold only on edges and highlights.
 """
 import json
@@ -36,7 +41,8 @@ OUT = ROOT / "docs" / "icons" / "sample"
 VC = os.environ.get("VECTORCRAFT_CLI", r"C:\Users\erich\AppData\Local\Programs\ArtCraft\VectorCraft"
                     r"\vectorcraft-0.24.1-windows-x64-portable\vectorcraft-cli.exe")
 
-INK_W = 5.0        # the ink outline's stroke (half of it shows outside the fill)
+B_SCALE = 118      # variant B: the picture this many percent about the centre
+INK_W = 5.0       # the ink outline's stroke (half of it shows outside the fill)
 SHADOW = (1.3, 1.7)  # the cast shadow's offset: light from the upper left
 LIGHT = -50        # gradient angle (counter-clockwise from left-to-right): upper left light, lower right body
 GOLD = ["#f4dc94", "#c9a24a", "#5a3f14"]  # pale, gold, deep: a gold edge lit from the upper left
@@ -248,7 +254,8 @@ def ember_ring(ic, cx, cy, rx, ry, tongues):
     e = ic.add("shape.ellipse", x=cx - rx, y=cy - ry, width=2 * rx, height=2 * ry)
     ic.paint(ic.id(e), fill="none", stroke=p["dark"], weight=5.4)
     e2 = ic.add("shape.ellipse", x=cx - rx, y=cy - ry, width=2 * rx, height=2 * ry)
-    ic.paint(ic.id(e2), fill="none", stroke=ic.grad(p["core"], (0.4, p["hot"]), (1, p["body"])), weight=2.6)
+    # Embers, not a gold hoop: hot at the lit side, ember red at the far one.
+    ic.paint(ic.id(e2), fill="none", stroke=ic.grad(p["hot"], (0.45, p["body"]), (1, p["red"])), weight=2.6)
     return d
 
 
@@ -586,12 +593,18 @@ def main():
         for slot, draw in slots.items():
             if len(args) > 1 and slot != args[1]:
                 continue
-            ic = Icon(hero)
-            ic.frame()
-            draw(ic)
-            path = ic.write(hero, slot)
-            if not only_json:
-                export(hero, slot, path)
+            for variant in ("", "-b"):
+                ic = Icon(hero)
+                ic.frame()
+                m = ic.mark()
+                draw(ic)
+                if variant:
+                    # Variant B: the picture 118% about the centre (Scale, with its strokes), over the frame's edge.
+                    g = ic.group(m)
+                    ic.add("object.scale", ids=[g], sx=B_SCALE, sy=B_SCALE, origin=[32, 32], strokes=True)
+                path = ic.write(hero, slot + variant)
+                if not only_json:
+                    export(hero, slot + variant, path)
 
 
 if __name__ == "__main__":

@@ -17,9 +17,9 @@
       <stop offset="1" stop-color="#5a3f14"/>
     </linearGradient>
     <linearGradient id="linear-gradient-2" x1="33.783" y1="38.515" x2="52.217" y2="60.485" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff6d8"/>
-      <stop offset="0.4" stop-color="#ffc24a"/>
-      <stop offset="1" stop-color="#ff7b3a"/>
+      <stop offset="0" stop-color="#ffc24a"/>
+      <stop offset="0.45" stop-color="#ff7b3a"/>
+      <stop offset="1" stop-color="#c23a22"/>
     </linearGradient>
     <linearGradient id="linear-gradient-3" x1="6" y1="55" x2="43.792" y2="43.538" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#1a0806" stop-opacity="0"/>

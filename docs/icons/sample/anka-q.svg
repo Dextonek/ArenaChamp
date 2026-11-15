@@ -32,9 +32,9 @@
       <stop offset="1" stop-color="#ff7b3a"/>
     </linearGradient>
     <linearGradient id="linear-gradient-5" x1="37.405" y1="40.352" x2="53.595" y2="59.648" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff6d8"/>
-      <stop offset="0.4" stop-color="#ffc24a"/>
-      <stop offset="1" stop-color="#ff7b3a"/>
+      <stop offset="0" stop-color="#ffc24a"/>
+      <stop offset="0.45" stop-color="#ff7b3a"/>
+      <stop offset="1" stop-color="#c23a22"/>
     </linearGradient>
     <linearGradient id="linear-gradient-6" x1="15.866" y1="12.043" x2="44.997" y2="46.761" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff6d8"/>

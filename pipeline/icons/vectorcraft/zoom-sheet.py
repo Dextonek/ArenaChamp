@@ -15,20 +15,21 @@ Z, PX, GAP = 3, 32, 10
 cell = PX * Z
 heroes = ["anka", "mum"]
 slots = ["q", "w", "e", "r"]
-cols = 3  # old, new, new grey
+cols = 4  # today, A, B (118%, over the frame), A in grey
 W = len(heroes) * (cols * (cell + GAP) + 40) + 20
 H = 40 + len(slots) * (cell + GAP) + 10
 sheet = Image.new("RGB", (W, H), (14, 12, 18))
 dr = ImageDraw.Draw(sheet)
 for hi, hero in enumerate(heroes):
     x0 = 20 + hi * (cols * (cell + GAP) + 40)
-    for ci, label in enumerate(("today", "VectorCraft", "greyscale")):
+    for ci, label in enumerate(("today", "A (in frame)", "B (118%)", "A in grey")):
         dr.text((x0 + ci * (cell + GAP), 14), f"{hero.title()} {label}", fill=(220, 215, 205))
     for si, slot in enumerate(slots):
         y = 40 + si * (cell + GAP)
         old = Image.open(S / "old" / f"{hero}-{slot}.png").convert("RGB")
         new = Image.open(S / f"{hero}-{slot}.png").convert("RGB")
-        for ci, im in enumerate((old, new, new.convert("L").convert("RGB"))):
+        big = Image.open(S / f"{hero}-{slot}-b.png").convert("RGB")
+        for ci, im in enumerate((old, new, big, new.convert("L").convert("RGB"))):
             small = im.resize((PX, PX), Image.LANCZOS).resize((cell, cell), Image.NEAREST)
             sheet.paste(small, (x0 + ci * (cell + GAP), y))
 sheet.save(S / "zoom32.png")

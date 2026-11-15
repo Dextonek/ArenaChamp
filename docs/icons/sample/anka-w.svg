@@ -64,9 +64,9 @@
       <stop offset="1" stop-color="#ff7b3a"/>
     </linearGradient>
     <linearGradient id="linear-gradient-10" x1="21.435" y1="39.909" x2="42.565" y2="65.091" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff6d8"/>
-      <stop offset="0.4" stop-color="#ffc24a"/>
-      <stop offset="1" stop-color="#ff7b3a"/>
+      <stop offset="0" stop-color="#ffc24a"/>
+      <stop offset="0.45" stop-color="#ff7b3a"/>
+      <stop offset="1" stop-color="#c23a22"/>
     </linearGradient>
   </defs>
   <title>anka icon</title>

@@ -1085,15 +1085,15 @@
     "stops": [
      {
       "offset": 0.0,
-      "color": "#fff6d8"
-     },
-     {
-      "offset": 0.4,
       "color": "#ffc24a"
      },
      {
-      "offset": 1,
+      "offset": 0.45,
       "color": "#ff7b3a"
+     },
+     {
+      "offset": 1,
+      "color": "#c23a22"
      }
     ],
     "angle": -50
