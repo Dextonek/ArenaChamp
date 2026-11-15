@@ -33,6 +33,16 @@ The three agents below were restarted in their own threads from their saved comm
   the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
   change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
   Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
+- **Running (2026-11-15): the ArtCraft apps, a sample each for the user's yes** (the user: "use the art craft tools"; see
+  `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums checked,
+  unpacked in `C:/Users/erich/AppData/Local/Programs/ArtCraft/VectorCraft/` and `.../TextureCraft/` (no installer; delete the folder
+  to remove). Two agents: VectorCraft spell icons for Anka and one older hero beside today's canvas icons (`docs/icons/sample/`);
+  TextureCraft on one hero's model copy, AO and gold edges, before/after in the game's camera (`docs/heroes/texturecraft-sample/`).
+  No game icon or model changes until the user says yes.
+- **Phone speed after the rulers' models (2026-11-15), the machine busy (Radeon Software high), so noisy:** floor 41 the same (105
+  vs 108 ms median, phone-4x); floor 21 slower, two runs each: with models 71 and 96 ms, before 50 and 67 ms (data
+  `docs/perf/data/phone-models-*.json`, `phone-f21-*.json`). Likely the Sands' figures cost on a phone; measure on a quiet machine
+  or a real phone before fixing.
 - **Done and merged, not live (2026-11-15): the Climb's own rulers (15) and enemies (15) as models** (page
   `docs/tower/models/index.html`, 100 pictures; `public/models/tower/`, 11.5 MB for all 30, a floor loads about 1.5 MB). Three rulers a
   chapter, each on three floors under its own name and tint; three enemies a chapter (melee, ranged or casting, the big one); beasts,
