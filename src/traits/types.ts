@@ -5,6 +5,7 @@ import type { BuffKind, StatusKind, StatusSet } from '../effects/status';
 import type { AttackSpec } from '../attacks';
 import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
 import type { Obstacle } from '../obstacles';
+import type { MechView } from '../mech';
 
 /**
  * The hero identity layer (pipeline/designs/hero-identity.md): every hero has a passive, a twist (its own resource, a
@@ -79,6 +80,18 @@ export interface TraitView {
   /** HP of this hero now, and its max. */
   hp(): number;
   maxHp(): number;
+  /**
+   * HP of the enemy hero now, and its max (0 between rounds). Both screens have it: online the server's count of the other hero
+   * comes with every hit. Nebet's scale compares the two.
+   */
+  enemyHp(): number;
+  enemyMaxHp(): number;
+  /**
+   * The engine pieces of the twenty new heroes for this side (src/mech, pipeline/designs/heroes20-engine.md): sleep, wards,
+   * leashes and a swap, a sealed key, tokens, one-sided ground, bolts that bend into a point, the arena's cover broken. Each
+   * says on which screen it acts. Null outside a duel.
+   */
+  readonly mech: MechView | null;
   /** The resource (0 when the trait has none). */
   res: number;
   addRes(n: number): void;
@@ -225,6 +238,26 @@ export interface Trait {
    * the enemy. It beats `enemyGoal`.
    */
   aiGoal?(t: TraitView): { x: number; z: number } | null;
+  /**
+   * What the CPU playing against this hero plans its walk round now, beside the cover: this hero's ground that hurts or holds
+   * (curtains, cracks, prints, rivers). With `sight: true` that CPU also believes it cannot see or shoot through it (a mirage
+   * it takes for a wall). `t` is this hero's view. Asked every frame the CPU walks: keep it cheap, and return the same empty
+   * array when there is nothing.
+   */
+  enemyAvoid?(t: TraitView): readonly { o: Obstacle; sight?: boolean }[];
+  /**
+   * Where slot `slot` is cast from, when it is not this hero (Lian's kite): the reach is measured from there, the aim strip
+   * starts there, and the CPU casts it when the enemy is in reach of it. Null: from the hero. Both screens may ask; the
+   * spell itself starts its bolt there (`ProjectileOptions.from`).
+   */
+  castOrigin?(t: TraitView, slot: number): { x: number; z: number } | null;
+  /** The CPU playing this hero holds its basic attack now (a sleeper wakes at the first hit: Vela lets it sleep). */
+  aiHoldAttack?(t: TraitView): boolean;
+  /**
+   * Cuts in this hero's HP bar at these HP values, asked every frame on both screens (read `own`, `hp`, `maxHp`): Ramet's lion
+   * in front of his own part. Beats `HeroKit.hpChunks`. Null or empty: none.
+   */
+  barCuts?(t: TraitView): number[] | null;
   /**
    * This hero's rule that acts on the enemy hero, run every frame on the screen where that enemy's position and hits are
    * decided: offline always, online on the victim's screen (`t` is this trait's view there). Oblivion's pull, Fenna's
