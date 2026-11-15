@@ -46,12 +46,16 @@ The three agents below were restarted in their own threads from their saved comm
   heroes are Tower-taken, writes the saga to its end as a new codex book `docs/lore/codex/story/` (30-50k words) shown in the game's
   Codex, and a plan with ready texts for telling it in the Climb and the Raid later (`story/in-game.md`). It leaves the six revamped
   heroes' appearance lines alone.
-- **Running (2026-11-15): the heroes reworked to match the lore** (the user: "lets look at all heroes and the lore and lets rework
-  those that need to match the lore": a yes to `docs/lore/codex/revamp.md`). One Blender agent, in order: the six revamps (Opaline,
-  Mr. Ledger, Kaia, Brannoc, Hank, Grandma Ironknit; one commit each, page `docs/heroes/revamp/index.html`), then the sixteen
-  touches (Wick, Silvane, Bram, Tempo, Vesper, Ada, Whistler, Cleaver, Barry, Zephyr, Marin, Cantor, Pip, Shiori, Zambini, Anka) as a
-  second agent after it, together with the underwear cover (TextureCraft, `pipeline/textures/texturecraft/sumo/` on
-  `t3/texturecraft-hero-sample` shows how) on every hero that shows it. The eighteen others already match.
+- **Done and merged, not live (2026-11-16): six heroes reworked to show their peoples** (page `docs/heroes/revamp/index.html`, one
+  commit each): Opaline (Gloaming folk: amethyst crystal in her skin, violet-black hair, amethyst gown; the dark sister beside
+  Silvane), Mr. Ledger (the Long Dead: vellum skin on bone, ember eyes), Kaia (Coast folk: sea-tanned, oilskin storm coat, tide lines,
+  silver knot with a sea-green lock), Brannoc (Kilnborn: ash skin, glowing seams, ash beard), Hank (Wood folk: antlers sawn flat),
+  Grandma Ironknit (Briarkin: pointed ears, silver eyes, long fingers). Sizes 449-584 KB. Kits unchanged. Hank's hit size kept (antlers
+  aren't body). Known: faces too small to read from the duel camera (Ledger reads by robes and quill there); four are over the
+  gate's ~25,000 triangles; the 2D portraits still show the old looks (remade in the next round). Pictures again:
+  `python pipeline/tools/revamp-shots.py after --port 5263`.
+- **Running (2026-11-16): the sixteen touches, the underwear cover and the portraits** (one Blender agent; page
+  `docs/heroes/touch/index.html`).
 - **Done, NOT merged (samples on their branches), waiting on the user (2026-11-15): the ArtCraft apps** (the user: "use the art
   craft tools"; `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums
   checked, in `C:/Users/erich/AppData/Local/Programs/ArtCraft/VectorCraft/` and `.../TextureCraft/` (delete the folder to remove).
