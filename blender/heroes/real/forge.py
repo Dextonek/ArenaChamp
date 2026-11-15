@@ -1,29 +1,83 @@
-"""Brannoc, the Ashen Smith (tank): a wall of a man. Iron pauldrons with molten seams, an iron breastplate with a furnace
+"""Brannoc, the Ashen Smith (tank), Kilnborn of the first generation born grey (docs/lore/codex/heroes/brannoc.md;
+revamped 2026-11-15 by docs/lore/codex/revamp.md): ash-grey skin, darker at the forearms, cracked with ember seams where
+the forge in his chest shows through: up from the grate over the open breast to the throat, along both arms; an ash
+beard; pale amber eyes. Otherwise as before: a wall of a man. Iron pauldrons with molten seams, an iron breastplate with a furnace
 grate glowing in it, a forge visor over a great red beard, bare arms with iron bracers, a leather apron, iron-shod
 boots, a forge pack with two chimneys on his back, and a big hammer in the right hand."""
 from mathutils import Vector
 
+import math
+
 from realkit import Real
+from real.parts_d import V, crack
 
 
 def build():
-    R = Real("forge", sex="m", height=0.98, width=1.24, depth=1.3, head=0.92, skin="#e6bfa4")
+    R = Real("forge", sex="m", height=0.98, width=1.24, depth=1.3, head=0.92, skin="#6c6866")
     z = R.z
+    # darker toward the hands, from a life at the forge
+    for n in "lr":
+        e, w = R.bone(f"lowerarm_{n}"), R.bone(f"hand_{n}")
+        ax, ln = (w - e).normalized(), (w - e).length
+        R.paint(lambda p, d, e=e, ax=ax, ln=ln, n=n: max(0.0, min(1.0, ((p - e).dot(ax) / ln + 0.15) / 0.8))
+                if d.startswith(("lowerarm_" + n, "hand_" + n, "index_", "middle_", "ring_", "pinky_", "thumb_")) and p.x * (1 if n == "l" else -1) > 0 else 0.0,
+                "#3a3634", 0.85)
+    R.eye_look(color="#ffc878", emit="#ff9a3a", strength=0.25)
     R.mat("iron", "#3c3f47", rough=0.42, metal=0.75)
     R.mat("dark", "#1d1b21", rough=0.6)
     R.mat("leather", "#6b4226", rough=0.75, double=True)
     R.mat("wood", "#4a3220", rough=0.7)
     R.mat("gold", "#c9a24a", rough=0.32, metal=0.85)
     R.mat("molten", "#ff7a1c", rough=0.4, emit="#ff5a12", strength=1.0)
-    R.hair("Hair_Buzzed", "#7a2c14")
-    R.hair("Hair_Beard", "#a8401c", brows=False)
+    R.mat("seam", "#ff8a3c", rough=0.5, emit="#ff5a14", strength=0.7)
+    R.hair("Hair_Buzzed", "#3c3836")
+    R.hair("Hair_Beard", "#8a847e", brows=False)
 
-    R.fitted("Shirt", ["spine", "pelvis", "clavicle"], "dark")
-    R.fitted("Plate", ["spine_02", "spine_03", "clavicle"], "iron", offset=0.022, keep_skin=True)
+    # the shirt and plate open in a V above the grate: the cracked breast shows, and the forge-light in it
+    cc = R.ring(z["chest"])[0]
+    vz = z["chest"] + 0.115
+
+    def open_v(p):
+        return not (p.y < cc.y and abs(p.x) < 0.125 and p.z > vz + 1.3 * abs(p.x))
+    R.fitted("Shirt", ["spine", "pelvis", "clavicle"], "dark", where=open_v)
+    R.fitted("Plate", ["spine_02", "spine_03", "clavicle"], "iron", offset=0.022, keep_skin=True, where=open_v)
     R.fitted("Trousers", ["thigh", "calf", "pelvis"], "dark", offset=0.004)
-    R.fitted("Bracers", ["lowerarm"], "iron", offset=0.012)
+    # the bracers on the wrist half only: the darker forearm shows above them
+    ex = R.bone("lowerarm_l").x + (R.bone("hand_l").x - R.bone("lowerarm_l").x) * 0.45
+    R.fitted("Bracers", ["lowerarm"], "iron", offset=0.012, where=lambda p: abs(p.x) > ex)
     R.boots("dark", top=z["knee"] - 0.02, cuff="iron", toe="iron")
-    R.cuffs("gold", at=(0.08, 0.95), offset=0.014)
+    R.cuffs("gold", at=(0.47, 0.95), offset=0.014)
+    # the edge of the V in iron
+    f = R.piece("near")
+    for sx in (1, -1):
+        pts = []
+        for k in range(9):
+            x = 0.12 * k / 8 * sx
+            hit, nrm = R.surface(V(x, -0.6, vz + 1.3 * abs(x) - 0.006), V(0, 1, 0))
+            if hit is not None:
+                pts.append(hit + nrm * 0.02)
+        if len(pts) > 1:
+            f.tube("iron", pts, 0.012, seg=6)
+
+    # the ember seams: up from the grate to the throat, and across the shoulders and arms
+    f = R.piece("near")
+    fr = V(0, 1, 0)
+    for k, pts in enumerate((
+            [V(0.0, 0, vz + 0.01), V(0.02, 0, vz + 0.06), V(-0.01, 0, vz + 0.11), V(0.012, 0, z["neck"] + 0.02)],
+            [V(0.03, 0, vz + 0.045), V(0.06, 0, vz + 0.1), V(0.085, 0, vz + 0.14)],
+            [V(-0.025, 0, vz + 0.04), V(-0.05, 0, vz + 0.09), V(-0.09, 0, vz + 0.145)],
+            [V(0.02, 0, vz + 0.075), V(0.045, 0, vz + 0.085)],
+            [V(-0.008, 0, vz + 0.11), V(-0.04, 0, vz + 0.125)])):
+        crack(R, f, "seam", pts, fr, r=0.0045, seed=k, jag=0.012)
+    for s, n in ((1, "l"), (-1, "r")):
+        sh, el, wr = R.bone(f"upperarm_{n}"), R.bone(f"lowerarm_{n}"), R.bone(f"hand_{n}")
+        g = R.piece("near")
+        for k, (way, dz, a, b) in enumerate(((fr, -0.005, 0.18, 1.0), (V(0, 0, -1), 0.0, 0.3, 0.95), (fr, 0.02, 0.5, 0.85))):
+            pts = [sh.lerp(el, a + (b - a) * t / 3) + V(0, 0, dz + 0.012 * math.sin(t * 2.1 + k)) for t in range(4)]
+            crack(R, g, "seam", pts, way, r=0.0042, seed=10 + k + (5 if s > 0 else 0), jag=0.014, steps=2)
+            if k < 2:  # on down the bare forearm, as far as the bracer
+                pts = [el.lerp(wr, 0.02 + 0.4 * t / 2) + V(0, 0, dz) for t in range(3)]
+                crack(R, g, "seam", pts, way, r=0.0038, seed=20 + k + (5 if s > 0 else 0), jag=0.01, steps=2)
     R.pauldrons("iron", size=(0.12, 0.11, 0.075), lift=0.05, out=0.05)
     for s, n in ((1, "l"), (-1, "r")):
         f = R.piece(f"upperarm_{n}")

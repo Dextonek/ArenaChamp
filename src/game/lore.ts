@@ -885,7 +885,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The great forge in the Ember Caldera",
   "age": "Looks 50. He was 30 and already a master smith when the sun fell (Noon-touched).",
   "line": "\"Hotter. Again. Hotter.\"",
-  "legend": "Brannoc keeps the great forge of the Underforge, sunk in the Ember Caldera, where the fire of the fallen sun still rises through the rock. He is huge and ash-bearded, in a scorched leather apron, and a forge glows in his own chest: he has no cooldowns, only heat, and at white heat he burns. He taught Ada everything about metal and nothing about patience. Long ago he followed Isolde north, and she froze his forge solid to send him home; it took him a year to light it again, and he has not followed anyone since. He wants the Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.",
+  "legend": "Brannoc keeps the great forge of the Underforge, sunk in the Ember Caldera, where the fire of the fallen sun still rises through the rock. He is huge, ash-grey and ash-bearded, in a scorched leather apron, and a forge glows in his own chest, its light showing through the cracks in his skin: he has no cooldowns, only heat, and at white heat he burns. He taught Ada everything about metal and nothing about patience. Long ago he followed Isolde north, and she froze his forge solid to send him home; it took him a year to light it again, and he has not followed anyone since. He wants the Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.",
   "ties": [
    {
     "other": "Isolde",

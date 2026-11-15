@@ -44,7 +44,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 | 1 | Opaline | Gloaming folk | **revamp, built** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
 | 2 | Mr. Ledger | the Long Dead | **revamp, built** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
 | 3 | Kaia | Coast folk | **revamp, built** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
-| 4 | Brannoc | Kilnborn | **revamp** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
+| 4 | Brannoc | Kilnborn | **revamp, built** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
 | 5 | Hank | Wood folk | **revamp** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
 | 6 | Grandma Ironknit | Briarkin | **revamp** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
 | 7 | Wick | Northerners | touch | Deep umber skin, white braids under the hood, star lines on the jaw |
@@ -144,6 +144,10 @@ and short cape, the sea boots. The storm clouds on her shoulders are kept.
 - **Lore that changes:** none of her story; her figure now matches it. Her [page](heroes/kaia.md) describes the new look.
 
 ### 4. Brannoc, the Ashen Smith (Kilnborn)
+
+**Built 2026-11-15** (`blender/heroes/real/forge.py`). As built: his breastplate covered the chest, so the plate and shirt open
+in a V above the grate and the seams climb from the forge to the throat; the bracers cover only the wrist half, so the darker forearms
+show. His beard, red on the old model, is ash as the lore always said.
 
 - **Figure:** the same huge smith in the scorched leather apron with the hammer. His skin goes ash-grey, darker at the forearms;
   **ember seams** cross his chest, throat and arms, glowing forge orange from the fire in his chest (the trait's Heat could later
