@@ -755,7 +755,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A storm-callers' tower on the Spires",
   "age": "28. Born 72 years after the Fall, to a sky that had no master.",
   "line": "\"Stand by the rod. It's safer. For me.\"",
-  "legend": "Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, in rain-blue, her silver hair bound up, with a tall staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now come when they like, and she bends them to the Windward's ships. Barry Cloudsley forecasts the weather; Kaia changes it, mostly to prove him wrong, and they have argued in public for twelve years. Saga's northern light and her lightning have never shared a sky politely. She fights in the Ring because a storm needs somewhere to land.",
+  "legend": "Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, sea-tanned, in a rain-blue oilskin, her silver hair bound up, with a tall staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now come when they like, and she bends them to the Windward's ships. Barry Cloudsley forecasts the weather; Kaia changes it, mostly to prove him wrong, and they have argued in public for twelve years. Saga's northern light and her lightning have never shared a sky politely. She fights in the Ring because a storm needs somewhere to land.",
   "ties": [
    {
     "other": "Barry Cloudsley",

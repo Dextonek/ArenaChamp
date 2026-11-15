@@ -43,7 +43,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 |---|---|---|---|---|
 | 1 | Opaline | Gloaming folk | **revamp, built** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
 | 2 | Mr. Ledger | the Long Dead | **revamp, built** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
-| 3 | Kaia | Coast folk | **revamp** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
+| 3 | Kaia | Coast folk | **revamp, built** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
 | 4 | Brannoc | Kilnborn | **revamp** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
 | 5 | Hank | Wood folk | **revamp** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
 | 6 | Grandma Ironknit | Briarkin | **revamp** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
@@ -130,6 +130,10 @@ face, small bone knuckles built on the hands; his brows are gone.
   [page](heroes/mr-ledger.md) has it.
 
 ### 3. Kaia, the Tempest Caller (Coast folk)
+
+**Built 2026-11-15** (`blender/heroes/real/storm.py`). As built: her figure was already a coat with legs, so the change is
+the skin, the bared forearms with the tide lines painted on, the hair (the hood and long cloak are gone), the earrings, the high collar
+and short cape, the sea boots. The storm clouds on her shoulders are kept.
 
 - **Figure:** a storm caller of the Spires, not a lady of a court. Sea-tanned skin; her silver hair kept, salt-bleached, with
   sea-green streaks, bound up; tide lines round both forearms (she has lived through nine great floods); sea-glass in the ears.
