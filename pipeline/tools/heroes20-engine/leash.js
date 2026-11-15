@@ -21,10 +21,12 @@ L.check('it ends at its time', broke === 'time' && !l1.alive, broke);
 
 // 2. The player's own hero leashed the same way, kiting under the autopilot.
 const l2 = m.leash('hero', () => ({ x: d.foe.group.position.x, z: d.foe.group.position.z }), 3.5, 5, { anchorSide: 'opponent' });
+// A knock in the fight may push past the end for a moment; the chain drags back at 6 m/s.
 far = 0;
-L.step(4.5, () => { far = Math.max(far, dist()); });
-out.heroLeashed = +far.toFixed(2);
-L.check('the leash holds the player\'s own hero too', far <= 3.75 && !!l2, out.heroLeashed);
+let past = 0, frames = 0;
+L.step(4.5, () => { const x = dist(); far = Math.max(far, x); frames++; if (x > 3.6) past++; });
+out.heroLeashed = { far: +far.toFixed(2), pastTheEnd: +(past / frames).toFixed(3) };
+L.check('the leash holds the player\'s own hero too', far <= 4.1 && past / frames < 0.1 && !!l2, out.heroLeashed);
 l2.end();
 
 // 3. A dash breaks a leash that says so; one that does not keeps the landing inside.
@@ -51,4 +53,12 @@ L.step(0.6);
 out.swap = { ok, hero: L.pos(a.caster), foe: L.pos(d.foe), was: { hero: [A.x, A.z], foe: [B.x, B.z] } };
 L.check('a swap trades their places', ok && a.caster.group.position.distanceTo(B) < 0.15 && d.foe.group.position.distanceTo(A) < 0.15, out.swap);
 L.check('a swap past its reach fails', !m.swap('hero', 0.35, 3), null);
+// Her own chain holds through her swap (a dash breaks it; the swap is no dash).
+let broken = null;
+const chain = m.views.hero.leashEnemy(7, 6, { breakOnDash: true, onBreak: (why) => { broken = why; } });
+m.noteCast('hero', 2, a.caster.group.position.clone(), d.foe.group.position.clone());
+m.swap('hero', 0.35, 20);
+L.step(0.6);
+L.check('a swap does not break her own chain', chain.alive && broken === null, broken);
+chain.end();
 return L.done(out);

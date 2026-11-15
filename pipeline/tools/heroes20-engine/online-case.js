@@ -6,6 +6,7 @@
 //   token (#k):  a circlet starts on Lyra; a spell hit by its holder passes it on   (on the screen of the one hit)
 //   cover (#c):  every 4 s Isolde's client takes 60 off the arena cover nearest her (on Isolde's screen)
 //   wards:       each Q of Lyra's raises a ward across its way, from the cast        (built on both screens)
+//   swap:        each R of Lyra's swaps the two heroes' places, from the cast        (each screen moves its own hero)
 // and samples what this screen has of each, ten times a second, by hero name: window._mech.
 (async () => {
   const T = await import('/src/traits/index.ts');
@@ -55,12 +56,22 @@
   m.noteCast = (side, slot, from, point) => {
     note(side, slot, from, point);
     const name = side === 'hero' ? hm.currentKit.name : d.opponentKit.name;
+    if (name === 'Lyra' && slot === 3) {
+      // A swap of places on her R (one target), on both screens, from the cast's own numbers; where each lands, 0.45 s on.
+      m.swap(side, 0.35, 30);
+      const w = Date.now(), c = { from: [from.x, from.z], point: [point.x, point.z] };
+      setTimeout(() => {
+        const L = sideOf('Lyra') === 'hero' ? a.caster : d.foe, I = sideOf('Isolde') === 'hero' ? a.caster : d.foe;
+        window._swaps.push({ w, round: d.round, ...c, lyra: [L.group.position.x, L.group.position.z], isolde: [I.group.position.x, I.group.position.z] });
+      }, 450);
+    }
     if (name !== 'Lyra' || slot !== 0) return;
     const mx = (from.x + point.x) / 2, mz = (from.z + point.z) / 2, dx = point.x - from.x, dz = point.z - from.z, L = Math.hypot(dx, dz) || 1;
     m.ward({ x: mx - (dz / L) * 1.5, z: mz + (dx / L) * 1.5 }, { x: mx + (dz / L) * 1.5, z: mz - (dx / L) * 1.5 }, 3);
   };
   window._mech = [];
   window._tries = [];
+  window._swaps = [];
   window._msgs = [];
   { const n = game.net, send = n.send.bind(n); n.send = (msg) => { if (msg.t === 'stacks' && msg.name[0] === '#') window._msgs.push([Date.now(), 'out', msg.name, msg.n]); return send(msg); };
     n.on('peer_stacks', (msg) => { if (msg.name[0] === '#') window._msgs.push([Date.now(), 'in', msg.name, msg.n]); }); }

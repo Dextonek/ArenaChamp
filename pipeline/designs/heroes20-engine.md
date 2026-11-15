@@ -2,7 +2,7 @@
 title: The fight engine's new mechanics for the twenty new heroes
 tags: [design, engine, heroes, traits, network]
 updated: 2026-11-14
-status: built and tested, 17 of 20 pieces; 3 left with a simpler version (no hero, no kit, nothing a player sees)
+status: built and tested, 17 of 20 pieces and 3 the sheets did not name; 3 left with a simpler version (no hero, no kit, nothing a player sees)
 ---
 
 # The engine pieces the twenty new heroes need
@@ -40,11 +40,14 @@ engine channel over the `stacks` relay (below), **none** means nothing travels.
 | 15 | Breaking the arena's cover | Tova | her client | # (`#c`) | it sees the hole (sight and routes read the live list) | large | **medium**: breakable walls, `removeCover` and the toppling look exist already |
 | 16 | Bolts that bend into a point (lanterns) | Vela | the screen the bolt flies at | cast (the lantern) | its bolts may be caught | (in 9) | **small**: steered from outside, no change to `projectile.ts` |
 | 17 | Placed things with HP that both screens agree on | Campana, Lithea, Vela, Lian, Hesk | the attacker's screen | # | as today (it shoots units in its way) | (assumed to exist) | **medium, found here**: see "Placed things online" |
+| 17b | A dash that fizzles | Morwen (Hex Bundle) | the hexed hero's own screen | # (`#f`) | a hexed CPU holds its dashes | (assumed `grounded` would do) | **small, found here**: `grounded` only shortens a dash (at most by half) and is not used up |
+| 17c | Unseen: no one-target spell picks the hero | Kohaku (Glamour) | the hero's own client | # (`#v`) | it does not cast one-target spells at it | (assumed `figureHidden` would do) | **small, found here**: a hidden figure could still be picked |
+| 17d | A cleanse of one's own statuses | Nebet (Feather-Light: "free of slows") | the hero's own client | # (`#x`) | — | (not named) | **tiny, found here**: no trait could end a status |
 | 18 | Standing on top of cover | Corbel | his client; the victim's screen skips melee | # | to perch, and to shoot a percher | large | **large** |
 | 19 | A summon that can be turned | Hesk | the enemy's screen counts the hits | # | whose the golem is | large | **large** (in `effects/summon.ts`, which another agent touches) |
 | 20 | Two places counted as one in every hit test | Thessa | the victim's screen | cast (the pins) | to step off a pin | large | **large** (every spell tests its own hits) |
 
-**Where it stands (2026-11-15):** 1 to 17 are built and tested, so seventeen heroes need no more engine work: Nebet, Campana,
+**Where it stands (2026-11-15):** 1 to 17 (with 17b to 17d) are built and tested, so seventeen heroes need no more engine work: Nebet, Campana,
 Ostrel, Saga, Sahar, Lithea, Arden, Lian, Ramet, Asenet, Kessa, Kohaku, Vela, Itzel, Orren, Morwen and Tova. 18 to 20 (Corbel,
 Hesk, Thessa) are left with what they need and a simpler spell each that the built pieces already allow (below).
 
@@ -68,6 +71,10 @@ Hesk, Thessa) are left with what they need and a simpler spell each that the bui
   kite could be built "as the crystal is". See "Placed things online" for the measurement and the fix.
 - **Bolts stop at both sides' walls with two bolt walls**: a `BoltWall` stops the other side's bolts; a ward is one wall
   owned by each side, so nothing in `projectile.ts` changes (10).
+- **Three needs the sheets did not name** turned up when their "Needs" columns were read against the code: Morwen's Hex
+  Bundle leans on `grounded`, which only shortens a dash and stays on; Kohaku's Glamour leans on `figureHidden`, which hides
+  the look but leaves the hero a target; Nebet's Feather-Light frees her of slows, and no trait could end a status. Each is a
+  small piece now (17b to 17d). Ramet's wider mounted body needs none: his second kit gets its own `HERO_BODIES` row.
 - **Kessa's swap moves farther than the 4 m pull cap**: it is a dash of each hero on its own screen to the other's place as
   the cast recorded it (11), not a pull.
 
@@ -122,6 +129,9 @@ screens; a hero draws its own over it. Picture of all of them at once: `pipeline
 | 14 | One-sided ground | `t.mech.chasm(obstacle, seconds)` (the enemy may not walk across) | a black strip with ember edges | built from the cast | the enemy CPU's route plans round it; the player's click-walk too | `chasm.js` |
 | 15 | Arena cover | `t.mech.hurtCover(i, damage, from?)`, `coverLeft(i)`, `coverNear(p, r)` | the arena's own fall (`coverFall`) where it has one | decided on the hurting hero's client, `#c` | sight and routes read the live list | `cover.js` |
 | 16 | Attractor | `t.mech.attractor(x, z, r, seconds, onCatch)` | a faint blue ring | built from the cast; each screen bends the bolts it flies | its bolts may be caught | `attractor.js` |
+| 17b | Fizzle | `t.mech.fizzleEnemyDash(seconds)` (from `dealt` / `victimTick`); `Mech.dashFizzles(side)` | FIZZLED | `#f` | holds its dash spells while hexed | `guards.js` |
+| 17c | Unseen | `t.mech.unseen(seconds)` (own client), `t.mech.enemyUnseen()` | the hero's own (`figureHidden`) | `#v` | no one-target spell at it | `guards.js` |
+| 17d | Cleanse | `t.mech.cleanse(['slow', ...])` (own client) | — | `#x` ends the look on the other screen | — | `guards.js` |
 | 17 | Placed things | `t.mech.placed(summonHandle)` (in the spell, at the cast) | the spell's | the attacker's screen counts their HP and `#u` tells the owner's screen, which ignores its own replays | as today | `online.py placed` |
 
 Rules worth knowing:
@@ -134,7 +144,9 @@ Rules worth knowing:
 - **Leashes** hold walks (`Arena.walk`, `moveFoe`) and dashes; a knock or a carry that takes the hero past the end is dragged
   back at 6 m/s. The remote hero is never held here: its own screen holds it.
 - **A swap** moves each hero on the screen that moves it: online the caster's client moves her to where she saw the enemy, the
-  enemy's screen moves its hero to where she stood: both from the cast message, so both screens agree.
+  enemy's screen moves its hero to where she stood: both from the cast message, so both screens agree. It is no dash: her own
+  chain holds through it (a first version broke it: found by the advisor's reading, fixed, tested in `leash.js`), and a hexed
+  dash does not catch it.
 - **Cover**: an arena without a `coverFall` look (most of them have none for pillars) takes the piece away without a fall; the
   hero builder of Tova will want each arena's cover to have one.
 
@@ -161,21 +173,30 @@ HP and `#u` tells the owner's screen; there its own replays of the attacker's hi
 
 Lyra and Isolde, two bots, Isolde keeping 7 m away and stepping from side to side; a test layer on both pages
 (`online-case.js`) uses every engine message. Each screen's view sampled ten times a second and laid over the other's by the
-wall clock: 1,163 paired samples, two rounds, no page errors, the longest message name 11 characters of 16 (the final run, on
-the code as committed; an earlier run gave the same picture with 938).
+wall clock. The last run, on the code as committed (with the swap on Lyra's R): 775 paired samples, two rounds, no page errors,
+the longest message name 11 characters of 16. Two earlier runs (938 and 1,163 samples) gave the same picture.
 
 | What | Decided on | Agree | Changes followed | Behind (median / most) |
 |---|---|---|---|---|
-| Sleep | Isolde's screen | 99.9% | 40 of 40 | 16 / 32 ms |
-| Sealed key | Lyra's screen | 99.8% | 4 of 4 | 89 / 96 ms |
-| Leash (drawn) | Isolde's screen | 100% | 29 of 29 | 21 / 32 ms |
-| Cover broken | Isolde's client | 100% | 9 of 9 | 12 / 21 ms |
-| Token's holder | the screen of the one hit | 99.9% | 4 of 4 | 6 / 89 ms |
-| Wards | both, from the cast | 99.7% | 54 of 54 | 0 / 92 ms |
-| HP (for scale) | | 99.6%, 100% | | |
+| Sleep | Isolde's screen | 99.1% | 24 of 24 | 0 / 68 ms |
+| Sealed key | Lyra's screen | 99.4% | 11 of 11 | 35 / 52 ms |
+| Leash (drawn) | Isolde's screen | 97.4% | 19 of 20 | 0 / 66 ms |
+| Cover broken | Isolde's client | 99.7% | 5 of 5 | 31 / 51 ms |
+| Token's holder | the screen of the one hit | 100% | 8 of 8 | 0 / 48 ms |
+| Wards | both, from the cast | 99.7% | 35 of 35 | 42 / 54 ms |
+| HP (for scale) | | 97.4%, 98.5% | | |
 
-The few samples apart are the edges of a change (a sample taken between the two screens' moments). In the earlier run two changes were not
-followed, both at a round's end: the hub drops `stacks` once a round is over (`match.state !== 'fight'`), so a pass on the killing blow
+(A negative lag, shown as 0, is a sample taken on the deciding screen just after the other screen's.) **The swap** (each R of
+Lyra's, from the cast, on both screens): two swaps in this run; 0.45 s after the cast the two screens put Lyra 0.22 and 0.35 m
+apart and Isolde 1.1 and 0.4 m apart, while both bots walk on (Isolde's sidesteps; 0.1 s of walking is 0.4 m); each landed
+within 0.4 m of the place the cast recorded, Isolde once 1.1 m (she was already walking away). Two swaps are few: the hero's
+own gate 5 should look again.
+
+One-sided ground and the attractor were not run online: both are built from the cast on both screens, as the wards are, and
+each screen applies them only to what it moves (its own hero) or flies (the bolts aimed at its hero).
+
+The few samples apart are the edges of a change (a sample taken between the two screens' moments). In the runs, the changes not followed
+came at a round's end: the hub drops `stacks` once a round is over (`match.state !== 'fight'`), so a pass on the killing blow
 never reaches the other screen. It does not matter there (the next round starts clean), but a hero's rule must not count on a
 message sent after the round ends. The first run of this check found a real bug: the hit that put a hero to sleep woke it again
 in the same step; fixed (`Duel.resolve` reads "asleep" before the hit's own hooks).
@@ -184,9 +205,9 @@ in the same step; fixed (`Duel.resolve` reads "asleep" before the hit's own hook
 
 | Check | Before (ef6fc16) | After |
 |---|---|---|
-| `perf.py scenes --profiles desktop --scenes duel-temple,raid-party`: duel-temple's print | 90b1abaa | 90b1abaa |
-| the same, raid-party's print | e83903c0 | e83903c0, b53a2f62, 34f75b29 over six runs: the scene does not repeat its fight on this computer now; the untouched commit, measured the same day with `--root`, printed 34f75b29 three times |
-| `sim.py hero Lyra` (96 fights) | 55.2% +-9.9 | 52.1% +-10.0 |
+| `perf.py scenes --profiles desktop --scenes duel-temple,raid-party`: duel-temple's print | 90b1abaa | 90b1abaa (every time, the final code too) |
+| the same, raid-party's print | e83903c0 | the scene varies: over six runs this code printed e83903c0 three times, 34f75b29 twice and b53a2f62 once; the untouched commit, measured the same day with `--root`, printed e83903c0 once (the first baseline) and 34f75b29 three times. Both commits printed e83903c0 and 34f75b29 |
+| `sim.py hero Lyra` (96 fights) | 55.2% +-9.9 | 52.1% +-10.0; on the final code 49.0% +-10.0 (the CPU's fights are random: inside the noise) |
 | `sim.py hero Isolde` (80 fights) | 33.8% +-10.4 | 37.5% +-10.6 |
 | `npx tsc --noEmit -p .`, `npm run build` | pass | pass |
 | `npm run test:server` | 306 ok | 303 ok, then "FAIL shop: timeout waiting for boards" (below) |
@@ -247,6 +268,8 @@ way") goes, and her sheet's answer becomes only "step 2 m off a pin".
 - `spellShape` reads a spell's flags; for a few spells it guesses (a self spell with no reach is a "shield": Smoke Veil, the
   Hat Trick). Kohaku's builder should check the list (`spell-kinds.js`) and add an override where it is wrong.
 - Arenas whose pillars have no `coverFall` look lose a broken pillar without a fall: Tova's builder needs one per arena.
+- Orren's light ("enemies in it cannot fade or be unseen") meets Kohaku's `unseen`: nothing lets one hero end the other's
+  `unseen` yet. If both are built, Orren's builder adds it (the hidden hero's own client ends it on a `#` message).
 
 ## Tests
 
@@ -264,12 +287,13 @@ the bots' throwaway accounts land in `server/data/` (git-ignored): delete them a
 | `small.js` | enemy HP, facing, a strip that carries, crossing, the trail, bar cuts |
 | `sleep.js` | a sleep left alone runs 1.5 s; a hit ends it early with +25% (30 at most) |
 | `wards.js` | bolts of both sides stop; a one-target spell fails with its cooldown spent; an area hit does not reach past; feet cross |
-| `leash.js` | a CPU and the player's hero held; a dash breaks one, keeps inside another; a swap of places |
+| `leash.js` | a CPU and the player's hero held; a dash breaks one, keeps inside another; a swap of places, which keeps her own chain |
 | `seal.js`, `spell-kinds.js` | no sealed key is cast, the lock on the key; the kind of every spell |
 | `token.js` | a pass by a hit, a claim's message read back, two claims of one number settled alike |
 | `chasm.js` | the CPU goes round, its maker walks across, a dash crosses |
 | `cover.js` | 150 HP, the fall, sight and paths through, the next round stands it again |
 | `attractor.js` | the other side's bolt caught, its own passes, none without it |
 | `cpu.js` | a CPU walks round what it is told, takes a mirage for cover, casts from an origin, holds attacks |
+| `guards.js` | a hexed dash fizzles once; an unseen hero cannot be picked (the key is not spent); a cleanse |
 | `looks.js` | the plain look of every piece at once |
 | `online.py` | the two screens, above |

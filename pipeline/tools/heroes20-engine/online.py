@@ -98,6 +98,22 @@ def pair(a, b, keys):
     return {"paired": n, "agree": {key: round(same[key] / n, 3) if n else None for key in keys}, "differences": worst}
 
 
+def swaps(a, b):
+    """Each swap as both screens saw it, paired in order within a round: how far apart the two screens put each hero 0.45 s on,
+    and how far each landed from where the cast said (Lyra: where she saw Isolde; Isolde: where Lyra stood)."""
+    out, rows = [], []
+    for s in a:
+        o = next((x for x in b if x["round"] == s["round"] and abs(x["w"] - s["w"]) < 600), None)
+        if not o:
+            continue
+        d = lambda p, q: round(((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2) ** 0.5, 2)
+        rows.append({"lyraApart": d(s["lyra"], o["lyra"]), "isoldeApart": d(s["isolde"], o["isolde"]),
+                     "lyraFromPoint": d(s["lyra"], s["point"]), "isoldeFromFrom": d(o["isolde"], o["from"])})
+    if rows:
+        out = {"swaps": len(rows), "maxApart": max(max(r["lyraApart"], r["isoldeApart"]) for r in rows), "rows": rows}
+    return out or {"swaps": 0}
+
+
 def changes(samples, key):
     out, last = [], None
     for s in samples:
@@ -159,6 +175,8 @@ async def main():
             if case == "mech":
                 out["messages"] = {heroes[0]: await pa.evaluate("_msgs"), heroes[1]: await pb.evaluate("_msgs")}
                 out["tries"] = {heroes[0]: await pa.evaluate("_tries"), heroes[1]: await pb.evaluate("_tries")}
+                sw = {heroes[0]: await pa.evaluate("_swaps"), heroes[1]: await pb.evaluate("_swaps")}
+                out["swaps"] = swaps(sw[heroes[0]], sw[heroes[1]])
             out["bots"] = {heroes[0]: {k: la.get(k) for k in ("casts", "attacks", "rounds", "errors", "ended")},
                            heroes[1]: {k: lb.get(k) for k in ("casts", "attacks", "rounds", "errors", "ended")}}
             await pa.evaluate("_botStop()")

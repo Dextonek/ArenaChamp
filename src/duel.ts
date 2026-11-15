@@ -1859,8 +1859,18 @@ export class Duel {
     arena.walkBlocks = (who) => mech.walkBlocks(who);
     hm.keySealed = (slot) => mech.sealedLeft('hero', slot);
     hm.warded = (a, b) => mech.wardBlocks(a, b);
+    hm.cantTarget = (enemy) => enemy === this.foe && mech.isUnseen('opponent');
     const heroRt = this.heroRt;
     hm.castOrigin = heroRt.trait?.castOrigin ? (slot) => heroRt.trait!.castOrigin!(heroRt, slot) : null;
+  }
+
+  /** A CPU holds slot `i` for the engine pieces (src/mech): a dash while hexed, a one-target spell at an unseen enemy. */
+  private mechHolds(kit: HeroKit, i: number, side: MechSide) {
+    const spell = kit.spells[i];
+    if ((spell.dash || spell.escape) && this.mech.dashFizzles(side)) return true;
+    if (!this.mech.isUnseen(side === 'hero' ? 'opponent' : 'hero')) return false;
+    const mode = this.host.targeting(spell.label)?.mode;
+    return mode === 'enemy' || mode === 'enemies';
   }
 
   /** What the CPU walking against `enemyRt`'s hero plans round, and its one-sided ground (src/mech); the same empty list when none. */
@@ -1974,7 +1984,7 @@ export class Duel {
     this.mech.reset();
     arena.walkHold = arena.dashHold = arena.walkBlocks = null;
     arena.aiExtra = [];
-    this.host.heroMode.keySealed = this.host.heroMode.warded = this.host.heroMode.castOrigin = null;
+    this.host.heroMode.keySealed = this.host.heroMode.warded = this.host.heroMode.castOrigin = this.host.heroMode.cantTarget = null;
     arena.projectiles.clear();
     arena.hitFilter = null;
     arena.untargetable = null;
@@ -2591,7 +2601,7 @@ export class Duel {
       const ward = this.ward(this.heroRt);
       const opens = (i: number) => !!this.oppRt?.canRecast(i) && !this.oppRt.recastOf(i)?.aiWait;
       const aiHolds = (i: number) => !!this.oppRt?.trait?.aiHold?.(this.oppRt, i, flat(at, me));
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || this.mech.sealedLeft('opponent', i) > 0 || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || this.mech.sealedLeft('opponent', i) > 0 || this.mechHolds(this.opponentKit, i, 'opponent') || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
       let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv, this.reachFrom(this.oppRt, me));
@@ -2840,7 +2850,7 @@ export class Duel {
       const ward = this.ward(this.oppRt);
       const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
       // A dash is a walk: none so close to a beat that it would still be going.
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i) || (beat < STILL_DASH && !!kit.spells[i].dash);
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i) || (beat < STILL_DASH && !!kit.spells[i].dash) || this.mechHolds(kit, i, 'hero');
       const foeHeld = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.

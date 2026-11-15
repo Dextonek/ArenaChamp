@@ -200,6 +200,8 @@ export class HeroMode implements TouchTarget {
    */
   keySealed: ((slot: number) => number) | null = null;
   warded: ((from: THREE.Vector3, to: THREE.Vector3) => boolean) | null = null;
+  /** No one-target spell may pick this enemy now (src/mech: unseen). */
+  cantTarget: ((enemy: Enemy) => boolean) | null = null;
   castOrigin: ((slot: number) => { x: number; z: number } | null) | null = null;
   /** When the current aim started (performance.now()), for hold-to-charge slots. */
   private aimStart = 0;
@@ -1071,6 +1073,8 @@ export class HeroMode implements TouchTarget {
       const mode = this.host.targeting(spell.label)?.mode;
       const at = this.targetPos(target);
       if ((mode === 'enemy' || mode === 'enemies') && at && !arena.lineOfSight(arena.caster.group.position, at)) { this.say('No line of sight'); return; }
+      // Unseen (Kohaku's Glamour): nothing to aim at; the key is not spent.
+      if ((mode === 'enemy' || mode === 'enemies') && this.cantTarget?.(target.enemy)) { this.say('Unseen'); return; }
       // A ward on the way (Morwen's salt): the cast fails and its cooldown is spent.
       if ((mode === 'enemy' || mode === 'enemies') && at && this.warded?.(this.originOf(i, arena.caster.group.position), at)) {
         this.say('Warded');

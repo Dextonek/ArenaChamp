@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Enemy } from '../effects/common';
-import type { StatusSet } from '../effects/status';
+import { STATUS_KINDS, type StatusKind, type StatusSet } from '../effects/status';
 import type { Projectile } from '../effects/projectile';
 import type { Summon, SummonUnit } from '../effects/summon';
 import type { BoltWall } from '../effects/projectile';
@@ -198,6 +198,11 @@ export class Mech {
   private barriers: Barrier[] = [];
   private attractors: AttractorRec[] = [];
   private seals = new Map<string, number>();
+  /** A hero's next dash fizzles until then (Morwen's Hex Bundle), and a hero no one-target spell can pick until then (Kohaku). */
+  private fizzles = new Map<MechSide, number>();
+  private unseenUntil = new Map<MechSide, number>();
+  /** A swap's own two dashes: no leash breaks, no dash fizzles. */
+  private swapping = false;
   private tokens = new Map<string, Token>();
   private coverHp = new Map<number, number>();
   private casts = new Map<MechSide, CastNote>();
@@ -228,6 +233,8 @@ export class Mech {
     this.barriers.length = 0;
     this.attractors.length = 0;
     this.seals.clear();
+    this.fizzles.clear();
+    this.unseenUntil.clear();
     this.tokens.clear();
     this.coverHp.clear();
     this.casts.clear();
@@ -424,6 +431,18 @@ export class Mech {
 
   /** Arena hook: `who` starts a dash to `to`: a leash that a dash breaks ends; one that holds keeps the landing inside it. */
   holdDash(who: Enemy, to: THREE.Vector3) {
+    if (this.swapping) return;
+    if (this.fizzles.size) {
+      const side = SIDES.find((s) => this.host.figure(s) === who);
+      const until = side ? this.fizzles.get(side) : undefined;
+      if (side && until !== undefined && this.now() < until && this.host.owns(side)) {
+        // Hexed: the dash goes nowhere (its cooldown is spent all the same), and the hex is used up.
+        to.set(who.group.position.x, 0, who.group.position.z);
+        this.fizzles.delete(side);
+        this.host.say('FIZZLED', '#c9b8ff', who.group.position.clone().setY(0.6), 1);
+        this.host.send(msgName('f', this.rel(side)), 0);
+      }
+    }
     if (!this.leashes.length) return;
     for (const l of [...this.leashes]) {
       if (!l.alive || this.host.figure(l.side) !== who) continue;
@@ -442,8 +461,14 @@ export class Mech {
     const c = this.casts.get(caster);
     if (!c || Math.hypot(c.point.x - c.from.x, c.point.z - c.from.z) > reach) return false;
     const to = (p: P) => new THREE.Vector3(p.x, 0, p.z);
-    if (this.host.owns(caster)) this.host.dash(caster, to(c.point), seconds);
-    if (this.host.owns(other(caster))) this.host.dash(other(caster), to(c.from), seconds);
+    // Her own chain holds through it, and a hexed dash does not catch it: it is no dash of either hero's.
+    this.swapping = true;
+    try {
+      if (this.host.owns(caster)) this.host.dash(caster, to(c.point), seconds);
+      if (this.host.owns(other(caster))) this.host.dash(other(caster), to(c.from), seconds);
+    } finally {
+      this.swapping = false;
+    }
     return true;
   }
 
@@ -479,6 +504,58 @@ export class Mech {
     if (!this.seals.size) return 0;
     const until = this.seals.get(side + slot);
     return until === undefined ? 0 : Math.max(0, until - this.now());
+  }
+
+  // --- a dash that fizzles, a hero no one-target spell can pick, a cleanse ----------------------------------------
+
+  /**
+   * `side`'s next dash, blink or leap within `seconds` goes nowhere (Morwen's Hex Bundle): it is cast, its cooldown is spent, the
+   * hero stays. Decided on that hero's own screen (call it from `dealt` or `victimTick`); told to the other screen, whose CPU
+   * holds its dashes meanwhile. A swap of places is no dash.
+   */
+  fizzleDash(side: MechSide, seconds: number) {
+    if (!this.host.owns(side)) return false;
+    this.fizzles.set(side, this.now() + seconds);
+    this.busy = true;
+    this.host.send(msgName('f', this.rel(side)), msgN(seconds * 10));
+    return true;
+  }
+
+  /** True while `side`'s next dash would fizzle (both screens). */
+  dashFizzles(side: MechSide) {
+    if (!this.fizzles.size) return false;
+    const until = this.fizzles.get(side);
+    return until !== undefined && this.now() < until;
+  }
+
+  /**
+   * `side`'s hero is unseen for `seconds` (Kohaku's Glamour): no one-target spell can be cast at it (the player's client says so,
+   * the CPU does not try); areas, cones and bolts still find it. Its own client decides (call it from `afterCast` or `tick`), and
+   * tells the other screen. The look is the hero's (`Trait.figureHidden`).
+   */
+  unseen(side: MechSide, seconds: number) {
+    if (!this.host.owns(side)) return false;
+    this.unseenUntil.set(side, this.now() + seconds);
+    this.busy = true;
+    this.host.send(msgName('v', this.rel(side)), msgN(seconds * 10));
+    return true;
+  }
+
+  isUnseen(side: MechSide) {
+    if (!this.unseenUntil.size) return false;
+    const until = this.unseenUntil.get(side);
+    return until !== undefined && this.now() < until;
+  }
+
+  /** Ends these statuses on `side`'s hero now (Nebet's "free of slows"), on its own client; the other screen ends their look too. */
+  cleanse(side: MechSide, kinds: StatusKind[]) {
+    if (!this.host.owns(side)) return false;
+    const st = this.host.status(side);
+    if (!st) return false;
+    const gone = kinds.filter((k) => st.has(k));
+    for (const k of gone) st.end(k);
+    if (gone.length) this.host.send(msgName('x', this.rel(side) + gone.map((k) => STATUS_KINDS.indexOf(k)).join('')), 1);
+    return gone.length > 0;
   }
 
   // --- tokens (Asenet, Orren) ------------------------------------------------------------------------------------
@@ -766,6 +843,21 @@ export class Mech {
         t.receive({ holder: h, x: decPos(data.slice(2, 4)), z: decPos(data.slice(4, 6)), version: n, since: 0, start: decTime(data.slice(6, 9)) });
         return;
       }
+      case 'f': {
+        const s = side(data[0]);
+        if (n > 0) { this.fizzles.set(s, this.now() + n / 10); this.busy = true; } else this.fizzles.delete(s);
+        return;
+      }
+      case 'v': {
+        const s = side(data[0]);
+        if (n > 0) { this.unseenUntil.set(s, this.now() + n / 10); this.busy = true; } else this.unseenUntil.delete(s);
+        return;
+      }
+      case 'x': {
+        const st = this.host.status(side(data[0]));
+        for (const c of data.slice(1)) { const k = STATUS_KINDS[Number(c)]; if (k) st?.end(k); }
+        return;
+      }
       case 'u': {
         // The other screen counted a hit on one of this screen's placed things: take it off here.
         const owner = side(data[0]), id = decDigit(data[1]) * 36 + decDigit(data[2]);
@@ -822,6 +914,13 @@ export class MechView {
   }
   swap(seconds: number, reach?: number) { return this.m.swap(this.side, seconds, reach); }
   sealEnemy(slot: number, seconds: number) { return this.m.seal(this.enemySide, slot, seconds); }
+  /** The enemy's next dash within `seconds` fizzles (call from `dealt` / `victimTick`). */
+  fizzleEnemyDash(seconds: number) { return this.m.fizzleDash(this.enemySide, seconds); }
+  /** This hero is unseen for `seconds`: no one-target spell picks it (own client). */
+  unseen(seconds: number) { return this.m.unseen(this.side, seconds); }
+  enemyUnseen() { return this.m.isUnseen(this.enemySide); }
+  /** Ends these statuses on this hero now (own client). */
+  cleanse(kinds: StatusKind[]) { return this.m.cleanse(this.side, kinds); }
   /** The enemy's last cast this round, and its kind (for a copy). */
   enemyLastCast() {
     const c = this.m.lastCast(this.enemySide), kit = this.m.host.kit(this.enemySide);
