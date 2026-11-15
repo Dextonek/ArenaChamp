@@ -208,7 +208,7 @@ It let go of Senmere last.
 
 Through the window above the Seat the red sun of the first world it had ever kept began to move, after a thousand years at noon, and the terraces of
 Senmere had their afternoon at last: long, and gold, and then red. The people on the terraces stopped being glad and still, and were glad and moving, and
-then, as the light went down, tired, and then quiet, as people are at the end of a long day. Nerys at her window finished her question.
+then, as the light went down, tired, and then quiet, as people are at the end of a long day. Linnet at her window finished her question.
 
 Iselm went up the last stair. He was very old now, older than anything on the Dial, and with his name gone he was nothing but a careful man who had made
 something out of grief. He looked back once at the company on the Sun Court, and at the new sun over the Tower, and at Mum, who had sung his verse. Then he

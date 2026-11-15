@@ -14,7 +14,9 @@ valleys round Gloaming, where the dusk is long and the night roads run, and has 
 and people by day, or the other way round, depending on whom you ask; nine-tailed in the old stories and one-tailed in daylight; and they live by
 taking names. A Briarkin will not give its true name, because a name given can be taken, and the Fox court is why.
 
-Kohaku is a fox of that court, and she will not say how old she is. She looks perhaps twenty-five, and has looked it since at least the War of the
+Kohaku is a fox of that court, and she will not say how old she is, because the answer is strange. She was a girl of the court three hundred years before
+the Fall, at a midsummer revel at the Tower's foot that the Tower took whole, and she fell out of the Tower on the morning after the Fall, when its broken grip
+on the sun shook its oldest keepings loose, into a Fox court that no longer remembered her. She looks perhaps twenty-five, and has looked it since at least the War of the
 Banners, when the Ninefold knight Sir Wystan of Nine (whom the Ring now calls [Sir Whiskers](sir-whiskers.md)) first saw her steal a crimson captain's
 battle-cry off his lips in the middle of a charge, so that he opened his mouth and nothing came out. Her use-name means amber, for the colour of her
 eyes and her foxfire, and she has others.
@@ -68,7 +70,9 @@ wrong moments, on purpose.
 
 - She remembers exactly which word she took from Hesk's golem. It was her own true name, written there by someone who should not have known it. She took it
   back. She is afraid of who wrote it.
-- She is older than the Fox court's oldest memory, and does not know how.
+- She is older than the Fox court's oldest memory, because she spent three hundred years of it in the Tower, at one night of a revel. In year 40 she found the door
+  her brother was behind, the thirty-first of the Hundred Doors, and when Wick opened it she stole her brother's true name as he stepped out, so that the Tower could
+  never call him back. He is The Great Zambini. The rest of the revel is still inside.
 - She has let Sir Whiskers catch her once, at the Masque of Houses, in a mask. He did not know it was her.
 
 ## What she wants from the Tower

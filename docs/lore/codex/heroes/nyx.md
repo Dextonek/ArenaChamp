@@ -67,7 +67,8 @@ courtly Ring-speech with no accent at all. She uses few words, and no names but 
 ## Secrets
 
 - She knows who put the two Noonsworn bell-ringers to sleep on the night road in year 86. It was another of the Cast, a shadow that walked off a wall in
-  Aubade, and that hates the dawn more than Vesper ever could. Nyx has been hunting it for fourteen years. She has not told the Countess.
+  Aubade, and that hates the dawn more than Vesper ever could. Nyx has been hunting it for fourteen years. She has not told the Countess. She calls it the Dawnless, and she knows where it takes its sleepers: to the
+  Tower's roots.
 - She has begun to remember the woman whose shadow she was. A Gloaming glazier, from the mirror quarter, the morning of the Fall. She does not know her
   name. She thinks Silvane does.
 - She is not sure she can die. She is sure she can be forgotten, and that it would be the same thing.

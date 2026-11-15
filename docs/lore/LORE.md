@@ -878,8 +878,8 @@ on foot, and he is still a captain.
 > "Again. And again."
 
 When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning
-there comes twice. Tempo is what the Hourkeepers call an unwound hour, a man who fell out of time at the moment of the Fall and has
-lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every
+there comes twice. Tempo is what the Hourkeepers call an unwound hour: when the Tower closed its hand on the noon he was a heartbeat behind his
+own clock, and it took half of him, so he has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every
 spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to
 wind the Dial up again before Oblivion unmakes the hours altogether.
 
@@ -981,8 +981,8 @@ catch Kohaku for longer than either will admit, and she has been letting him.
 - age: He says 39. He has said 39 for sixty years.
 > "Pick a hat. Any hat. Wrong."
 
-Nobody knows where The Great Zambini comes from, which is how he likes it. He has played every court on the Dial under a violet
-spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than
+The Ringside has never known where The Great Zambini comes from, which is how he likes it: out of one of the Hundred Doors, in year
+40, after three hundred years at a revel the Tower kept. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than
 once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels
 and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim
 and Pom are his favourite audience and his worst assistants. He fights for the applause.
@@ -1099,63 +1099,63 @@ Tower long ago and come back out), `halfkept` (half taken in the hour of the Fal
 (came after the Tower, through the Tear). One line a hero: `- Name | origin | why, in a few words`. The story of each is in
 `docs/lore/codex/story/`.
 
-- Referee Whistler | dial | born on the Dial
-- Mr. Ledger | dial | born in Harrow, dead since sixty years before the Fall
-- Wick | dial | born on the Dial
-- Pip | dial | born on the Dial
-- Madame Cleaver | dial | born on the Dial
-- Big Yoko | dial | born on the Dial
-- Morwen | dial | born on the Dial
-- Kessa | dial | born on the Dial
-- Auriel | dial | born on the Dial
+- Referee Whistler | dial | born in the Deep's masons' halls; sweeping the straw circle when the Tower took the market and his father with it
+- Mr. Ledger | dial | born in Harrow, dead since sixty years before the Fall; the Tower took and never paid, and he writes the bill
+- Wick | dial | born at Frostfall Lake; keeps the Tower's own doors, which it cannot use while he keeps them
+- Pip | dial | born in Aubade in year 81; carries the Truce's challenge to the Tower and the new word down it
+- Madame Cleaver | dial | born in the Sands, a caravan cook's daughter; her fire ends the war the Tower kept
+- Big Yoko | dial | born on the shrine cliffs below Aubade; his circle stands where the Tower's shadow stopped, and holds it
+- Morwen | dial | born on the Drowned Coast; her salt line shows which side the Tower is on
+- Kessa | dial | born to the Kilnborn chain-makers; chains the Tower to the Dial at the last
+- Auriel | dial | born in Aubade the morning after the Fall, daughter of a tenor the Tower kept
 - Anka | spilled | a spark of the sun that slipped the Tower's grip and fell into the sea
 - Cantor | dial | born in Aubade; left in the Sun Court because he was listening to Mum and not the beat
-- Opaline | dial | born on the Dial
-- Campana | dial | born on the Dial
-- Orren | dial | born on the Dial
-- Vesper | dial | born in Gloaming, kept since by blood, not by the Tower
-- Silvane | dial | born on the Dial
+- Opaline | dial | born in Gloaming's mirror quarter; holds the colour the sun lost
+- Campana | dial | born in Aubade; cast the bells that answer the last verse
+- Orren | dial | born in Aubade; carries the Ember down to the Heart, not up
+- Vesper | dial | born in Gloaming, kept since by blood, not by the Tower; the Long Dusk she ruled is one of its keepings
+- Silvane | dial | born in Gloaming's mirror quarter; caught the sun's last look in a mirror
 - Mortis | dial | born in Gloaming, dead three hundred years; the Tower's keeping is why the dead get up
 - Nyx | spilled | a shadow thrown by light the Tower took in mid-throw, left belonging to nothing
 - Mum | dial | born in Aubade; a hair behind the beat since the Fall, so the Tower cannot take her by an hour
-- Kohaku | returned | taken with the same revel; spilled out of the Tower when the sun cracked, and has been getting her court out since
-- Corbel | dial | born in Gloaming, turned to stone and woken
-- Fenna | dial | born on the Dial
-- Hank | dial | born on the Dial
-- Bo | dial | born on the Dial
-- Pim and Pom | dial | born in the Underbough, one life for two
-- Sirix | dial | born on the Dial
-- Vela | dial | born on the Dial
-- Arden | dial | born on the Dial
-- Marin | dial | born on the Dial
-- Kaia | dial | born on the Dial
-- Zephyr | dial | born on the Dial
-- Barry Cloudsley | dial | born on the Dial
-- Professor Puff | dial | born on the Dial
-- Lian | dial | born on the Dial
-- Gus | dial | born on the Dial
-- Brannoc | dial | born on the Dial
-- Ada | dial | born on the Dial
-- Bram | dial | born on the Dial
-- Mabel | dial | born on the Dial
-- Itzel | dial | born on the Dial
-- Hesk | dial | born on the Dial
-- Tova | dial | born on the Dial
-- Sefu | dial | born on the Dial
+- Kohaku | returned | taken with a Fox court revel three hundred years before the Fall; spilled out of the Tower when the sun cracked
+- Corbel | dial | born in Gloaming, turned to stone and woken; the Tower has no part in him
+- Fenna | dial | born in the Wood; the Tower drew the oak she planted into its Wood
+- Hank | dial | born at the Wood's edge; cut the Tower's root, and the cut would not heal
+- Bo | dial | born on the high pastures; his sheep turned to the Tower for nine heartbeats every midsummer
+- Pim and Pom | dial | born in the Underbough, one life for two, as the Tower's grip on the noon split some Briarkin lives
+- Sirix | dial | born in the Wood; his swarm came up out of the Tower's roots
+- Vela | dial | born in the Moth court; lays the Tower to sleep
+- Arden | dial | born in the Wood; followed the Dawnless's trail into the Tower
+- Marin | dial | born on the Drowned Coast; danced the water out, so the Tower passed her by
+- Kaia | dial | born on the Spires in year 72; her storms always went round the Tower
+- Zephyr | dial | born on the Spires in year 76; jumped from the Noon Seat
+- Barry Cloudsley | dial | born on the Coast; saw the Tower taking the weather into its floors
+- Professor Puff | dial | born on the Coast; felt the Tower breathe in at the Fall
+- Lian | dial | born on the Spires; answered a message from the girl at the Tower's top
+- Gus | dial | born in Saltreach in year 35; swept the Tower's drowned temple clean
+- Brannoc | dial | born in the hills before they went grey; his coal burns low as the Tower drinks the Heart
+- Ada | dial | born in the Deep in year 74; went to look at the Tower's gears and found a word
+- Bram | dial | born in the Deep; his friend Gerald is one of the Tower's nine warning stones
+- Mabel | dial | born in the deepest seams; found a tunnel dug from below, a root of the Tower
+- Itzel | dial | born by the Caldera; carries the sun's own name
+- Hesk | dial | born in the Deep; cuts the new word at the Tower's root
+- Tova | dial | born in the deepest seams; breaks the rock no drill could
+- Sefu | dial | born in Tamerit; learns at the thirtieth floor that the Father was taken
 - Vitriol | dial | born in Tamerit, kept since by the embalmers' oil
-- Lithea | dial | born on the Dial
-- Nebet | dial | born on the Dial
-- Sahar | dial | born on the Dial
-- Ramet | dial | born on the Dial
+- Lithea | dial | born in the Sands; looks at the sun's heart unveiled
+- Nebet | dial | born in the Sands; weighs the sun's heart, heavier with grief
+- Sahar | dial | born on the Glass Flats; his great-uncle is kept on the twenty-sixth floor
+- Ramet | dial | born at the gate of Tamerit, a lion of the Ninefold
 - Tempo | halfkept | a heartbeat behind the hour when the Tower closed its hand: one of him was kept, one walks
-- Shiori | dial | born on the Dial
-- Lyra | dial | born on the Dial
-- Grandma Ironknit | dial | born on the Dial
-- Isolde | dial | born on the Dial
-- Saga | dial | born on the Dial
-- Thessa | dial | born on the Dial
+- Shiori | dial | born at Frostfall in year 70; writes the new word
+- Lyra | dial | born at Frostfall in year 78; her red star is coming
+- Grandma Ironknit | dial | a Briarkin of the Spindle court, at the Wood's edge; dropped three stitches at the Fall
+- Isolde | dial | born at Frostfall Lake; held the cold, so the Tower passed her by in the Long Hold
+- Saga | dial | born at Frostfall Lake; called the aurora at the noon of the Fall
+- Thessa | dial | born in Frostfall; sews the Tear shut
 - Oblivion | followed | the ending of Senmere, the world the Tower kept before the Dial, dragged after it through the Tear
-- Sir Whiskers | dial | born on the Dial
+- Sir Whiskers | dial | born at the Keep of Nine; his brother was kept on the War floors
 - The Great Zambini | returned | taken with a Fox court revel three hundred years before the Fall; walked out of a Hundred Door in year 40
-- Ostrel | dial | born on the Dial four hundred years ago; the girl he lost is in the Tower
-- Asenet | dial | born in Tamerit; the one who read the first king's tomb and knew
+- Ostrel | dial | born four hundred years ago, drowned carrying a girl the Tower kept
+- Asenet | dial | born in Tamerit; read the first king's tomb, and knew

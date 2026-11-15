@@ -62,6 +62,9 @@ Cool, precise and royal, with a bitterness she keeps very well dressed. She spea
 
 - The door she left the Gaol by was shown to her by someone she will not name, who came to her cell on the night of the spring tide and opened it from the other side. It was not Gus, who
   only mopped up after.
+- In the year before the Fall she broke the first king's law and opened his tomb, and read the warning on its wall: the pin keeps suns; it kept one before ours;
+  it will keep ours; do not sing to it. She tried to warn the court, the Hourkeepers and the master of the choir. That is why the Sands blamed her, and she knows what
+  took the Father. Nobody has believed her for a hundred years.
 - She did not want the crown back. She wanted Sefu to know what it weighed. Now he does, and she is not sure what she wants.
 - The curse can be lifted only by its maker, and the maker is Vitriol. She has never paid him because she is afraid that if she pays, he will lift it, and then she will have nothing.
 

@@ -9,20 +9,23 @@ hero: The Great Zambini
 
 ## Biography
 
-Nobody knows where The Great Zambini comes from, which is how he likes it. He says Aubade, Tamerit and Gloaming, on alternate days. He says thirty-nine, and has said thirty-nine for
+The Ringside has never known where The Great Zambini comes from, which is how he likes it. He says Aubade, Tamerit and Gloaming, on alternate days. He says thirty-nine, and has said thirty-nine for
 sixty years. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing,
 more than once, and he has kept every oath exactly: every one of them says "for the length of the performance".
 
 What the codex can say is this. He is a Briarkin, and has never hidden it from anyone who looked closely: the ears under the hat are long and pointed, the eyes under the brim are violet
-from lid to lid, and he keeps the age that suits him, which is thirty-nine. He was born in the Underbough some time before the Fall, of a court he will not name, and he left it. A Briarkin
-of no court is rare, and usually unhappy: the courts are where the fae are remembered, and a fae who is not remembered fades. Zambini's answer, the only one of its kind, was to make sure he
-was remembered by everyone. He walked out of the Walking Wood, put on a hat, and became the most famous performer on the Dial.
+from lid to lid, and he keeps the age that suits him, which is thirty-nine. He was born of the Fox court some four hundred years ago, and he did not leave it: it was taken from him. Three
+hundred years before the Fall the court held its midsummer revel at the Tower's foot, and the Tower took the revel's hour with him dancing in it. It was
+one night to him. In year 40 he walked out of one of the Hundred Doors under the Ring, laughing at something somebody had said behind him, into a Dial that
+had forgotten him; his sister stole his true name as he came out, so that the Tower could never call him back, and he has been a Briarkin of no court
+since. The courts are where the fae are remembered, and a fae who is not remembered fades. Zambini's answer, the only one of its kind, was to make sure he
+was remembered by everyone. He put on a hat, and became the most famous performer on the Dial.
 
 His art is glamour, the Briarkin's oldest craft: the art of seeming. He vanishes under hats, saws things in half and pulls the rabbit out last. None of it is a trick, and all of it is: the
 glamour makes the audience see what he wants, and what they see is true for exactly as long as they watch. The rabbit is real. Where it was before the hat, nobody has asked. In the Ring his
 workings are the same: hats he hides under, a box he saws, a spotlight that follows him, and an audience, which is what keeps him alive, though only the Briarkin know it.
 
-[Referee Whistler](referee-whistler.md), the Arbiter, has watched every one of his duels for seventy years and has never caught him cheating, which convinces Whistler that he always does.
+[Referee Whistler](referee-whistler.md), the Arbiter, has watched every one of his duels for sixty years and has never caught him cheating, which convinces Whistler that he always does.
 Zambini has never cheated in the Ring. He finds it very funny that he is the only person in the Ring whom the Arbiter is certain about. [Pim and Pom](pim-and-pom.md), the changeling twins of
 the Acorn court, are his favourite audience and his worst assistants: he has twice tried to saw one of them in half on stage and found that he had sawn the other, and neither of them in half,
 and the crowd thought it was the best trick he ever did. He thinks of them, privately, as the only family he has.
@@ -63,7 +66,8 @@ to say anything plainly.
 
 ## Secrets
 
-- He left the Fox court. Kohaku is his sister, of a kind, and stole his true name the night he left, so that he could never go back. He has forgiven her. She has not forgiven him for leaving.
+- He did not leave the Fox court; the Tower took him with its revel, and everyone he loved is still behind the thirty-first door, dancing. Kohaku is his sister,
+  and stole his true name as he came out, so that the Tower could never call him back. He has not forgiven her. She has never been sorry.
 - He is fading. Slowly, in the empty hours between performances, his hands go thin, and he can see the stage through them. He performs more every year.
 - His real age, by the Briarkin's count, is about four hundred.
 

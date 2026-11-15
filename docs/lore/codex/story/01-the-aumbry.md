@@ -34,10 +34,10 @@ would not be many more.
 
 One of the keepers was a man called **Iselm**. In the old tongue of Senmere his name was also a word, the plainest word the
 keepers had: it meant *keep*, as in *keep this for me*, as in *keep it safe*. His family had built vaults for twenty generations. He
-was quiet and patient and very good with stone, and he had one daughter, **Nerys**, who was nine in the winter the cold came into the
+was quiet and patient and very good with stone, and he had one daughter, **Linnet**, who was nine in the winter the cold came into the
 valley floor.
 
-Nerys was a child who asked questions in a straight line until she reached the bottom of a thing. She wanted to know where the sun's
+Linnet was a child who asked questions in a straight line until she reached the bottom of a thing. She wanted to know where the sun's
 light went when it went out. She wanted to know whether the vaults kept the smell of a thing as well as its shape. She kept a vault
 of her own, the size of a shoebox, with a stone she liked in it, and a feather, and a note that said DO NOT OPEN UNTIL I AM OLD. When
 the cold came she caught the lung fever that took so many children that winter, and the doctors told Iselm what they told everyone:
@@ -59,11 +59,11 @@ He called it **the Aumbry**, the old word for a keeping-place, a cupboard in a w
 
 ## The first keeping
 
-On the morning the doctors said would be her last, Iselm carried Nerys into the Aumbry. He set her in a high room near its top,
+On the morning the doctors said would be her last, Iselm carried Linnet into the Aumbry. He set her in a high room near its top,
 under a window that faced the sun, and he sat with her until noon. When the sun stood over the valley and every voice in Senmere went
 quiet, the Aumbry closed on that hour like a hand closing on a moth.
 
-Nerys did not die. She did not get well. She stayed exactly as she had been at noon on that day, sitting up in the bed with the sun on
+Linnet did not die. She did not get well. She stayed exactly as she had been at noon on that day, sitting up in the bed with the sun on
 her face and a question half asked, and she would stay so for as long as the Aumbry stood. When Iselm walked out of the room the door
 looked like a door, and when he looked back through it she was there, and she looked at him and finished her question, which was
 whether it would be noon for ever now. He said yes.
