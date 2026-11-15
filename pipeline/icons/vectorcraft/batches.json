@@ -2,7 +2,16 @@
  "order": "Weakest current icons first, ranked from today's 32 px sheet (docs/icons/old, sheet.py old): grey on grey, cartoon signs and faces, thin lines that vanish at 32 px. Anka and Mum were the sample.",
  "1": {
   "date": "2026-11-16",
-  "stems": ["bram", "bo", "big-yoko", "referee-whistler", "oblivion", "mortis", "gus", "professor-puff"],
+  "stems": [
+   "bram",
+   "bo",
+   "big-yoko",
+   "referee-whistler",
+   "oblivion",
+   "mortis",
+   "gus",
+   "professor-puff"
+  ],
   "rows": {
    "bram": "Proposed row Stone / rune (from src/kits/mason.ts): limestone, rune amber accent.",
    "bo": "Proposed row Fold / bell (src/kits/sheep.ts): fleece to the bell's gold, a meadow green accent; the ground a dusk meadow.",
@@ -14,12 +23,30 @@
    "professor-puff": "Proposed row Aether (src/kits/balloon.ts): rose gas, a sky-blue accent, aubergine, brass."
   },
   "bible": {
-   "bram": ["Stone / rune", "Bram; foil: stone `#9a958c`, stone dark `#5b5853`"],
-   "bo": ["Fold / bell", "Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`"],
-   "big-yoko": ["Ring / shrine", "Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`"],
-   "referee-whistler": ["Arbiter", "Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`"],
-   "gus": ["Temple water", "Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`"],
-   "professor-puff": ["Aether", "Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`"]
+   "bram": [
+    "Stone / rune",
+    "Bram; foil: stone `#9a958c`, stone dark `#5b5853`"
+   ],
+   "bo": [
+    "Fold / bell",
+    "Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`"
+   ],
+   "big-yoko": [
+    "Ring / shrine",
+    "Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`"
+   ],
+   "referee-whistler": [
+    "Arbiter",
+    "Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`"
+   ],
+   "gus": [
+    "Temple water",
+    "Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`"
+   ],
+   "professor-puff": [
+    "Aether",
+    "Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`"
+   ]
   },
   "notes": [
    "One sign per hero runs through its four icons: Bram's pillar Gerald with his maker's mark (a square with a dot in its corner, from his lore), Bo's crook, bell and black-faced sheep, Big Yoko's straw rope and paper charms, the Arbiter's silver horn and seals, Oblivion's black void with crimson edges, Mortis's ivory bone in teal grave-light, Gus's temple water and bronze, Puff's glass spheres of rose gas and brass.",
@@ -27,6 +54,68 @@
    "Each hero's four differ in shape at 32 px and in grey (the sheet above), and the lower left stays quiet for the key letter.",
    "Weakest of the batch: Bo. His sheep read as fleece and a dark face at 64 px, but at 32 px W and R are a cluster of pale curls; better than today's grey dots, not as clear as the others. Professor Puff's W (a sphere about to burst) and E (the same gas floating him away) share their round shape; the gondola and the burst lines tell them apart.",
    "Redrawn after a first look: the Arbiter's No Running (two chevrons under the red bar read as a hammer; now an arrow), Oblivion's Gravity Slam (a black orb on black read as a ring with a cross under it), Big Yoko's Stomp (dust spikes read as teeth), Gus's Flood (its sea ran square to the corners)."
+  ]
+ },
+ "2": {
+  "date": "2026-11-16",
+  "stems": [
+   "mabel",
+   "madame-cleaver",
+   "pim",
+   "pom",
+   "grandma-ironknit",
+   "sir-whiskers",
+   "mr-ledger",
+   "nyx",
+   "barry-cloudsley"
+  ],
+  "rows": {
+   "mabel": "Proposed row Deep / lantern (src/kits/mole.ts): the lantern crystal's amber, a cave-crystal teal accent; soil foils.",
+   "madame-cleaver": "Proposed row Feast / ember (src/kits/chef.ts): the cleaver's ember edge, her crimson, a herb green.",
+   "pim": "Proposed row Changeling (src/kits/twins.ts): Pim's amber with Pom's blue as the accent, bark and leaf. Tag Out is one spell for both twins: its icon is Pim's.",
+   "pom": "The Changeling row turned round: Pom's blue body, Pim's amber accent. (The spell bar below is Pim's: a duel starts on him.)",
+   "grandma-ironknit": "Proposed row Spindle / rose (src/kits/yarn.ts): rose yarn, the Spindle court's silver as the accent.",
+   "sir-whiskers": "Proposed row Lynx (src/kits/cat.ts): tawny gold, the plume's red, gunmetal foils.",
+   "mr-ledger": "Proposed row Tithe / seal (src/kits/ledger.ts): vellum, the wax seal's red, his ember eyes as the accent.",
+   "nyx": "The art bible's Shadow row, the moon as its foil.",
+   "barry-cloudsley": "Proposed row Augury (src/kits/weather.ts): cloud white, sky blue, the sun's yellow as the accent."
+  },
+  "bible": {
+   "mabel": [
+    "Deep / lantern",
+    "Mabel; foil: soil `#a98258`, dirt `#6b4e33`, claw horn `#e8e0cc`"
+   ],
+   "madame-cleaver": [
+    "Feast / ember",
+    "Madame Cleaver; foil: steel `#c4ccd4`, char `#2c2724`, soup `#e8794a`"
+   ],
+   "pim": [
+    "Changeling",
+    "Pim and Pom; Pom's turns it round: body `#6ac8ff`, accent `#ffb04a`; foil: bark `#6e4a2a`, leaf `#7fbf4a`"
+   ],
+   "grandma-ironknit": [
+    "Spindle / rose",
+    "Grandma Ironknit; foil: wine `#7a2a4c`, spool `#ff5a8a`, cat grey `#9a9aa6`"
+   ],
+   "sir-whiskers": [
+    "Lynx",
+    "Sir Whiskers; foil: plate `#3c4458`, steel `#c4ced8`, clay `#b5653a`"
+   ],
+   "mr-ledger": [
+    "Tithe / seal",
+    "Mr. Ledger; foil: vellum `#efe4c0`, oxblood `#7a2230`"
+   ],
+   "barry-cloudsley": [
+    "Augury",
+    "Barry Cloudsley; foil: storm `#4a5870`, deep `#2f5ea8`"
+   ]
+  },
+  "notes": [
+   "One sign per hero: Mabel's gold-tipped claws and the Deep's soil, the Feastmistress's ember-edged cleaver, iron pot and covered dishes, the twins' bark and leaf (Pim amber, Pom blue), the Weaver's silver needles and glowing rose yarn, the Lynx Duelist's tawny gold and his nine lives as gems, the Tithe-Keeper's vellum and red wax seal, Nyx's dagger and the moon, the Sky Augur's clouds and fronts.",
+   "Cartoon left behind: the sweater is a knit thrown over you, Mr. Biscuit a grey cat springing out of the wool (not a cat face), the referee-style pencil and papers a sealed invoice, a notice and a stamp, the weather-TV sun a front drawn as the augur's chart draws it.",
+   "Weakest: Mabel's Dig (W) and Sinkhole (R) are both holes; R is wider and broken at the rim with a ring round it, but at 32 px they are close. Pim's Charge (W) is his acorn-cap helm head down, which reads as an acorn first. Nyx's Shadow Double (E) is two hooded figures that read as shapes more than as her.",
+   "Redrawn after a first look: Mabel's Dig (claws over the hole read as horns) and Sinkhole (cracks over the pit read as a broken plate), the Feastmistress's smoke (grey puffs read as stones), the Weaver's Sweater (read as a basket) and Mr. Biscuit (read as a ghost), Sir Whiskers's Scratch (read as a feather), Nyx's Smoke Veil (two eyes in the smoke made a rock monster).",
+   "Pom has three icons: Tag Out is the same spell for both twins and uses Pim's."
   ]
  }
 }

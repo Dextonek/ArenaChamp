@@ -76,6 +76,13 @@ in small details.
 | Arbiter (Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`) | `#ffffff` | `#ece6d2` | `#b8bec8` | `#e6b800` | `#141414` |
 | Temple water (Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`) | `#f2f6f8` | `#c4e4f2` | `#74c0ea` | `#ffd23a` | `#0f1a24` |
 | Aether (Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`) | `#ffffff` | `#ffd2e3` | `#ff8fb8` | `#8fd8ff` | `#2a1424` |
+| Deep / lantern (Mabel; foil: soil `#a98258`, dirt `#6b4e33`, claw horn `#e8e0cc`) | `#fff6d6` | `#ffcf5a` | `#ffb040` | `#6fd0c8` | `#120b06` |
+| Feast / ember (Madame Cleaver; foil: steel `#c4ccd4`, char `#2c2724`, soup `#e8794a`) | `#fff3e0` | `#ffb03a` | `#d84a3a` | `#7fbf4a` | `#1e1a18` |
+| Changeling (Pim and Pom; Pom's turns it round: body `#6ac8ff`, accent `#ffb04a`; foil: bark `#6e4a2a`, leaf `#7fbf4a`) | `#fff6e0` | `#ffd24a` | `#ffb04a` | `#6ac8ff` | `#1a1424` |
+| Spindle / rose (Grandma Ironknit; foil: wine `#7a2a4c`, spool `#ff5a8a`, cat grey `#9a9aa6`) | `#fff0f6` | `#ff9cc4` | `#e86a9a` | `#c8c6d8` | `#1e0c18` |
+| Lynx (Sir Whiskers; foil: plate `#3c4458`, steel `#c4ced8`, clay `#b5653a`) | `#fff6e0` | `#ffc060` | `#e8a13a` | `#c8423a` | `#2a1608` |
+| Tithe / seal (Mr. Ledger; foil: vellum `#efe4c0`, oxblood `#7a2230`) | `#fff4e0` | `#e6d9ae` | `#c8302a` | `#ff7a4a` | `#161214` |
+| Augury (Barry Cloudsley; foil: storm `#4a5870`, deep `#2f5ea8`) | `#ffffff` | `#e4edf8` | `#6ac8ff` | `#f4e65a` | `#16233b` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

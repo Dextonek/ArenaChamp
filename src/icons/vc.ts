@@ -11,15 +11,24 @@ import type { HeroKit, HeroSpell } from '../heroes';
  */
 const DRAWN = new Set<string>([
   'anka',
+  'barry-cloudsley',
   'big-yoko',
   'bo',
   'bram',
+  'grandma-ironknit',
   'gus',
+  'mabel',
+  'madame-cleaver',
   'mortis',
+  'mr-ledger',
   'mum',
+  'nyx',
   'oblivion',
+  'pim',
+  'pom',
   'professor-puff',
   'referee-whistler',
+  'sir-whiskers',
 ]);
 
 /** A hero's file stem: its name in lower case with dashes (`Big Yoko` -> `big-yoko`); the twins are `pim` and `pom`. */
