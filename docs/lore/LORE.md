@@ -336,12 +336,12 @@ fights because a rule nobody enforces is only a rumour, and he has a long list o
 ### Mr. Ledger | the Tithe-Keeper | ledger | truce | he | roster
 - people: longdead
 - home: tower | The Tally-house under the Ring's stands
-- age: Nobody knows. He looks about 70, and has looked it for a hundred years.
+- age: Dead some 160 years. He died at his desk sixty years before the Fall, in the middle of a sum, and got up to finish it.
 > "No, no. Don't pay now. I insist."
 
 Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Truce was
 sworn: who owes what, to whom, and at what interest, in a great red book chained to his wrist so that nobody can borrow it. He is
-older than he looks, and he looks very old. The realms fear him more than any champion, because a debt in his book does not fade; it
+one of the Long Dead: vellum skin tight on the bone, and two embers where his eyes were. The realms fear him more than any champion, because a debt in his book does not fade; it
 waits. His spells work the same way: nothing hurts now, everything comes due. He steps into the Ring when a debtor will not pay any
 other way, and he has never once lost the paperwork.
 

@@ -42,7 +42,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 | # | Hero | People | Answer | What changes, in a line |
 |---|---|---|---|---|
 | 1 | Opaline | Gloaming folk | **revamp, built** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
-| 2 | Mr. Ledger | the Long Dead | **revamp** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
+| 2 | Mr. Ledger | the Long Dead | **revamp, built** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
 | 3 | Kaia | Coast folk | **revamp** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
 | 4 | Brannoc | Kilnborn | **revamp** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
 | 5 | Hank | Wood folk | **revamp** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
@@ -114,6 +114,9 @@ people's violet eyeshine added (the one mark every Gloaming hero carries); the c
   [page](heroes/opaline.md) has it.
 
 ### 2. Mr. Ledger, the Tithe-Keeper (the Long Dead)
+
+**Built 2026-11-15** (`blender/heroes/real/ledger.py`). As built: the skin painted and the cheeks moved in on the pack's own
+face, small bone knuckles built on the hands; his brows are gone.
 
 - **Figure:** the same tall black-and-oxblood robes, the great red book chained to his wrist, the long quill, the gold coin
   chains. The change is under them. His skin goes to old vellum, grey-gold and drawn tight on the bone; the cheekbones, the brow
