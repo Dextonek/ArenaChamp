@@ -446,6 +446,67 @@ class Real:
         cy = sum(p.y for p in pts) / len(pts)
         return self.piece("Head"), Vector((0, cy, hz)), r
 
+    # ---- a people's marks (added 2026-11-15 for the revamps, docs/lore/codex/revamp.md) ---------------------------------
+    def eye_look(self, color=None, emit=None, strength=0.5, solid=False):
+        """The eyes as a people has them: `color` multiplies the pack's eye (or, with `solid`, replaces it: one colour from
+        lid to lid, the Briarkin's); `emit` lets them shine (the Gloaming folk's eyeshine, the Long Dead's cold fire) at
+        `strength`, kept under 1 so the game's bloom leaves them two points of light."""
+        if not self.eyes:
+            return
+        nt = self.eyes.data.materials[0].node_tree
+        bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+        if solid and color:
+            for l in list(bsdf.inputs["Base Color"].links):
+                nt.links.remove(l)
+            bsdf.inputs["Base Color"].default_value = figkit.rgb(color)
+        elif color:
+            src = bsdf.inputs["Base Color"].links[0].from_socket if bsdf.inputs["Base Color"].links else None
+            mix = nt.nodes.new("ShaderNodeMix")
+            mix.data_type = "RGBA"
+            mix.blend_type = "MULTIPLY"
+            mix.inputs["Factor"].default_value = 1.0
+            if src is not None:
+                nt.links.new(src, mix.inputs["A"])
+            mix.inputs["B"].default_value = figkit.rgb(color)
+            nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
+        if emit:
+            bsdf.inputs["Emission Color"].default_value = figkit.rgb(emit)
+            bsdf.inputs["Emission Strength"].default_value = strength
+
+    def eye_box(self):
+        """(centre between the eyes, half the distance between them) at the pack body's own size."""
+        vs = [self.eyes.matrix_world @ v.co for v in self.eyes.data.vertices]
+        c = Vector((0, min(v.y for v in vs), (min(v.z for v in vs) + max(v.z for v in vs)) / 2))
+        return c, (max(v.x for v in vs) - min(v.x for v in vs)) / 2
+
+    def surface(self, p, way):
+        """Where a ray from `p` toward `way` first meets the body's skin: (point, outward normal), or (None, None)."""
+        from mathutils.bvhtree import BVHTree
+        if getattr(self, "_bvh", None) is None:
+            self._bvh = BVHTree.FromPolygons(self.world, [tuple(pl.vertices) for pl in self.body.data.polygons])
+        hit, n, _, _ = self._bvh.ray_cast(Vector(p), Vector(way).normalized())
+        if hit is None:
+            return None, None
+        if n.dot(Vector(way)) > 0:
+            n = -n
+        return hit, n
+
+    def trim_hair(self, ob, below=None, keep=None):
+        """Cuts a hair style of the pack: drops its faces below height `below` (a bob cut at the jaw), or those whose
+        every vertex fails `keep(co)`."""
+        bm = bmesh.new()
+        bm.from_mesh(ob.data)
+        mw = ob.matrix_world
+
+        def gone(v):
+            co = mw @ v.co
+            if below is not None and co.z < below:
+                return True
+            return keep is not None and not keep(co)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(gone(v) for v in f.verts)], context="FACES")
+        bm.to_mesh(ob.data)
+        bm.free()
+
     # ---- out ----------------------------------------------------------------------------------------------------------
     def _bind(self, ob, how):
         rig, body = self.rig, self.body

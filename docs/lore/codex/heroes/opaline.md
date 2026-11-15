@@ -45,11 +45,14 @@ She holds the gate of the Climb's Deep, where the halls are lightless, because s
 
 ## People and appearance
 
-Gloaming folk by birth, of the mirror quarter, with her people's eyeshine, and Noon-touched: eight at the Fall, she looks twenty-eight. Today she is
-slim and calm, with long pale hair, a ring of small prisms floating behind her head, a pale lavender robe with crystal epaulettes and a crystal brooch,
-and a crystal wand in the left hand, much like her sister. In the [revamp plan](../revamp.md) she is the first revamp: facets of amethyst crystal
-grown along her cheekbones, collarbones and hands, a faint inner light, hair cut short and deep violet-black, a gown of deep amethyst over cream with a
-cutter's apron, so that the sisters read as the night and the Deep.
+Gloaming folk by birth, of the mirror quarter, and Noon-touched: eight at the Fall, she looks twenty-eight. She is slim and calm, pale
+with her people's cool cast, and her eyes shine back violet as every Gloaming child's have since the long dusk. Her hair is violet-black
+and cut at the jaw; she cut it on the Stair. The crystal has grown out of her in clear amethyst with a faint light inside it: facets
+along her cheekbones toward the temples, a ridge along each collarbone, clusters breaking through the tops of her shoulders (more on the
+left, her wand side), and small points on the backs of her hands. She wears a gown of deep amethyst open over cream, its neckline low
+enough to show where the crystal grows, a fine gold chain with a crystal pendant, the dark sash with its four bands of colour, and a
+glass-cutter's leather apron at the right hip with her father's tools in its pocket. The ring of prisms floats behind her head, and the
+wand with its bright crystal tip is in her left hand. Her sister keeps lavender and silver; the two read as the night and the Deep.
 
 ## Voice
 

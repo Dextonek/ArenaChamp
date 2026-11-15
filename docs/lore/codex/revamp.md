@@ -41,7 +41,7 @@ the four groups; the touches give every human people its own skin and marks, so 
 
 | # | Hero | People | Answer | What changes, in a line |
 |---|---|---|---|---|
-| 1 | Opaline | Gloaming folk | **revamp** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
+| 1 | Opaline | Gloaming folk | **revamp, built** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
 | 2 | Mr. Ledger | the Long Dead | **revamp** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
 | 3 | Kaia | Coast folk | **revamp** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
 | 4 | Brannoc | Kilnborn | **revamp** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
@@ -98,6 +98,9 @@ before the next.
 ## The six revamps
 
 ### 1. Opaline, the Lightbreaker (Gloaming folk)
+
+**Built 2026-11-15** (`blender/heroes/real/prism.py`; before and after: `docs/heroes/revamp/index.html`). As built: her
+people's violet eyeshine added (the one mark every Gloaming hero carries); the crystal glows faintly, the skin does not.
 
 - **Figure:** still slim and calm, still the floating ring of prisms. The change: where she went down the Prism Stair, the Deep's
   light grew into her. Facets of clear amethyst crystal along the cheekbones, the collarbones and the backs of the hands,

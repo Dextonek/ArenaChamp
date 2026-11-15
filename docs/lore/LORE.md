@@ -457,7 +457,8 @@ the Hymn once more where it was meant to be sung.
 
 When the sun fell, its light did not all go out. Much of it ran down into the Deep and hid in the crystals there, which is why the
 Deep's halls glow. Opaline goes down the Prism Stair and breaks that light out again, cutting it into its colours to find the one the
-sun has lost. She is calm, pale and patient, with a ring of prisms circling her head and a voice that never rises. The Noonsworn want
+sun has lost. She is calm and patient, with a voice that never rises, a ring of prisms circling her head, and amethyst grown out of
+her cheekbones, shoulders and hands where the Deep's light took root in her. The Noonsworn want
 every drop of the old light for the sun; the miners want it for their lamps, and Mabel has told her so with her claws. Her sister
 Silvane keeps light the other way, in a mirror, and they no longer speak.
 
