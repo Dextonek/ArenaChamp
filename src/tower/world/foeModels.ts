@@ -50,9 +50,33 @@ const NATURAL = 1.8 * 1.3;
 type Entry = { m: THREE.MeshStandardMaterial; color: THREE.Color; emissive: THREE.Color };
 const ORIGINAL = new WeakMap<RealHero, THREE.Color[]>();
 
+/**
+ * The model figures' own dice. three gives every object, material and clip it makes an id drawn from `Math.random`, and the perf scenes
+ * and the route bot replay the game's draws from a seed: figures made, cloned and posed on the game's dice would move every draw after
+ * them, at moments set by when a file lands. All the model work here (making a figure, its first poses, the unit's groups) uses these
+ * instead, so the game draws exactly what it drew with the code looks, and its fights replay as they did.
+ */
+let qs = 0x9e3779b9;
+const quietRandom = () => {
+  qs = (Math.imul(qs, 1664525) + 1013904223) >>> 0;
+  return qs / 4294967296;
+};
+function quiet<T>(fn: () => T): T {
+  const was = Math.random;
+  Math.random = quietRandom;
+  try {
+    return fn();
+  } finally {
+    Math.random = was;
+  }
+}
+
+/** How many figures of each kind the floor makes ahead (a side has at most six live units; the prewarm holds one more). */
+const AHEAD = 7;
+
 /** A free figure of that file, or a new one (which starts loading it). */
 function take(id: string) {
-  return POOL.get(id)?.pop() ?? new RealHero(URL_OF(id), 0.9);
+  return POOL.get(id)?.pop() ?? quiet(() => new RealHero(URL_OF(id), 0.9));
 }
 
 function give(id: string, r: RealHero) {
@@ -63,17 +87,45 @@ function give(id: string, r: RealHero) {
   if (list.length < 12) list.push(r);
 }
 
-/** Starts loading a model's file now (a floor's kinds, when its fight begins): resolves when it has loaded. */
+/**
+ * Starts loading a model's file now (a floor's kinds, when its fight begins): resolves when it has loaded, with one figure; the file's
+ * pool is then filled to `AHEAD` figures, so no pack ever clones one in the middle of a fight.
+ */
 export function preloadFoe(id: string): Promise<RealHero> {
   const r = take(id);
   return new Promise((ok) => {
     const t0 = performance.now();
     const wait = () => {
-      if (r.loaded) { shareSkeleton(r); ok(r); } else if (performance.now() - t0 > 30000) ok(r);
+      if (r.loaded) {
+        shareSkeleton(r);
+        void fill(id).then(() => ok(r));
+      } else if (performance.now() - t0 > 30000) ok(r);
       else setTimeout(wait, 50);
     };
     wait();
   });
+}
+
+/**
+ * The file has loaded: the figures a floor's packs may need are made now, on the models' dice. A new figure clones the loaded file in a
+ * promise's callback (`RealHero`), a few microtasks later: the dice stay the models' until those have run (no frame or timer can come
+ * between: only microtasks).
+ */
+async function fill(id: string) {
+  const list = POOL.get(id) ?? [];
+  const want = AHEAD - 1 - list.length;
+  if (want <= 0) return;
+  const was = Math.random;
+  Math.random = quietRandom;
+  const made: RealHero[] = [];
+  try {
+    for (let i = 0; i < want; i++) made.push(new RealHero(URL_OF(id), 0.9));
+    for (let k = 0; k < 40 && made.some((h) => !h.loaded); k++) await Promise.resolve();
+    for (const h of made) if (h.loaded) shareSkeleton(h);
+  } finally {
+    Math.random = was;
+  }
+  for (const h of made) give(id, h);
 }
 /** Puts a figure that `preloadFoe` gave back in its file's pool. */
 export const returnFoe = (id: string, r: RealHero) => give(id, r);
@@ -160,8 +212,7 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
       built.dispose?.();
       code = null;
     }
-    const root = new THREE.Group();
-    const holder = new THREE.Group();
+    const [root, holder] = quiet(() => [new THREE.Group(), new THREE.Group()]);
     holder.scale.setScalar(f.height / NATURAL);
     holder.visible = false;
     if (code) root.add(code.root);
@@ -242,7 +293,7 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
         since += dt;
         if (posed < 2 || since >= POSE_STEP) {
           since = since >= POSE_STEP ? since % POSE_STEP : 0;
-          hero.pose(layers);
+          quiet(() => hero.pose(layers));
         }
         // the hit flash: the arena drives the palette's body (tinted or white); the figure's materials follow it
         const e = p.body.emissive, k = Math.max(e.r, e.g, e.b);
