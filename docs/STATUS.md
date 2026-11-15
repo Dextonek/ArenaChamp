@@ -48,7 +48,10 @@ The three agents below were restarted in their own threads from their saved comm
   **Waiting on the user:** a yes on the plan (then the Opaline sample in Blender, one at a time); why the sun fell (the Hymn broke /
   the Tower took it / something came through the Tear); what the Tower is (a clock / a collector of worlds / the sun's own stalk);
   the new names (`docs/lore/codex/names.md`); whether the twenty unreleased heroes' names may show in the game's Codex.
-  **Known:** at 375 px the account area in the top bar (name, coins, log out) runs off the screen, at least with a long name.
+- **Done and merged, not live (2026-11-15): the phone top bar and tabs.** At 600 px and less: four tabs (signed in Play, Raid, Tower,
+  Clan; a guest Play, Raid, Tower, Shop) and More (the other tabs, Graphics and Log out in a panel); labels 11 px (were 7.5); the
+  name ends in "..." and opens the Profile; coins open the Shop; every control at least 36 px; `--tabbar` 56 -> 60 px. Desktop the
+  same, but a 16-letter name no longer pushes Log out off the bar. Pictures `docs/game/topbar/` (README there).
 - **Built, merged into `feat/particle-editor`, not pushed, not live:** the Climb's minimap (top-left, follows the hero) and the whole
   floor on M or a tap (`src/tower/world/map.ts`); Online match says how many wait in the duel queue (`queue_size`, no PROTOCOL change);
   the tactics' second pass (above). News: the release "A map of the floor, and who waits to duel" (`live: false`).
