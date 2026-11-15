@@ -7,7 +7,7 @@
 import type { BuffKind, StatusKind } from '../effects/status';
 import type { CastMods } from '../traits';
 import { PROTOCOL } from '../../server/protocol.mjs';
-import type { WorldPlayer } from './world';
+import type { PackBlow, PackReport, SharedPackRec, WorldPlayer } from './world';
 
 export interface HeroStats {
   played: number;
@@ -283,11 +283,20 @@ export type ServerMsg =
   | { t: 'watchers'; n: number }
   // The Climb's open world (since PROTOCOL 16; src/net/world.ts). `world_roster`: this player's shard of a floor and everyone else in
   // it, on joining. Then who comes in, walks, casts (the look only) and leaves, each by its id in the shard.
-  | { t: 'world_roster'; shard: string; floor: number; you: number; max: number; players: WorldPlayer[] }
+  | { t: 'world_roster'; shard: string; floor: number; you: number; max: number; players: WorldPlayer[]; packs?: SharedPackRec[] }
   | ({ t: 'world_joined' } & WorldPlayer)
   | { t: 'world_moved'; id: number; x: number; z: number; yaw: number; walk?: boolean; hp?: number; ts?: number }
   | { t: 'world_cast'; id: number; label: string; x: number; z: number; tx: number; tz: number }
   | { t: 'world_left'; id: number }
+  // Stage 2, shared packs (since PROTOCOL 18): whose screen runs a pack (`owner` 0: nobody, each screen has it to itself), how many
+  // players it is set for, the owner's reports of its units and red zones, a hit for the owner, a blow for this hero, cleared, back.
+  | { t: 'pack_owner'; pack: string; owner: number; n: number }
+  | { t: 'pack_scale'; pack: string; n: number }
+  | { t: 'pack_state'; packs: PackReport[] }
+  | { t: 'pack_hit'; pack: string; u: number; dmg: number; by: number }
+  | ({ t: 'pack_hurt' } & PackBlow)
+  | { t: 'pack_cleared'; pack: string }
+  | { t: 'pack_respawn'; pack: string }
   // The leaderboards and clans (since PROTOCOL 17; docs/architecture/multiplayer.md, "Leaderboards and clans").
   | ({ t: 'leaderboards' } & Leaderboards)
   | { t: 'clan'; clan: ClanState | null; mutes: string[] }

@@ -9,7 +9,7 @@
 // All of that runs with the hero shop switched off, as it was written: its accounts are new and play any hero. The shop
 // itself (pipeline/designs/hero-shop.md), the raid ranks and the week's boards are played on servers of their own, with the
 // shop on, at the same time as the rest (`shopCases`): their lines are printed at the end. So is the Climb's open world (`worldCases`:
-// shards of a floor, walks and casts relayed, leaving), and the leaderboards and clans (`socialCases`: the duel rating, the boards,
+// shards of a floor, walks and casts relayed, leaving; and stage 2's shared packs, `packCases`), and the leaderboards and clans (`socialCases`: the duel rating, the boards,
 // clans, the clan chat and its limits, a restart on the same store).
 //   node server/smoke-test.mjs                         (its own Node servers on temporary data files)
 //   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
@@ -545,6 +545,160 @@ async function worldCases() {
 }
 
 /**
+ * The Climb's open world, stage 2 (shared packs), on a server of its own with a clock the test moves: the first to wake a pack runs it
+ * and the shard hears whose it is, another who wakes it is told; a pack the floor does not have is refused; the owner's places reach
+ * the members near it, clamped; a hit goes to the owner alone and a flood is cut; the owner's blow reaches the one it struck; the fight
+ * is counted (and never counted down); an owner who leaves hands the pack to the member near it; a quiet owner is replaced; a cleared
+ * pack is told to newcomers and comes back after `respawnS` when nobody is near its home, never alone.
+ * @returns {Promise<string[]>}
+ */
+async function packCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} packs: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  let clock = Date.now();
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-packs.json'), log: () => {}, shop: false, now: () => clock });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in, on floor 2 at x, z. @param {string} name @param {number} x @param {number} z */
+  const walker = async (name, x, z) => {
+    const c = await client(to);
+    c.send({ t: 'register', name, password: 'pw1234' });
+    await c.next('session');
+    c.send({ t: 'world_join', floor: 2, hero: 'Kaia', x, z, yaw: 0 });
+    return { c, r: await c.next('world_roster') };
+  };
+  // Floor 2's pack "a" stands at (80.1, 29.2), "d" at (-63.8, 67.9) (server/climb-packs.mjs).
+  const A = { x: 80.1, z: 29.2 };
+  try {
+    const a = await walker('pia', A.x + 2, A.z), b = await walker('pom', 0, 0);
+    ok(Array.isArray(b.r.packs) && b.r.packs.length === 0, 'a shard nobody fought in has no shared packs');
+    a.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    const oa = await a.c.next('pack_owner'), ob = await b.c.next('pack_owner');
+    ok(oa.pack === 'a' && oa.owner === a.r.you && ob.owner === a.r.you && oa.n === 1, 'the first to wake a pack runs it, set for one (the other is 80 m away), and the shard hears it');
+    a.c.send({ t: 'pack_claim', pack: 'nope', x: 0, z: 0 });
+    ok((await a.c.next('error')).error === 'No such pack on this floor', 'a pack id the floor does not have is refused');
+
+    // b comes near and wakes it too: it is told whose it is; and now two are in the fight.
+    b.c.send({ t: 'world_move', x: A.x - 3, z: A.z, yaw: 0, walk: true, hp: 1 });
+    const scale = await a.c.next('pack_scale');
+    ok(scale.pack === 'a' && scale.n === 2, 'a second player within 20 m: the pack is set for two (pack_scale)');
+    b.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    const told = await b.c.next('pack_owner');
+    ok(told.owner === a.r.you && told.n === 2, 'a second screen that wakes it is told who runs it, and for how many');
+
+    // The owner's places: to b (near), clamped; not back to the owner; a non-owner's report is dropped.
+    const c = await walker('pax', -60, 60);
+    a.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [[A.x, 9999, 1, 50, 80, 1, -1, 0, 2], 0], zn: [[0, 0, A.x, A.z, 2.1, 0, 0, 0.4, 1]] }] });
+    const st = await b.c.next('pack_state');
+    const u0 = st.packs[0].u[0];
+    ok(st.packs.length === 1 && st.packs[0].id === 'a' && st.packs[0].n === 2 && u0[1] === 500 && u0[3] === 50 && st.packs[0].u[1] === 0 && st.packs[0].zn.length === 1,
+      'the owner\'s places reach the member near the pack, clamped (z 9999 to 500), with a fallen unit and a red zone');
+    b.c.send({ t: 'pack_state', packs: [{ id: 'a', x: 0, z: 0, u: [] }] });
+    await pause(200);
+    ok(!a.c.got.pack_state && !c.c.got.pack_state, 'nobody hears a pack from a screen that does not run it, and a member 150 m away hears none');
+
+    // Hits: b's go to the owner alone, with who hit; a flood is cut at 40 a second; the owner's own hit is not relayed.
+    b.c.send({ t: 'pack_hit', pack: 'a', u: 0, dmg: 42 });
+    const hit = await a.c.next('pack_hit');
+    ok(hit.pack === 'a' && hit.u === 0 && hit.dmg === 42 && hit.by === b.r.you, 'a hit on a unit goes to the pack\'s owner, with the hitter\'s id');
+    a.c.send({ t: 'pack_hit', pack: 'a', u: 0, dmg: 10 });
+    clock += 1100;
+    const before = a.c.got.pack_hit ?? 0;
+    for (let i = 0; i < 60; i++) b.c.send({ t: 'pack_hit', pack: 'a', u: 1, dmg: 9999 });
+    await pause(300);
+    ok((a.c.got.pack_hit ?? 0) - before === 40, `a flood of 60 hits in one second: 40 relayed (${(a.c.got.pack_hit ?? 0) - before}), and the owner's own hit is not`);
+    const big = await a.c.next('pack_hit');
+    ok(big.dmg === 600, 'a hit past the most one hit can be is cut to it (600)');
+
+    // The owner's blow on b goes to b alone; a blow said by b for the pack is dropped.
+    a.c.send({ t: 'pack_hurt', pack: 'a', to: b.r.you, share: 0.08, x: A.x, z: A.z, kind: 'Docker', net: { kind: 'root', s: 9 } });
+    const hurt = await b.c.next('pack_hurt');
+    ok(hurt.share === 0.08 && hurt.by === a.r.you && hurt.net.kind === 'root' && hurt.net.s === 3 && hurt.kind === 'Docker', 'the owner\'s blow on another hero goes to that hero (its hold cut to 3 s)');
+    b.c.send({ t: 'pack_hurt', pack: 'a', to: a.r.you, share: 0.5, x: 0, z: 0 });
+    await pause(200);
+    ok(!a.c.got.pack_hurt && !c.c.got.pack_hurt, 'a blow said by a screen that does not run the pack reaches nobody');
+
+    // b walks off: the pack stays set for two.
+    b.c.send({ t: 'world_move', x: A.x - 35, z: A.z, yaw: 0, walk: true, hp: 1 });
+    clock += 11000;
+    a.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [[A.x, A.z, 0, 50, 80, 0, -1, 0, 0]] }] });
+    await pause(150);
+    ok((a.c.got.pack_scale ?? 0) === 1, 'the fight is never counted down: two left, it stays set for two');
+
+    // The owner leaves mid-fight: the pack goes to b, 35 m from it; when nobody is near, to nobody.
+    a.c.close();
+    const moved = await b.c.next('pack_owner');
+    ok(moved.pack === 'a' && moved.owner === b.r.you && moved.n === 2, 'the owner leaves: its pack goes to the member near it, still set for two');
+    const d = await walker('pez', -63, 67);
+    d.c.send({ t: 'pack_claim', pack: 'd', x: -63.8, z: 67.9 });
+    await d.c.next('pack_owner');
+    clock += 5000;
+    // b keeps reporting its pack; d has said nothing for 5 s.
+    b.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [] }] });
+    await pause(150);
+    c.c.forget('pack_owner');
+    c.c.send({ t: 'world_move', x: -60, z: 61, yaw: 0, walk: false, hp: 1 });
+    const quiet = await c.c.next('pack_owner');
+    ok(quiet.pack === 'd' && quiet.owner === c.r.you, 'an owner that sent nothing for 4 s is replaced by the member near the pack');
+
+    // Cleared: the others hear it, a newcomer is told; it comes back after 3 minutes when nobody is within 30 m of its home.
+    b.c.send({ t: 'pack_clear', pack: 'a' });
+    ok((await c.c.next('pack_cleared')).pack === 'a', 'the owner clears its pack: the shard hears pack_cleared');
+    const e = await walker('pug', 0, 0);
+    ok(e.r.packs.some((/** @type {any} */ p) => p.id === 'a' && p.cleared && p.owner === 0), 'a newcomer is told the pack is cleared');
+    e.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    ok((await e.c.next('pack_cleared')).pack === 'a', 'waking a cleared pack: told it is cleared');
+    clock += 170000;
+    b.c.send({ t: 'world_move', x: A.x + 40, z: A.z, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!e.c.got.pack_respawn, 'not before 3 minutes');
+    clock += 11000;
+    b.c.send({ t: 'world_move', x: A.x + 10, z: A.z, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!e.c.got.pack_respawn, 'not while someone stands within 30 m of its home');
+    b.c.send({ t: 'world_move', x: A.x + 45, z: A.z, yaw: 0, walk: false, hp: 1 });
+    ok((await e.c.next('pack_respawn')).pack === 'a', 'after 3 minutes with nobody near: the pack comes back (pack_respawn)');
+    for (const x of [b, c, d, e]) x.c.close();
+
+    // Alone, an owner quiet for a while (a tab put away) keeps its pack: nobody near could take it.
+    const g = await walker('pal', -63, 67);
+    g.c.send({ t: 'pack_claim', pack: 'd', x: -63.8, z: 67.9 });
+    const gOwn = await g.c.next('pack_owner');
+    clock += 6000;
+    g.c.send({ t: 'world_move', x: -63, z: 66, yaw: 0, walk: true, hp: 1 });
+    await pause(200);
+    ok(gOwn.owner === g.r.you && (g.c.got.pack_owner ?? 0) === 1, 'alone, an owner quiet for 6 s keeps its pack (nobody near to take it)');
+    g.c.close();
+    await pause(100);
+
+    // Alone on the floor, a cleared pack never comes back.
+    const f = await walker('pip', 80, 29);
+    const ff = f.r.shard === '2.1' ? null : f;
+    f.c.send({ t: 'world_join', floor: 7, hero: 'Kaia', x: 0, z: 0, yaw: 0 });
+    await f.c.next('world_roster');
+    f.c.send({ t: 'pack_claim', pack: 'a', x: 0, z: 0 });
+    await f.c.next('pack_owner');
+    f.c.send({ t: 'pack_clear', pack: 'a' });
+    clock += 200000;
+    f.c.send({ t: 'world_move', x: 200, z: 200, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!f.c.got.pack_respawn && ff === null, 'alone in a shard, a cleared pack stays cleared (respawns are for a shared floor)');
+    f.c.close();
+  } catch (err) {
+    ok(false, String(err instanceof Error ? err.stack : err));
+  }
+  server.close();
+  return lines;
+}
+
+/**
  * The leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans"), on servers of their own beside the rest:
  * a duel that counts moves both ratings and one too short moves none, the boards list, the Climb's report, clans (create, join by
  * code, a wrong code, a player in another clan, asking and the leader's yes), the chat (members only, the rate limit, the filter, a
@@ -812,7 +966,7 @@ async function socialCases() {
 // The shop's cases, the world's and the social ones run beside the rest, on their own servers.
 const only = onlyShop || onlyWorld || onlySocial;
 const shopRun = target || (only && !onlyShop) ? null : shopCases();
-const worldRun = target || (only && !onlyWorld) ? null : worldCases();
+const worldRun = target || (only && !onlyWorld) ? null : Promise.all([worldCases(), packCases()]).then((l) => l.flat());
 const socialRun = target || (only && !onlySocial) ? null : socialCases();
 
 if (!only) try {

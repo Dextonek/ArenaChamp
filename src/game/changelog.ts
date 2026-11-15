@@ -48,6 +48,11 @@ export const CHANGELOG: Release[] = [
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },
       {
+        tag: 'Online',
+        title: 'Fight the Climb’s packs together',
+        text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',
+      },
+      {
         tag: 'Tower',
         title: 'The Climb’s people are their own',
         text: 'The keepers, quest givers and traders on the Climb are no longer heroes standing in: each chapter has five people of its own, from the Bell-Warden of the Sea to the Herald of the War, and the traders take turns floor by floor. Rivals and gatekeepers are still heroes.',

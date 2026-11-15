@@ -54,3 +54,27 @@ drops every connection. Two-tab tests with the local test accounts (fetched by t
   and `world_joined` / `world_left` already tell every screen who is there and in what order they came (the first to come, or the
   oldest member, can own a pack, handed on at `world_left` as the Raid's brain is); `world_cast` is where a hit on a pack would ride
   to its owner; `WorldOthers` has each player's figure, place and caster figure for a pack's AI to see as targets.
+- **Stage 2, shared packs: built (2026-11-14, branch `t3/climb-shared-packs`), not deployed (PROTOCOL 18).** One screen runs each pack
+  (the first to wake it; handed to the oldest member near it when it leaves or goes quiet for 4 s), sends its units, health and red
+  zones ten times a second, and its blows on other heroes to their screens; the others draw copies through the same `Pack.spawn` and
+  send their hits to it. A kill counts for whoever hit the unit in its last 10 s; a pack counts for a player's quests only then. The
+  hub counts the players in each fight and sets the pack for them: health x (1 + 0.6 (n - 1)), blows x (1 + 0.15 (n - 1)), only ever up.
+  A cleared pack comes back after 3 minutes when nobody is within 30 m of it (only with two or more on the floor). How it works and
+  the messages: docs/architecture/multiplayer.md, "The Climb's open world, stage 2". The two-tab test: docs/tower/openworld/stage2/.
+  - **The numbers: kept as the design gave them (0.6 and 0.15).** Measured on floor 2 with the game's autopilot on two signed-in tabs
+    (not the route bot: it has no link and always plays alone; a route bot that plays a floor in pairs through the hub is not built),
+    the packs a, b and f, two tries each: Lyra alone took 31 and 32 s for the three, Kaia alone 28 and 28 s, the two together 26 and
+    22 s. Health lost over the three: Lyra alone 0.15 and 0.35 of hers, Kaia alone 0.65 and 0.27; together Kaia (in front) 0.62 and
+    0.53, Lyra 0.10 and 0. So a pair clears about a fifth faster than one hero, and the two together lose about what one loses alone,
+    most of it the one in front. Playing together is a little easier for each, not a walk-over; one try a pack is noisy, so this is the
+    direction, not a fine tuning.
+  - **The trust:** the owner is trusted with its pack (acceptable for co-op, written down in multiplayer.md).
+- **What stage 3 needs from this.** The gatekeepers and rulers are set pieces behind doors (`doors.ts`, `pieces/*`): today a door
+  takes the hero out of the zone and out of the shard (`WorldGame.startPiece` calls `presence.leave()`), so a shared fight there needs:
+  (1) a piece that keeps the shard: who stands in the door's ring when it starts is in the fight, the others stay in the zone and see
+  the door shut; (2) the boss run as the Raid runs one (one brain screen, `NetLink`, revives), not as a pack: its moves are boss casts,
+  not summon units, so `Pack` and `share.ts` do not carry it; what carries over is the hub's side: the fight counted (`packFight`,
+  `WORLD_PACKS.fightR`/`hitS`), never counted down, hand-over to the oldest near (`packHandOn`), the quiet owner (`quietMs`), a per-floor
+  table of what may be fought (`server/climb-packs.mjs` grows a list of doors), and `packScale` with the gatekeepers' own health factor
+  (0.75 a player, this design); (3) the result of the piece for each player in it (a won ruler counts for all who were in, as a kill
+  does), and what a player who was not in sees when the door opens again (the ruler down for a while, as a cleared pack).

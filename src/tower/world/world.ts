@@ -16,6 +16,9 @@ import { People } from './people';
 import { prewarmFoes } from './prewarm';
 import { Quests } from './quests';
 import { Scenery } from './scenery';
+import { PackShare } from './share';
+import type { WorldOthers } from './others';
+import type { WorldPresence } from '../../net/world';
 import type { WorldRun } from './state';
 
 /**
@@ -46,6 +49,8 @@ export interface Zone {
   def: BossDef;
   link: TowerLink;
   packs: Map<string, Pack>;
+  /** The packs shared with the floor's shard (the open world, stage 2), or null (the tools; alone as always). */
+  share: PackShare | null;
   quests: Quests | null;
   people: People | null;
   scenery: Scenery | null;
@@ -72,7 +77,10 @@ export function wakeSpot(def: FloorDef, run: WorldRun): Spot {
   return w ? { x: w.at.x + 1.6, z: w.at.z } : def.start;
 }
 
-export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: WorldHud, hooks: ZoneHooks, o: { mode: 'play' | 'run'; start?: Spot } = { mode: 'play' }): Zone {
+/** The open world's share of a zone: the link to the floor's shard (null: none, only made-up others) and who draws the others. */
+export interface ZoneShare { link: WorldPresence | null; others: WorldOthers }
+
+export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: WorldHud, hooks: ZoneHooks, o: { mode: 'play' | 'run'; start?: Spot; share?: ZoneShare } = { mode: 'play' }): Zone {
   const arena = api.arena;
   const log: Zone['log'] = [];
   const kit = api.kits.find((k) => k.name === run.hero);
@@ -100,9 +108,18 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
       if (pack.def.named && pack.state === 'cleared') ctx?.say(`${pack.def.named.name} falls`, '#ffd27a', at);
       hooks.save();
     },
+    // The last of a pack fell on any screen: it counts in the run when this hero had a kill of it that counted (the open world).
+    cleared: (pack) => {
+      if (!pack.tookPart || pack.hunter || run.packsCleared.includes(pack.id)) return;
+      run.packsCleared.push(pack.id);
+      hooks.save();
+    },
     log: say,
   };
+  const share = o.share ? new PackShare(api, o.share.link, o.share.others, floor, (def) => new Pack(def, penv)) : null;
+  penv.link = share;
   for (const p of floor.packs) packs.set(p.id, new Pack(p, penv, run.packsCleared.includes(p.id)));
+  if (share) for (const p of packs.values()) share.add(p);
   const total = [...packs.values()].reduce((n, p) => n + p.total, 0);
 
   let lie = -1;
@@ -127,7 +144,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
 
   const speeds = new Map<string, number>();
   const zoneRef: Zone = {
-    def: undefined as unknown as BossDef, link: undefined as unknown as TowerLink, packs, quests: null, people: null, scenery: null, law: null, ctx: null, log,
+    def: undefined as unknown as BossDef, link: undefined as unknown as TowerLink, packs, share, quests: null, people: null, scenery: null, law: null, ctx: null, log,
     get falls() { return zone.falls; },
     begin: () => zoneRef.link.on.cast({ id: WORLD_CAST, move: 'floor', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: 0 }),
     respawn: () => wakeSpot(floor, run),
@@ -238,6 +255,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           if (!run.result) run.clock += dt;
           const down = api.duel.heroHp <= 0;
           for (const k of packs.values()) k.update(dt, hero);
+          share?.update(dt, hero);
           law!.update(dt);
           quests.update(dt);
           // A door walked into ends this zone from inside the frame: nothing after it may touch what was put away.
@@ -284,6 +302,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
         dispose() {
           gone = true;
           for (const k of packs.values()) k.dispose();
+          share?.dispose();
           warm.dispose();
           quests.dispose();
           people.dispose();

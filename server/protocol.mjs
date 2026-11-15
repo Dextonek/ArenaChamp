@@ -6,7 +6,8 @@
 // deploy shows open tabs a Reload bar on their own; raise this only for a rule or message change.
 // 16 (2026-11-14): the Climb's open world, stage 1 (`world_join`, `world_move`, `world_cast`, `world_leave`).
 // 17 (2026-11-14): leaderboards (`leaderboards`, `climb_report`, the duel rating) and clans with a clan chat (`clan_*`).
-export const PROTOCOL = 17;
+// 18 (2026-11-14): the Climb's open world, stage 2: shared packs (`pack_*`, `world_roster.packs`).
+export const PROTOCOL = 18;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -318,6 +319,31 @@ export const TOWER_FLOOR_MAX = 500;
  * slot does). `labelMax`: the longest spell name. `sendHz`: how often a page sends its hero's place (only when it changed).
  */
 export const WORLD = { shardMax: 8, movesPerS: 12, reach: 500, casts: 8, castsMs: 2000, labelMax: 48, sendHz: 10 };
+
+/**
+ * The Climb's open world, stage 2: shared packs (pipeline/designs/climb-open-world.md; docs/architecture/multiplayer.md). One screen
+ * in a shard runs a pack (its owner), the others draw it and send it their hits.
+ * - `fightR` m, `hitS` s: a player is in a pack's fight while it stands this close to it, or hit it this recently. A kill counts for
+ *   every player who hit the unit within `hitS` s.
+ * - `hp`, `dmg`: what each player past the first adds to a pack's health and to its blows (`packScale`).
+ * - `respawnS`: how long a cleared pack stays down; it comes back only when nobody stands within `clearR` m of its home, and only
+ *   with two or more on the floor's shard (alone, the Climb is as it always was).
+ * - `handR`: an owner who leaves hands the pack to the oldest member this close to it; with none, nobody runs it and each screen
+ *   has it to itself again. `quietMs`: an owner that sent nothing for this long (a tab put away) is handed on the same way.
+ * - `seeR`: a pack's places go only to the members this close to it.
+ * - The most one screen may send: `statesPerS` batches of its packs, `hitsPerS` hits of at most `hitMax` each, `hurtsPerS` blows on
+ *   others. A batch carries at most `units` units and `zones` red zones a pack.
+ */
+export const WORLD_PACKS = {
+  fightR: 20, hitS: 10, hp: 0.6, dmg: 0.15, respawnS: 180, clearR: 30, handR: 40, quietMs: 4000, seeR: 60,
+  stateHz: 10, statesPerS: 12, hitsPerS: 40, hitMax: 600, hurtsPerS: 30, units: 12, zones: 8,
+};
+
+/** A pack fought by `n` players: its health and its blows, times. @param {number} n */
+export const packScale = (n) => {
+  const k = Math.max(1, Math.floor(n)) - 1;
+  return { hp: 1 + WORLD_PACKS.hp * k, dmg: 1 + WORLD_PACKS.dmg * k };
+};
 
 // --- leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans") ------------------------------
 

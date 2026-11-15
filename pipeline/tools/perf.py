@@ -77,6 +77,10 @@ MORE = {
     # The Climb's open world (pipeline/designs/climb-open-world.md): floor 2 with seven made-up others walking about the hero and
     # casting (src/tower/world/others.ts `fake`), against gen-2 with none.
     "gen-2-others": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 7},
+    # Stage 2, shared packs: three or seven made-up others in the hero's fight, each with three made-up packs (copies, as another
+    # screen's packs are drawn), and the hero's own packs fighting them all (src/tower/world/share.ts `fake`).
+    "gen-2-fight-3": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 3, "packs": 3},
+    "gen-2-fight-7": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 7, "packs": 3},
 }
 ALL = {**SCENES, **MORE}
 
