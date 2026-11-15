@@ -1,7 +1,7 @@
 ---
 title: The revamp plan
 tags: [lore, codex, heroes, revamp, plan]
-status: a plan for the user's yes; no model is changed by it
+status: the six revamps are built (2026-11-15; not pushed, not live); the touches are still a plan
 updated: 2026-11-15
 ---
 
@@ -9,8 +9,8 @@ updated: 2026-11-15
 
 The user, 2026-11-14: "I think we need revamps of some heroes now, they seem all the same, like human and stuff ... and let's
 match heroes to lore". This page gives every hero its people ([the peoples](peoples/README.md)) and says whether its figure
-should change to show it. **Nothing here is built.** The plan goes to the user for a yes; the models are made later, one at a
-time in Blender, starting with one sample. Back to the [codex](README.md).
+should change to show it. The user said yes to it on 2026-11-15 ("lets rework those that need to match the lore"): **the six
+revamps are built** (before and after: `docs/heroes/revamp/index.html`); the sixteen touches are not. Back to the [codex](README.md).
 
 Three answers:
 - **No:** the figure already reads as its people.
@@ -41,12 +41,12 @@ the four groups; the touches give every human people its own skin and marks, so 
 
 | # | Hero | People | Answer | What changes, in a line |
 |---|---|---|---|---|
-| 1 | Opaline | Gloaming folk | **revamp** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
-| 2 | Mr. Ledger | the Long Dead | **revamp** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
-| 3 | Kaia | Coast folk | **revamp** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
-| 4 | Brannoc | Kilnborn | **revamp** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
-| 5 | Hank | Wood folk | **revamp** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
-| 6 | Grandma Ironknit | Briarkin | **revamp** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
+| 1 | Opaline | Gloaming folk | **revamp, built** | Crystal grown into her skin from the Deep's light; dark hair; amethyst and cream, not Silvane's lavender |
+| 2 | Mr. Ledger | the Long Dead | **revamp, built** | Vellum skin on bone, bony hands, ember eyes; the robes, book and quill kept |
+| 3 | Kaia | Coast folk | **revamp, built** | A sea-tanned storm caller in an oilskin storm coat, not a pale woman in a gown; tide lines, sea-green hair |
+| 4 | Brannoc | Kilnborn | **revamp, built** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
+| 5 | Hank | Wood folk | **revamp, built** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
+| 6 | Grandma Ironknit | Briarkin | **revamp, built** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
 | 7 | Wick | Northerners | touch | Deep umber skin, white braids under the hood, star lines on the jaw |
 | 8 | Silvane | Gloaming folk | touch | Eyeshine (silver), skin cooled to blue-grey, dark lips |
 | 9 | Bram | Kilnborn | touch | Ash-grey skin, pale amber eyes |
@@ -99,6 +99,9 @@ before the next.
 
 ### 1. Opaline, the Lightbreaker (Gloaming folk)
 
+**Built 2026-11-15** (`blender/heroes/real/prism.py`; before and after: `docs/heroes/revamp/index.html`). As built: her
+people's violet eyeshine added (the one mark every Gloaming hero carries); the crystal glows faintly, the skin does not.
+
 - **Figure:** still slim and calm, still the floating ring of prisms. The change: where she went down the Prism Stair, the Deep's
   light grew into her. Facets of clear amethyst crystal along the cheekbones, the collarbones and the backs of the hands,
   built as small pieces on the body; her skin with a faint inner light where the crystal meets it. Her hair goes from silver to
@@ -111,6 +114,9 @@ before the next.
   [page](heroes/opaline.md) has it.
 
 ### 2. Mr. Ledger, the Tithe-Keeper (the Long Dead)
+
+**Built 2026-11-15** (`blender/heroes/real/ledger.py`). As built: the skin painted and the cheeks moved in on the pack's own
+face, small bone knuckles built on the hands; his brows are gone.
 
 - **Figure:** the same tall black-and-oxblood robes, the great red book chained to his wrist, the long quill, the gold coin
   chains. The change is under them. His skin goes to old vellum, grey-gold and drawn tight on the bone; the cheekbones, the brow
@@ -125,6 +131,10 @@ before the next.
 
 ### 3. Kaia, the Tempest Caller (Coast folk)
 
+**Built 2026-11-15** (`blender/heroes/real/storm.py`). As built: her figure was already a coat with legs, so the change is
+the skin, the bared forearms with the tide lines painted on, the hair (the hood and long cloak are gone), the earrings, the high collar
+and short cape, the sea boots. The storm clouds on her shoulders are kept.
+
 - **Figure:** a storm caller of the Spires, not a lady of a court. Sea-tanned skin; her silver hair kept, salt-bleached, with
   sea-green streaks, bound up; tide lines round both forearms (she has lived through nine great floods); sea-glass in the ears.
   The long blue gown becomes a knee-length rain-blue oilskin storm coat with a high collar and a short cape, over dark leggings
@@ -135,6 +145,10 @@ before the next.
 
 ### 4. Brannoc, the Ashen Smith (Kilnborn)
 
+**Built 2026-11-15** (`blender/heroes/real/forge.py`). As built: his breastplate covered the chest, so the plate and shirt open
+in a V above the grate and the seams climb from the forge to the throat; the bracers cover only the wrist half, so the darker forearms
+show. His beard, red on the old model, is ash as the lore always said.
+
 - **Figure:** the same huge smith in the scorched leather apron with the hammer. His skin goes ash-grey, darker at the forearms;
   **ember seams** cross his chest, throat and arms, glowing forge orange from the fire in his chest (the trait's Heat could later
   brighten them; not part of this plan). His ash beard stays. His eyes are pale amber.
@@ -143,6 +157,10 @@ before the next.
   Kilnborn body, taken in on purpose. His [page](heroes/brannoc.md) has it.
 
 ### 5. Hank, the Moss Hewer (Wood folk)
+
+**Built 2026-11-15** (`blender/heroes/real/timber.py`). As built: the antlers raise the model's top by 0.2 m (about 0.25 in
+the game), above his hit height (`HERO_BODIES` unchanged). His freckles are not drawn: the skin texture is too coarse on the face
+for dots, and his beard covers most of it.
 
 - **Figure:** the same huge woodcutter, braided beard, moss-green tunic, fur mantle and one-bit axe held low. New: **antlers**,
   broad and branching, sawn flat at every tip, because he cuts them back each spring and plants the tips (a felled tree must be
@@ -153,6 +171,9 @@ before the next.
   year since. Fenna says it is the only thing he plants willingly. His [page](heroes/hank.md) has it.
 
 ### 6. Grandma Ironknit, the Weaver (Briarkin)
+
+**Built 2026-11-15** (`blender/heroes/real/yarn.py`). As built: the ears are made the way the twins' are, longer, out through
+the hood's rim; the fingers are longer from the knuckles (skin and bones, so the clips still bend them); the dapple is faint.
 
 - **Figure:** still tiny, old and kind, in the dark wine shawl with the rose bands, the spindle with the three glowing spools,
   the two long needles and Mr. Biscuit. New: long pointed ears through the hood's rolled edge; eyes of one colour, silver from lid
@@ -222,5 +243,4 @@ the Sea's five to sea-tan and tide lines. Nothing else is needed.
 
 No kit, no spell, no number, no trait. No hero's title. No colour that a spell uses. The rule that a staff goes in the left hand
 and a weapon in the right. The pack's body and clips. The game's people labels (on the Play card and the Lore panel) are shown
-from the lore as soon as the lore ships, before any model changes; six of them (the revamps) describe a figure the player will
-not see until the revamp is made.
+from the lore as soon as the lore ships; the six revamps' figures ship with them.

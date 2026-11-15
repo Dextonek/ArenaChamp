@@ -40,10 +40,11 @@ In the Ring she ties her lines across the floor, rose threads that bind whoever 
 
 ## People and appearance
 
-A Briarkin of the Spindle court, three hundred years among mortals. Today she reads as a tiny old woman: a dark wine shawl knitted in bands of rose thread with a gold brooch, a dark
-hood with a rolled rose edge round a kind old face with silver hair, calm eyes and a small smile, a spindle with three glowing rose spools, two silver needles, and Mr. Biscuit. In the
-[revamp plan](../revamp.md) she is a revamp: long pointed ears through the hood's edge, silver eyes of one colour from lid to lid, skin with the dapple of light through leaves, fingers
-a little too long, so that she reads as fae and not as another small human.
+A Briarkin of the Spindle court, three hundred years among mortals. Tiny, old and kind, and plainly fae: long pointed ears come out through
+the rolled rose edge of her hood, her eyes are of one colour, silver from lid to lid, her skin has the faint dapple of light through leaves,
+and her fingers are a little too long, which is useful for knitting. A dark wine shawl knitted in bands of rose thread with a gold brooch,
+the hood up round her face and her silver hair, a spindle with three glowing rose spools behind her shoulder, two silver needles as long as
+swords, and Mr. Biscuit. From the Ring's stands she reads as a small hooded figure with ears, not as another short human.
 
 ## Voice
 

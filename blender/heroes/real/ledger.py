@@ -1,4 +1,8 @@
-"""Mr. Ledger, the Tithe-Keeper (controller): a long thin arcane notary. Black robes to the floor with an oxblood front
+"""Mr. Ledger, the Tithe-Keeper (controller), one of the Long Dead (docs/lore/codex/heroes/mr-ledger.md; revamped
+2026-11-15 by docs/lore/codex/revamp.md): he died in the middle of a sum and got up to finish it. Vellum skin, grey-gold
+and drawn tight on the bone: sunken cheeks and temples, deep dark sockets with two embers in them (the cold fire of the
+Long Dead who keep debts), bone pale at the brow, the cheekbones and the jaw; long thin hands with bone at every
+knuckle; thin grey hair slicked back. Over it all, as before, a long thin arcane notary. Black robes to the floor with an oxblood front
 panel edged in gold, a high stiff oxblood collar, wide sleeves with gold cuffs, a gold belt, two swags of gold coins on
 chains across the chest, grey slicked hair. A great red book hangs chained at his left hip, a red wax seal glowing on
 its cover, and a quill staff taller than he is stands in the left hand: a gold nib at the floor, a long feather on top."""
@@ -7,11 +11,84 @@ import math
 from mathutils import Vector
 
 from realkit import PI, Real
+from real.parts_b import FINGERS, big_hands, reshape
 from real.parts_b import bell_sleeves, box, disc, edge_line, flats, legs_under, neck_band, on_front, path, plate, skirt_band, skirt_rings, staff_back
 
 
+def _seg(px, pz, a, b):
+    """Distance from (px, pz) to the segment a-b (in the x-z plane)."""
+    ax, az = a
+    bx, bz = b
+    dx, dz = bx - ax, bz - az
+    t = max(0.0, min(1.0, ((px - ax) * dx + (pz - az) * dz) / max(1e-9, dx * dx + dz * dz)))
+    return math.hypot(px - ax - dx * t, pz - az - dz * t)
+
+
+def _soft(d, r):
+    """1 at the centre, 0 at radius r, smooth."""
+    t = max(0.0, 1.0 - d / r)
+    return t * t * (3 - 2 * t)
+
+
+def long_dead(R):
+    """The face and hands of the Long Dead on the pack's body (call before anything is cut from it)."""
+    R.mat("bone", "#e2d5b6", rough=0.55)
+    eye, half = R.eye_box()
+    ex, ez = half - 0.014, eye.z
+    head = ("Head", "neck_01")
+
+    # the flesh drawn back: hollow cheeks and temples (the skin itself moves in)
+    def gaunt(p, i):
+        if not R.dom[i].startswith(head) or p.y > -0.02:
+            return None
+        x = abs(p.x)
+        k = _soft(math.hypot((x - 0.05) / 1.2, p.z - (ez - 0.048)), 0.03) * 0.008
+        k += _soft(math.hypot(x - 0.078, p.z - (ez + 0.012)), 0.022) * 0.004
+        k -= _soft(_seg(x, p.z, (0.012, ez + 0.022), (0.06, ez + 0.019)), 0.009) * 0.0025   # the brow ridge stands out
+        if abs(k) < 1e-5:
+            return None
+        o = Vector((p.x, p.y - eye.y - 0.06, 0))
+        return p - o.normalized() * k
+    reshape(R, gaunt)
+
+    def on_face(fn):
+        return lambda p, d: fn(abs(p.x), p.z) if d.startswith(head) and p.y < -0.01 else 0.0
+    # deep sockets, dark round the embers
+    R.paint(on_face(lambda x, zz: _soft(math.hypot((x - ex) / 1.25, zz - ez + 0.002), 0.024)), "#2a1d17", 0.9)
+    # shadow under the cheekbones and in the temples
+    R.paint(on_face(lambda x, zz: max(_soft(math.hypot((x - 0.05) / 1.3, zz - (ez - 0.05)), 0.026),
+                                      _soft(math.hypot(x - 0.078, zz - (ez + 0.012)), 0.02))), "#46382c", 0.75)
+    # bone pale through the skin: the brow ridge, the cheekbones, the jaw
+    bone = lambda x, zz: max(_soft(_seg(x, zz, (0.014, ez + 0.023), (0.064, ez + 0.02)), 0.008),
+                             _soft(_seg(x, zz, (0.03, ez - 0.026), (0.082, ez - 0.012)), 0.008),
+                             _soft(_seg(x, zz, (0.078, ez - 0.055), (0.035, ez - 0.103)), 0.007),
+                             _soft(_seg(x, zz, (0.035, ez - 0.103), (0.0, ez - 0.11)), 0.008))
+    R.paint(on_face(bone), "#efe4c8", 0.8)
+
+    # long thin hands, bone at every knuckle
+    big_hands(R, 1.12)
+    knuckles = []
+    for n in "lr":
+        for fng in ("index", "middle", "ring", "pinky"):
+            for j in ("01", "02", "03"):
+                b = f"{fng}_{j}_{n}"
+                if b in R.rig.data.bones:
+                    knuckles.append((R.bone(b), b, j))
+    R.paint(lambda p, d: 0.35 if d.startswith(FINGERS) else 0.0, "#8a7c64", 1.0)
+    R.paint(lambda p, d: max((_soft((p - k).length, 0.011 if j == "01" else 0.008) for k, _, j in knuckles), default=0.0)
+            if d.startswith(FINGERS) else 0.0, "#ece0c4", 0.8)
+    for k, b, j in knuckles:
+        f = R.piece(b)
+        hit, nrm = R.surface(k + Vector((0, 0, 0.1)), Vector((0, 0, -1)))
+        if hit is not None:
+            r = 0.0062 if j == "01" else 0.0045
+            f.ellipsoid("bone", hit + nrm * 0.0015, (r, r * 1.2, r * 0.7), seg=(8, 6))
+    R.eye_look(color="#ff7a3a", emit="#ff5016", strength=0.9, solid=True)
+
+
 def build():
-    R = Real("ledger", sex="m", height=1.12, width=0.84, depth=0.82, head=0.94, skin="#dccfc6")
+    R = Real("ledger", sex="m", height=1.12, width=0.84, depth=0.82, head=0.94, skin="#ab9f88")
+    long_dead(R)
     z = R.z
     R.mat("robe", "#17151b", rough=0.65, double=True)
     R.mat("ox", "#611619", rough=0.55, double=True)
@@ -19,7 +96,16 @@ def build():
     R.mat("red", "#9c231f", rough=0.5)
     R.mat("paper", "#e6d9ae", rough=0.8, double=True)
     R.mat("seal", "#ff7a66", rough=0.35, emit="#d9453a", strength=1.0)
-    R.hair("Hair_SimpleParted", "#8f8f94", rough=0.35)
+    # thin grey hair, slicked flat to the skull; no brows left on the bone
+    hair = R.hair("Hair_SimpleParted", "#8f8f94", rough=0.25, brows=False)
+    R.bald()
+    hc = R.bone("Head") + Vector((0, 0.0, 0.1))
+    mw, inv = hair.matrix_world, hair.matrix_world.inverted()
+    for v in hair.data.vertices:
+        q = mw @ v.co
+        d = q - hc
+        k = 0.9 if d.z > 0 else 0.95
+        v.co = inv @ (hc + Vector((d.x * 0.93, d.y * 0.95, d.z * k)))
 
     R.fitted("Robe", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "robe", offset=0.008)
     cc = R.ring(z["chest"])[0]

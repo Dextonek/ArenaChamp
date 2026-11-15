@@ -446,6 +446,115 @@ class Real:
         cy = sum(p.y for p in pts) / len(pts)
         return self.piece("Head"), Vector((0, cy, hz)), r
 
+    # ---- a people's marks (added 2026-11-15 for the revamps, docs/lore/codex/revamp.md) ---------------------------------
+    def eye_look(self, color=None, emit=None, strength=0.5, solid=False):
+        """The eyes as a people has them: `color` multiplies the pack's eye (or, with `solid`, replaces it: one colour from
+        lid to lid, the Briarkin's); `emit` lets them shine (the Gloaming folk's eyeshine, the Long Dead's cold fire) at
+        `strength`, kept under 1 so the game's bloom leaves them two points of light."""
+        if not self.eyes:
+            return
+        nt = self.eyes.data.materials[0].node_tree
+        bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+        if solid and color:
+            for l in list(bsdf.inputs["Base Color"].links):
+                nt.links.remove(l)
+            bsdf.inputs["Base Color"].default_value = figkit.rgb(color)
+        elif color:
+            src = bsdf.inputs["Base Color"].links[0].from_socket if bsdf.inputs["Base Color"].links else None
+            mix = nt.nodes.new("ShaderNodeMix")
+            mix.data_type = "RGBA"
+            mix.blend_type = "MULTIPLY"
+            mix.inputs["Factor"].default_value = 1.0
+            if src is not None:
+                nt.links.new(src, mix.inputs["A"])
+            mix.inputs["B"].default_value = figkit.rgb(color)
+            nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
+        if emit:
+            bsdf.inputs["Emission Color"].default_value = figkit.rgb(emit)
+            bsdf.inputs["Emission Strength"].default_value = strength
+
+    def eye_box(self):
+        """(centre between the eyes, half the distance between them) at the pack body's own size."""
+        vs = [self.eyes.matrix_world @ v.co for v in self.eyes.data.vertices]
+        c = Vector((0, min(v.y for v in vs), (min(v.z for v in vs) + max(v.z for v in vs)) / 2))
+        return c, (max(v.x for v in vs) - min(v.x for v in vs)) / 2
+
+    def surface(self, p, way):
+        """Where a ray from `p` toward `way` first meets the body's skin: (point, outward normal), or (None, None)."""
+        from mathutils.bvhtree import BVHTree
+        if getattr(self, "_bvh", None) is None:
+            self._bvh = BVHTree.FromPolygons(self.world, [tuple(pl.vertices) for pl in self.body.data.polygons])
+        hit, n, _, _ = self._bvh.ray_cast(Vector(p), Vector(way).normalized())
+        if hit is None:
+            return None, None
+        if n.dot(Vector(way)) > 0:
+            n = -n
+        return hit, n
+
+    def paint(self, weight, color, alpha=1.0):
+        """Paints the skin's own texture: `weight(co, group)` -> 0..1 for each body vertex (its world place at the pack
+        body's size and its leading bone), blended toward `color` (sRGB hex) by weight * alpha, smoothly across each face.
+        Marks of a people that live in the skin: sunken sockets, bone at the brow, tide lines, a dapple."""
+        import numpy as np
+        body = self.body
+        nt = body.data.materials[0].node_tree
+        img = next(n.image for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and not any(k in n.image.name for k in ("Normal", "Roughness")))
+        W, H = img.size
+        px = np.empty(W * H * 4, dtype=np.float32)
+        img.pixels.foreach_get(px)
+        px = px.reshape(H, W, 4)
+        h = color.lstrip("#")
+        col = np.array([int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)], dtype=np.float32)
+        wv = [max(0.0, min(1.0, weight(p, d))) for p, d in zip(self.world, self.dom)]
+        uvs = body.data.uv_layers.active.data
+        acc = np.zeros((H, W), dtype=np.float32)
+        for poly in body.data.polygons:
+            ids = list(poly.vertices)
+            if max(wv[i] for i in ids) < 1e-3:
+                continue
+            loops = list(poly.loop_indices)
+            for k in range(1, len(ids) - 1):
+                tri = (0, k, k + 1)
+                P = np.array([(uvs[loops[t]].uv[0] * W, uvs[loops[t]].uv[1] * H) for t in tri], dtype=np.float64)
+                ws = np.array([wv[ids[t]] for t in tri])
+                x0, y0 = int(max(0, np.floor(P[:, 0].min()))), int(max(0, np.floor(P[:, 1].min())))
+                x1, y1 = int(min(W - 1, np.ceil(P[:, 0].max()))), int(min(H - 1, np.ceil(P[:, 1].max())))
+                if x1 < x0 or y1 < y0:
+                    continue
+                gx, gy = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+                (ax, ay), (bx, by), (cx, cy) = P
+                den = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+                if abs(den) < 1e-9:
+                    continue
+                l1 = ((by - cy) * (gx - cx) + (cx - bx) * (gy - cy)) / den
+                l2 = ((cy - ay) * (gx - cx) + (ax - cx) * (gy - cy)) / den
+                l3 = 1 - l1 - l2
+                e = -0.6 / max(1.0, abs(den)) ** 0.5   # a little past the edges, so no seam is left unpainted
+                inside = (l1 >= e) & (l2 >= e) & (l3 >= e)
+                val = np.clip(l1 * ws[0] + l2 * ws[1] + l3 * ws[2], 0, 1)
+                sub = acc[y0:y1 + 1, x0:x1 + 1]
+                np.maximum(sub, np.where(inside, val, 0), out=sub)
+        a = (acc * alpha)[..., None]
+        px[..., :3] = px[..., :3] * (1 - a) + col * a
+        img.pixels.foreach_set(px.reshape(-1))
+        img.update()
+
+    def trim_hair(self, ob, below=None, keep=None):
+        """Cuts a hair style of the pack: drops its faces below height `below` (a bob cut at the jaw), or those whose
+        every vertex fails `keep(co)`."""
+        bm = bmesh.new()
+        bm.from_mesh(ob.data)
+        mw = ob.matrix_world
+
+        def gone(v):
+            co = mw @ v.co
+            if below is not None and co.z < below:
+                return True
+            return keep is not None and not keep(co)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(gone(v) for v in f.verts)], context="FACES")
+        bm.to_mesh(ob.data)
+        bm.free()
+
     # ---- out ----------------------------------------------------------------------------------------------------------
     def _bind(self, ob, how):
         rig, body = self.rig, self.body

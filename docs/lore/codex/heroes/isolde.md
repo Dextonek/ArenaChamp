@@ -42,7 +42,7 @@ quiet Northern way, which means they say little and are always within reach. Iso
 
 A Northerner of the lake-born families, Noon-touched: twenty-eight at the Fall, she looks forty-eight, frost-pale with a blue undertone and white hair, as her lineage is and as the
 Warden's cold has made her more so. White and frost-blue robes in a bell to the floor, a frost fern pattern at the hem, a crown of ice spikes fanned behind her head, and the long ice
-spear in the left hand. In the [revamp plan](../revamp.md) her figure is unchanged: hers is the lake-born look, and the touch on Kaia sets the two apart.
+spear in the left hand. In the [revamp plan](../revamp.md) her figure is unchanged: hers is the lake-born look, and Kaia's revamp (a sea-tanned storm caller in an oilskin coat) sets the two apart.
 
 ## Voice
 

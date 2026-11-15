@@ -247,9 +247,9 @@ export const LORE: Record<string, LoreHero> = {
   "faction": "truce",
   "place": "tower",
   "from": "The Tally-house under the Ring's stands",
-  "age": "Nobody knows. He looks about 70, and has looked it for a hundred years.",
+  "age": "Dead some 160 years. He died at his desk sixty years before the Fall, in the middle of a sum, and got up to finish it.",
   "line": "\"No, no. Don't pay now. I insist.\"",
-  "legend": "Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Truce was sworn: who owes what, to whom, and at what interest, in a great red book chained to his wrist so that nobody can borrow it. He is older than he looks, and he looks very old. The realms fear him more than any champion, because a debt in his book does not fade; it waits. His spells work the same way: nothing hurts now, everything comes due. He steps into the Ring when a debtor will not pay any other way, and he has never once lost the paperwork.",
+  "legend": "Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Truce was sworn: who owes what, to whom, and at what interest, in a great red book chained to his wrist so that nobody can borrow it. He is one of the Long Dead: vellum skin tight on the bone, and two embers where his eyes were. The realms fear him more than any champion, because a debt in his book does not fade; it waits. His spells work the same way: nothing hurts now, everything comes due. He steps into the Ring when a debtor will not pay any other way, and he has never once lost the paperwork.",
   "ties": [
    {
     "other": "Vesper",
@@ -457,7 +457,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A glass-cutter's house at the top of the Prism Stair",
   "age": "Looks 28. She was 8 when the sun fell (Noon-touched); her sister Silvane was 12.",
   "line": "\"White is only every colour, waiting.\"",
-  "legend": "When the sun fell, its light did not all go out. Much of it ran down into the Deep and hid in the crystals there, which is why the Deep's halls glow. Opaline goes down the Prism Stair and breaks that light out again, cutting it into its colours to find the one the sun has lost. She is calm, pale and patient, with a ring of prisms circling her head and a voice that never rises. The Noonsworn want every drop of the old light for the sun; the miners want it for their lamps, and Mabel has told her so with her claws. Her sister Silvane keeps light the other way, in a mirror, and they no longer speak.",
+  "legend": "When the sun fell, its light did not all go out. Much of it ran down into the Deep and hid in the crystals there, which is why the Deep's halls glow. Opaline goes down the Prism Stair and breaks that light out again, cutting it into its colours to find the one the sun has lost. She is calm and patient, with a voice that never rises, a ring of prisms circling her head, and amethyst grown out of her cheekbones, shoulders and hands where the Deep's light took root in her. The Noonsworn want every drop of the old light for the sun; the miners want it for their lamps, and Mabel has told her so with her claws. Her sister Silvane keeps light the other way, in a mirror, and they no longer speak.",
   "ties": [
    {
     "other": "Silvane",
@@ -632,7 +632,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A woodcutter's hut at the Walking Wood's edge",
   "age": "Looks 42. He was 22 and already felling trees when the sun fell (Noon-touched).",
   "line": "\"Timber. Mind your heads.\"",
-  "legend": "When the Walking Wood walks into a village, someone has to ask it to leave, and Hank asks with an axe. He is the Moot's woodcutter: huge and quiet, with a braided beard, a moss-green tunic, a fur mantle and a great axe whose edges glow green. He grows trees too, fast, because a felled tree must be paid back with a planted one. Fenna calls him a butcher and he calls her a gardener; both are right, and they have shared a fire every winter for twenty years. He hunts with Arden and drinks with Bo. He fights in the Ring for the villages at the Wood's edge, which have no champion of their own.",
+  "legend": "When the Walking Wood walks into a village, someone has to ask it to leave, and Hank asks with an axe. He is the Moot's woodcutter: huge and quiet, with a braided beard, a moss-green tunic, a fur mantle and a great axe whose edges glow green. He grows trees too, fast, because a felled tree must be paid back with a planted one, and he wears the Moot's antlers sawn short: he plants the tips. Fenna calls him a butcher and he calls her a gardener; both are right, and they have shared a fire every winter for twenty years. He hunts with Arden and drinks with Bo. He fights in the Ring for the villages at the Wood's edge, which have no champion of their own.",
   "ties": [
    {
     "other": "Fenna",
@@ -755,7 +755,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A storm-callers' tower on the Spires",
   "age": "28. Born 72 years after the Fall, to a sky that had no master.",
   "line": "\"Stand by the rod. It's safer. For me.\"",
-  "legend": "Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, in rain-blue, her silver hair bound up, with a tall staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now come when they like, and she bends them to the Windward's ships. Barry Cloudsley forecasts the weather; Kaia changes it, mostly to prove him wrong, and they have argued in public for twelve years. Saga's northern light and her lightning have never shared a sky politely. She fights in the Ring because a storm needs somewhere to land.",
+  "legend": "Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, sea-tanned, in a rain-blue oilskin, her silver hair bound up, with a tall staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now come when they like, and she bends them to the Windward's ships. Barry Cloudsley forecasts the weather; Kaia changes it, mostly to prove him wrong, and they have argued in public for twelve years. Saga's northern light and her lightning have never shared a sky politely. She fights in the Ring because a storm needs somewhere to land.",
   "ties": [
    {
     "other": "Barry Cloudsley",
@@ -885,7 +885,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The great forge in the Ember Caldera",
   "age": "Looks 50. He was 30 and already a master smith when the sun fell (Noon-touched).",
   "line": "\"Hotter. Again. Hotter.\"",
-  "legend": "Brannoc keeps the great forge of the Underforge, sunk in the Ember Caldera, where the fire of the fallen sun still rises through the rock. He is huge and ash-bearded, in a scorched leather apron, and a forge glows in his own chest: he has no cooldowns, only heat, and at white heat he burns. He taught Ada everything about metal and nothing about patience. Long ago he followed Isolde north, and she froze his forge solid to send him home; it took him a year to light it again, and he has not followed anyone since. He wants the Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.",
+  "legend": "Brannoc keeps the great forge of the Underforge, sunk in the Ember Caldera, where the fire of the fallen sun still rises through the rock. He is huge, ash-grey and ash-bearded, in a scorched leather apron, and a forge glows in his own chest, its light showing through the cracks in his skin: he has no cooldowns, only heat, and at white heat he burns. He taught Ada everything about metal and nothing about patience. Long ago he followed Isolde north, and she froze his forge solid to send him home; it took him a year to light it again, and he has not followed anyone since. He wants the Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.",
   "ties": [
    {
     "other": "Isolde",
@@ -1091,7 +1091,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "A cottage at the Walking Wood's edge, on the Frostfall road",
   "age": "Looks 70. She was 50 and already spinning when the sun fell (Noon-touched).",
   "line": "\"Sit down, dear. You're coming unravelled.\"",
-  "legend": "The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner in a dark hooded shawl knitted in bands of rose thread, with two needles as long as swords and a grey cat called Mr. Biscuit, and she knits lives into the cloth of the Dial at Frostfall. She raised Pim and Pom when they turned up on her doorstep, taught Thessa to sew, and fifty years ago turned down Mr. Ledger, who wanted to write her into his book; she knitted him a scarf instead, and he still wears it under the collar. In the Ring she ties her lines across the floor and sends the cat.",
+  "legend": "The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner, fae of the Spindle court, with long pointed ears through her hood and silver eyes, in a dark shawl knitted in bands of rose thread, with two needles as long as swords and a grey cat called Mr. Biscuit, and she knits lives into the cloth of the Dial at Frostfall. She raised Pim and Pom when they turned up on her doorstep, taught Thessa to sew, and fifty years ago turned down Mr. Ledger, who wanted to write her into his book; she knitted him a scarf instead, and he still wears it under the collar. In the Ring she ties her lines across the floor and sends the cat.",
   "ties": [
    {
     "other": "Mr. Ledger",

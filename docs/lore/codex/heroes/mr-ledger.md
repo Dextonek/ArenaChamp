@@ -49,9 +49,11 @@ collar, every day, and it is the only warm thing he owns.
 ## People and appearance
 
 One of the Long Dead, the only one who works for the Truce. Tall and thin, in long black robes with an oxblood panel and gold coin
-chains, a tall oxblood collar, the great book at his side with its red wax seal glowing, a long quill. Today he looks like a very old man
-with grey slicked hair and faintly glowing red eyes. In the [revamp plan](../revamp.md) he becomes what he is: skin like old vellum drawn
-tight on the bone, bone showing at the brow, cheek, jaw and knuckles, and two embers for eyes in deep sockets.
+chains, a tall oxblood collar, the great book at his side with its red wax seal glowing, a long quill. Under them he is what he is: skin
+like old vellum, grey-gold and drawn tight on the bone, the cheeks and temples sunken, bone pale through it at the brow, the cheekbones
+and the jaw; deep dark sockets with an ember in each, the cold fire of the Long Dead who keep debts; long thin hands with bone at every
+knuckle; thin grey hair slicked flat to the skull, and no brows left. Wick keeps a living old man's face; the Truce's two old officers
+read as the living and the dead.
 
 ## Voice
 

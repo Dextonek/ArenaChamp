@@ -1,15 +1,77 @@
-"""Grandma Ironknit, a tiny old fate-spinner, unhurried. A long dark aubergine robe with a gold hem and a rose-thread
+"""Grandma Ironknit, the Weaver, a Briarkin of the Spindle court who chose to live among mortals at the Wood's edge
+(docs/lore/codex/heroes/grandma-ironknit.md; revamped 2026-11-15 by docs/lore/codex/revamp.md): long pointed ears out
+through the hood's rolled edge, eyes of one colour, silver from lid to lid, skin with the faint dapple of light through
+leaves, fingers a little too long. Otherwise as before: a tiny old fate-spinner, unhurried. A long dark aubergine robe with a gold hem and a rose-thread
 belt, a dark wine hooded shawl with a gold brooch, the hood up round her face with a rolled rose edge and its point down
 her back, silver hair. Two silver knitting needles as long as swords, gold at the butts, and a spindle behind her left
 shoulder with three glowing rose yarn spools in gold flanges."""
+import math
+
+import bpy
 from mathutils import Vector
 
 from realkit import PI, Real
+from real.parts_b import reshape
+from real.parts_c import head
+
+FINGER_CHAINS = ("index", "middle", "ring", "pinky")
+
+
+def long_fingers(R, k=1.3):
+    """The fingers (not the palm or thumb) `k` times as long, from their knuckles: skin and bones, so the clips bend them."""
+    body, rig = R.body, R.rig
+    chains = {}
+    for n in "lr":
+        for fg in FINGER_CHAINS:
+            names = [f"{fg}_0{j}_{n}" for j in (1, 2, 3) if f"{fg}_0{j}_{n}" in rig.data.bones]
+            if names:
+                chains[(fg, n)] = (R.bone(names[0]), set(names))
+    idx = {g.index: g.name for g in body.vertex_groups}
+    knuckle = {}
+    for (fg, n), (o, names) in chains.items():
+        for nm in names:
+            knuckle[nm] = o
+    moves = {}
+    for v in body.data.vertices:
+        acc, tot = Vector(), 0.0
+        for g in v.groups:
+            nm = idx.get(g.group)
+            if nm in knuckle and g.weight > 0.01:
+                acc += knuckle[nm] * g.weight
+                tot += g.weight
+        if tot > 0.01:
+            moves[v.index] = (acc / tot, min(1.0, tot))
+
+    def fn(p, i):
+        m = moves.get(i)
+        if not m:
+            return None
+        o, w = m
+        return o + (p - o) * (1 + (k - 1) * w)
+    reshape(R, fn)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+    inv = rig.matrix_world.inverted()
+    for b in rig.data.edit_bones:
+        if b.name not in knuckle:
+            continue
+        o = inv @ knuckle[b.name]
+        b.head = o + (b.head - o) * k
+        b.tail = o + (b.tail - o) * k
+    bpy.ops.object.mode_set(mode="OBJECT")
+    R._read()
 
 
 def build():
-    R = Real("yarn", sex="f", height=0.74, width=0.88, depth=0.94, head=1.18, skin="#f2ddd0")
+    R = Real("yarn", sex="f", height=0.74, width=0.88, depth=0.94, head=1.18, skin="#ead8c6")
+    long_fingers(R, 1.3)
     z = R.z
+    # the dapple of light through leaves, faint, on all her skin
+    R.paint(lambda p, d: max(0.0, math.sin(p.x * 61 + p.z * 23) * math.sin(p.y * 57 - p.z * 41 + 1.3) * math.sin(p.z * 37 + p.x * 29 + 0.7)) ** 0.6,
+            "#b7b48a", 0.4)
+    # eyes of one colour, silver from lid to lid
+    R.eye_look(color="#c9d2dc", emit="#9fb0c8", strength=0.2, solid=True)
+    R.mat("ear", "#e6d2c0", rough=0.62)
     R.mat("robe", "#3a2540", rough=0.7, double=True)
     R.mat("shawl", "#5a1f3a", rough=0.8, double=True)
     R.mat("rose", "#d86a94", rough=0.6)
@@ -36,6 +98,13 @@ def build():
     f.ellipsoid("shawl", c, (hr, hr * 1.05, hr * 1.08), seg=(26, 16), keep=lambda co: co.y > c.y - hr * 0.42)
     f.torus("rose", Vector((c.x, c.y - hr * 0.42, c.z)), hr * 0.93, 0.016, normal=(0, 1, 0), seg=(28, 6))
     f.tube("shawl", [c + Vector((0, hr * 0.8, hr * 0.5)), c + Vector((0, hr * 1.35, -hr * 0.2)), c + Vector((0, hr * 1.2, -hr * 1.3))], [0.07, 0.05, 0.006], seg=10)
+
+    # the long pointed ears, out through the hood's rolled edge
+    H = head(R)
+    for s in (1, -1):
+        e = Vector((H.ear.x * s * 0.94, H.ear.y - 0.01, H.ear.z))
+        f.tube("ear", [e + Vector((-0.012 * s, -0.004, -0.014)), e + Vector((0.032 * s, -0.008, 0.012)), e + Vector((0.09 * s, -0.016, 0.052)),
+                       e + Vector((0.15 * s, -0.022, 0.1))], [0.021, 0.031, 0.021, 0.003], seg=8, squash=((0, 1, 0), 0.34))
 
     # the needles, as long as swords
     for side in "rl":

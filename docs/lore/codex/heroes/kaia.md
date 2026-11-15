@@ -44,11 +44,12 @@ the stands talked about the colours for a year.
 
 ## People and appearance
 
-Coast folk of the Spires, born after the Fall: twenty-eight, lean and quick, with silver hair bound up and a hooded face. Today she wears a long rain-blue
-gown with a white apron panel and a hood, and holds the hooked staff with a spark in its hook in her left hand; from the game's camera she is often taken for
-Isolde. In the [revamp plan](../revamp.md) she is a revamp, third to be made: sea-tanned skin, the tide lines of nine floods round her forearms, sea-glass in her
-ears, her silver hair streaked sea-green, and a knee-length oilskin storm coat with a high collar and a short cape over leggings and sea boots, so that she reads
-as a storm caller of the Spires and not as a lady of a court.
+Coast folk of the Spires, born after the Fall: twenty-eight, lean and quick, with sea-tanned skin. Her silver hair is salt-bleached and
+bound up in a knot at the back of her head, one sea-green lock falling by her cheek where she dyes it with kelp. Round both forearms, bared
+by sleeves rolled to the elbow, run the tide lines of the nine great floods she has lived through, and sea-glass hangs in her ears. She
+wears a knee-length storm coat of rain-blue oilskin, open over a dark tunic, with a high collar and a short cape lined in storm blue, the
+storm clouds on her shoulders and a gold bolt on her chest; dark leggings and sea boots below. The hooked staff with a spark caught in its
+hook is in her left hand. She reads as a storm caller of the Spires, not a lady of a court, and nobody takes her for Isolde any more.
 
 ## Voice
 
