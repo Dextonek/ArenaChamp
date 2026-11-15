@@ -33,6 +33,11 @@ The three agents below were restarted in their own threads from their saved comm
   the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
   change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
   Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
+- **Running (2026-11-15): the whole story.** The user chose: **the sun fell because the Tower took it; the Tower is a collector
+  of worlds**, and "you can also make those heroes be from the Tower". One agent settles the canon across the codex, decides which
+  heroes are Tower-taken, writes the saga to its end as a new codex book `docs/lore/codex/story/` (30-50k words) shown in the game's
+  Codex, and a plan with ready texts for telling it in the Climb and the Raid later (`story/in-game.md`). It leaves the six revamped
+  heroes' appearance lines alone.
 - **Running (2026-11-15): the heroes reworked to match the lore** (the user: "lets look at all heroes and the lore and lets rework
   those that need to match the lore": a yes to `docs/lore/codex/revamp.md`). One Blender agent, in order: the six revamps (Opaline,
   Mr. Ledger, Kaia, Brannoc, Hank, Grandma Ironknit; one commit each, page `docs/heroes/revamp/index.html`), then the sixteen
