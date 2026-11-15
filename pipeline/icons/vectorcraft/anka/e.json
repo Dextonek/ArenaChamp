@@ -578,5 +578,37 @@
    ],
    "none": true
   }
+ },
+ {
+  "command": "object.group",
+  "params": {
+   "ids": [
+    "$13.id",
+    "$17.id",
+    "$21.id",
+    "$24.id",
+    "$27.id",
+    "$31.ids.0",
+    "$34.id",
+    "$38.ids.0",
+    "$41.ids.0",
+    "$44.id"
+   ]
+  }
+ },
+ {
+  "command": "object.scale",
+  "params": {
+   "ids": [
+    "$47.id"
+   ],
+   "sx": 118,
+   "sy": 118,
+   "origin": [
+    32,
+    32
+   ],
+   "strokes": true
+  }
  }
 ]

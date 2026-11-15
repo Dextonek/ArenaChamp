@@ -1023,5 +1023,47 @@
    ],
    "none": true
   }
+ },
+ {
+  "command": "object.group",
+  "params": {
+   "ids": [
+    "$13.id",
+    "$18.id",
+    "$23.id",
+    "$27.ids.0",
+    "$30.id",
+    "$34.id",
+    "$39.id",
+    "$43.id",
+    "$47.id",
+    "$52.id",
+    "$56.id",
+    "$60.id",
+    "$65.id",
+    "$76.ids.0",
+    "$80.ids.0",
+    "$83.ids.0",
+    "$86.id",
+    "$90.ids.0",
+    "$93.id",
+    "$97.id"
+   ]
+  }
+ },
+ {
+  "command": "object.scale",
+  "params": {
+   "ids": [
+    "$100.id"
+   ],
+   "sx": 118,
+   "sy": 118,
+   "origin": [
+    32,
+    32
+   ],
+   "strokes": true
+  }
  }
 ]

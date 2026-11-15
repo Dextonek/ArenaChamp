@@ -1168,5 +1168,45 @@
    "ids": "$109.ids",
    "none": true
   }
+ },
+ {
+  "command": "object.group",
+  "params": {
+   "ids": [
+    "$39.id",
+    "$40.ids.0",
+    "$41.id",
+    "$45.ids.0",
+    "$48.ids.0",
+    "$51.id",
+    "$55.id",
+    "$58.id",
+    "$61.id",
+    "$64.id",
+    "$88.id",
+    "$89.ids.0",
+    "$92.ids.0",
+    "$96.ids.0",
+    "$99.ids.0",
+    "$102.id",
+    "$105.id",
+    "$109.ids.0"
+   ]
+  }
+ },
+ {
+  "command": "object.scale",
+  "params": {
+   "ids": [
+    "$112.id"
+   ],
+   "sx": 118,
+   "sy": 118,
+   "origin": [
+    32,
+    32
+   ],
+   "strokes": true
+  }
  }
 ]

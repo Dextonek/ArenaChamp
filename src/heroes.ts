@@ -45,6 +45,7 @@ import { magicKit } from './kits/magic';
 import { doorKit } from './kits/door';
 import { phoenixKit } from './kits/phoenix';
 import { twinsKit } from './kits/twins';
+import { useVcIcons } from './icons/vc';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -224,8 +225,6 @@ export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, al
   return kit;
 });
 
-// A sample for the user's yes (docs/icons/sample): `?icons=vc` swaps in the VectorCraft spell icons for the heroes
-// that have them. Without the flag the module is not even loaded.
-if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('icons') === 'vc') {
-  void import('./icons/vc').then((m) => m.useVcIcons(HERO_KITS));
-}
+// The spell icons drawn with VectorCraft (src/icons/vc.ts): the heroes that have them draw them wherever a slot icon shows,
+// each hero's files fetched the first time one of its slots is drawn; the kit's own canvas icon is the fallback.
+useVcIcons(HERO_KITS);

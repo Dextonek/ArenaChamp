@@ -69,6 +69,7 @@ in small details.
 | Ink (foil: rice paper `#efe6d2`) | `#ffffff` | `#c8d4ff` | `#3a5ae8` | `#ff4a2a` | `#0b0a0e` |
 | Chrono (foil: ivory dial `#f4ecd8`) | `#ffffff` | `#f4ffd0` | `#d4ff5a` | `#ff4a4a` | `#0c100a` |
 | Phoenix (Anka; foil: pale ash `#eadcc4`, ember red `#c23a22`, gold `#e0a935`) | `#fff6d8` | `#ffc24a` | `#ff7b3a` | `#2fb8a8` | `#1a0806` |
+| Dusk / chalk (Mum; foil: ivory mask `#c4bca6`, hood `#201b2a`, gold `#d2ae55`) | `#f7f7f2` | `#b8b4f4` | `#5c4a8c` | `#d23a3a` | `#0c0c12` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

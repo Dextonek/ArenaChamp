@@ -805,5 +805,43 @@
    ],
    "none": true
   }
+ },
+ {
+  "command": "object.group",
+  "params": {
+   "ids": [
+    "$13.id",
+    "$17.ids.0",
+    "$20.id",
+    "$24.ids.0",
+    "$27.id",
+    "$31.ids.0",
+    "$34.id",
+    "$38.id",
+    "$51.ids.0",
+    "$55.ids.0",
+    "$58.ids.0",
+    "$61.id",
+    "$65.id",
+    "$68.id",
+    "$71.id",
+    "$74.id"
+   ]
+  }
+ },
+ {
+  "command": "object.scale",
+  "params": {
+   "ids": [
+    "$77.id"
+   ],
+   "sx": 118,
+   "sy": 118,
+   "origin": [
+    32,
+    32
+   ],
+   "strokes": true
+  }
  }
 ]

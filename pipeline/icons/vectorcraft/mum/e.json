@@ -990,5 +990,47 @@
    ],
    "none": true
   }
+ },
+ {
+  "command": "object.group",
+  "params": {
+   "ids": [
+    "$13.id",
+    "$18.id",
+    "$22.id",
+    "$27.id",
+    "$31.id",
+    "$35.ids.0",
+    "$38.id",
+    "$42.id",
+    "$46.id",
+    "$50.id",
+    "$61.ids.0",
+    "$65.ids.0",
+    "$68.ids.0",
+    "$71.id",
+    "$75.id",
+    "$79.id",
+    "$83.id",
+    "$87.ids.0",
+    "$90.id",
+    "$94.id"
+   ]
+  }
+ },
+ {
+  "command": "object.scale",
+  "params": {
+   "ids": [
+    "$97.id"
+   ],
+   "sx": 118,
+   "sy": 118,
+   "origin": [
+    32,
+    32
+   ],
+   "strokes": true
+  }
  }
 ]
