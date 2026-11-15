@@ -168,6 +168,8 @@ const ICONS = {
   clan: '<path d="M6 21V3M6 4h11l-2.5 4L17 12H6"/>',
   // an open book: the Codex (the lore of the Dial)
   codex: '<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/>',
+  // three dots: the phone bar's More tab
+  more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
 } as const;
 function icon(name: keyof typeof ICONS) {
   const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
@@ -258,6 +260,7 @@ function toast(text: string) {
 
 function go(screen: Screen) {
   state.screen = screen;
+  moreOpen = false;
   if (screen === 'lobbies') net.send({ t: 'lobbies' });
   // The Shop too: the obols and the week's free heroes as they are now.
   if ((screen === 'profile' || screen === 'shop') && state.profile) net.send({ t: 'profile' });
@@ -292,7 +295,7 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active) { root.style.display = 'none'; shownScreen = null; gameApi.view.covered = false; return; }
+  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active) { root.style.display = 'none'; shownScreen = null; moreOpen = false; gameApi.view.covered = false; return; }
   root.style.display = '';
   // The menus lie over the whole canvas and nothing shows through: the 3D scene is not drawn while they are up.
   gameApi.view.covered = true;
@@ -345,7 +348,7 @@ let scrollToHero = false;
 /** The bar along the top (on a phone its tabs sit along the bottom). Without an account: the two offline screens and a way to log in. */
 /**
  * The picture's quality (src/quality.ts): a tap goes to the next level, kept in this browser. In the bar at the top, and on
- * the Profile screen: on a phone the bar of a logged-in player has no room for it (game.css, `.who.full .gfx`).
+ * the Profile screen; on a phone it is in the bar's More sheet instead (header(), game.css `.who .gfx`).
  */
 function qualityButton() {
   const q = gameApi.quality;
@@ -360,35 +363,69 @@ function qualityButton() {
   }, `Graphics: ${QUALITY_NAMES[q.level]}`);
 }
 
+/**
+ * On a phone the tabs along the bottom are four and "More" (user, 2026-11-15: eleven tabs were too small to read): Play,
+ * Raid, Tower and Clan (Shop for a guest) stay; the rest, Graphics and Log out open in a sheet over the bar. When the open
+ * screen is one of the sheet's, the More tab takes its name and icon, so the bar always shows where the player is. On a
+ * wider screen every tab is in the bar as before and the sheet is never shown (game.css, `.nav.extra`, `.more-sheet`).
+ * The flag lives here, not in the bar: the bar is drawn again on every message from the server.
+ */
+let moreOpen = false;
+function closeMore() { if (moreOpen) { moreOpen = false; render(); } }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMore(); });
+
 function header() {
   const p = state.profile;
-  const nav = (label: string, screen: Screen, ic: keyof typeof ICONS) =>
-    el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, icon(ic), el('span', {}, label));
+  const nav = (label: string, screen: Screen, ic: keyof typeof ICONS, extra = false) =>
+    el('button', { class: `nav${extra ? ' extra' : ''}${state.screen === screen ? ' on' : ''}`, onclick: () => { moreOpen = false; go(screen); } }, icon(ic), el('span', {}, label));
   // The Clan tab carries the count of clan messages not seen yet (it waits through a fight: no chat over a duel).
   const clanNav = () => {
     const b = nav('Clan', 'clan', 'clan'), n = social.unread();
     b.append(el('span', { class: 'nav-unread', hidden: !n, 'aria-label': 'unread clan messages' }, n > 99 ? '99+' : String(n)));
     return b;
   };
+  type Tab = [label: string, screen: Screen, ic: keyof typeof ICONS];
+  // The tabs a phone keeps in the sheet, in the bar's order.
+  const extras: Tab[] = p
+    ? [['Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'], ['Boards', 'boards', 'boards'], ['Heroes', 'heroes', 'heroes'], ['Shop', 'shop', 'shop'], ['Profile', 'profile', 'profile'], ['Codex', 'codex', 'codex'], ['News', 'news', 'news']]
+    : [['Boards', 'boards', 'boards'], ['Codex', 'codex', 'codex'], ['News', 'news', 'news']];
+  const extra = (t: Tab) => nav(t[0], t[1], t[2], true);
+  const here = extras.find((t) => t[1] === state.screen || (t[1] === 'lobby' && state.screen === 'lobbies'));
+  const more = el('button', {
+    class: `nav more${here ? ' on' : ''}${moreOpen ? ' open' : ''}`, 'aria-expanded': String(moreOpen), 'aria-haspopup': 'true',
+    onclick: () => { moreOpen = !moreOpen; render(); },
+  }, icon(here ? here[2] : 'more'), el('span', {}, here ? here[0] : 'More'));
+  const sheet = () => !moreOpen ? null : el('div', { class: 'more-veil', onclick: (e: Event) => { if (e.target === e.currentTarget) closeMore(); } },
+    el('div', { class: 'more-sheet', role: 'menu' },
+      el('div', { class: `more-grid${extras.length > 4 ? ' four' : ''}` }, ...extras.map((t) => el('button', {
+        class: `more-item${state.screen === t[1] || (t[1] === 'lobby' && state.screen === 'lobbies') ? ' on' : ''}`, role: 'menuitem',
+        onclick: () => { moreOpen = false; go(t[1]); },
+      }, icon(t[2]), el('span', {}, t[0])))),
+      el('div', { class: 'more-foot' }, qualityButton(),
+        p ? el('button', { class: 'btn ghost small', onclick: () => { moreOpen = false; net.send({ t: 'logout' }); } }, 'Log out') : null)));
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Boards', 'boards', 'boards'), nav('Shop', 'shop', 'shop'), nav('Codex', 'codex', 'codex'), nav('News', 'news', 'news')),
-      el('div', { class: 'who' }, qualityButton(), el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), extra(extras[0]), nav('Shop', 'shop', 'shop'), extra(extras[1]), extra(extras[2]), more),
+      el('div', { class: 'who' }, qualityButton(), el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')),
+      sheet());
   }
   return el('header', { class: 'top' },
-    el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'),
-      nav('Boards', 'boards', 'boards'), clanNav(), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('Codex', 'codex', 'codex'), nav('News', 'news', 'news')),
+    el('div', { class: 'brand', onclick: () => go('menu'), title: 'Arena of Kits' }, el('span', { class: 'sigil' }, '⚔'), el('span', { class: 'brand-words' }, 'Arena of Kits')),
+    el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), extra(extras[0]),
+      extra(extras[1]), clanNav(), ...extras.slice(2).map(extra), more),
     el('div', { class: 'who full' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
-      el('b', {}, p.name),
+      // The name opens the Profile; a long one ends in "..." where the bar runs out of room.
+      el('button', { class: 'who-name', title: `${p.name}: your profile`, onclick: () => go('profile') }, p.name),
       // The account's obols: a tap opens the Shop.
       el('button', { class: 'purse', title: 'Your obols: open the Shop', onclick: () => go('shop') }, obols(p.obols ?? 0)),
       el('span', { class: 'muted' }, `${p.wins} W · ${p.losses} L`),
       qualityButton(),
-      el('button', { class: 'btn ghost small', onclick: () => net.send({ t: 'logout' }) }, 'Log out'),
+      // On a phone Log out is in the More sheet.
+      el('button', { class: 'btn ghost small out', onclick: () => net.send({ t: 'logout' }) }, 'Log out'),
     ),
+    sheet(),
   );
 }
 
