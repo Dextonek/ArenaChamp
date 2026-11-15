@@ -116,8 +116,16 @@ starts draws every enemy in code and every ruler as its stand-in (the A/B).
 
 **Lighter enemies** (`blender/tower/foes.py` `finish_light`, a module's `LIGHT = {...}`): decimated to about 10,000 faces, the plain
 colour materials merged into two (cloth, metal) through vertex colours, one UV map, a 512 skin texture: five draw calls (six with the
-War's `livery`), 300 to 325 KB. Rulers are finished as heroes (one at a time). All 30: 11.9 MB; a floor loads three enemy kinds and
-its ruler (about 1.4 MB) beside its people.
+War's `livery`), 286 to 325 KB (4.55 MB for the 15). Rulers are finished as heroes (one at a time): 349 to 611 KB (6.92 MB for
+the 15). All 30: 11.5 MB; a floor loads its three enemy files with its fight (about 0.95 MB) and its ruler's (about 0.5 MB) at the
+ruler's door.
+
+**On a phone** (`foeModels.ts`): a figure's five meshes share one skeleton (the clone gave each its own, and three updates and uploads
+every skeleton each frame: five times the bone work), a unit is posed 30 times a second (the pack's units out of step), and the code
+look is still built for every unit and let go at once when the figure is ready (building it draws the game's random numbers, which
+the perf scenes and the route bot replay seeded). Measured with `perf.py` (phone-4x, the Climb's world scenes, the base tree beside
+it the same hour): floor 1 38.8 against 42.9 ms a frame, floor 11 35.3 against 34.2, floor 31 41.3 against 49.2; desktop the same on
+all six floors measured.
 
 **The first pack** (`src/tower/world/prewarm.ts`): when a floor's fight begins its model files load, one figure of each stands with
 the code figures under the ground, and once they have landed they are compiled for the frame's target (the renderer is taken from a

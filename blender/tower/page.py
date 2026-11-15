@@ -76,10 +76,10 @@ def foe_section(kind, head, intro):
 RULERS_INTRO = ("Each ruler stands on three floors of its chapter under that floor's own name, tint and size; the chapter's first floor "
                 "has the first of them in its own colours. Built as giants, not heroes made big: broad and deep, a smaller head, big hands. "
                 "The fights are the floors' own (same moves, health and timings); the model brings its look and its hit size. The crowns "
-                "(floors 10, 20, 30, 40, 50) are Raid bosses. 350 to 610 KB and 13,500 to 28,800 faces each; one is loaded at a time.")
+                "(floors 10, 20, 30, 40, 50) are Raid bosses. 349 to 611 KB and 13,500 to 28,800 faces each; one is loaded at a time.")
 ENEMIES_INTRO = ("The common melee one, the ranged or casting one, the big one; a named enemy shares its kind's figure under a tint, and the "
                  "War's two armies share theirs in their own colours. They come in packs, so each is finished lighter: about 10,000 faces "
-                 "and five or six draw calls (300 to 325 KB). The beasts stay drawn in code: the brine crab, the bark hound, the stag, the "
+                 "and five or six draw calls (286 to 325 KB). The beasts stay drawn in code: the brine crab, the bark hound, the stag, the "
                  "shard mite, the crystal golem; so do the dust wraith (a spirit of the storm), the feeding root and the escorts. Decided here, "
                  "for the user to overrule: the Wood's three are the moss giant, the thorn sprite and the Hollow Oak (its pack fighter is the "
                  "hound); the Deep's are the lurker, the Lantern Thief and the Pale One (its caster is the golem).")
