@@ -8,6 +8,7 @@
  * Text carries **bold**, *italic* and [links](book/page) to other codex pages.
  */
 import { CODEX_BOOKS, CODEX_INDEX, type CodexEntry } from './codex-index';
+import './codex.css';
 
 export type CodexBlock =
   | ['h', number, string]
