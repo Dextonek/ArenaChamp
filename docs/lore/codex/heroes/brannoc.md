@@ -41,9 +41,11 @@ respects him, which he finds very annoying.
 
 ## People and appearance
 
-Kilnborn, of the first generation, and Noon-touched: thirty at the Fall, he looks fifty. Huge, with an ash beard, a broad iron helm, a scorched leather apron,
-and a hammer; the forge glowing in his chest. Today his skin is pale. In the [revamp plan](../revamp.md) he is a revamp: ash-grey skin, darker at the forearms,
-cracked with ember seams over the chest, throat and arms where the forge-light shows through, and pale amber eyes, so that the Ashen Smith's title is literal.
+Kilnborn, of the first generation born grey, and Noon-touched: thirty at the Fall, he looks fifty. Huge, with ash-grey skin that goes
+darker toward the hands, and pale amber eyes behind the forge visor. The fire in his chest is the Caldera's, taken in on purpose, and its
+light shows through his skin: ember seams run up from the furnace grate in his breastplate, over the open breast to his throat, and along
+both arms down to the bracers. An ash beard, iron pauldrons and breastplate, a scorched leather apron, the forge pack with its two
+chimneys on his back, and the hammer in his right hand. The Ashen Smith's title is literal.
 
 ## Voice
 

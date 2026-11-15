@@ -1,4 +1,7 @@
-"""Hank, the Moss Hewer (bruiser): a huge forest warden. A moss-green tunic, bark-brown leather leggings and wrapped
+"""Hank, the Moss Hewer (bruiser), of the Wood folk, sworn to the Moot (docs/lore/codex/heroes/hank.md; revamped
+2026-11-15 by docs/lore/codex/revamp.md): broad branching antlers through his hair, every tine sawn flat at the tip (he cuts
+them back each spring and plants the tips: a felled tree must be paid back), the pale cut wood showing; ruddy skin; moss-
+green eyes. Otherwise as before: a huge forest warden. A moss-green tunic, bark-brown leather leggings and wrapped
 bracers, dark fur-topped boots, leather straps crossed on the chest, a fur mantle heaped round his shoulders, brown hair
 under a leather brow band, a thick braid down his back and a great beard in two braids tied in brass. His axe (the
 user's drawing, 2026-11-10; blender/heroes/hank_axe.py): one bit on a one-handed haft held by its end and carried
@@ -8,6 +11,7 @@ import math
 from mathutils import Vector
 
 from realkit import PI, Real
+from real.parts_d import antler
 from real.parts_b import braid, ellipse, flats, hair_key, legs_under, on_back, on_front, path, plate
 
 # the axe head's outline, from hank_axe.py: (along the haft from the eye, up)
@@ -18,8 +22,11 @@ BUTT, END, HEAD_AT = 0.0, 0.62, 0.52
 
 
 def build():
-    R = Real("timber", sex="m", height=1.1, width=1.22, depth=1.3, head=0.92, skin="#d9aa8a")
+    R = Real("timber", sex="m", height=1.1, width=1.22, depth=1.3, head=0.92, skin="#cf8a68")
     z = R.z
+    R.eye_look(color="#86c070")
+    R.mat("antler", "#8c7354", rough=0.7)
+    R.mat("saw", "#e9dcbc", rough=0.85)
     R.mat("moss", "#44602e", rough=0.85, double=True)
     R.mat("bark", "#4a3322", rough=0.75, double=True)
     R.mat("fur", "#7b6852", rough=1.0)
@@ -112,6 +119,12 @@ def build():
             ph = 0.32 + 3.2 * i / 9
             lock.append(hc + Vector((r * 1.08 * math.sin(th), -0.128 * math.cos(th) * math.cos(ph), 0.108 * math.cos(th) * math.sin(ph) - 0.012 * (i / 9) ** 2)))
         f.tube(hk, lock, [0.015 + 0.008 * math.sin(PI * i / 9) for i in range(10)], seg=6)
+    # the antlers: up through the hair behind the brow band, sweeping out and back, sawn short at every tip
+    for s in (1, -1):
+        base = Vector((r * 0.5 * s, c.y + 0.005, bz + 0.03))
+        f.torus("antler", base + Vector((0, 0, 0.006)), 0.03, 0.013, normal=(0.5 * s, 0.05, 1), seg=(14, 6))
+        antler(f, "antler", base, up=(0.95 * s, 0.1, 1), out=(s, 0, 0), length=0.3, r0=0.028, r1=0.019,
+               tines=[(0.2, 0.12, 1.1, -0.2), (0.42, 0.15, 0.7, 0.0), (0.64, 0.15, 0.4, 0.25), (0.86, 0.11, 0.1, 0.4)], curve=0.3, saw="saw")
     chin = Vector((0, c.y - r * 0.8, z["head"] - 0.012))
     f.tube(hk, [chin + Vector((0, 0.035, 0.03)), chin + Vector((0, -0.015, -0.03)), chin + Vector((0, -0.03, -0.12)), chin + Vector((0, -0.03, -0.19))], [0.05, 0.085, 0.08, 0.05], seg=12,
            squash=((0, 1, 0), 0.6))

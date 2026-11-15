@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Six heroes revamped</title>
+<style>
+  :root { --bg: #110f14; --card: #1b1820; --line: #352e3c; --ink: #ece4d6; --dim: #b3a99a; --gold: #d2ae55; --before: #8f8a96; --after: #e8b84a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 700 30px/1.2 Georgia, serif; color: var(--gold); margin: 10px 0 4px; }
+  h2 { font: 700 23px/1.3 Georgia, serif; color: var(--gold); margin: 40px 0 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  h3 { font: 600 15px/1.3 system-ui, sans-serif; color: var(--dim); margin: 18px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  p { margin: 8px 0; }
+  .sub { color: var(--dim); }
+  .people { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; font-size: 13.5px; color: var(--ink); background: var(--card); margin-left: 6px; vertical-align: 3px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  figure { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 6px 10px; font-size: 13.5px; color: var(--dim); }
+  figcaption b { color: var(--before); font-weight: 700; }
+  figure.after figcaption b { color: var(--after); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  nav a { color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 4px 10px; font-size: 14.5px; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code { font-size: 13.5px; color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+<h1>Six heroes revamped to match their peoples</h1>
+<p class="sub">2026-11-15 · the six revamps of the lore's plan (<code>docs/lore/codex/revamp.md</code>), in its order. Each keeps its kit, title, colours and weapon; what changed is
+the body's people. Every picture is the game's own figure in the hero stand's light, or the game page in a CPU duel against Sefu on the same arena, before and after.
+Not pushed, not deployed.</p>
+<nav id="nav"></nav>
+<div id="heroes"></div>
+<h2>What is left, and what to look at</h2>
+<ul>
+  <li><b>Portraits:</b> the 2D portraits on the hero bar and the cards still show the old looks (Opaline silver-haired, Kaia hooded, Brannoc red-bearded). Not changed here.</li>
+  <li><b>Hank's antlers</b> raise his model's top by 0.2 m (about 0.25 in the game); his hit size is unchanged.</li>
+  <li><b>From the duel camera</b> the faces are small: Ledger reads by his robes and quill there, not his face; the ears, antlers, crystal and grey skin carry.</li>
+  <li><b>Not drawn:</b> Hank's freckles (the skin texture is too coarse on the face for dots, and his beard covers it).</li>
+</ul>
+</main>
+<script>
+const HEROES = [
+  { dir: 'opaline', name: 'Opaline, the Lightbreaker', people: 'Gloaming folk', kb: '520 → 534 KB',
+    line: 'Amethyst crystal grown out of her cheekbones, collarbones, shoulders and hands, with a faint light in it; her people’s violet eyeshine; cool pale skin; violet-black hair cut at the jaw; a gown of deep amethyst over cream with a glass-cutter’s apron. The prism ring, wand and spectrum sash stay. Beside her sister Silvane she is now the dark one.' },
+  { dir: 'mr-ledger', name: 'Mr. Ledger, the Tithe-Keeper', people: 'the Long Dead', kb: '465 → 449 KB',
+    line: 'Vellum skin drawn tight on the bone: sunken cheeks and temples, bone pale at the brow, cheekbones and jaw, deep dark sockets with an ember in each, long thin hands with bone at the knuckles, thin grey hair pressed flat, no brows. Robes, book, quill and coins stay. Wick keeps the living old man’s face.' },
+  { dir: 'kaia', name: 'Kaia, the Tempest Caller', people: 'Coast folk', kb: '501 → 521 KB',
+    line: 'Sea-tanned skin; the tide lines of nine floods round her bared forearms; silver hair bound up with a sea-green lock; sea-glass in her ears; a rain-blue oilskin coat with a high collar and a short cape, sea boots. The hood and long cloak go; the storm clouds, bolt and hooked staff stay.' },
+  { dir: 'brannoc', name: 'Brannoc, the Ashen Smith', people: 'Kilnborn', kb: '516 → 507 KB',
+    line: 'Ash-grey skin, darker toward the hands; ember seams from the forge in his chest up over the open breast to his throat and along both arms; an ash beard (red before; the lore always said ash); amber eyes. The plate opens in a V above the grate and the bracers are shorter so the seams show.' },
+  { dir: 'hank', name: 'Hank, the Moss Hewer', people: 'Wood folk', kb: '588 → 584 KB',
+    line: 'Broad branching antlers through his hair, every tine sawn flat at the tip with the pale cut wood showing (he plants the tips); ruddy skin; moss-green eyes. Tunic, mantle, braids and the low axe stay. No other hero has his outline now.' },
+  { dir: 'grandma-ironknit', name: 'Grandma Ironknit, the Weaver', people: 'Briarkin', kb: '546 → 538 KB',
+    line: 'Long pointed ears out through the hood’s rose rim; eyes of one colour, silver from lid to lid; a faint dapple of leaf-light on her skin; fingers a little too long. Shawl, spindle, needles and silver hair stay.' },
+];
+const VIEWS = [
+  ['Sheet: front, three-quarter, back, face', 'sheet'],
+  ['The face', 'face'],
+  ['Line-up: Sefu, the hero, the second, and the hero it was most like', 'lineup'],
+  ['The line-up in grey (the silhouette and value)', 'lineup_grey'],
+  ['The line-up from the game’s camera', 'lineup_cam'],
+  ['Moving: walking, a cast at its strike, the attack at its hit, the game’s camera', 'motion'],
+  ['In a CPU duel, close (game page, game camera)', 'duel_close'],
+  ['In a CPU duel, the whole screen', 'duel'],
+];
+const nav = document.getElementById('nav'), root = document.getElementById('heroes');
+for (const h of HEROES) {
+  const a = document.createElement('a');
+  a.href = '#' + h.dir; a.textContent = h.name.split(',')[0];
+  nav.append(a);
+  const sec = document.createElement('section');
+  sec.id = h.dir;
+  sec.innerHTML = `<h2>${h.name}<span class="people">${h.people}</span></h2><p>${h.line}</p><p class="sub">Model ${h.kb}.</p>` +
+    VIEWS.map(([t, k]) => `<h3>${t}</h3><div class="pair">` +
+      ['before', 'after'].map((w) => `<figure class="${w}"><img loading="lazy" src="${h.dir}/${w}_${k}.jpg" alt="${h.name.split(',')[0]}, ${w}: ${t}"><figcaption><b>${w}</b></figcaption></figure>`).join('') +
+      '</div>').join('');
+  root.append(sec);
+}
+</script>
+</body>
+</html>

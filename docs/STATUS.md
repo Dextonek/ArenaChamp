@@ -33,11 +33,25 @@ The three agents below were restarted in their own threads from their saved comm
   the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
   change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
   Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
+- **Decided (2026-11-15; the user: "you decide" on the open list):** textures: the painted underwear covered on every hero that
+  shows it, no contact shadow, no gold edges (done with TextureCraft in the touches round, after the revamps: one Blender agent at a
+  time); icons: VectorCraft for all 40, version B, Mum's "dusk / chalk" row into the art bible (agent running); the rulers' and
+  enemies' line-ups accepted as built; the twenty unreleased heroes stay out of the game's Codex (story book included) until each
+  ships; open world stage 2 accepted, **stage 3 next** when a slot frees; push and deploy once the revamps and the story land (ask
+  the user then: a deploy drops live connections).
+- **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
+  built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
+- **Running (2026-11-15): the whole story.** The user chose: **the sun fell because the Tower took it; the Tower is a collector
+  of worlds**, and "you can also make those heroes be from the Tower". One agent settles the canon across the codex, decides which
+  heroes are Tower-taken, writes the saga to its end as a new codex book `docs/lore/codex/story/` (30-50k words) shown in the game's
+  Codex, and a plan with ready texts for telling it in the Climb and the Raid later (`story/in-game.md`). It leaves the six revamped
+  heroes' appearance lines alone.
 - **Running (2026-11-15): the heroes reworked to match the lore** (the user: "lets look at all heroes and the lore and lets rework
   those that need to match the lore": a yes to `docs/lore/codex/revamp.md`). One Blender agent, in order: the six revamps (Opaline,
   Mr. Ledger, Kaia, Brannoc, Hank, Grandma Ironknit; one commit each, page `docs/heroes/revamp/index.html`), then the sixteen
   touches (Wick, Silvane, Bram, Tempo, Vesper, Ada, Whistler, Cleaver, Barry, Zephyr, Marin, Cantor, Pip, Shiori, Zambini, Anka) as a
-  second agent after it. The eighteen others already match.
+  second agent after it, together with the underwear cover (TextureCraft, `pipeline/textures/texturecraft/sumo/` on
+  `t3/texturecraft-hero-sample` shows how) on every hero that shows it. The eighteen others already match.
 - **Done, NOT merged (samples on their branches), waiting on the user (2026-11-15): the ArtCraft apps** (the user: "use the art
   craft tools"; `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums
   checked, in `C:/Users/erich/AppData/Local/Programs/ArtCraft/VectorCraft/` and `.../TextureCraft/` (delete the folder to remove).
