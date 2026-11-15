@@ -48,6 +48,11 @@ export const CHANGELOG: Release[] = [
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },
       {
+        tag: 'Heroes',
+        title: 'The Codex: the world of the Dial in full',
+        text: 'A new Codex screen, from the menu or from any hero’s lore (“More about…”), tells the whole world: the twelve peoples of the Dial, not all of them human, the nine realms on a map, the eight factions and their secrets, a hundred years of history, the Climb’s chapters, rulers and enemies, and every hero’s full story with their voice lines. Each hero’s card now also shows their people.',
+      },
+      {
         tag: 'Online',
         title: 'Fight the Climb’s packs together',
         text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',
@@ -58,6 +63,13 @@ export const CHANGELOG: Release[] = [
         text: 'The keepers, quest givers and traders on the Climb are no longer heroes standing in: each chapter has five people of its own, from the Bell-Warden of the Sea to the Herald of the War, and the traders take turns floor by floor. Rivals and gatekeepers are still heroes.',
         image: '/news/climb-people.jpg',
         alt: 'The Wood’s five people between the heroes Sefu and Kaia: the Moss-Abbess in a pointed green hood with a curled horn, the Path-Lighter in a wide hat with a lamp on a tall pole, the Kiln-Mother with a basket of charcoal and a fire-rake, the Amber-Seller with a tray of amber, and the Charm-Pedlar with a frame of charms over his head.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s rulers and enemies are their own',
+        text: 'Every ruler on the Climb is now a giant of its own, three to a chapter, from the Drowned Admiral to the Crow King, and the people-shaped enemies are new figures too: dockers and net casters, moss giants and thorn sprites, raiders, lurkers, and soldiers in their army’s colours. Their fights are the same as before; the beasts are as they were.',
+        image: '/news/climb-rulers.jpg',
+        alt: 'The Sands’ three rulers between the heroes Sefu and Kaia: the Scarab King in blue-black shell armour with a horned helm and a hooked sword, the Brass Sphinx with a calm brass mask, a mane and a disc of sun rays, and the Red Jackal with a black jackal’s head and a spear of green glass.',
       },
       {
         tag: 'Tower',

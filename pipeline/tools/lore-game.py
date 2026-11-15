@@ -36,23 +36,32 @@ def main():
         out_f[fid] = {'name': f['name'], 'colours': cols, 'home': f.get('home', ''), 'wants': f.get('wants', ''), 'sigil': f.get('sigil', '')}
     out_h = {}
     for n, h in heroes.items():
-        missing = [k for k in ('spot', 'age', 'line') if not h.get(k)]
+        missing = [k for k in ('spot', 'age', 'line', 'people') if not h.get(k)]
         if missing:
             raise SystemExit(f'{n}: missing {", ".join(missing)} in LORE.md')
         out_h[n] = {
             'faction': h['faction'], 'place': h['home'], 'from': h['spot'], 'age': h['age'], 'line': h['line'],
-            'legend': h['legend'], 'ties': ties[n],
+            'legend': h['legend'], 'ties': ties[n], 'people': h['people'], 'kin': h['kin'],
         }
+    peoples = {pid: {'name': pe['name'], 'kind': pe['kind'], 'look': pe.get('look', ''), 'life': pe.get('life', ''),
+                     'text': ' '.join(pe['text'])} for pid, pe in lore['peoples'].items()}
     head = (
         '// Made by pipeline/tools/lore-game.py from docs/lore/LORE.md: edit the lore there and run the script again.\n'
-        '// The world of the Dial, its factions and places, and each hero\'s lore (faction, home, age, line, legend, ties).\n\n'
+        '// The world of the Dial, its factions, peoples and places, and each hero\'s lore (faction, people, home, age, line,\n'
+        '// legend, ties). The depth, the Codex screen, is made from docs/lore/codex/ by pipeline/tools/lore-codex.py.\n\n'
         'export interface LoreFaction { name: string; colours: string[]; home: string; wants: string; sigil: string }\n'
         'export interface LoreTie { other: string; kind: string; pair: string; what: string; strong: boolean }\n'
-        'export interface LoreHero { faction: string; place: string; from: string; age: string; line: string; legend: string; ties: LoreTie[] }\n\n'
+        'export interface LorePeople { name: string; kind: string; look: string; life: string; text: string }\n'
+        '/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind). */\n'
+        'export interface LoreHero {\n'
+        '  faction: string; people: string; kin: string; place: string; from: string; age: string; line: string; legend: string;\n'
+        '  ties: LoreTie[];\n'
+        '}\n\n'
     )
     body = (
         f'export const FACTIONS: Record<string, LoreFaction> = {json.dumps(out_f, ensure_ascii=False, indent=1)};\n\n'
         f'export const PLACES: Record<string, string> = {json.dumps(places, ensure_ascii=False, indent=1)};\n\n'
+        f'export const PEOPLES: Record<string, LorePeople> = {json.dumps(peoples, ensure_ascii=False, indent=1)};\n\n'
         f'export const LORE: Record<string, LoreHero> = {json.dumps(out_h, ensure_ascii=False, indent=1)};\n\n'
         '/** The tie between two heroes, as the first one sees it (null: none). */\n'
         'export function tieBetween(a: string, b: string): LoreTie | null {\n'
@@ -61,7 +70,7 @@ def main():
     )
     dst = ROOT / 'src' / 'game' / 'lore.ts'
     dst.write_text(head + body, encoding='utf-8')
-    print(f'wrote {dst.relative_to(ROOT)}: {len(out_h)} heroes, {sum(len(t) for t in ties.values()) // 2} ties, {len(out_f)} factions')
+    print(f'wrote {dst.relative_to(ROOT)}: {len(out_h)} heroes, {sum(len(t) for t in ties.values()) // 2} ties, {len(out_f)} factions, {len(peoples)} peoples')
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 import { GEN_FLOORS } from '../floors/gen';
+import { withRulerModel } from './rulerModels';
 import type { PiecesDef } from './types';
 
 /**
@@ -134,4 +135,4 @@ export const PIECES: PiecesDef[] = [
 ];
 
 /** The set pieces of floor `n`: a handmade floor's, else a made floor's (undefined for a floor that does not exist). */
-export const piecesOf = (n: number): PiecesDef | undefined => PIECES.find((p) => p.floor === n) ?? GEN_FLOORS[n]?.pieces;
+export const piecesOf = (n: number): PiecesDef | undefined => withRulerModel(PIECES.find((p) => p.floor === n) ?? GEN_FLOORS[n]?.pieces);

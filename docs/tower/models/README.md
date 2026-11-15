@@ -1,11 +1,13 @@
-# The Climb's own people
+# The Climb's own people, rulers and enemies
 
 The user, 2026-11-14: "if you need to create like new model for some npc and stuff make new ones also for enemies just make new dont
 just reuse heroes that we have", then "also make new models for npc, don't reuse them from heroes". **Since then every person on a
-Climb floor (keeper, quest givers, trader) is a figure of its own, in the game** (not live until the next deploy). The rivals,
-gatekeepers and rulers are still heroes, and the enemies are still drawn in code: see the plan below.
+Climb floor (keeper, quest givers, trader) is a figure of its own, in the game** (not live until the next deploy). Then, on the
+user's "also do it" (2026-11-14): **the rulers and the people-shaped enemies are figures of their own too** (*Rulers and enemies*
+below; not live). The rivals and gatekeepers are still heroes (they are duels against a hero by design); the beasts are drawn in code.
 
-**The page of all 25, chapter by chapter: [index.html](index.html)** (made by `python blender/tower/page.py`).
+**The page of all 55, chapter by chapter, then the rulers and the enemies: [index.html](index.html)** (made by
+`python blender/tower/page.py`).
 
 ![The Wood's five beside Sefu and Kaia, from the game's camera](wood-lineup-game.jpg)
 
@@ -75,7 +77,64 @@ The pictures: `pipeline/tools/tower-models-sheet.js` draws one chapter (`window.
 file's own text, in a copy given to page-shots; default the Sea) from the game's own models and figure code. The tool page shows
 one 404 when it loads (its favicon); the game's own runs show no console errors.
 
-## The plan for all 50 floors (the people are done; rulers and enemies are next)
+## Rulers and enemies (2026-11-14)
+
+Thirty figures, six a chapter: three rulers and three people-shaped enemies. None is a hero's model or look; each was looked at in
+its chapter's line-ups beside Sefu and Kaia (`<chapter>-rulers-game.jpg`, `-front.jpg`, `-sheet.jpg`, `<chapter>-enemies-*`, one
+`<chapter>-<name>.jpg` each) and in the game (`<chapter>-pack-ingame.jpg`, `<chapter>-ruler-ingame.jpg`).
+
+| Chapter | Rulers (floors) | Enemies (melee, ranged or casting, the big one) |
+|---|---|---|
+| The Sea | the Drowned Admiral (1, 2, 3), the Drowned Queen (4, 6, 9), the Bell Judge (5, 7, 8) | drowned docker, net caster, the Harbourmaster's Mate (Old Barnacle under a tint) |
+| The Wood | the Elder Root (11, 12, 15), the Briar Queen (13, 16, 19), the Antler King (14, 17, 18) | moss giant, thorn sprite, the Hollow Oak |
+| The Sands | the Scarab King (21, 22, 23), the Brass Sphinx (24, 26, 29), the Red Jackal (25, 27, 28) | raider, slinger, the Raider Chief (the rider and the Dune Mother under tints) |
+| The Deep | the Prism Mother (31, 32, 35), the Lamp Warden (33, 37, 39), the Seam King (34, 36, 38) | lurker, the Lantern Thief, the Pale One |
+| The War | the Last Marshal (41, 42, 45), the Siege Lord (43, 44, 48), the Crow King (46, 47, 49) | footman, bowman, knight (each army's in its colour; the bearer black, the deserter grey; the ashen soldier a grey footman) |
+
+**Stay drawn in code:** the beasts (brine crab, bark hound, the Stag-Crowned, shard mite, crystal golem), the dust wraith, the feeding
+root, the escorts (wisp, cart, the led person), the sentries, the guards a ruler calls, the rival ally.
+
+**Decided here, for the user to overrule:** all the rulers' names for the figures (each floor keeps its own name for its ruler); which
+floors share a ruler; the Wood's three enemies (it has no people-shaped pack fighter: the moss giant, the thorn sprite, the Hollow
+Oak), the Deep's (its caster is the golem: the lurker, now a cave hunter, the Lantern Thief, the Pale One); the Dune Mother on the
+Raider Chief's figure.
+
+**Rulers in the game** (`src/tower/world/pieces/rulerModels.ts`): `withRulerModel` decorates a floor's pieces (`piecesOf`, no rebake)
+with the ruler's `model` and `body` (its hit size, measured on the model at rest: the height to its top, the trunk's radius between
+waist and chest, kept between 0.4 and 0.6). The stand-in hero's kit stays for the numbers and the
+distance it keeps, so the moves, health and timings are the floor's; the figure, the hit size and the hold (a staff upright in the left
+hand for the Wood's and the Deep's casters and the Crow King) are new; the kit's basic attack (its kind and look) is still the
+stand-in's (a ruler fights with its moves, whose poses the figure plays). A chapter's first floor shows its first ruler untinted; the
+made floors keep their tint at 0.22 (a hero stand-in had 0.5: its colours were not the ruler's).
+
+**Enemies in the game** (`src/tower/world/foeKinds.ts`, `foeModels.ts`): a table from the spec's `look` to a model, its height, its
+blow (`blade`, `heavy`, `claw`, `thrust`), its shot (`spell`, `throw`, `aim`), a hold, a livery colour and a tint. `lookOf` returns a
+model look for those, the code look for the rest; the look strings, and so the tactics' roles, are unchanged. A model look takes a
+figure from its file's pool (the file is parsed once, each figure a clone of the skeleton), shows the code look while the file loads
+(never a T-pose, never nothing), plays the pack's clips (idle, walk and jog paced to the unit's speed and size, the blow timed to land
+when the game's does, the push, the throw or the aimed crossbow for a shot, a hold on one arm), follows the arena's hit flash on its
+own materials, culls itself off screen, and keeps the puff death and the health bar. `globalThis.__codeFoes = true` before a floor
+starts draws every enemy in code and every ruler as its stand-in (the A/B).
+
+**Lighter enemies** (`blender/tower/foes.py` `finish_light`, a module's `LIGHT = {...}`): decimated to about 10,000 faces, the plain
+colour materials merged into two (cloth, metal) through vertex colours, one UV map, a 512 skin texture: five draw calls (six with the
+War's `livery`), 286 to 325 KB (4.55 MB for the 15). Rulers are finished as heroes (one at a time): 349 to 611 KB (6.92 MB for
+the 15). All 30: 11.5 MB; a floor loads its three enemy files with its fight (about 0.95 MB) and its ruler's (about 0.5 MB) at the
+ruler's door.
+
+**On a phone** (`foeModels.ts`): a figure's five meshes share one skeleton (the clone gave each its own, and three updates and uploads
+every skeleton each frame: five times the bone work), a unit is posed 30 times a second (the pack's units out of step), and the code
+look is still built for every unit and let go at once when the figure is ready (building it draws the game's random numbers, which
+the perf scenes and the route bot replay seeded). Measured with `perf.py` (phone-4x, the Climb's world scenes, the base tree beside
+it the same hour): floor 1 38.8 against 42.9 ms a frame, floor 11 35.3 against 34.2, floor 31 41.3 against 49.2; desktop the same on
+all six floors measured.
+
+**The first pack** (`src/tower/world/prewarm.ts`): when a floor's fight begins its model files load, one figure of each stands with
+the code figures under the ground, and once they have landed they are compiled for the frame's target (the renderer is taken from a
+mesh that draws nothing). Each file's pool is filled ahead with seven figures (a side has at most six live units), so a pack
+takes figures ready-made and never clones one mid-fight; the prewarm's own figure goes back to the pool when the zone goes.
+
+## The plan for all 50 floors (people, rulers and enemies done)
 
 The ladder (pipeline/designs/tower-50.md): five chapters of ten floors; in each, one handmade floor, eight made by the
 generator, and a crown. **The five crowns are Raid bosses and need nothing.** Gatekeepers and rivals stay heroes (they
@@ -103,7 +162,7 @@ dockers is six of them. Enemies should get a lighter budget than a hero's (about
 the body's hidden skin dropped), and a floor's packs measured with `python pipeline/tools/perf.py` before the rest are
 made. A floor loads about 3 people, 3 enemy kinds and its ruler: about 3.5 MB of models.
 
-## What the game code needs for the rest
+## What the game code needed (all done)
 
 1. **People: done** (above). `PersonDef.figure`, the stand-in hero for the way of holding (`Folk.stand`: no change to the figure
    code was needed), the names in the floor's words.

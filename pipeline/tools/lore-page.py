@@ -5,7 +5,12 @@
 
 Checks: every hero is in exactly one faction (or among the loners) and the faction lists agree with the heroes' own lines;
 every hero has two to four ties; every tie names two known heroes; every legend is 80 to 150 words; faction ties name known
-factions. A failed check prints why and exits with 1 (the page is not written).
+factions. Since 2026-11-15, the peoples and the codex (docs/lore/codex/): 8 to 12 peoples, every hero of exactly one known people,
+siblings of the same people; every codex link resolves; every hero has a codex page of the agreed shape (biography 600 to 1000
+words, eight voice lines); every tie is on both heroes' pages and every tie on a page is answered on the other; every new name in
+codex/names.md is listed once and is not already a name in the game; no codex page or LORE.md uses a name from the FRANCHISE list
+(a list of well-known names from other games and stories, not a proof). `--partial` lists missing pages instead of failing.
+A failed check prints why and exits with 1 (the page is not written).
 """
 import html
 import math
@@ -85,7 +90,7 @@ def blocks(lines, head):
 
 def read(path):
     sec = parse(path.read_text(encoding='utf-8'))
-    lore = {'prose': {}, 'places': [], 'factions': {}, 'ftie': [], 'heroes': [], 'ties': []}
+    lore = {'prose': {}, 'places': [], 'factions': {}, 'ftie': [], 'heroes': [], 'ties': [], 'peoples': {}}
     for name in ('The world', 'The Noonfall', 'Why heroes come to the Ring', 'The Tower and the Climb (a proposal)'):
         lore['prose'][name] = paragraphs(sec[name])
     for ln in sec['Places']:
@@ -110,6 +115,19 @@ def read(path):
                 rest.append(ln)
         f['text'] = paragraphs(rest)
         lore['factions'][fid] = f
+    # The peoples (since 2026-11-15): `### id | Name | kind` (kind: human, changed or other), `- key: value` lines, then the text.
+    for head, body in blocks(sec.get('Peoples', []), '### '):
+        pid, name, kind = head
+        pe = {'id': pid, 'name': name, 'kind': kind, 'text': []}
+        rest = []
+        for ln in body:
+            m = re.match(r'- (\w+): (.*)', ln)
+            if m and not rest:
+                pe[m.group(1)] = m.group(2).strip()
+            else:
+                rest.append(ln)
+        pe['text'] = paragraphs(rest)
+        lore['peoples'][pid] = pe
     for ln in sec['Faction ties']:
         if ln.startswith('- '):
             a, b, kind, what = [p.strip() for p in ln[2:].split('|')]
@@ -118,19 +136,27 @@ def read(path):
         name, title, theme, fac, pron, status = head
         line = ''
         rest = []
-        home, spot, age = '', '', ''
+        home, spot, age, people, kin = '', '', '', '', ''
         for ln in body:
-            if ln.startswith('> '):
+            if ln.startswith('- people: '):
+                bits = [x.strip() for x in ln[10:].split('|', 1)]
+                people, kin = bits[0], (bits[1] if len(bits) > 1 else '')
+            elif ln.startswith('- '):
+                # any other `- key:` line is a fact, never part of the legend
+                m = re.match(r'- (\w+): (.*)', ln)
+                if m and m.group(1) == 'home':
+                    home, spot = [x.strip() for x in m.group(2).split('|', 1)]
+                elif m and m.group(1) == 'age':
+                    age = m.group(2).strip()
+                else:
+                    raise SystemExit(f'{name}: unknown line in LORE.md: {ln}')
+            elif ln.startswith('> '):
                 line = ln[2:].strip()
-            elif ln.startswith('- home: '):
-                home, spot = [x.strip() for x in ln[8:].split('|', 1)]
-            elif ln.startswith('- age: '):
-                age = ln[7:].strip()
             else:
                 rest.append(ln)
         lore['heroes'].append({'name': name, 'title': title, 'theme': theme, 'faction': fac, 'pronoun': pron,
                                'status': status, 'line': line, 'legend': ' '.join(paragraphs(rest)),
-                               'home': home, 'spot': spot, 'age': age})
+                               'home': home, 'spot': spot, 'age': age, 'people': people, 'kin': kin})
     for ln in sec['Ties']:
         if not ln.startswith('- '):
             continue
@@ -202,7 +228,181 @@ def check(lore):
     for p in lore['places']:
         if p['faction'] not in facs and p['faction'] != 'none':
             errs.append(f"place {p['id']}: unknown faction {p['faction']}")
+    # Peoples: every hero has exactly one known people; siblings share one; a people's home is a place.
+    peoples = lore['peoples']
+    place_ids = {p['id'] for p in lore['places']}
+    if not 8 <= len(peoples) <= 12:
+        errs.append(f'{len(peoples)} peoples (8 to 12)')
+    for pid, pe in peoples.items():
+        if pe['kind'] not in ('human', 'changed', 'other'):
+            errs.append(f"people {pid}: kind '{pe['kind']}' (human, changed or other)")
+        if pe.get('home') not in place_ids:
+            errs.append(f"people {pid}: home '{pe.get('home')}' is not a place")
+        for k in ('look', 'life'):
+            if not pe.get(k):
+                errs.append(f'people {pid}: no {k}')
+    for h in lore['heroes']:
+        if not h['people']:
+            errs.append(f"{h['name']}: no people")
+        elif h['people'] not in peoples:
+            errs.append(f"{h['name']}: unknown people {h['people']}")
+    by = {h['name']: h for h in lore['heroes']}
+    for t in lore['ties']:
+        if t['kind'] in ('siblings', 'sisters') and t['a'] in by and t['b'] in by and by[t['a']]['people'] != by[t['b']]['people']:
+            errs.append(f"{t['a']} and {t['b']} are {t['kind']} but of different peoples")
     return errs
+
+# --------------------------------------------------------------------------------------------------------------------------
+# Codex checks (docs/lore/codex/, since 2026-11-15): links, hero pages, ties both ways, names
+
+
+CODEX = ROOT / 'docs' / 'lore' / 'codex'
+# Run with --partial while the hero pages are being written: a missing page is listed, not an error.
+PARTIAL = '--partial' in sys.argv
+HERO_SECTIONS = ['Biography', 'People and appearance', 'Voice', 'Voice lines', 'Secrets', 'What * from the Tower', 'Ties']
+
+# Names that belong to other games, books, films and shows: none may appear in the codex. A list, not a proof: it holds the
+# well-known names of the big franchises a player is likely to know (checked by hand 2026-11-15); add to it when in doubt.
+FRANCHISE = '''
+Azeroth Arthas Sylvanas Thrall Jaina Illidan Stormwind Orgrimmar Lordaeron Kalimdor Northrend Dalaran Quel'Thalas Ragnaros
+Runeterra Demacia Noxus Piltover Zaun Shurima Bilgewater Freljord Ahri Jinx Teemo Yasuo Thresh Kayle Morgana Ezreal Garen Katarina
+Roshan Pudge Invoker Tracer Reinhardt Overwatch Tamriel Skyrim Whiterun Morrowind Oblivion-Gate Geralt Yennefer Ciri Novigrad
+Kaer Hyrule Ganon Ganondorf Zelda Sephiroth Midgar Chocobo Lordran Anor Londo Gwyn Artorias Aldrich Lothric Godrick Malenia
+Radahn Ranni Marika Limgrave Leyndell Hallownest Teyvat Mondstadt Liyue Inazuma Paimon Westeros Winterfell Lannister Targaryen
+Hogwarts Voldemort Dumbledore Jedi Sith Tatooine Aslan Narnia Arrakis Atreides Harkonnen Fremen Shai-Hulud Ankh-Morpork
+Zagreus Tyrael Deckard Tyria Dominaria Sigmar Nagash Faerun Waterdeep Drizzt Gandalf Frodo Mordor Gondor Rohan Rivendell
+Lothlorien Eregion Hollin Pippin Bilbo Sauron Saruman Isengard Moria Smaug Concord Pikachu Kirby Hollow-Knight Sanctuary-Diablo
+Ulduar Karazhan Ashenvale Darnassus Teldrassil Kirin Pandaria Vaelastrasz Deathwing Kel'Thuzad Mephisto Baal Diablo Lilith
+Ixalan Kaladesh Ravnica Innistrad Theros Zendikar Kaldheim Strixhaven Eberron Ravenloft Greyhawk Dragonlance Krynn Raistlin
+Elminster Mystra Xanathar Vecna Tiamat-Dragonlance Bahamut-FF Ifrit-FF Shiva-FF Cid Tifa Aerith Yuna Lightning-FF Noctis
+Drakengard Nier Yorha Bayonetta Dante Vergil Kratos Atreus Ezio Altair Arno Lara Croft Nathan Drake Ellie Joel Aloy Senua Hornet-HK
+Ori Celeste Hades-Supergiant Transistor Bastion Pyre Kassandra Eivor Thedas Ferelden Orlais Kirkwall Tevinter Shepard Normandy
+Commonwealth Vault-Tec Brotherhood-Steel Gwent Velen Toussaint Skellige Rivia Witcher Planescape Torment Baldur Neverwinter
+'''.split()
+_COMMON = set('Bastion Torment Pyre Commonwealth Celeste Normandy Shepard Transistor Ori Dante Lara Croft Nathan Drake Ellie Joel Kirin Cid Kaer Baal Lilith Baldur Toussaint Altair Arno Atreus Kratos Vergil Mephisto Kirby Thrall Tracer Invoker'.split())
+FRANCHISE = [w for w in FRANCHISE if ('-' not in w or w in ('Ankh-Morpork', 'Shai-Hulud')) and w not in _COMMON]
+
+
+def _md_files():
+    return sorted(CODEX.rglob('*.md'))
+
+
+def _sections(text):
+    """[(heading, [lines])] for the ## headings of a page."""
+    out, cur = [], None
+    for ln in text.splitlines():
+        if ln.startswith('## '):
+            cur = (ln[3:].strip(), [])
+            out.append(cur)
+        elif cur is not None:
+            cur[1].append(ln)
+    return out
+
+
+def _game_names():
+    """Names already used in the game: heroes, titles, spells, passives, factions, places, the Climb's people and rulers."""
+    names = set()
+    for f in list((ROOT / 'src' / 'kits').glob('*.ts')) + list((ROOT / 'src' / 'traits').glob('*.ts')):
+        names |= set(re.findall(r"name: '([^']+)'", f.read_text(encoding='utf-8')))
+    names |= set(re.findall(r"name: '([^']+)'", (ROOT / 'src' / 'tower' / 'world' / 'folk.ts').read_text(encoding='utf-8')))
+    for f in (ROOT / 'src' / 'tower' / 'world' / 'floors').rglob('*.ts'):
+        names |= set(re.findall(r'"name": "([^"]+)"', f.read_text(encoding='utf-8')))
+    # the twenty new heroes' spells, from their kit sheets
+    for f in (ROOT / 'pipeline' / 'designs').glob('kit-*.md'):
+        names |= set(re.findall(r'^\| [PQWER] \| \*\*([^*]+)\*\*', f.read_text(encoding='utf-8'), re.M))
+    return {n.lower() for n in names}
+
+
+def check_codex(lore):
+    errs = []
+    if not CODEX.is_dir():
+        return ['docs/lore/codex/ is missing']
+    files = _md_files()
+    dangling = []
+    # 1. every link inside the codex resolves to a file
+    for f in files:
+        for href in re.findall(r'\]\(([^)#\s]+\.md)(?:#[^)]*)?\)', f.read_text(encoding='utf-8')):
+            if href.startswith('http'):
+                continue
+            if not (f.parent / href).resolve().exists():
+                dangling.append(f'{f.relative_to(CODEX)}: link to {href} goes nowhere')
+    if dangling and PARTIAL:
+        print(f'  (partial) {len(dangling)} links to pages still to write')
+    else:
+        errs += dangling
+    # 2. a page for every hero, of the agreed shape
+    peoples = lore['peoples']
+    heroes = {h['name']: h for h in lore['heroes']}
+    pages, ties_on = {}, {}
+    missing = []
+    for name, h in heroes.items():
+        p = CODEX / 'heroes' / f"{slug(name)[2:]}.md"
+        if not p.exists():
+            missing.append(name)
+            continue
+        text = p.read_text(encoding='utf-8')
+        pages[name] = text
+        where = f'heroes/{p.name}'
+        if f'hero: {name}\n' not in text:
+            errs.append(f'{where}: front matter has no "hero: {name}"')
+        secs = _sections(text)
+        got = [s for s, _ in secs]
+        want = HERO_SECTIONS
+        if len(got) != len(want) or any(not re.fullmatch(w.replace('*', '.+'), g) for w, g in zip(want, got)):
+            errs.append(f'{where}: sections are {got}, want {want}')
+            continue
+        sec = dict(secs)
+        bio = len(re.findall(r"[A-Za-z0-9’'-]+", ' '.join(sec['Biography'])))
+        if not 600 <= bio <= 1000:
+            errs.append(f'{where}: biography has {bio} words (600 to 1000)')
+        lines = [ln for ln in sec['Voice lines'] if ln.startswith('- ')]
+        if len(lines) != 8 or not all(re.match(r'- \*\*[^*]+:\*\* ', ln) for ln in lines):
+            errs.append(f'{where}: {len(lines)} voice lines (eight, each "- **When:** line")')
+        pe = peoples.get(h['people'])
+        head = text.split('## Biography', 1)[0]
+        if pe and pe['name'].replace('The ', '').lower() not in head.lower():
+            errs.append(f"{where}: the line under the title does not name its people ({pe['name']})")
+        ties_on[name] = set(re.findall(r'^- \*\*\[([^\]]+)\]', '\n'.join(sec['Ties']), re.M))
+    if missing and not PARTIAL:
+        errs.append(f'{len(missing)} heroes have no codex page: {", ".join(missing)}')
+    elif missing:
+        print(f'  (partial) {len(missing)} hero pages still to write')
+    # 3. ties go both ways: every tie of LORE.md on both pages, and every tie on a page answered on the other
+    for t in lore['ties']:
+        for a, b in ((t['a'], t['b']), (t['b'], t['a'])):
+            if a in ties_on and b not in ties_on[a]:
+                errs.append(f'{a}: the tie with {b} (LORE.md) is not in the Ties of the codex page')
+    for a, others in ties_on.items():
+        for b in others:
+            if b not in heroes:
+                errs.append(f'{a}: the codex names a tie with {b}, who is not a hero')
+            elif b in ties_on and a not in ties_on[b]:
+                errs.append(f"{a}: lists {b} under Ties, but {b}'s page does not list {a}")
+    # 4. names: every new name is listed once, is new to the game, and is not another franchise's
+    names_md = CODEX / 'names.md'
+    if names_md.exists():
+        game = _game_names() | {n.lower() for n in heroes} | {h['title'].lower() for h in heroes.values()}
+        game |= {f['name'].lower() for f in lore['factions'].values()} | {p['name'].lower() for p in lore['places']}
+        text = names_md.read_text(encoding='utf-8')
+        new = text.split('## Kept from the game', 1)[0]
+        seen = set()
+        for row in re.findall(r'^\| ([^|]+) \| [^|]+ \| [^|]+ \|$', new, re.M):
+            n = row.strip()
+            if n in ('Name', '---') or set(n) <= set('-: '):
+                continue
+            if n.lower() in seen:
+                errs.append(f'names.md: {n} is listed twice')
+            seen.add(n.lower())
+            if n.lower() in game:
+                errs.append(f'names.md: {n} is already a name in the game (move it to "Kept from the game" if that is meant)')
+    elif not PARTIAL:
+        errs.append('docs/lore/codex/names.md is missing')
+    franchise = re.compile(r'(?<![A-Za-z])(' + '|'.join(re.escape(w) for w in FRANCHISE) + r')(?![A-Za-z])')
+    for f in files + [SRC]:
+        for w in sorted(set(franchise.findall(f.read_text(encoding='utf-8')))):
+            errs.append(f'{f.relative_to(ROOT)}: "{w}" is a name from another game or story')
+    return errs
+
 
 # --------------------------------------------------------------------------------------------------------------------------
 # Drawing
@@ -376,6 +576,8 @@ def slug(name):
 
 
 CSS = '''
+table.plan{border-collapse:collapse;font-size:14px;width:100%}table.plan td,table.plan th{border-bottom:1px solid #3a3242;padding:5px 8px;text-align:left;vertical-align:top}tr.a-revamp td{background:rgba(255,120,60,.08)}tr.a-touch td{background:rgba(255,210,122,.04)}
+
 :root { --bg: #0e0b0c; --card: #17120f; --line: #3a3242; --gold: #ffd27a; --gold-dim: #a89870; --text: #f2e6c8; --muted: #c8bca0; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -462,9 +664,12 @@ def build(lore):
     n_new = sum(1 for h in lore['heroes'] if h['status'] != 'roster')
     P.append('<header><h1>The Dial</h1>'
              f'<p>The world of Arena of Kits, its eight factions and five loners, and a legend for each of the {len(lore["heroes"])} heroes: '
-             f'the 40 in the game and the {n_new} new ones on the cards (marked <i>new</i>). Words only: nothing in the game uses this yet. '
-             'The source is <code>docs/lore/LORE.md</code>; this page is made from it by <code>python pipeline/tools/lore-page.py</code>.</p>'
+             f'the 40 in the game and the {n_new} new ones on the cards (marked <i>new</i>), with the twelve peoples of the Dial and the plan to '
+             'bring each hero\'s figure to its people. The source is <code>docs/lore/LORE.md</code>; this page is made from it by '
+             '<code>python pipeline/tools/lore-page.py</code>. The depth (history, realms, the Climb, every hero in full) is the '
+             '<a href="codex/README.md">codex</a>, which the game shows as its Codex screen.</p>'
              '<nav class="toc"><a href="#world">The world</a><a href="#map">Map</a><a href="#ring">Why the Ring</a><a href="#tower">The Tower</a>'
+             '<a href="#peoples">Peoples</a><a href="#revamp">Revamp plan</a><a href="#codex">Codex</a>'
              '<a href="#factions">Factions</a><a href="#graph">Relations</a>'
              + ''.join(f'<a href="#f-{f["id"]}">{html.escape(f["name"].replace("The ", ""))}</a>' for f in facs.values())
              + '</nav></header><main>')
@@ -485,6 +690,10 @@ def build(lore):
     for i, p in enumerate(lore['prose']['The Tower and the Climb (a proposal)']):
         P.append(f'<p class="note">{inline(p.strip("*"))}</p>' if i == 0 else f'<p>{inline(p)}</p>')
     P.append('</section>')
+
+    P.append(peoples_html(lore))
+    P.append(revamp_html())
+    P.append(codex_html())
 
     # factions
     P.append('<section id="factions"><h2>The factions</h2><div class="grid">')
@@ -531,6 +740,8 @@ def build(lore):
                 badge = '<a class="badge" href="../heroes/next20/index.html" style="text-decoration:none">new · card</a>'
             P.append(f'<article class="card hero" id="{slug(m)}" style="--acc:{acc}"><h3>{html.escape(m)}{badge}</h3>'
                      f'<div class="title">{html.escape(h["title"])}</div>'
+                     + f'<div class="title" style="font-style:normal;color:var(--muted)">People: <a href="#p-{h["people"]}">{html.escape(lore["peoples"][h["people"]]["name"])}</a>'
+                     + (f', {html.escape(h["kin"])}' if h['kin'] else '') + f' · <a href="codex/heroes/{slug(m)[2:]}.md">full page</a></div>'
                      + (f'<div class="title" style="font-style:normal;color:var(--muted)">From: {html.escape(h["spot"])} · Age: {html.escape(h["age"])}</div>' if h.get('spot') else '')
                      + f'<blockquote>{inline(h["line"])}</blockquote><p>{inline(h["legend"])}</p><ul class="ties">')
             for word, other, t in ties_of[m]:
@@ -553,9 +764,68 @@ def build(lore):
     return '\n'.join(P)
 
 
+def peoples_html(lore):
+    """The twelve peoples as cards: kind, home, look, life, the text and the heroes of each."""
+    places = {p['id']: p['name'] for p in lore['places']}
+    by = {}
+    for h in lore['heroes']:
+        by.setdefault(h['people'], []).append(h)
+    kinds = {'human': 'human', 'changed': 'human, changed by the Fall', 'other': 'not human'}
+    P = ['<section id="peoples"><h2>The peoples</h2><p class="note">Twelve peoples live on the Dial (2026-11-15: the user found the heroes '
+         '"all the same, like human"). Four are human, three are human peoples the Fall changed, five are not human. All are built the one way, '
+         'on the pack\'s human body and clips: a people shows in skin, eyes, horns, an animal\'s head, bone, wings carried as a cloak, marks and '
+         'dress, never in a body of another shape. Each has a full page in the <a href="codex/peoples/README.md">codex</a>.</p><div class="grid">']
+    for pid, pe in lore['peoples'].items():
+        members = ', '.join(f'<a href="#{slug(h["name"])}">{html.escape(h["name"])}</a>' + (' <i>(new)</i>' if h['status'] != 'roster' else '')
+                            for h in by.get(pid, []))
+        P.append(f'<article class="card" id="p-{pid}"><h3>{html.escape(pe["name"])}</h3>'
+                 f'<div class="title">{kinds.get(pe["kind"], pe["kind"])} · {html.escape(places.get(pe.get("home"), ""))}</div><dl>'
+                 f'<dt>Look</dt><dd>{inline(pe.get("look", ""))}</dd><dt>Life</dt><dd>{inline(pe.get("life", ""))}</dd>'
+                 f'<dt>Heroes</dt><dd>{members}</dd></dl>'
+                 + ''.join(f'<p class="ftext">{inline(t)}</p>' for t in pe['text'])
+                 + f'<p class="ftext"><a href="codex/peoples/{pid}.md">The full page</a></p></article>')
+    P.append('</div></section>')
+    return ''.join(P)
+
+
+def revamp_html():
+    """The revamp plan's ranked table, read from docs/lore/codex/revamp.md."""
+    src = CODEX / 'revamp.md'
+    if not src.exists():
+        return ''
+    rows = []
+    for ln in src.read_text(encoding='utf-8').splitlines():
+        m = re.match(r'\| (\d+) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^|]+) \|$', ln)
+        if m:
+            rows.append([c.strip() for c in m.groups()])
+    P = ['<section id="revamp"><h2>The revamp plan <small style="font-size:14px;color:var(--muted)">(for the user\'s yes)</small></h2>'
+         '<p class="note">Each of the forty heroes in the game, its people, and whether its figure should change to show it: <b>no</b> (it already '
+         'reads as its people), <b>touch</b> (a skin, eye or mark of its people), <b>revamp</b> (a new figure, kit and title kept). Ranked by how '
+         'much the roster gains, the heroes that look most like another first. The first three to make: Opaline, Mr. Ledger, Kaia. The briefs, and '
+         'the twenty new heroes\' look briefs, are in <a href="codex/revamp.md">the plan</a>. Nothing is built.</p>'
+         '<div style="overflow-x:auto"><table class="plan"><tr><th>#</th><th>Hero</th><th>People</th><th>Answer</th><th>What changes</th></tr>']
+    for n, hero, people, ans, what in rows:
+        a = ans.strip('*')
+        P.append(f'<tr class="a-{a}"><td>{n}</td><td><a href="#{slug(hero)}">{html.escape(hero)}</a></td><td>{html.escape(people)}</td>'
+                 f'<td><b>{html.escape(a)}</b></td><td>{inline(what)}</td></tr>')
+    P.append('</table></div></section>')
+    return ''.join(P)
+
+
+def codex_html():
+    """Links into the codex."""
+    links = [('README.md', 'The codex, its index'), ('world.md', 'The Dial'), ('tower-and-sun.md', 'The Tower and the Sun: the open questions'),
+             ('history.md', 'History'), ('peoples/README.md', 'The peoples'), ('realms/README.md', 'The realms'), ('climb/README.md', 'The Climb'),
+             ('climb/bestiary.md', 'The bestiary'), ('climb/rulers.md', 'The rulers'), ('factions/README.md', 'The factions'),
+             ('heroes/README.md', 'The sixty heroes'), ('revamp.md', 'The revamp plan'), ('canon.md', 'The canon'), ('names.md', 'Names')]
+    return ('<section id="codex"><h2>The codex</h2><p class="note">The depth of the lore, about ten times this page, one file a subject in '
+            '<code>docs/lore/codex/</code>; the game shows it as its Codex screen (<code>python pipeline/tools/lore-codex.py</code>).</p><p>'
+            + ' · '.join(f'<a href="codex/{h}">{html.escape(t)}</a>' for h, t in links) + '</p></section>')
+
+
 def main():
     lore = read(SRC)
-    errs = check(lore)
+    errs = check(lore) + check_codex(lore)
     if errs:
         print('The lore does not check out:')
         for e in errs:

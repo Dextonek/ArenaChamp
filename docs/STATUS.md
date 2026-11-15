@@ -6,7 +6,6 @@ The three agents below were restarted in their own threads from their saved comm
 - **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
   clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
 - **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
-  - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
   Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
 - **Done and merged, not live (2026-11-15):** the Climb's open world stage 2, shared packs and scaling with players (PROTOCOL 18;
   `pipeline/designs/climb-open-world.md`, pictures `docs/tower/openworld/stage2/`). Signed-in players on a floor fight the same packs;
@@ -26,13 +25,30 @@ The three agents below were restarted in their own threads from their saved comm
   code (e83903c0 / 34f75b29 / b53a2f62): it cannot judge a change until that is fixed.
 - **Fixed:** the server test "shop: timeout waiting for boards" failed on Sundays (the test moved its clock a day, into the next
   week, before its Tower report). Now 329 server checks pass.
-- **Starting (2026-11-15):** the deep lore, peoples and Codex (brief: `docs/lore/briefs/deep-lore.md`; the aim is in the user's
-  words in CLAUDE.md's lesson "Every hero matches the lore"), then the hero revamps in Blender.
-
-_Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Cloudflare version e47791ff, PROTOCOL 16, shop still off): fifty floors in five chapters at five times the ground, the depth and scenes passes, the packs' tactics, the open world's stage 1 (signed-in players on a floor see each other), the harbour by day, faster floor builds. Not live yet: the tactics' second pass (knights charge again, no unit frozen just out of reach, the War's final pars), merged after the deploy. Next: the user's look at the open world, then its stage 2 (fighting the same packs together). Before that: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
-
-## After the deploy (2026-11-14, late): built and NOT live; three agents running
-
+- **Running (2026-11-15):** the leftovers: grass tufts off cliff slopes, the War's scenes seated on their hills, and the raid perf
+  print made the same run after run (it varies on identical code), plus the Climb's perf baseline retaken.
+- **Done and merged, not live (2026-11-15): the Climb's own rulers (15) and enemies (15) as models** (page
+  `docs/tower/models/index.html`, 100 pictures; `public/models/tower/`, 11.5 MB for all 30, a floor loads about 1.5 MB). Three rulers a
+  chapter, each on three floors under its own name and tint; three enemies a chapter (melee, ranged or casting, the big one); beasts,
+  wraiths, escorts and guards stay drawn in code. Route bot clears floors 1, 11, 21, 31, 41, every ruler on the first try. Phone-4x
+  within noise on floors 1, 11, 31; **floors 21 and 41 on phone not settled** (machine too loaded; one pair on 21 read 49.9 vs 24.3 ms):
+  `python pipeline/tools/perf.py scenes --profiles phone-4x --scenes world-3,world-5` on a quiet machine. Climb prints moved (floor 1
+  d862aa08, 31 19e8c310, 12 72213473), partly from three.js's random ids when a model file is parsed. **Waiting on the user:** a look at
+  the line-ups; the names and which floors share a ruler, the Wood's and the Deep's enemy picks are the agent's calls. Left as is: the
+  bowman's crossbow and the lurker's claws are small at rest, the slinger's and net caster's hoods read as caps, a ruler's basic
+  attack is still its stand-in hero's.
+- **Done and merged, not live (2026-11-15): the deep lore.** Twelve peoples of the Dial (Aubade folk, Dune folk, Gloaming folk,
+  Northerners, Coast folk, Kilnborn, Wood folk, mole-folk, the Ninefold, Briarkin, the Long Dead, the Fallborn); the codex
+  `docs/lore/codex/` (106 files, LORE.md + codex about 129,500 words from 13,790: history, realms, the Climb's chapters, bestiary and
+  rulers, factions, all 60 heroes with biographies and voice lines); the in-game **Codex** screen (menu, and "More about ..." on a
+  hero's Lore panel; own chunks, the page's start +1.7 kB) and each hero's people on the Lore panel and Play card. Checks:
+  `python pipeline/tools/lore-page.py`, `python pipeline/tools/lore-codex.py`. Pictures `docs/lore/pictures/`.
+  **The revamp plan** (`docs/lore/codex/revamp.md`, table on `docs/lore/index.html`): 6 revamps (Opaline, Mr. Ledger, Kaia, Brannoc,
+  Hank, Grandma Ironknit), 16 touches, 18 unchanged; the twenty new heroes each have a people and a look brief.
+  **Waiting on the user:** a yes on the plan (then the Opaline sample in Blender, one at a time); why the sun fell (the Hymn broke /
+  the Tower took it / something came through the Tear); what the Tower is (a clock / a collector of worlds / the sun's own stalk);
+  the new names (`docs/lore/codex/names.md`); whether the twenty unreleased heroes' names may show in the game's Codex.
+  **Known:** at 375 px the account area in the top bar (name, coins, log out) runs off the screen, at least with a long name.
 - **Built, merged into `feat/particle-editor`, not pushed, not live:** the Climb's minimap (top-left, follows the hero) and the whole
   floor on M or a tap (`src/tower/world/map.ts`); Online match says how many wait in the duel queue (`queue_size`, no PROTOCOL change);
   the tactics' second pass (above). News: the release "A map of the floor, and who waits to duel" (`live: false`).

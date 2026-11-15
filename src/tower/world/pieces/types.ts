@@ -100,8 +100,14 @@ export interface RulerDef {
   title: string;
   /** The hero whose model and kit it is drawn from, for now (the guardian's way). */
   stand: string;
-  /** A colour laid over its model so the five rulers do not look alike. */
-  tint: string;
+  /** A colour laid over its model so rulers on the same model do not look alike (none: the model's own colours). */
+  tint?: string;
+  /** How much of `tint` (default 0.5, a hero stand-in's; a ruler's own model takes less, rulerModels.ts). */
+  tintAmount?: number;
+  /** Its own figure (`models/tower/<id>_v4.glb`, pieces/rulerModels.ts); without it, the stand-in hero's model. The kit stays `stand`'s. */
+  model?: string;
+  /** Its hit size at a hero's size, measured on its own model (default the stand-in hero's, `HERO_BODIES`). */
+  body?: { radius: number; height: number };
   /** How many times a hero's size. */
   scale: number;
   /** Its health. */
