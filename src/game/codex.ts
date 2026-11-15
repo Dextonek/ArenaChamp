@@ -32,6 +32,7 @@ const LOADERS: Record<string, () => Promise<{ PAGES: Record<string, CodexPage> }
   realms: () => import('./codex-realms'),
   factions: () => import('./codex-factions'),
   heroes: () => import('./codex-heroes'),
+  story: () => import('./codex-story'),
 };
 
 const byId = new Map(CODEX_INDEX.map((e) => [e.id, e]));
@@ -161,7 +162,7 @@ function frontView(host: CodexHost) {
   return el('div', { class: 'cx-front' },
     el('div', { class: 'cx-head' },
       el('h1', {}, 'Codex'),
-      el('p', { class: 'muted' }, 'The world of the Dial: its peoples and realms, the factions, a hundred years of history, the Climb, and every hero in full.')),
+      el('p', { class: 'muted' }, 'The world of the Dial: its peoples and realms, the factions, a hundred years of history, the Climb, every hero in full, and the whole story, from before the Fall to the top of the Tower.')),
     el('div', { class: 'cx-books', role: 'tablist' }, ...CODEX_BOOKS.map(([b, name]) => el('button', {
       class: `cx-bookbtn${view.book === b && !view.filter ? ' on' : ''}`, role: 'tab',
       onclick: () => { view.book = b; view.filter = ''; host.rerender(); },

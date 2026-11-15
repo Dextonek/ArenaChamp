@@ -32,6 +32,7 @@ BOOKS = [
     ('realms', 'Realms', ['realms/', 'climb/']),
     ('factions', 'Factions', ['factions/']),
     ('heroes', 'Heroes', ['heroes/']),
+    ('story', 'The Story', ['story/']),
 ]
 
 # What players see is the lore, not the team's notes. Left out of the game: the open questions for the user
@@ -39,7 +40,7 @@ BOOKS = [
 # other than `roster`: their pages stay in docs/ until they ship). Inside a page: spans fenced with <!-- team --> ...
 # <!-- /team -->, whole sections with a TEAM_SECTIONS heading, and in a hero's appearance the sentences about the figure's
 # build (TEAM_SENTENCE). `check_game_text` then fails on any TEAM_WORDS left in what the game would show.
-SKIP_PAGES = {'heroes/README'}
+SKIP_PAGES = {'heroes/README', 'story/in-game'}
 TEAM_SECTIONS = {'In the figure', 'The one style, and what a people can be in it'}
 TEAM_SENTENCE = re.compile(r'revamp plan|not built yet|card drew|^Today ')
 TEAM_WORDS = re.compile(r'revamp|the user|pipeline/|\.py\b|not built|the pack\b|on the cards|style-v4', re.I)
@@ -164,6 +165,8 @@ def strip_team(text, hero_page):
 
 def read_page(book, pid, path, known, svgs):
     text = strip_team(path.read_text(encoding='utf-8'), pid.startswith('heroes/'))
+    if pid.startswith('heroes/'):
+        text = drop_unreleased_ties(text)
     lines = text.splitlines()
     meta = {}
     if lines and lines[0].strip() == '---':
@@ -203,9 +206,80 @@ def _unreleased():
 
 UNRELEASED = _unreleased()
 
+# The heroes not in the game yet are not named in the game's books (the parent's ruling, 2026-11-15): the codex in docs/
+# names them, and the game says who they are instead, by their title or (where a title reads oddly as a person, or meets
+# another name of the game) by these words. A tie of a released hero with one of them is left off that hero's page, as the
+# Lore panel leaves it off (lore-game.py).
+GAME_CALLS = {
+    'Ostrel': 'the ferryman of the dead',   # "the Ferryman" is also the Deep's quest giver, another person
+    'Lithea': 'the veiled priestess',
+    'Sahar': 'the mirage archer',
+    'Saga': 'the aurora dancer',
+    'Kohaku': 'the fox spirit',
+    'Corbel': 'the stone-winged guard',
+    'Vela': 'the moth priestess',
+}
+
+
+def _unreleased_calls():
+    lore = lp.read(lp.SRC)
+    calls, titles = {}, {}
+    for h in lore['heroes']:
+        if h['status'] != 'roster':
+            calls[h['name']] = GAME_CALLS.get(h['name'], h['title'])
+            titles[h['name']] = {h['title'], calls[h['name']]}
+    return calls, titles
+
+
+UNRELEASED_CALLS, _TITLES = _unreleased_calls()
+_NAMES_RE = re.compile(r'\b(' + '|'.join(sorted(map(re.escape, UNRELEASED_CALLS), key=len, reverse=True)) + r")\b")
+
+
+def hide_unreleased(text):
+    """The text with every unreleased hero's name put as the game calls them. A name that stands beside its own title
+    ("Name, the Title," "Name the Title", "the Title, Name") is first cut to the name, so the title is not said twice."""
+    for name, titles in _TITLES.items():
+        for t in sorted(titles, key=len, reverse=True):
+            n, tt = re.escape(name), re.escape(t)
+            text = re.sub(rf'\b{n}, (?i:{tt}),', name, text)
+            text = re.sub(rf'\b{n},? (?i:{tt})\b', name, text)
+            text = re.sub(rf'(?i:\b{tt}),? {n}\b,?', name, text)
+
+    def sub(m):
+        call = UNRELEASED_CALLS[m.group(1)]
+        before = text[:m.start()].rstrip('*_ ')
+        if not before or before[-1] in '.!?"“(':
+            call = call[0].upper() + call[1:]
+        return call
+    return _NAMES_RE.sub(sub, text)
+
+
+def hide_in_page(p):
+    def walk(x):
+        if isinstance(x, str):
+            return hide_unreleased(x)
+        if isinstance(x, list):
+            return [x[0]] + [walk(y) for y in x[1:]] if x and x[0] == 'svg' else [walk(y) for y in x]
+        return x
+    p['title'] = hide_unreleased(p['title'])
+    p['sub'] = hide_unreleased(p['sub'])
+    p['blocks'] = [b if b[0] == 'svg' else [b[0]] + walk(b[1:]) for b in p['blocks']]
+    return p
+
+
+def drop_unreleased_ties(text):
+    """On a released hero's page, the Ties bullets that name a hero not in the game are left out."""
+    head, sep, rest = text.partition('\n## Ties')
+    if not sep:
+        return text
+    body, sep2, tail = rest.partition('\n## ')
+    items = re.split(r'\n(?=- )', body)
+    kept = [it for it in items if not (m := re.match(r'- \*\*\[([^\]]+)\]', it)) or m.group(1) not in UNRELEASED_CALLS]
+    return head + sep + '\n'.join(kept) + sep2 + tail
+
 
 def check_game_text(pages):
-    """No team notes in what players see."""
+    """No team notes in what players see, and no hero who is not in the game yet named in it."""
     errs = []
     for p in pages:
         for t in [p['title'], p['sub']] + [str(b) for b in p['blocks'] if b[0] != 'svg']:
@@ -213,6 +287,37 @@ def check_game_text(pages):
             if m:
                 errs.append(f"{p['id']}: the game would show a team note ({m.group(0)!r}): {t[max(0, m.start() - 50):m.end() + 40]!r}")
                 break
+        for t in [p['title'], p['sub']] + [str(b) for b in p['blocks'] if b[0] != 'svg']:
+            m = _NAMES_RE.search(t)
+            if m:
+                errs.append(f"{p['id']}: the game would name {m.group(1)}, who is not in the game yet: {t[max(0, m.start() - 50):m.end() + 40]!r}")
+                break
+            m = re.search(r'\]\((heroes/[a-z0-9-]+)\)', t)
+            if m and m.group(1).split('/')[1] in UNRELEASED:
+                errs.append(f"{p['id']}: the game would link to {m.group(1)}, a hero not in the game yet")
+                break
+    return errs
+
+
+# The canon's answer (since 2026-11-15, the user's choice): the sun fell because the Tower took it, and the Tower is a
+# collector of worlds. canon.md states it once, word for word; no page says in the codex's own voice that it is unknown or
+# left open. A page may still say what a character or a faction wrongly believed: those sentences name who believes it.
+CANON_LINE = 'The sun fell because the Tower took it.'
+STILL_OPEN = re.compile(r'nobody knows why the sun fell|nobody agrees why|nothing agrees on why|left open on purpose|'
+                        r'two questions left open|the open questions|candidate answers?|has not been chosen|not been chosen yet|'
+                        r'the proposal so far|\(a proposal\)|never says which', re.I)
+
+
+def check_canon():
+    errs = []
+    n = 0
+    for f in sorted(CODEX.rglob('*.md')) + [lp.SRC]:
+        text = f.read_text(encoding='utf-8')
+        n += text.count(CANON_LINE) if f.name == 'canon.md' else 0
+        for m in STILL_OPEN.finditer(text):
+            errs.append(f'{f.relative_to(ROOT)}: still says the answer is open ({m.group(0)!r})')
+    if n != 1:
+        errs.append(f'canon.md states the canon\'s answer {n} times, want once: "{CANON_LINE}"')
     return errs
 
 
@@ -240,7 +345,7 @@ def main():
         word_report()
         return
     lore = lp.read(lp.SRC)
-    errs = lp.check(lore) + lp.check_codex(lore)
+    errs = lp.check(lore) + lp.check_codex(lore) + check_canon()
     if errs:
         print('The codex does not check out:')
         for e in errs:
@@ -249,14 +354,15 @@ def main():
     files = page_files()
     known = {pid for _, pid, _ in files}
     svgs = {'map': lp.map_svg(lore)}
-    pages = [read_page(b, pid, p, known, svgs) for b, pid, p in files]
+    pages = [hide_in_page(read_page(b, pid, p, known, svgs)) for b, pid, p in files]
     errs = check_game_text(pages)
     if errs:
         print('The game\'s Codex would show team notes:')
         for e in errs:
             print('  -', e)
         sys.exit(1)
-    print(f'codex: {len(files)} pages in the game\'s books (the {len(UNRELEASED)} heroes not in the game stay in docs/), checks passed')
+    print(f'codex: {len(files)} pages in the game\'s books (the {len(UNRELEASED)} heroes not in the game stay in docs/ '
+          f'and are not named in the game\'s books), checks passed')
     if '--check' in sys.argv:
         return
     gen = ROOT / 'src' / 'game'

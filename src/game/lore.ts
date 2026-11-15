@@ -5,9 +5,12 @@
 export interface LoreFaction { name: string; colours: string[]; home: string; wants: string; sigil: string }
 export interface LoreTie { other: string; kind: string; pair: string; what: string; strong: boolean }
 export interface LorePeople { name: string; kind: string; look: string; life: string; text: string }
-/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind). */
+/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind).
+ * `origin` (the canon, 2026-11-15): dial, returned (taken by the Tower and come back out), halfkept, spilled (made by the
+ * Fall), followed (came after the Tower through the Tear). */
 export interface LoreHero {
   faction: string; people: string; kin: string; place: string; from: string; age: string; line: string; legend: string;
+  origin: string;
   ties: LoreTie[];
 }
 
@@ -241,7 +244,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mr. Ledger": {
   "faction": "truce",
@@ -281,7 +285,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "longdead",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Wick": {
   "faction": "truce",
@@ -300,7 +305,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Pip": {
   "faction": "truce",
@@ -326,7 +332,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Madame Cleaver": {
   "faction": "truce",
@@ -352,7 +359,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Big Yoko": {
   "faction": "truce",
@@ -385,7 +393,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Auriel": {
   "faction": "noonsworn",
@@ -411,7 +420,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Anka": {
   "faction": "noonsworn",
@@ -430,7 +440,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "an Ember"
+  "kin": "an Ember",
+  "origin": "spilled"
  },
  "Cantor": {
   "faction": "noonsworn",
@@ -449,7 +460,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Opaline": {
   "faction": "noonsworn",
@@ -475,7 +487,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Vesper": {
   "faction": "dusk",
@@ -508,7 +521,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Silvane": {
   "faction": "dusk",
@@ -534,7 +548,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mortis": {
   "faction": "dusk",
@@ -553,7 +568,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "longdead",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Nyx": {
   "faction": "dusk",
@@ -579,7 +595,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "of the Cast"
+  "kin": "of the Cast",
+  "origin": "spilled"
  },
  "Mum": {
   "faction": "dusk",
@@ -598,7 +615,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Fenna": {
   "faction": "greenwood",
@@ -624,7 +642,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Hank": {
   "faction": "greenwood",
@@ -650,7 +669,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Bo": {
   "faction": "greenwood",
@@ -676,7 +696,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": "ram-horned"
+  "kin": "ram-horned",
+  "origin": "dial"
  },
  "Pim and Pom": {
   "faction": "greenwood",
@@ -709,7 +730,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Acorn court"
+  "kin": "the Acorn court",
+  "origin": "dial"
  },
  "Sirix": {
   "faction": "greenwood",
@@ -728,7 +750,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Hive court"
+  "kin": "the Hive court",
+  "origin": "dial"
  },
  "Marin": {
   "faction": "windward",
@@ -747,7 +770,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Kaia": {
   "faction": "windward",
@@ -766,7 +790,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Zephyr": {
   "faction": "windward",
@@ -785,7 +810,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Barry Cloudsley": {
   "faction": "windward",
@@ -818,7 +844,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Professor Puff": {
   "faction": "windward",
@@ -851,7 +878,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Gus": {
   "faction": "windward",
@@ -877,7 +905,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Brannoc": {
   "faction": "underforge",
@@ -910,7 +939,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Ada": {
   "faction": "underforge",
@@ -936,7 +966,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Bram": {
   "faction": "underforge",
@@ -955,7 +986,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mabel": {
   "faction": "underforge",
@@ -974,7 +1006,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "mole",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Sefu": {
   "faction": "dune",
@@ -993,7 +1026,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Vitriol": {
   "faction": "dune",
@@ -1012,7 +1046,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Tempo": {
   "faction": "hourkeepers",
@@ -1038,7 +1073,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "halfkept"
  },
  "Shiori": {
   "faction": "hourkeepers",
@@ -1064,7 +1100,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Lyra": {
   "faction": "hourkeepers",
@@ -1083,7 +1120,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Grandma Ironknit": {
   "faction": "hourkeepers",
@@ -1109,7 +1147,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Spindle court"
+  "kin": "the Spindle court",
+  "origin": "dial"
  },
  "Isolde": {
   "faction": "hourkeepers",
@@ -1128,7 +1167,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": "lake-born"
+  "kin": "lake-born",
+  "origin": "dial"
  },
  "Oblivion": {
   "faction": "loners",
@@ -1154,7 +1194,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "the Unmade"
+  "kin": "the Unmade",
+  "origin": "followed"
  },
  "Sir Whiskers": {
   "faction": "loners",
@@ -1173,7 +1214,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "ninefold",
-  "kin": "a lynx"
+  "kin": "a lynx",
+  "origin": "dial"
  },
  "The Great Zambini": {
   "faction": "loners",
@@ -1199,7 +1241,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "of no court"
+  "kin": "of no court",
+  "origin": "returned"
  }
 };
 

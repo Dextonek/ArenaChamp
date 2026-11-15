@@ -29,7 +29,7 @@ Field of Banners**. In the west, **the Walking Wood**. In the north-west, **Gloa
 
 ## The Noonfall
 
-A hundred years ago, at noon on a midsummer day, the sun stopped over the Tower, cracked, and fell. Nobody agrees why. Its heart fell
+A hundred years ago, at noon on a midsummer day, the sun stopped over the Tower, cracked, and fell. It fell because the Tower took it (`## The Tower and the Climb`). Its heart fell
 at the Tower's foot and still burns beneath it in the Hall of Noon: **the Heart of Noon**, the fallen sun. Its two last embers fell
 into the Cinder Pit, where they burn as **Ash and Ember**. Its keeper, **the Sun Warden**, stayed at his post in the Sun Court at the
 Tower's top, and his great dial still strikes.
@@ -59,10 +59,16 @@ right to climb. Most heroes also bring a reason of their own, and a rival they w
 holds duels in the realms too, on fields it has blessed: the Drowned Harbour, the Verdant Glade, the Sandstone Canyon, the Crystal
 Cavern, the Fallen Battlefield, Frostfall Lake, the Night Temple, the Sky Ruins and the Ember Caldera.
 
-## The Tower and the Climb (a proposal)
+## The Tower and the Climb
 
-*The Tower's own story has not been chosen yet (`pipeline/designs/tower-50.md`). This is one way to tell it, built on "a Tower that
-collects worlds", for the user to keep or change.*
+*The user's choice, 2026-11-15: the sun fell because the Tower took it, and the Tower is a collector of worlds. The canon in full:
+`docs/lore/codex/canon.md`; the whole story: `docs/lore/codex/story/`.*
+
+The Tower is a made thing. Its makers, on a world called Senmere whose sun was failing, called it the Aumbry, the keeping-place: it
+takes a thing at its hour and keeps it, as it was, for ever. It kept their world, then crossed the dark to the Dial and stood at its
+centre as its gnomon, older than any memory, waiting for the Dial's sun to age. Three hundred years before the Fall it began to draw on
+the sun at noon, and the sun paled; at noon on midsummer of year 0 it closed its hand and took the sun's noon, and the sun's body
+cracked in its grip and fell. Most of the Dial still does not know it.
 
 Since the Fall the Tower has been taking the realms in. Its floors hold them as they were at the hour it took them: **the Sea** as the
 Drowned Harbour on the morning the water came, **the Wood** walking, **the Sands** and their storm, **the Deep** without light, and
@@ -72,7 +78,7 @@ took them, and they still keep their posts. Each floor's ruler is the worst thin
 
 The crowns of the chapters are the sun's own: the Sun Warden on the tenth and fortieth floors, Ash and Ember on the twentieth and
 fiftieth, and the Heart of Noon itself on the thirtieth. Above the fiftieth floor is **the Noon Seat**, where the sun rested at noon.
-It is empty. Whoever reaches it decides what hangs there.
+It looks empty from below: it is where the Tower keeps the noon it took. Whoever reaches it decides what hangs there.
 
 Each chapter's gate is held by a hero of that realm: Marin at the Sea, Fenna at the Wood, Sefu at the Sands, Opaline at the Deep. At
 the War the gatekeeper is Oblivion, because that endless war is the one thing on the Dial it has truly unmade.
@@ -1085,3 +1091,71 @@ chain on a spring tide. She owes Vitriol for the curse and Ramet for the gate, a
 - Isolde ~ Saga | sisters | The warden of the cold and the dancer of its light, daughters of the same frozen lake
 - Grandma Ironknit > Thessa | teacher | She taught Thessa to sew, and to sew places once cloth was too easy
 - Tempo ~ Shiori | comrades | He keeps the hours and she writes them down, and both are always a little behind
+
+## Origins
+
+Where each hero comes from, since the canon's answer (2026-11-15): `dial` (born on the Dial in its own time), `returned` (taken by the
+Tower long ago and come back out), `halfkept` (half taken in the hour of the Fall), `spilled` (made by the Fall's broken taking), `followed`
+(came after the Tower, through the Tear). One line a hero: `- Name | origin | why, in a few words`. The story of each is in
+`docs/lore/codex/story/`.
+
+- Referee Whistler | dial | born on the Dial
+- Mr. Ledger | dial | born in Harrow, dead since sixty years before the Fall
+- Wick | dial | born on the Dial
+- Pip | dial | born on the Dial
+- Madame Cleaver | dial | born on the Dial
+- Big Yoko | dial | born on the Dial
+- Morwen | dial | born on the Dial
+- Kessa | dial | born on the Dial
+- Auriel | dial | born on the Dial
+- Anka | spilled | a spark of the sun that slipped the Tower's grip and fell into the sea
+- Cantor | dial | born in Aubade; left in the Sun Court because he was listening to Mum and not the beat
+- Opaline | dial | born on the Dial
+- Campana | dial | born on the Dial
+- Orren | dial | born on the Dial
+- Vesper | dial | born in Gloaming, kept since by blood, not by the Tower
+- Silvane | dial | born on the Dial
+- Mortis | dial | born in Gloaming, dead three hundred years; the Tower's keeping is why the dead get up
+- Nyx | spilled | a shadow thrown by light the Tower took in mid-throw, left belonging to nothing
+- Mum | dial | born in Aubade; a hair behind the beat since the Fall, so the Tower cannot take her by an hour
+- Kohaku | returned | taken with the same revel; spilled out of the Tower when the sun cracked, and has been getting her court out since
+- Corbel | dial | born in Gloaming, turned to stone and woken
+- Fenna | dial | born on the Dial
+- Hank | dial | born on the Dial
+- Bo | dial | born on the Dial
+- Pim and Pom | dial | born in the Underbough, one life for two
+- Sirix | dial | born on the Dial
+- Vela | dial | born on the Dial
+- Arden | dial | born on the Dial
+- Marin | dial | born on the Dial
+- Kaia | dial | born on the Dial
+- Zephyr | dial | born on the Dial
+- Barry Cloudsley | dial | born on the Dial
+- Professor Puff | dial | born on the Dial
+- Lian | dial | born on the Dial
+- Gus | dial | born on the Dial
+- Brannoc | dial | born on the Dial
+- Ada | dial | born on the Dial
+- Bram | dial | born on the Dial
+- Mabel | dial | born on the Dial
+- Itzel | dial | born on the Dial
+- Hesk | dial | born on the Dial
+- Tova | dial | born on the Dial
+- Sefu | dial | born on the Dial
+- Vitriol | dial | born in Tamerit, kept since by the embalmers' oil
+- Lithea | dial | born on the Dial
+- Nebet | dial | born on the Dial
+- Sahar | dial | born on the Dial
+- Ramet | dial | born on the Dial
+- Tempo | halfkept | a heartbeat behind the hour when the Tower closed its hand: one of him was kept, one walks
+- Shiori | dial | born on the Dial
+- Lyra | dial | born on the Dial
+- Grandma Ironknit | dial | born on the Dial
+- Isolde | dial | born on the Dial
+- Saga | dial | born on the Dial
+- Thessa | dial | born on the Dial
+- Oblivion | followed | the ending of Senmere, the world the Tower kept before the Dial, dragged after it through the Tear
+- Sir Whiskers | dial | born on the Dial
+- The Great Zambini | returned | taken with a Fox court revel three hundred years before the Fall; walked out of a Hundred Door in year 40
+- Ostrel | dial | born on the Dial four hundred years ago; the girl he lost is in the Tower
+- Asenet | dial | born in Tamerit; the one who read the first king's tomb and knew

@@ -17,11 +17,9 @@ chapters of ten.
 
 ## What the Climb is
 
-<!-- team -->*The Tower's own story has not been chosen ([The Tower and the Sun](../tower-and-sun.md)). The Climb was written with the
-proposal "a Tower that collects worlds", for the user to keep or change; this section and the chapters give it only as belief, so
-any answer fits.*<!-- /team -->
-
-Nobody knows. What every climber agrees on is what is there: each chapter is a realm of the Dial as it was at one hour. **The Sea**
+The Tower is a collector of worlds ([The Tower and the Sun](../tower-and-sun.md)). Each chapter is a realm it took, as it was
+at the hour it took it, with the people who were in that hour; the realm outside goes on without them, thinner. Few climbers know
+this in the hundredth summer. What every climber agrees on is what is there: each chapter is a realm of the Dial as it was at one hour. **The Sea**
 is the Drowned Harbour on the morning the water came, **the Wood** is walking, **the Sands** are in their storm, **the Deep** is
 without light, and **the War** is on the Field of Banners, where the two armies still fight because nobody inside has told them it is
 over. The people of the floors say they have always been there, and they keep their posts. Each floor's ruler is the worst thing its
@@ -29,7 +27,8 @@ realm had.
 
 What the floors *are* is argued in every tavern of the Ringside. The Greenwood Moot says the Tower collects worlds: that it has taken
 these realms in, as they were at the hour it took them, and that the realms outside are thinner for it. The Hourkeepers say the floors
-are records, the way a clock keeps the time. The Noonsworn say they are the sun's stair. Nobody has proved any of it.
+are records, the way a clock keeps the time. The Noonsworn say they are the sun's stair. The Moot are nearest. The floors are not records yet, though they may become them
+([The Long Noon](../story/README.md)).
 
 ## The five chapters
 

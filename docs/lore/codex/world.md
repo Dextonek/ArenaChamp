@@ -43,8 +43,10 @@ that rises each day still waxes and wanes through the year; but the weather keep
 
 ## The Noonfall
 
-A hundred years ago, at noon on midsummer day, the sun stopped over the Tower, cracked, and fell. Everything else on the Dial
-agrees on what happened next, and nothing agrees on why ([The Tower and the Sun](tower-and-sun.md)).
+A hundred years ago, at noon on midsummer day, the sun stopped over the Tower, cracked, and fell. It fell because the Tower took
+it: the Tower is a made thing, a collector of worlds, and that noon it closed its hand on the sun and took its light and its hour into
+itself, and the sun's body, too great to keep, cracked in its grip ([The Tower and the Sun](tower-and-sun.md)). The Dial does not know
+this in the hundredth summer. It knows what it saw.
 
 What happened next: the sun's heart fell at the Tower's foot and still burns beneath it in the Hall of Noon, **the Heart of Noon**.
 Its two last embers fell into the Cinder Pit, where they burn as **Ash and Ember**. Its keeper, **the Sun Warden**, stayed at his
@@ -65,8 +67,18 @@ elders, and many of its heroes, are Noon-touched, which is why the realms' memor
 arguing. The young of the Dial (anyone born more than a week after the Fall) age as people always did, and listen to their elders
 about the sun with a mixture of awe and boredom.
 
-Nobody knows why it happened. The Hourkeepers believe the Noon-touched are people the slipping hours have caught: that a little of
-the stopped noon is in them, and that if the hours ever run true again they may age all at once. They have told almost nobody.
+The Hourkeepers believe the Noon-touched are people the slipping hours have caught: that a little of the stopped noon is in them,
+and that if the hours ever run true again they may age all at once. They have told almost nobody. They are half right. The Tower keeps
+the hour of noon it took, and everyone who was alive in that hour is held in it a little, like a thread caught in a closed door; but
+what the door holds is not owed, and if it opens, nobody will pay it back.
+
+## The Tower
+
+The Tower is called the Gnomon by scholars and the Aumbry, the keeping-place, by the people who made it, on a world called Senmere,
+whose sun was going out. It takes a thing at its hour and keeps it for ever, as it was. It kept Senmere, and came across the dark to
+the Dial, and stood at its centre as its gnomon for longer than any people remembers, waiting for the Dial's sun to age. It has taken
+the sun's noon, a market, a choir, and since the Fall the realms one by one, each at the hour of its greatest loss: that is the Climb
+([the Climb](climb/README.md)). It means no harm. It was made out of grief, to save, and it has never let anything go.
 
 ## The peoples
 

@@ -12,15 +12,20 @@ on we will match all heroes to our lore."
 
 **How it fits together.** [LORE.md](../LORE.md) stays the short source: the page `docs/lore/index.html` and the game's Lore panel
 read it. The codex is the depth, one file a subject, cross-linked. The game's **Codex** screen is made from these files by
-`python pipeline/tools/lore-codex.py`, which also checks them. Two questions are left open on purpose and no page states them as
-fact: why the sun fell and what the Tower is ([The Tower and the Sun](tower-and-sun.md)). The facts every page agrees with are in
-[the canon](canon.md).
+`python pipeline/tools/lore-codex.py`, which also checks them. The two great questions are answered (the user, 2026-11-15): the sun
+fell because the Tower took it, and the Tower is a collector of worlds ([The Tower and the Sun](tower-and-sun.md)). The facts every
+page agrees with are in [the canon](canon.md); the whole story, from before the Fall to its end, is [The Long Noon](story/README.md).
 
 ## The world
 
 - [The Dial](world.md): the land, the hours, the Noonfall, the Noon-touched, money, tongues and the Truce of the Ring.
-- [The Tower and the Sun](tower-and-sun.md): what each faction believes, and the candidate answers for the user to choose.
+- [The Tower and the Sun](tower-and-sun.md): why the sun fell, what the Tower is, and what each faction believed instead.
 - [History](history.md): a timeline from the Long Count to the hundredth summer, and what is happening now.
+
+## The story
+
+[The Long Noon](story/README.md): the story of the Dial in fourteen chapters, from the making of the Tower to the new sun and after,
+and [how the game can tell it](story/in-game.md).
 
 ## The peoples
 

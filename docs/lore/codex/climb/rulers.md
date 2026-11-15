@@ -34,8 +34,9 @@ people tell them.
   when she drowned. They have grown large.
 - **The Sun Warden (10, the crown).** The keeper of the sun's post at the Tower's top, who kept it for longer than any record, received
   the choir every noon for four hundred years, and did not come down when the sun fell. He wears gold and white and a great dial, and
-  his dial still strikes. Whether he is a man, a Long Dead, a Fallborn or something the Tower made, nobody knows. He meets climbers as
-  if they were late.
+  his dial still strikes. Climbers argue whether he is a man, a Long Dead, a Fallborn or something the Tower made. He is none of them: he
+  is the last of the people who made the Tower, and on this floor the Tower's keeping of him, as he was at the hour it took the sun.
+  He meets climbers as if they were late.
 
 ## The Wood
 
@@ -88,7 +89,8 @@ people tell them.
   sun's cracking, and did not come down the Tower, but came out somewhere else. [Cantor](../heroes/cantor.md) does not know he is here.
 - **The Gem Tyrant (38).** A crystal-merchant who hoarded the Deep's light and was buried by it.
 - **The Drowned Lantern (39).** A lamp that fell into the black water and kept burning under it, and now walks out of it.
-- **The Sun Warden (40, the crown).** The keeper of the sun's post, met a second time; he remembers the first.
+- **The Sun Warden (40, the crown).** The keeper of the sun's post, met a second time, and this time himself, come down from the
+  Sun Court; he remembers the first. The word that binds him makes him fight. He fights to see whether you are enough.
 
 ## The War
 

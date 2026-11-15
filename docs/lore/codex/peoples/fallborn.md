@@ -10,7 +10,10 @@ tags: [lore, codex, people, other]
 
 The Fallborn are not a people in the way the others are. They have no homeland, no children and no common tongue. What they share
 is that **none of them existed before the Fall**. The Hourkeepers group them because they must be written down somewhere, and the
-Fallborn have accepted the name, because it is true. There are three kinds, and they could hardly be less alike.
+Fallborn have accepted the name, because it is true. There are three kinds, and they could hardly be less alike. What made
+them is the same: the Tower's taking of the sun, which broke. The Embers are sparks that slipped its grip; the Cast are shadows thrown
+by light that was taken in mid-throw, and so belong to nothing; the Unmade are what the Tower drags behind it, the remains of the
+world it kept before the Dial ([The Tower and the Sun](../tower-and-sun.md)).
 
 ## The Embers
 

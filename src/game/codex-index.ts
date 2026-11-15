@@ -2,7 +2,7 @@
 // Every page of the Codex: its id, book, title and line (the pages themselves are in codex-<book>.ts, loaded on first need).
 
 export interface CodexEntry { id: string; book: string; title: string; sub: string; hero: string }
-export const CODEX_BOOKS: [string, string][] = [["world", "The world"], ["peoples", "Peoples"], ["realms", "Realms"], ["factions", "Factions"], ["heroes", "Heroes"]];
+export const CODEX_BOOKS: [string, string][] = [["world", "The world"], ["peoples", "Peoples"], ["realms", "Realms"], ["factions", "Factions"], ["heroes", "Heroes"], ["story", "The Story"]];
 export const CODEX_INDEX: CodexEntry[] = [
 {
 "id": "world",
@@ -584,5 +584,12 @@ export const CODEX_INDEX: CodexEntry[] = [
 "title": "Zephyr, the Wind Blade",
 "sub": "The Windward · Coast folk · from the Drowned Coast",
 "hero": "Zephyr"
+},
+{
+"id": "story/README",
+"book": "story",
+"title": "The Long Noon",
+"sub": "The story of the Dial.",
+"hero": ""
 }
 ];

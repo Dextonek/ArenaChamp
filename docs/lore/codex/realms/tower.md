@@ -18,7 +18,9 @@ side by side because the Truce requires it and the trade rewards it.
 
 The Tower itself rises from the crater's centre: a single shaft of pale grey stone, smooth, without a seam, wider at the base than a
 city square and narrowing to a point lost in cloud. It has one door at the bottom, the gate, and no windows anyone has found.
-Climbers say it is larger inside than out, which the Hourkeepers have measured and cannot explain.
+Climbers say it is larger inside than out, which the Hourkeepers have measured and cannot explain. It is: it holds the hours
+of realms, and an hour has no walls. The Tower is the Aumbry, a collector of worlds made on another world, Senmere, and it took the
+sun ([The Tower and the Sun](../tower-and-sun.md)).
 
 ## Its places
 
@@ -73,7 +75,8 @@ their debts.
 
 The festival market that was here on the day of the Fall is gone with everyone in it; its dead are remembered by a ring of white
 stones on the crater's rim. The first years of the Truce were not peaceful: the founders fought in the Ring for months over the
-clauses. And year 90's blank page in the Tally, the duel that opened the gate with no champion recorded, has never been explained.
+clauses. And year 90's blank page in the Tally, the duel that opened the gate with no champion recorded, has never been explained to
+the Ringside. The Tower took the hour of that duel: its winner was Mum, whom it could not take.
 
 ## Its stake in the Tower
 
