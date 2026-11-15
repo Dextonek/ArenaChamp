@@ -83,6 +83,24 @@ export function rimAt(rim: number[], a: number) {
   return rim[i] + (rim[(i + 1) % n] - rim[i]) * s;
 }
 
+/**
+ * Whether grass can stand at (dx, dz) on ground of this `height` (offsets from the middle): the ground round it, out to `reach` m, is no
+ * steeper than `max` (rise over run; 0.6 is 31 degrees). The ground is drawn in cells of 2.1 to 2.3 m, so a tuft tested at its own point
+ * (flat at a cliff's foot or on its lip by the formula) stood on the cliff's face as drawn, the face running through its cell (2026-11-15:
+ * dry shrubs on the Sands' canyon walls at up to 73 degrees). Every chapter's grass is kept to it, as a filter after the grass is placed,
+ * so the dice and everything placed after the grass stay as they were.
+ */
+export function grassStands(height: (dx: number, dz: number) => number, dx: number, dz: number, max = 0.6, reach = 2.4) {
+  const h0 = height(dx, dz);
+  for (const r of [reach / 2, reach]) {
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      if (Math.abs(height(dx + Math.cos(a) * r, dz + Math.sin(a) * r) - h0) > max * r) return false;
+    }
+  }
+  return true;
+}
+
 /** The world's shape, from offsets (dx, dz) from the middle. */
 export function geography(rim: number[], o: { mirror?: 1 | -1; seed?: number } = {}) {
   const m = o.mirror ?? 1, seed = o.seed ?? 0;

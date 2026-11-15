@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
-import { rimAt } from './land';
+import { grassStands, rimAt } from './land';
 import { sandsDepth } from './sandsDepth';
 import { Kit, type Piece } from './zone';
 
@@ -465,6 +465,11 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
     const p = W(o.dx, o.dz), s = 0.45 + rnd() * 0.5;
     tufts.push(new THREE.Matrix4().compose(new THREE.Vector3(p.x, geo.height(o.dx, o.dz) - 0.05, p.z), q.setFromAxisAngle(up, rnd() * 6.28).clone(), new THREE.Vector3(s, s * 0.7, s)));
   }
+  // and none on a cliff as drawn: tested at its own point only, a shrub at a wall's foot or on its lip stood on the wall's face, which runs
+  // through the ground's 2.1 m cell (land.ts `grassStands`); left out after the placing, so the dice after it fall as before
+  const standing = tufts.filter((mm) => grassStands(geo.height, mm.elements[12] - RING.x, mm.elements[14] - RING.z));
+  tufts.length = 0;
+  tufts.push(...standing);
   const tuftParts: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 5; i++) tuftParts.push(new THREE.ConeGeometry(0.09, 0.9, 4).translate(0, 0.45, 0).rotateZ(0.5).rotateY((i / 5) * Math.PI * 2));
   const tuftGeo = mergeGeometries(tuftParts)!;

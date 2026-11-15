@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../arenas/common';
-import type { Dress, Geo, Key, LandSpec } from './land';
+import { grassStands, type Dress, type Geo, type Key, type LandSpec } from './land';
 import { buildSeaScenes } from './scenes/sea';
 
 /**
@@ -259,7 +259,7 @@ export function buildDepth(o: DepthIn) {
     o.into.add(im);
     o.own.push(geom);
   };
-  inst(tuftGeo, tuft);
+  inst(tuftGeo, tuft.filter((mm) => grassStands(geo.height, mm.elements[12] - RING.x, mm.elements[14] - RING.z))); // grass only where the ground as drawn is gentle
   const heads = ['#e6dfcc', '#d8b84a', '#9a3448'];
   heads.forEach((hex, i) => inst(mergeGeometries([tint(new THREE.CylinderGeometry(0.015, 0.015, 0.36, 3).translate(0, -0.06, 0), '#4a6638'), tint(new THREE.IcosahedronGeometry(0.07, 0).translate(0, 0.14, 0), hex)])!, flower.filter((_, k) => k % 3 === i)));
   inst(tint(new THREE.IcosahedronGeometry(1, 0), '#6a6662'), pebble);
