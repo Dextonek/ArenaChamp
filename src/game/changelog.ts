@@ -53,6 +53,11 @@ export const CHANGELOG: Release[] = [
         text: 'A new Codex screen, from the menu or from any hero’s lore (“More about…”), tells the whole world: the twelve peoples of the Dial, not all of them human, the nine realms on a map, the eight factions and their secrets, a hundred years of history, the Climb’s chapters, rulers and enemies, and every hero’s full story with their voice lines. Each hero’s card now also shows their people.',
       },
       {
+        tag: 'Menus',
+        title: 'A tidier bar on a phone',
+        text: 'On a phone the bar along the bottom now shows Play, Raid, Tower and Clan (Shop before you sign in) in letters you can read, and a More tab opens the rest: Lobbies, Boards, Heroes, Shop, Profile, Codex, News, Graphics and Log out. A long name no longer pushes your obols off the screen; tap your name to open your profile.',
+      },
+      {
         tag: 'Online',
         title: 'Fight the Climb’s packs together',
         text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',

@@ -506,7 +506,7 @@
 /* A phone held upright: the screens' tabs move to a bar along the bottom, under the thumb; a tighter menu, a smaller
    hero grid, and the Find match row pinned above the tab bar so it never scrolls out of reach. */
 @media (max-width: 600px) {
-  :root { --tabbar: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  :root { --tabbar: calc(60px + env(safe-area-inset-bottom, 0px)); }
   .screen { padding: 12px 10px calc(90px + var(--tabbar)); }
   .screen.wide { padding-bottom: calc(14px + var(--tabbar)); }
   .card { padding: 14px 14px; }
@@ -821,13 +821,8 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .top { gap: 12px; }
 }
 @media (max-width: 600px) {
-  /* Eight tabs along the bottom of a phone: narrower letters, so "Lobbies" and "Profile" still fit their tab. */
-  .top nav.many .nav { font-size: 8.5px; letter-spacing: 0.01em; padding-left: 0; padding-right: 0; }
-  .top nav.many .nav .ic svg { width: 20px; height: 20px; }
   .who { gap: 7px; }
   .who .btn.small { padding-left: 10px; padding-right: 10px; }
-  /* A logged-in player's bar is full on a phone (name, obols, Log out): the Graphics button is on the Profile screen there. */
-  .who.full .gfx { display: none; }
   .obols.big { font-size: 26px; }
   .purse-big { padding: 6px 14px 8px; }
   .shop { gap: 10px; }
@@ -922,9 +917,6 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 @media (max-width: 600px) {
   /* On a phone the count sits on the tab's icon. */
   .nav-unread { position: absolute; top: 2px; right: calc(50% - 20px); margin: 0; }
-  /* Ten tabs along the bottom of a phone: smaller still. */
-  .top nav.many .nav { font-size: 7.5px; }
-  .top nav.many .nav .ic svg { width: 19px; height: 19px; }
   .boards-tabs { gap: 4px; }
   .boards-tabs .mode { padding: 8px 2px; }
   .boards-tabs .mode b { font-size: 12px; letter-spacing: 0.02em; }
@@ -984,3 +976,57 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 .loading-tie { margin: 10px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255, 210, 122, 0.45);
   background: rgba(30, 22, 12, 0.7); color: #ffd27a; font: 600 14px/1.35 ui-serif, Georgia, serif; text-align: center; }
 .lore-more { align-self: flex-start; margin-top: 2px; }
+
+/* --- The bar on a phone (user, 2026-11-15: the account ran off the screen, and eleven tabs were too small to read) ---
+   main.ts header(): four tabs and More along the bottom, the other tabs, Graphics and Log out in a sheet over them; at the
+   top the name (a tap opens the Profile) ends in "..." where the room runs out. Wider screens keep every tab in the bar. */
+.who-name {
+  background: none; border: none; padding: 0; margin: 0; color: inherit; font: inherit; font-weight: 700; cursor: pointer;
+  max-width: 11em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.who-name:hover { color: var(--gold-hi); }
+.who-name:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; border-radius: 4px; }
+.nav.more, .more-veil { display: none; }
+@media (max-width: 1000px) and (min-width: 861px) {
+  /* A guest's seven tabs, Graphics and Log in in one row: a little less room round each tab. */
+  .top nav:not(.many) .nav { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 600px) {
+  .top nav .nav.extra { display: none; }
+  .top nav .nav.more { display: flex; }
+  .top nav .nav { font-size: 11px; letter-spacing: 0.05em; padding: 6px 2px 5px; min-height: 48px; }
+  .nav.more.open { color: var(--text); }
+  /* The account: the brand, the dot and the obols keep their size; the name gives way. */
+  .top .brand, .who .dot, .who .purse { flex: none; }
+  .who { min-width: 0; flex: 0 1 auto; }
+  .who-name { min-width: 0; flex: 0 1 auto; max-width: none; min-height: 36px; }
+  .who .purse { min-height: 36px; }
+  .who .btn.small { min-height: 36px; }
+  .who .gfx, .who.full .out { display: none; }
+  .more-veil {
+    display: block; position: fixed; left: 0; right: 0; top: 0; bottom: var(--tabbar); z-index: 7;
+    background: rgba(5, 3, 8, 0.6);
+  }
+  .more-sheet {
+    position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 10px; border-radius: 14px;
+    border: 1px solid var(--line-gold); background: linear-gradient(180deg, #1b1421, #0d0a12);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 -12px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 228, 170, 0.08);
+  }
+  .more-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .more-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .more-grid.four .more-item { letter-spacing: 0.03em; }
+  .more-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 66px; padding: 8px 4px;
+    border: 1px solid var(--line); border-radius: 10px; background: rgba(8, 6, 10, 0.55); color: var(--muted);
+    font: 700 12px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+  }
+  .more-item .ic svg { width: 24px; height: 24px; }
+  .more-item.on { color: var(--gold-hi); border-color: var(--line-gold); box-shadow: inset 0 0 14px rgba(255, 210, 122, 0.12); }
+  .more-item:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+  .more-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .more-foot .btn.small { min-height: 40px; padding: 8px 14px; font-size: 13px; }
+}
+@media (max-width: 360px) {
+  /* The smallest phones: a signed-in bar keeps the sigil and gives the name the brand's words. */
+  .top:has(.who.full) .brand-words { display: none; }
+}
