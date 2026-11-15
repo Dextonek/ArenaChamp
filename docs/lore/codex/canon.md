@@ -35,7 +35,9 @@ and how it ends. The full account of the factions' old beliefs, and how far each
    was its shadow, which swept the Dial each day and marked what it would keep. It takes a realm at the hour of its greatest loss,
    because a world grieves most for what it loses, and the Aumbry was made to keep what is grieved. The realm outside goes on,
    thinner: the people of that hour are gone from it (counted drowned, lost in the storm, never found), and its land remembers
-   them as a wound. Inside, they keep their posts and believe they always have.
+   them as a wound. Inside, they keep their posts and believe they always have. It cannot take whoever is fighting the loss with
+   everything they have (Marin dancing the water out, Isolde holding the lake): they are out of step with the hour, and it passes
+   them by. It takes those who stand still in their grief.
 5. **What it has taken, by the hundredth summer.** The sun's noon. Ninety-eight of the choir of a hundred, with the hour they sang
    in. The midsummer market at its foot, with everyone in it: **the Market of Noon**. Then, in the Fall's first years: the Drowned
    Harbour on the morning the water came (the Sea), the Walking Wood in its first year of walking (the Wood), the Storm Canyon in
