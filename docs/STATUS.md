@@ -7,7 +7,6 @@ The three agents below were restarted in their own threads from their saved comm
   clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
 - **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
   - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
-  - `t3/heroes20-engine-mechanics` (engine pieces for the 20 new kits), last commit 1281b37.
   Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
 - **Done and merged, not live (2026-11-15):** the Climb's open world stage 2, shared packs and scaling with players (PROTOCOL 18;
   `pipeline/designs/climb-open-world.md`, pictures `docs/tower/openworld/stage2/`). Signed-in players on a floor fight the same packs;
@@ -17,6 +16,14 @@ The three agents below were restarted in their own threads from their saved comm
   checks. Known: the phone frame with others' packs is not measured cleanly (the floor alone is already over a frame on phone-4x);
   the raid perf print moved (34f75b29, follows how the code loads, not the change); after any change to a floor's packs run
   `node pipeline/tools/climb-packs.mjs`. Stage 3 (doors and bosses together) is described in the design; waits on the user's look.
+- **Done and merged, not live (2026-11-15):** the engine pieces for the twenty new heroes (`pipeline/designs/heroes20-engine.md`;
+  tests `python pipeline/tools/heroes20-engine/run.py all`): 17 pieces from the sheets plus 3 found (enemy HP, facing, footprint
+  trail, lines and strips, a second cast origin, what the CPU walks round, HP bar cuts, an engine channel over `stacks`, sleep,
+  spell-stopping wards, leash and swap, a sealed key, tokens, one-sided ground, breaking cover, a bolt-pulling lantern, placed things
+  with HP, a dash that fizzles, unseen, a cleanse), each tested, checked online with two bots. No hero or kit yet; nothing a player
+  sees changes. Seventeen of the twenty can be built with no more engine work; Corbel (perching), Hesk (the golem that turns) and
+  Thessa (the seam) only in a simpler form. Builders' notes are in the design file. The raid perf print varies run to run on the same
+  code (e83903c0 / 34f75b29 / b53a2f62): it cannot judge a change until that is fixed.
 - **Fixed:** the server test "shop: timeout waiting for boards" failed on Sundays (the test moved its clock a day, into the next
   week, before its Tower report). Now 329 server checks pass.
 - **Starting (2026-11-15):** the deep lore, peoples and Codex (brief: `docs/lore/briefs/deep-lore.md`; the aim is in the user's
