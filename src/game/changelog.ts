@@ -44,6 +44,13 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Heroes',
+        title: 'Six heroes now look like their people',
+        text: 'Opaline has amethyst grown into her skin and the violet eyes of the Gloaming folk; Mr. Ledger is one of the Long Dead, vellum on bone with embers for eyes; Kaia is a sea-tanned storm caller of the Coast in an oilskin coat, tide lines on her arms; Brannoc’s grey Kilnborn skin is cracked with the light of the forge in his chest; Hank wears the Moot’s antlers, sawn short; and Grandma Ironknit’s pointed fae ears show through her hood. Their spells and numbers are unchanged.',
+        image: '/news/heroes-peoples.jpg',
+        alt: 'The six heroes side by side: Opaline in deep amethyst with crystal at her shoulders and dark hair; Mr. Ledger in black and oxblood robes with a pale bony face and glowing orange eyes; Kaia sea-tanned in a rain-blue coat with silver hair; Brannoc grey-skinned with orange cracks on his chest and arms; Hank in green and fur with broad antlers; and tiny Grandma Ironknit in her wine hood with long pointed ears.',
+      },
+      {
+        tag: 'Heroes',
         title: 'Every hero has a story',
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },
