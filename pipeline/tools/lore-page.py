@@ -5,7 +5,12 @@
 
 Checks: every hero is in exactly one faction (or among the loners) and the faction lists agree with the heroes' own lines;
 every hero has two to four ties; every tie names two known heroes; every legend is 80 to 150 words; faction ties name known
-factions. A failed check prints why and exits with 1 (the page is not written).
+factions. Since 2026-11-15, the peoples and the codex (docs/lore/codex/): 8 to 12 peoples, every hero of exactly one known people,
+siblings of the same people; every codex link resolves; every hero has a codex page of the agreed shape (biography 600 to 1000
+words, eight voice lines); every tie is on both heroes' pages and every tie on a page is answered on the other; every new name in
+codex/names.md is listed once and is not already a name in the game; no codex page or LORE.md uses a name from the FRANCHISE list
+(a list of well-known names from other games and stories, not a proof). `--partial` lists missing pages instead of failing.
+A failed check prints why and exits with 1 (the page is not written).
 """
 import html
 import math
@@ -389,11 +394,10 @@ def check_codex(lore):
                 errs.append(f'names.md: {n} is already a name in the game (move it to "Kept from the game" if that is meant)')
     elif not PARTIAL:
         errs.append('docs/lore/codex/names.md is missing')
+    franchise = re.compile(r'(?<![A-Za-z])(' + '|'.join(re.escape(w) for w in FRANCHISE) + r')(?![A-Za-z])')
     for f in files + [SRC]:
-        text = f.read_text(encoding='utf-8')
-        for w in FRANCHISE:
-            if re.search(r'(?<![A-Za-z])' + re.escape(w) + r'(?![A-Za-z])', text):
-                errs.append(f'{f.relative_to(ROOT)}: "{w}" is a name from another game or story')
+        for w in sorted(set(franchise.findall(f.read_text(encoding='utf-8')))):
+            errs.append(f'{f.relative_to(ROOT)}: "{w}" is a name from another game or story')
     return errs
 
 
@@ -569,6 +573,8 @@ def slug(name):
 
 
 CSS = '''
+table.plan{border-collapse:collapse;font-size:14px;width:100%}table.plan td,table.plan th{border-bottom:1px solid #3a3242;padding:5px 8px;text-align:left;vertical-align:top}tr.a-revamp td{background:rgba(255,120,60,.08)}tr.a-touch td{background:rgba(255,210,122,.04)}
+
 :root { --bg: #0e0b0c; --card: #17120f; --line: #3a3242; --gold: #ffd27a; --gold-dim: #a89870; --text: #f2e6c8; --muted: #c8bca0; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -655,9 +661,12 @@ def build(lore):
     n_new = sum(1 for h in lore['heroes'] if h['status'] != 'roster')
     P.append('<header><h1>The Dial</h1>'
              f'<p>The world of Arena of Kits, its eight factions and five loners, and a legend for each of the {len(lore["heroes"])} heroes: '
-             f'the 40 in the game and the {n_new} new ones on the cards (marked <i>new</i>). Words only: nothing in the game uses this yet. '
-             'The source is <code>docs/lore/LORE.md</code>; this page is made from it by <code>python pipeline/tools/lore-page.py</code>.</p>'
+             f'the 40 in the game and the {n_new} new ones on the cards (marked <i>new</i>), with the twelve peoples of the Dial and the plan to '
+             'bring each hero\'s figure to its people. The source is <code>docs/lore/LORE.md</code>; this page is made from it by '
+             '<code>python pipeline/tools/lore-page.py</code>. The depth (history, realms, the Climb, every hero in full) is the '
+             '<a href="codex/README.md">codex</a>, which the game shows as its Codex screen.</p>'
              '<nav class="toc"><a href="#world">The world</a><a href="#map">Map</a><a href="#ring">Why the Ring</a><a href="#tower">The Tower</a>'
+             '<a href="#peoples">Peoples</a><a href="#revamp">Revamp plan</a><a href="#codex">Codex</a>'
              '<a href="#factions">Factions</a><a href="#graph">Relations</a>'
              + ''.join(f'<a href="#f-{f["id"]}">{html.escape(f["name"].replace("The ", ""))}</a>' for f in facs.values())
              + '</nav></header><main>')
@@ -678,6 +687,10 @@ def build(lore):
     for i, p in enumerate(lore['prose']['The Tower and the Climb (a proposal)']):
         P.append(f'<p class="note">{inline(p.strip("*"))}</p>' if i == 0 else f'<p>{inline(p)}</p>')
     P.append('</section>')
+
+    P.append(peoples_html(lore))
+    P.append(revamp_html())
+    P.append(codex_html())
 
     # factions
     P.append('<section id="factions"><h2>The factions</h2><div class="grid">')
@@ -724,6 +737,8 @@ def build(lore):
                 badge = '<a class="badge" href="../heroes/next20/index.html" style="text-decoration:none">new · card</a>'
             P.append(f'<article class="card hero" id="{slug(m)}" style="--acc:{acc}"><h3>{html.escape(m)}{badge}</h3>'
                      f'<div class="title">{html.escape(h["title"])}</div>'
+                     + f'<div class="title" style="font-style:normal;color:var(--muted)">People: <a href="#p-{h["people"]}">{html.escape(lore["peoples"][h["people"]]["name"])}</a>'
+                     + (f', {html.escape(h["kin"])}' if h['kin'] else '') + f' · <a href="codex/heroes/{slug(m)[2:]}.md">full page</a></div>'
                      + (f'<div class="title" style="font-style:normal;color:var(--muted)">From: {html.escape(h["spot"])} · Age: {html.escape(h["age"])}</div>' if h.get('spot') else '')
                      + f'<blockquote>{inline(h["line"])}</blockquote><p>{inline(h["legend"])}</p><ul class="ties">')
             for word, other, t in ties_of[m]:
@@ -746,9 +761,68 @@ def build(lore):
     return '\n'.join(P)
 
 
+def peoples_html(lore):
+    """The twelve peoples as cards: kind, home, look, life, the text and the heroes of each."""
+    places = {p['id']: p['name'] for p in lore['places']}
+    by = {}
+    for h in lore['heroes']:
+        by.setdefault(h['people'], []).append(h)
+    kinds = {'human': 'human', 'changed': 'human, changed by the Fall', 'other': 'not human'}
+    P = ['<section id="peoples"><h2>The peoples</h2><p class="note">Twelve peoples live on the Dial (2026-11-15: the user found the heroes '
+         '"all the same, like human"). Four are human, three are human peoples the Fall changed, five are not human. All are built the one way, '
+         'on the pack\'s human body and clips: a people shows in skin, eyes, horns, an animal\'s head, bone, wings carried as a cloak, marks and '
+         'dress, never in a body of another shape. Each has a full page in the <a href="codex/peoples/README.md">codex</a>.</p><div class="grid">']
+    for pid, pe in lore['peoples'].items():
+        members = ', '.join(f'<a href="#{slug(h["name"])}">{html.escape(h["name"])}</a>' + (' <i>(new)</i>' if h['status'] != 'roster' else '')
+                            for h in by.get(pid, []))
+        P.append(f'<article class="card" id="p-{pid}"><h3>{html.escape(pe["name"])}</h3>'
+                 f'<div class="title">{kinds.get(pe["kind"], pe["kind"])} · {html.escape(places.get(pe.get("home"), ""))}</div><dl>'
+                 f'<dt>Look</dt><dd>{inline(pe.get("look", ""))}</dd><dt>Life</dt><dd>{inline(pe.get("life", ""))}</dd>'
+                 f'<dt>Heroes</dt><dd>{members}</dd></dl>'
+                 + ''.join(f'<p class="ftext">{inline(t)}</p>' for t in pe['text'])
+                 + f'<p class="ftext"><a href="codex/peoples/{pid}.md">The full page</a></p></article>')
+    P.append('</div></section>')
+    return ''.join(P)
+
+
+def revamp_html():
+    """The revamp plan's ranked table, read from docs/lore/codex/revamp.md."""
+    src = CODEX / 'revamp.md'
+    if not src.exists():
+        return ''
+    rows = []
+    for ln in src.read_text(encoding='utf-8').splitlines():
+        m = re.match(r'\| (\d+) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^|]+) \|$', ln)
+        if m:
+            rows.append([c.strip() for c in m.groups()])
+    P = ['<section id="revamp"><h2>The revamp plan <small style="font-size:14px;color:var(--muted)">(for the user\'s yes)</small></h2>'
+         '<p class="note">Each of the forty heroes in the game, its people, and whether its figure should change to show it: <b>no</b> (it already '
+         'reads as its people), <b>touch</b> (a skin, eye or mark of its people), <b>revamp</b> (a new figure, kit and title kept). Ranked by how '
+         'much the roster gains, the heroes that look most like another first. The first three to make: Opaline, Mr. Ledger, Kaia. The briefs, and '
+         'the twenty new heroes\' look briefs, are in <a href="codex/revamp.md">the plan</a>. Nothing is built.</p>'
+         '<div style="overflow-x:auto"><table class="plan"><tr><th>#</th><th>Hero</th><th>People</th><th>Answer</th><th>What changes</th></tr>']
+    for n, hero, people, ans, what in rows:
+        a = ans.strip('*')
+        P.append(f'<tr class="a-{a}"><td>{n}</td><td><a href="#{slug(hero)}">{html.escape(hero)}</a></td><td>{html.escape(people)}</td>'
+                 f'<td><b>{html.escape(a)}</b></td><td>{inline(what)}</td></tr>')
+    P.append('</table></div></section>')
+    return ''.join(P)
+
+
+def codex_html():
+    """Links into the codex."""
+    links = [('README.md', 'The codex, its index'), ('world.md', 'The Dial'), ('tower-and-sun.md', 'The Tower and the Sun: the open questions'),
+             ('history.md', 'History'), ('peoples/README.md', 'The peoples'), ('realms/README.md', 'The realms'), ('climb/README.md', 'The Climb'),
+             ('climb/bestiary.md', 'The bestiary'), ('climb/rulers.md', 'The rulers'), ('factions/README.md', 'The factions'),
+             ('heroes/README.md', 'The sixty heroes'), ('revamp.md', 'The revamp plan'), ('canon.md', 'The canon'), ('names.md', 'Names')]
+    return ('<section id="codex"><h2>The codex</h2><p class="note">The depth of the lore, about ten times this page, one file a subject in '
+            '<code>docs/lore/codex/</code>; the game shows it as its Codex screen (<code>python pipeline/tools/lore-codex.py</code>).</p><p>'
+            + ' · '.join(f'<a href="codex/{h}">{html.escape(t)}</a>' for h, t in links) + '</p></section>')
+
+
 def main():
     lore = read(SRC)
-    errs = check(lore)
+    errs = check(lore) + check_codex(lore)
     if errs:
         print('The lore does not check out:')
         for e in errs:

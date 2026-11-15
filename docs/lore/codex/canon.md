@@ -53,8 +53,25 @@ the Tower is**. Every page gives them as what someone believes. The candidate an
 | 70 to 81 | Shiori (70), Kaia (72), Ada (74), Zephyr (76), Lyra (78) and Pip (81) are born: the first great generation since the Fall |
 | 88 | Kaia's and Barry's public argument begins |
 | 90 | Arden starts tracking Nyx |
-| 99, spring | Asenet slips Kessa's chain on a spring tide |
+| 86 | Auriel's first duel with Vesper, over two bell-ringers asleep on the night road |
+| 90 | **The Tower's gate opens** for a champion of the Ring, for the first time; the Tally's page for the duel is blank. Orren takes up the Ember of Aubade |
+| 91 | Kaia's first duel in the Ring empties the western stands; the Truce hires Morwen |
+| 97 | Asenet strikes Sefu at the Homecoming table and is sent to the Gaol of Oaths |
+| 99, spring | Asenet slips Kessa's chain on a spring tide, by a door to the sea temple's undercroft |
 | 100 | Now. The Climb is open to champions of the Ring |
+
+## Threads that run across pages
+
+Mysteries several heroes hold a piece of, kept open for events and seasons (none answers the two open questions):
+- **Who missed the beat.** Cantor believes Ansel, Auriel's father, was a hair behind; Mum believes it was herself; Mum alone knows the Hymn's last verse.
+- **The blank page.** The duel of year 90 that opened the gate is not in the Tally: Whistler called it and cannot see the winner's face, Ledger wrote it and
+  the page was never written on, Shiori's ink will not take on it, Arden's trail from that year leads to the gate.
+- **The door under the sea temple.** Asenet left the Gaol by a door the old warden had cut in year 5 to the temple's undercroft: Kessa has found the page,
+  Marin found the wet floor, Gus mopped it up, Wick knows it is not one of his, and someone opened it from the other side.
+- **The paling.** The light, the Caldera's fire, Anka's rising and Brannoc's chest-forge all weaken together, and Mortis has measured the dead getting up in
+  step with it.
+- **The Climb's dead do not cross.** Ostrel's rivers run uphill on the floors; Cantor's choir-mate is the Blind Cantor of floor 37; the Moss-Abbess walked in
+  in year 90; Sir Whiskers' brother is the Turncloak.
 
 ## The twelve peoples
 

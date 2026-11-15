@@ -48,6 +48,11 @@ export const CHANGELOG: Release[] = [
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },
       {
+        tag: 'Heroes',
+        title: 'The Codex: the world of the Dial in full',
+        text: 'A new Codex screen, from the menu or from any hero’s lore (“More about…”), tells the whole world: the twelve peoples of the Dial, not all of them human, the nine realms on a map, the eight factions and their secrets, a hundred years of history, the Climb’s chapters, rulers and enemies, and every hero’s full story with their voice lines. Each hero’s card now also shows their people.',
+      },
+      {
         tag: 'Online',
         title: 'Fight the Climb’s packs together',
         text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',
