@@ -55,7 +55,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}code{font-size:13px
 <p><b>The fix</b> (the tool only, <code>pipeline/tools/perf-page.js</code>; no game code): the clock stands still from the start of the setup and starts at the same instant every run; and what comes in during the tool's pauses between frames rolls dice of its own, not the fight's.</p>
 <div class="f"><h3>raid-party, run after run on the same code</h3>
 <table><tr><th>runs</th><th>prints</th></tr>
-<tr><td>before: 13 runs, desktop (2026-11-15)</td><td>34f75b29 ×5, b53a2f62 ×5, 9c4a9c48 ×2, e83903c0 ×2; desktop-4x and phone printed others again</td></tr>
+<tr><td>before: 13 runs, desktop (2026-11-15)</td><td>34f75b29 ×5, b53a2f62 ×4, 9c4a9c48 ×2, e83903c0 ×2; desktop-4x and phone printed others again</td></tr>
 <tr><td>after: 3 runs desktop, 1 desktop-4x beside another run, 1 with an unused function added to the raid's code</td><td>9c4a9c48 every time, the same number of dice in every one of the 1,500 frames</td></tr>
 <tr><td>after, on the code with the Climb's new rulers' and enemies' models: 2 runs desktop, 1 desktop-4x</td><td>9c4a9c48 every time, frame by frame</td></tr></table></div>
 <div class="f"><h3>The baseline: every scene's print, taken again (<code>docs/perf/data/prints.json</code>, desktop)</h3>
