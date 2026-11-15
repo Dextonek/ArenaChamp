@@ -22,6 +22,18 @@
   const realRandom = Math.random;
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
   const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  /**
+   * The page's breath between frames (every 20th), with dice of its own. Only here can a model that was loading come in, and three.js
+   * rolls the dice for the id of every object it makes, a model's parts too: with the fight's dice, a model that came in at this breath
+   * or the next (real time decides) moved every die of the fight after it (the Climb's floors' prints, 2026-11-15). Now what comes in
+   * between frames rolls these; the fight's dice are rolled by the frames alone.
+   */
+  const aside = (() => { let seed = 104729; return () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+  const breathe = async () => {
+    const fight = Math.random;
+    Math.random = aside;
+    try { await tick(); } finally { Math.random = fight; }
+  };
 
   // --- the frame loop, taken over -------------------------------------------------------------------------------------
   let manual = false, queue = [];
@@ -521,7 +533,7 @@
           // The page must breathe: model loads, timers and the tool's own time limit all need the event loop.
           timer?.next();
           flips?.frame();
-          if (i % 20 === 19) { await tick(); timer?.collect(); }
+          if (i % 20 === 19) { await breathe(); timer?.collect(); }
         }
         const wall = realNow() - began;
         delete performance.now;
@@ -591,7 +603,7 @@
         if (scene.stepped) a.step(1 / 60);
         scene.tick?.();
         if (i % 4 === 0) { flush(simMs); sync(); }
-        if (i % 20 === 19) await tick();
+        if (i % 20 === 19) await breathe();
       }
       delete performance.now;
       Math.random = realRandom;
