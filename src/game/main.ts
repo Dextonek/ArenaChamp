@@ -348,7 +348,7 @@ let scrollToHero = false;
 /** The bar along the top (on a phone its tabs sit along the bottom). Without an account: the two offline screens and a way to log in. */
 /**
  * The picture's quality (src/quality.ts): a tap goes to the next level, kept in this browser. In the bar at the top, and on
- * the Profile screen: on a phone the bar of a logged-in player has no room for it (game.css, `.who.full .gfx`).
+ * the Profile screen; on a phone it is in the bar's More sheet instead (header(), game.css `.who .gfx`).
  */
 function qualityButton() {
   const q = gameApi.quality;

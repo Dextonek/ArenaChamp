@@ -982,8 +982,11 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
    top the name (a tap opens the Profile) ends in "..." where the room runs out. Wider screens keep every tab in the bar. */
 .who-name {
   background: none; border: none; padding: 0; margin: 0; color: inherit; font: inherit; font-weight: 700; cursor: pointer;
-  max-width: 11em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* The name gives way only when the bar runs out of room: everything else in it keeps its size. */
+.top .brand, .who > :not(.who-name) { flex: none; }
+.who { min-width: 0; }
 .who-name:hover { color: var(--gold-hi); }
 .who-name:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; border-radius: 4px; }
 .nav.more, .more-veil { display: none; }
@@ -997,9 +1000,8 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .top nav .nav { font-size: 11px; letter-spacing: 0.05em; padding: 6px 2px 5px; min-height: 48px; }
   .nav.more.open { color: var(--text); }
   /* The account: the brand, the dot and the obols keep their size; the name gives way. */
-  .top .brand, .who .dot, .who .purse { flex: none; }
-  .who { min-width: 0; flex: 0 1 auto; }
-  .who-name { min-width: 0; flex: 0 1 auto; max-width: none; min-height: 36px; }
+  .who { flex: 0 1 auto; }
+  .who-name { min-height: 36px; }
   .who .purse { min-height: 36px; }
   .who .btn.small { min-height: 36px; }
   .who .gfx, .who.full .out { display: none; }
