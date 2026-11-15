@@ -983,3 +983,59 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 .lore-tie:hover { border-color: #8a7a52; }
 .loading-tie { margin: 10px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255, 210, 122, 0.45);
   background: rgba(30, 22, 12, 0.7); color: #ffd27a; font: 600 14px/1.35 ui-serif, Georgia, serif; text-align: center; }
+.lore-more { align-self: flex-start; margin-top: 2px; }
+
+/* --- the Codex (src/game/codex.ts): the deep lore, a front with the books and one page at a time --- */
+.codex { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.cx-front { display: flex; flex-direction: column; gap: 14px; }
+.cx-head { text-align: center; padding: 6px 0 0; }
+.cx-head p { margin: 0 auto; max-width: 60ch; }
+.cx-books { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.cx-bookbtn { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 20px; border: 1px solid var(--line);
+  background: rgba(20, 16, 22, 0.75); color: var(--muted); font: 700 13px var(--sans); letter-spacing: 0.04em; cursor: pointer; min-height: 36px; }
+.cx-bookbtn:hover { color: var(--text); border-color: #8a7a52; }
+.cx-bookbtn.on { color: var(--gold-hi); border-color: var(--gold); background: rgba(201, 162, 74, 0.12); }
+.cx-count { font: 700 10.5px var(--sans); color: var(--muted); }
+.cx-filter { width: 100%; max-width: 520px; margin: 0 auto; padding: 9px 13px; border-radius: 10px; border: 1px solid var(--line);
+  background: rgba(10, 8, 12, 0.85); color: var(--text); font: 500 14px var(--sans); }
+.cx-filter:focus { outline: none; border-color: var(--gold); }
+.cx-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.cx-entry { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 9px 12px; border-radius: 10px; text-align: left;
+  border: 1px solid var(--line); background: rgba(20, 16, 22, 0.6); color: var(--text); cursor: pointer; font: inherit; min-height: 44px; }
+.cx-entry:hover { border-color: #8a7a52; background: rgba(36, 28, 38, 0.8); }
+.cx-entry b { font-family: var(--display); font-size: 15px; letter-spacing: 0.03em; color: #f3dfaa; }
+.cx-entry .small { line-height: 1.35; }
+.cx-book { font: 700 10px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-style: normal; }
+.cx-page { padding: 20px 26px 22px; }
+.cx-crumbs { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.cx-crumb { background: none; border: 0; padding: 4px 2px; color: var(--gold); font: 700 12px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+.cx-crumb:hover { color: var(--gold-hi); }
+.ui .cx-title { font-size: 32px; margin: 0 0 4px; }
+.cx-sub { color: var(--muted); font-style: italic; margin-bottom: 12px; }
+.cx-kit { margin: 0 0 10px; }
+.cx-body { font-size: 15px; line-height: 1.62; max-width: 70ch; }
+.cx-body p { margin: 0 0 12px; }
+.ui .cx-body h2.cx-h { font-size: 21px; margin: 20px 0 8px; }
+.ui .cx-body h3.cx-h { font: 700 15px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); margin: 16px 0 6px; }
+.cx-ul { margin: 0 0 12px; padding-left: 20px; }
+.cx-ul li { margin: 0 0 6px; }
+.cx-q { margin: 0 0 12px; padding: 4px 14px; border-left: 3px solid var(--gold); font: italic 15px ui-serif, Georgia, serif; }
+.cx-link { color: #f3c96a; text-decoration: none; border-bottom: 1px solid rgba(243, 201, 106, 0.35); }
+.cx-link:hover { color: var(--gold-hi); border-bottom-color: var(--gold-hi); }
+.cx-table { overflow-x: auto; margin: 0 0 14px; max-width: 100%; }
+.cx-table table { border-collapse: collapse; font-size: 13.5px; line-height: 1.4; min-width: 100%; }
+.cx-table th, .cx-table td { padding: 6px 9px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.cx-table th { color: var(--gold); font: 700 11px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; }
+.cx-map { margin: 4px 0 16px; }
+.cx-map svg { width: 100%; height: auto; max-width: 560px; display: block; margin: 0 auto; }
+.cx-steps { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cx-step { display: flex; flex-direction: column; gap: 1px; background: none; border: 0; color: var(--text); cursor: pointer; text-align: left; padding: 4px; font: inherit; max-width: 48%; }
+.cx-step:last-child { text-align: right; align-items: flex-end; }
+.cx-step b { font-family: var(--display); color: #f3dfaa; }
+@media (max-width: 600px) {
+  .cx-page { padding: 14px 14px 16px; }
+  .ui .cx-title { font-size: 25px; }
+  .cx-body { font-size: 14.5px; }
+  .cx-list { grid-template-columns: 1fr; }
+  .cx-bookbtn { padding: 5px 10px; font-size: 12px; }
+}

@@ -1,7 +1,7 @@
 ---
 title: The lore of the Dial
 tags: [lore, world, factions, heroes]
-updated: 2026-11-14
+updated: 2026-11-15
 status: first draft, written for the user to read and change; nothing in the game uses it yet
 ---
 
@@ -198,6 +198,108 @@ Five heroes belong to no faction. Oblivion wants no world at all. Sir Whiskers h
 Zambini has joined all of them, in writing. Ostrel carries every faction's dead, and so belongs to none. Asenet, the Uncrowned, was
 driven out of the Sands and is welcome nowhere else.
 
+## Peoples
+
+Twelve peoples live on the Dial (since 2026-11-15: the user found the heroes "all the same, like human"). Each hero has a
+`- people: <id>` line, with a kin after a `|` where it matters (a Briarkin court, a Fallborn kind). The depth is in the codex,
+`docs/lore/codex/peoples/`; the revamp plan that brings the figures to their peoples is `docs/lore/codex/revamp.md`.
+
+### aubade | Aubade folk | human
+- home: aubade
+- look: Tall, warm golden-brown skin, long dark-gold to black hair bound with gold thread; the dawn line, a thin gold tattoo from brow to nose, on the sworn
+- life: About eighty years
+
+The people of the morning cliffs, who rang the sun up every day with the bells and sent a choir of a hundred to sing the Hymn of
+Noon at the Tower's top. The choir did not come home from the Fall, and the city has been in mourning, and certain, ever since.
+
+### dune | Dune folk | human
+- home: sands
+- look: Lean, dark bronze to deep brown skin, black hair shaved or in fine braids, kohl to the temples, layered linen with turquoise and gold
+- life: About seventy-five years
+
+The people of the Sands and the oldest court on the Dial. They call the sun the Father and say it came home into their dunes, which
+are still warm, and that it will rise again in a king.
+
+### gloaming | Gloaming folk | changed
+- home: gloaming
+- look: Narrow and tall, pale skin with a blue-grey cast, dark lips, black, silver or violet hair; eyes that shine back light
+- life: About ninety years
+
+A people of the north-western hills whom a hundred years of dusk changed: their eyes shine in the dark, they burn at noon, and they
+live by night. Mirror-makers, vintners and keepers of the night roads, and a nobility that became the Court of Dusk.
+
+### north | Northerners | human
+- home: frostfall
+- look: Broad and tall, deep brown to umber skin, hair white by thirty in many thin braids, star lines tattooed on the jaw and hands; the lake-born frost-pale and white-haired
+- life: Often past ninety
+
+The people of Frostfall, under the pole star, who measure everything and write it down. Their observatory saw the Fall better
+than anyone; the lake-born families of Frostfall Lake have always given the Dial its Winter Wardens.
+
+### coast | Coast folk | human
+- home: coast
+- look: Wiry, sea-tanned, salt-bleached or sea-green hair, tide lines tattooed round the forearms, sea-glass in the ears
+- life: About seventy years
+
+The people of the Drowned Coast and the Spires. The sea rose over their great port on the day of the Fall and the weather has had
+no master since, so they became the Dial's readers of the sky, and sail anyway.
+
+### kiln | Kilnborn | changed
+- home: deep
+- look: Short and broad, ash-grey skin, pale amber eyes, short grey hair or braided beards; ember seams at the knuckles and throat on those who work the fire
+- life: About sixty-five years
+
+The hill people of the south, who moved down to the heat when the fallen sun's fire came up through their rock. Their skin went
+grey as ash within a generation. They call the Fall a gift, and they build.
+
+### wood | Wood folk | changed
+- home: wood
+- look: Ruddy to bark-brown skin, moss-green eyes, braided hair; those sworn to the Moot grow horns, antlers in the Wood and ram horns in the hills
+- life: About seventy years
+
+The woodcutters, herders, hunters and hive-keepers of the Walking Wood. Since the Wood began to walk they follow it, and those who
+swear themselves to it grow horns within a year.
+
+### mole | Mole-folk | other
+- home: deep
+- look: A mole's head on a short, stout frame: velvet dark fur, a long muzzle, small eyes, broad hands with long gilded claws
+- life: About sixty years
+
+The Deep's first people, who call themselves the Loam. They dug the deepest seams nine hundred years before the Fall, and were the
+first to see the sun's light run into the crystals.
+
+### ninefold | The Ninefold | other
+- home: banners
+- look: A great cat's head, lynx or lion, on a tall lithe frame; fur at the throat and hands; a count of nine worn on the costume
+- life: About eighty years, if all nine lives are kept
+
+Cat-headed knights with nine lives, who swore their first oath at the Keep of Nine on the Field and have served every court since.
+Fewer every generation: the keep has eleven knights now.
+
+### briar | Briarkin | other
+- home: wood
+- look: Pointed ears, eyes of one colour with no white, skin in forest colours; small or tall as they please; each court its own sign (moth wings, a fox's mask and tail, chitin)
+- life: They do not age; they fade when forgotten
+
+The fae of the Walking Wood, in their courts under the Underbough. They will not lie, will not cross salt, and will not give their
+true names. Since the Fall some of their children are born two for one.
+
+### longdead | The Long Dead | other
+- home: gloaming
+- look: Skin like old vellum drawn on bone, or bare bone; the brow, jaw and knuckles showing; eyes of cold fire
+- life: Until their purpose is finished
+
+The dead whose purpose would not lie down. Since a pact four and a half centuries old they keep the ossuaries under Gloaming, and
+keep their promises absolutely, because a broken one would end them.
+
+### fallborn | The Fallborn | other
+- home: tower
+- look: Three kinds: the Embers, warm skin glowing at its edges and hair like flame; the Cast, a matte black body with no face; the Unmade, a shape of black cracked with pink
+- life: Not born, not ageing
+
+Not a people as the others are: those the Noonfall made or let in. The Embers are sparks of the sun that took a shape, the Cast are
+shadows thrown by its last light that walked away, and the Unmade came through the Tear.
+
 ## Faction ties
 
 - truce | hourkeepers | friends | The Hourkeepers keep the Truce's records, and the Truce keeps their observatory out of every war
@@ -220,6 +322,7 @@ driven out of the Sands and is welcome nowhere else.
 ## Heroes
 
 ### Referee Whistler | the Arbiter | referee | truce | he | roster
+- people: kiln
 - home: tower | The Ring, in the Arbiter's box over the sand
 - age: Looks 34. He was 14, sweeping the Ring's sand, when the sun fell (Noon-touched).
 > "That is a dash. I saw it. Everyone saw it."
@@ -231,6 +334,7 @@ sigil tablets carry the Truce's rules: when he holds one up, that rule binds who
 fights because a rule nobody enforces is only a rumour, and he has a long list of rumours to put down.
 
 ### Mr. Ledger | the Tithe-Keeper | ledger | truce | he | roster
+- people: longdead
 - home: tower | The Tally-house under the Ring's stands
 - age: Nobody knows. He looks about 70, and has looked it for a hundred years.
 > "No, no. Don't pay now. I insist."
@@ -242,6 +346,7 @@ waits. His spells work the same way: nothing hurts now, everything comes due. He
 other way, and he has never once lost the paperwork.
 
 ### Wick | the Doorwarden | door | truce | he | roster
+- people: north
 - home: tower | The Hundred Doors under the Ring
 - age: Looks 70. He was 50 and already keeping doors when the sun fell (Noon-touched).
 > "This way, please. No, the other this way."
@@ -253,6 +358,7 @@ is why he hates the Tear above the Tower, a hole with no frame and no other side
 opens his doors in pairs and shows his enemies out, politely, through the one they did not expect.
 
 ### Pip | the Wingfoot | courier | truce | he | roster
+- people: aubade
 - home: tower | The couriers' loft above the Ring
 - age: 19. Born 81 years after the Fall, the youngest of the Truce's officers.
 > "Sign here. And here. And there, where it's on fire."
@@ -264,6 +370,7 @@ has never opened a letter, never lost one, and never been paid on time. He fight
 deliver a challenge to a champion who would not take it any other way.
 
 ### Madame Cleaver | the Feastmistress | chef | truce | she | roster
+- people: dune
 - home: banners | The old camps of the Banners; now the Truce Table at the Ring
 - age: Looks 45. She was 25, cooking for both armies, in the year of the Fall (Noon-touched).
 > "Sit. Eat. Then you can hit each other."
@@ -275,6 +382,7 @@ at her table, winner and loser side by side, and she fights to get them there. H
 nobody, and her temper from the fact that champions never say thank you.
 
 ### Big Yoko | the Mountain | sumo | truce | he | roster
+- people: aubade
 - home: aubade | The shrine cliffs below Aubade
 - age: Looks 38. He was 18 and already a giant when the sun fell (Noon-touched).
 > "The ring is small. The world outside it is large. Choose."
@@ -286,6 +394,7 @@ managed it since the Ring was opened. He throws salt before every bout to keep t
 fights because the Ring is a promise, and a promise needs someone to stand in it.
 
 ### Morwen | the Saltwarden | salt | truce | she | next10
+- people: coast
 > "Step over. I'll wait. The salt will wait longer."
 
 Every dawn before the Ring opens, Morwen walks its edge with a pouch of salt and pours a line that no spell may cross, so that the
@@ -295,6 +404,7 @@ emptied the western stands. She does not much like champions. She likes boundari
 the Ring herself to teach that to the ones who do not.
 
 ### Kessa | the Chainwarden | chain | truce | she | next10
+- people: kiln
 > "You can run to the end of the chain. Then you come back."
 
 Under the Drowned Harbour, where the sea came in on the day of the Fall, lies the Gaol of Oaths: the Truce's prison for those who
@@ -304,6 +414,7 @@ forgiven the sea, the tide or herself. She comes up into the Ring when an oath-b
 way or the other. She never lets go of a prisoner, and she is very hard to let go of.
 
 ### Auriel | the Dawn Paladin | dawn | noonsworn | she | roster
+- people: aubade
 - home: aubade | The White Barracks of Aubade
 - age: Looks 20. Born on the first morning after the Fall, a hundred years ago (Noon-touched).
 > "Every night ends. I am how."
@@ -315,6 +426,7 @@ that it must be carried up by someone who has earned the climb in the Ring. Her 
 does. She fights the Court of Dusk on sight, and Vesper first.
 
 ### Anka | the Firebird | phoenix | noonsworn | she | roster
+- people: fallborn | an Ember
 - home: coast | The surf off the Drowned Coast, where she first rose
 - age: A hundred years since she first walked out of the sea; each fire makes her about 20 again.
 > "Put me out. Go on. I'll wait."
@@ -326,6 +438,7 @@ embers on the ground for it. Mortis has buried her three times. She has never st
 from, and to give it back to the sky.
 
 ### Cantor | the Last Verse | bard | noonsworn | he | roster
+- people: aubade
 - home: aubade | The choir loft of Aubade; once the Tower's top
 - age: Looks 50. He was 30 and singing the Hymn of Noon when the sun fell (Noon-touched).
 > "On the beat. Always on the beat."
@@ -337,6 +450,7 @@ has walked the Field of Banners singing the dead armies their marching songs. He
 the Hymn once more where it was meant to be sung.
 
 ### Opaline | the Lightbreaker | prism | noonsworn | she | roster
+- people: gloaming
 - home: deep | A glass-cutter's house at the top of the Prism Stair
 - age: Looks 28. She was 8 when the sun fell (Noon-touched); her sister Silvane was 12.
 > "White is only every colour, waiting."
@@ -348,6 +462,7 @@ every drop of the old light for the sun; the miners want it for their lamps, and
 Silvane keeps light the other way, in a mirror, and they no longer speak.
 
 ### Campana | the Bellwright | bell | noonsworn | she | next10
+- people: aubade
 > "Listen. Now listen again."
 
 The bells of Aubade ring the sun up every morning, and Campana cast every one of them. She is the bell-founder of the Noonsworn, a
@@ -357,6 +472,7 @@ Drowned Coast. She believes the sun fell because the world went quiet, and that 
 call it back. Cantor thinks she is right. Itzel thinks her bronze would crack in a real fire.
 
 ### Orren | the Sunbearer | sunbearer | noonsworn | he | next20
+- people: aubade
 > "Take it, if you can carry it."
 
 Before the Fall, a piece of the sun's light was kept in a lantern-shrine in Aubade, lit from the sun itself at its last noon. It is
@@ -366,6 +482,7 @@ the Noonsworn's hope: the seed of a new sun, to be carried to the top of the Tow
 wants it out. Orren lets anyone try to take it. Nobody has carried it far.
 
 ### Vesper | the Crimson Countess | blood | dusk | she | roster
+- people: gloaming
 - home: gloaming | Her castle on the Gloaming heights
 - age: She was 35 when the light left her lands, and blood has kept her there for a hundred years.
 > "Come closer. I'm already paying."
@@ -377,6 +494,7 @@ Court of Dusk, which owes its age to the dark, and she will not let the Noonswor
 Court's long nights are bought on credit, and Mr. Ledger holds the note.
 
 ### Silvane | the Mirror Duchess | mirror | dusk | she | roster
+- people: gloaming
 - home: gloaming | The Mirror Hall of Gloaming
 - age: Looks 32. She was 12 when she caught the sun's last light in a hand mirror (Noon-touched).
 > "Look at yourself. Now look again."
@@ -388,6 +506,7 @@ it. She fights with real mirrors, throwing them off walls and walking to catch t
 first mirror, which is the only thing on the Dial that can turn Lithea's gaze.
 
 ### Mortis | the Ossuary Lord | bone | dusk | he | roster
+- people: longdead
 - home: gloaming | The ossuaries under Gloaming
 - age: His bones are some three hundred years old. He stopped counting the rest.
 > "Rest is for those who have somewhere to be."
@@ -399,6 +518,7 @@ it as theft, and Morwen lays her salt so that his skeletons cannot reach the Rin
 body that would not stay. He fights in the Ring for more ground, and to bury her a fourth time.
 
 ### Nyx | the Umbral Stalker | shadow | dusk | she | roster
+- people: fallborn | of the Cast
 - home: gloaming | The walls of the Night Temple, where her shadow first fell
 - age: A hundred years old, every one of them as a shadow; she looks 25.
 > "You looked away. That's all it takes."
@@ -410,6 +530,7 @@ Vesper and hunts whoever the Court names, mostly in the thickets of the Walking 
 out of, and Arden has tracked her for ten years without finding a footprint.
 
 ### Mum | the Silent One | mime | dusk | she | roster
+- people: aubade
 - home: gloaming | The harlequins' hall of the Court of Dusk
 - age: Looks 46. She was 26 and singing beside Cantor when the sun fell (Noon-touched).
 > "(Nothing. A pale glove rises, palm out. The wall is already there.)"
@@ -421,6 +542,7 @@ walls and her ball cannot be seen, only the chalk lines she leaves on the floor,
 Cantor still sings to her. She has never answered, and never left the room.
 
 ### Kohaku | the Foxfire | fox | dusk | she | next10
+- people: briar | the Fox court
 > "What was that called? Never mind. It's mine now."
 
 Kohaku is a fox spirit of the woods round Gloaming, nine-tailed in the old stories and one-tailed by daylight, and she steals names.
@@ -430,6 +552,7 @@ mask pushed to the side of her head. She once stole the word from the brow of He
 of the Deep. Sir Whiskers has been trying to catch her for longer than either will admit.
 
 ### Corbel | the Stonewing | gargoyle | dusk | he | next20
+- people: gloaming | stone-woken
 > "I've been sitting here all along. You never look up."
 
 Corbel was a guard of the Night Temple who met Lithea's eyes when she came to Gloaming as the Dune Throne's envoy, and he was stone
@@ -439,6 +562,7 @@ pillars, drops on his prey, and climbs back up. He cannot forgive Lithea and can
 toward stone, which is why he hates Auriel's dawn more than any blade.
 
 ### Fenna | the Grove Warden | grove | greenwood | she | roster
+- people: wood
 - home: wood | The Moot under the Antler Glades
 - age: Looks 35. She was 15 when the Wood began to walk (Noon-touched).
 > "Stand still. Let something grow."
@@ -450,6 +574,7 @@ from standing among them. She holds the gate of the Wood. She argues with Hank a
 argument, or lost it. Vitriol's fumes killed a whole garden of hers, and she has not forgotten.
 
 ### Hank | the Moss Hewer | timber | greenwood | he | roster
+- people: wood
 - home: wood | A woodcutter's hut at the Walking Wood's edge
 - age: Looks 42. He was 22 and already felling trees when the sun fell (Noon-touched).
 > "Timber. Mind your heads."
@@ -461,6 +586,7 @@ right, and they have shared a fire every winter for twenty years. He hunts with 
 the villages at the Wood's edge, which have no champion of their own.
 
 ### Bo | the Ramherd | sheep | greenwood | he | roster
+- people: wood | ram-horned
 - home: wood | The high pastures above the Walking Wood
 - age: Looks 60. He was 40, with a beard just going silver, when the sun fell (Noon-touched).
 > "Easy now. They're only sheep. Mostly."
@@ -472,6 +598,7 @@ Moot because somebody has to speak for the hills, and he speaks slowly. He trust
 them. He fights in the Ring when a quarrel reaches his pastures, and sends the flock in first.
 
 ### Pim and Pom | the Changeling Twins | twins | greenwood | they | roster
+- people: briar | the Acorn court
 - home: wood | Grandma Ironknit's cottage, since the winter after the Fall
 - age: They look 10 and have for ninety-nine years: fae children age as they please.
 > "Pim: Tag! Pom: You're it."
@@ -483,6 +610,7 @@ the blue leaf hood with the slingshot, who stays back and laughs. They share one
 if it were a game, because for them it is. The Moot keeps them because nobody else can.
 
 ### Sirix | the Swarm Warden | hive | greenwood | he | roster
+- people: briar | the Hive court
 - home: wood | The hive-trees of the Walking Wood
 - age: Looks 40. He was 20 when the hives woke after the Fall (Noon-touched).
 > "Hold still. They only sting what moves."
@@ -494,6 +622,7 @@ hives need them. Vela's moths keep the night and his wasps the day. Professor Pu
 Wood, by accident, and the swarm has not forgotten.
 
 ### Vela | the Dream Moth | moth | greenwood | she | next10
+- people: briar | the Moth court
 > "Hush. It will all be here when you wake."
 
 The Walking Wood sleeps by night, mostly, and Vela is why. She is a luna-moth priestess of the Moot, slender, with great pale green
@@ -503,6 +632,7 @@ glades, and travellers sleep safe in their light. She is kind and frail and in n
 mercy, and some quarrels deserve one.
 
 ### Arden | the Huntmaster | hunt | greenwood | he | next20
+- people: wood
 > "You walked here. I can see every step."
 
 Arden leads the Hunt of the Moot, the riders who keep the Walking Wood's moving paths clear of what the Wood breeds in its dark.
@@ -512,6 +642,7 @@ eats with Bo, and has followed Nyx through the thickets for ten years without fi
 fights in the Ring because the Hunt's quarrels are settled there, and because his quarry sometimes shows up.
 
 ### Marin | the Tide Dancer | tide | windward | she | roster
+- people: coast
 - home: coast | The sea temple of the Drowned Harbour
 - age: Looks 32. She was a girl of 12 dancing in the temple when the sea came in (Noon-touched).
 > "The sea comes in. The sea goes out. You don't."
@@ -523,6 +654,7 @@ Sea, keeps the harbour lights with the Windward, and lets Gus keep her temple fl
 Kessa blames her for every flood.
 
 ### Kaia | the Tempest Caller | storm | windward | she | roster
+- people: coast
 - home: coast | A storm-callers' tower on the Spires
 - age: 28. Born 72 years after the Fall, to a sky that had no master.
 > "Stand by the rod. It's safer. For me."
@@ -534,6 +666,7 @@ prove him wrong, and they have argued in public for twelve years. Saga's norther
 politely. She fights in the Ring because a storm needs somewhere to land.
 
 ### Zephyr | the Wind Blade | sky | windward | he | roster
+- people: coast
 - home: coast | The Spires, the sky towers standing in the sea
 - age: 24. Born on the Spires 76 years after the Fall.
 > "Catch up. I'll wait. No, I won't."
@@ -545,6 +678,7 @@ has won. He races Ramet's lion across the Glass Flats too, and loses less. He ra
 practice. He fights in the Ring because standing still bores him.
 
 ### Barry Cloudsley | the Sky Augur | weather | windward | he | roster
+- people: coast
 - home: coast | The weather post on the highest Spire
 - age: Looks 50. He was 30 and already reading the sky when the sun fell (Noon-touched).
 > "And now, the weather. You won't like it."
@@ -556,6 +690,7 @@ weather more often than anyone alive and still mostly wrong, which he blames, lo
 flies with him. In the Ring his weather hits both heroes, and he is the only one who knows what is coming.
 
 ### Professor Puff | the Aeronaut | balloon | windward | he | roster
+- people: coast
 - home: coast | His basket, moored to the Spires between flights
 - age: Looks 60. He was 40 and mapping the sky when the sun fell (Noon-touched).
 > "Hold your breath. No, really. It helps."
@@ -567,6 +702,7 @@ enemies larger and easier to hit, and which once floated a whole hive-tree out o
 engines with Ada at every Truce dinner, and Barry is his oldest flying companion.
 
 ### Lian | the Kite Master | kite | windward | she | next10
+- people: coast
 > "Look up. No, the other up."
 
 The Windward send their messages from Spire to Spire by kite, and Lian is the best flier they have ever had. She is light and quick,
@@ -576,6 +712,7 @@ it on Zephyr's winds, which he never lets her forget. In the Ring the kite is a 
 quite know which of the two to watch.
 
 ### Gus | the Temple Keeper | janitor | windward | he | roster
+- people: coast
 - home: coast | The sea temple of the Drowned Harbour
 - age: 65. Born 35 years after the Fall; he has swept the temple for forty years.
 > "Mind the floor. I did warn you."
@@ -587,6 +724,7 @@ that a clean floor is a wet one, and he has put up signs. People slide. That, he
 Ring when Big Yoko has thrown his salt about again.
 
 ### Brannoc | the Ashen Smith | forge | underforge | he | roster
+- people: kiln
 - home: deep | The great forge in the Ember Caldera
 - age: Looks 50. He was 30 and already a master smith when the sun fell (Noon-touched).
 > "Hotter. Again. Hotter."
@@ -598,6 +736,7 @@ froze his forge solid to send him home; it took him a year to light it again, an
 Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.
 
 ### Ada | the Artificer | clockwork | underforge | she | roster
+- people: kiln
 - home: deep | A workshop above the Underforge's great lift
 - age: 26. Born 74 years after the Fall; Brannoc's apprentice until her hammer swung itself.
 > "Give me ten seconds and something to bolt it to."
@@ -609,6 +748,7 @@ would like to run the Deep on it. She argues engines with Professor Puff at ever
 did not involve flying.
 
 ### Bram | the Stonewright | mason | underforge | he | roster
+- people: kiln
 - home: deep | The masons' halls of the Underforge
 - age: Looks 38. He was 18 when the sun fell (Noon-touched). Gerald is older than the Deep.
 > "Gerald says hello. Gerald says goodbye."
@@ -620,6 +760,7 @@ opening he pushes the same stone against Big Yoko, and neither has won. Hesk's g
 because it is not stone, the second because it is not building.
 
 ### Mabel | the Deepdelver | mole | underforge | she | roster
+- people: mole
 - home: deep | The deepest seams under the southern hills
 - age: Looks 40 in mole-folk years. She was 20 when she saw the light run into the crystals (Noon-touched).
 > "Mind the hole. Well. Mind the next one."
@@ -631,6 +772,7 @@ so, with her claws. She keeps the Lamp Road open, digs with Tova and sorts glass
 comes up under you.
 
 ### Itzel | the Obsidian Herald | obsidian | underforge | she | next10
+- people: kiln
 > "The ground has an opinion. Let me show you."
 
 Where the fire of the fallen sun rises through the Ember Caldera, it cools into black glass, and Itzel speaks for that fire. She is the
@@ -640,6 +782,7 @@ fire under the Dial has always been. She cuts the glass that Mabel's miners dig 
 once to show her. She fights in the Ring to carry the Underforge's word, and her word is sharp.
 
 ### Hesk | the Golemwright | golem | underforge | he | next20
+- people: kiln
 > "Every word is an order. Watch which one I write."
 
 In the Underforge the heavy work is done by golems, clay and iron bodies that move because a word is written on their brows, and Hesk
@@ -649,6 +792,7 @@ walked into the black water of the Deep; he has made a hundred since and keeps t
 stone and should choose you. Hesk thinks that is very sentimental.
 
 ### Tova | the Hallbreaker | sapper | underforge | she | next20
+- people: mole
 > "That was a wall. Now it's a door. You're welcome."
 
 When the old halls of the Deep fall in, someone has to open them, and when something lives in them, someone has to close them. Tova
@@ -658,6 +802,7 @@ from the crystal powder of the Deep. She digs with Mabel, takes her powder from 
 she knocks down. Mum's unseen walls are the only walls she has never broken.
 
 ### Sefu | the Dune Sovereign | sand | dune | he | roster
+- people: dune
 - home: sands | Tamerit, on the Dune Throne
 - age: Looks 44. He was 24 when the sun fell, and took the throne the year after (Noon-touched).
 > "Kneel, or be judged standing."
@@ -669,6 +814,7 @@ sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged e
 and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.
 
 ### Vitriol | the Plague Alchemist | alchemy | dune | he | roster
+- people: dune
 - home: sands | The embalmers' house of Tamerit
 - age: Nobody knows: nobody has seen his face. His hands are old.
 > "Breathe in. Now let's see what you're made of."
@@ -680,6 +826,7 @@ curse that Asenet laid on the crown before her exile, and she never paid for it;
 of Fenna's by the road where he was testing them, and she has not forgotten either.
 
 ### Lithea | the Stone Gaze | gorgon | dune | she | next10
+- people: dune
 > "Look at me. Everyone does, once."
 
 In the oldest tombs of the Sands lives an order of veiled priestesses who guard the dead kings with their eyes, and Lithea is the last
@@ -689,6 +836,7 @@ looked at her too long; the Court set him on the eaves, and he woke at dusk as C
 one mirror that can turn her gaze. She fights facing you, and likes it when you look.
 
 ### Nebet | the Heartweigher | scale | dune | she | next20
+- people: dune
 > "Let us see which of us is heavier."
 
 When a king of the Sands dies, his heart is weighed in the tomb against a single feather, and Nebet holds the scale. She is the
@@ -698,6 +846,7 @@ morning after the Fall, and Nebet would like a fresh one. Ostrel brings the dead
 weighs the living, and the heavier one pays.
 
 ### Sahar | the Mirage | mirage | dune | he | next20
+- people: dune
 > "Hide behind that. Go on. It's lovely shade."
 
 On the Glass Flats the heat lifts the air until you see water and shade that are not there. Sahar was born on the Flats, and he learned
@@ -707,6 +856,7 @@ nobody can trust; each thinks the other is cheating. Lyra is the archer he most 
 to hire him for the stage.
 
 ### Ramet | the Lion of the Gate | sphinx | dune | he | next20
+- people: ninefold | a lion
 > "The gate is shut. Climb over me."
 
 The gate of Tamerit is kept by a great lion of sandstone and gold that wakes when its rider sits on its back, and Ramet is its rider.
@@ -716,6 +866,7 @@ why. Every year he races Zephyr across the Glass Flats, and the lion has never l
 on foot, and he is still a captain.
 
 ### Tempo | the Unwound Hour | chrono | hourkeepers | he | roster
+- people: north
 - home: frostfall | The Hourkeepers' observatory at Frostfall
 - age: He looks 40. He has lived a hundred years since the Fall, every moment twice.
 > "Again. And again."
@@ -727,6 +878,7 @@ spell he casts plays again. He keeps the great clock at Frostfall, and races the
 wind the Dial up again before Oblivion unmakes the hours altogether.
 
 ### Shiori | the Last Brush | ink | hourkeepers | she | roster
+- people: north
 - home: frostfall | The frozen library at Frostfall
 - age: 30. Born 70 years after the Fall, the last of the great calligraphers.
 > "Hold still. You are being written."
@@ -738,6 +890,7 @@ paper, and Hesk to write the word on a golem's brow. She thinks Mr. Ledger's boo
 thinks hers has too many pictures.
 
 ### Lyra | the Star Archer | astral | hourkeepers | she | roster
+- people: north
 - home: frostfall | The observatory at Frostfall, under the pole star
 - age: 22. Born 78 years after the Fall, under a sky that still kept time.
 > "Run. The sky is very big, and I can see all of it."
@@ -749,6 +902,7 @@ are the one light Nyx cannot step out of, and the two have duelled in the dark m
 Sands calls himself the better archer, and she lets him.
 
 ### Grandma Ironknit | the Weaver | yarn | hourkeepers | she | roster
+- people: briar | the Spindle court
 - home: wood | A cottage at the Walking Wood's edge, on the Frostfall road
 - age: Looks 70. She was 50 and already spinning when the sun fell (Noon-touched).
 > "Sit down, dear. You're coming unravelled."
@@ -760,6 +914,7 @@ fifty years ago turned down Mr. Ledger, who wanted to write her into his book; s
 under the collar. In the Ring she ties her lines across the floor and sends the cat.
 
 ### Isolde | the Winter Warden | frost | hourkeepers | she | roster
+- people: north | lake-born
 - home: frostfall | Frostfall Lake, at the top of the Dial
 - age: Looks 48. She was 28 when the sun fell (Noon-touched).
 > "Slower. Slower. There."
@@ -771,6 +926,7 @@ fire to her frost, and she froze his forge solid to send him home; it was the ki
 northern light, is her sister. Isolde fights to keep the cold, and the past, as they are.
 
 ### Saga | the Northern Light | aurora | hourkeepers | she | next10
+- people: north | lake-born
 > "Walk through. You'll come out a different colour."
 
 Saga dances the aurora over Frostfall: the curtains of green and violet light that tell the Hourkeepers the hour on nights when the
@@ -780,6 +936,7 @@ one comes out changed. Isolde is her sister, Lyra her partner at the observatory
 lights have never shared a sky politely, and the Spires blame her for every green flash at sea.
 
 ### Thessa | the Sky-Stitcher | stitch | hourkeepers | she | next20
+- people: north
 > "Here and there. Now they are the same place."
 
 Above the Tower, where the sun hung, the sky is torn: the Tear, black with a burning pink edge. Thessa means to sew it shut. She learned
@@ -789,6 +946,7 @@ finger and a silver needle as long as her arm. Wick keeps the doors and she keep
 every stitch she has put in the Tear. She keeps sewing.
 
 ### Oblivion | the Unmaker | void | loners | he | roster
+- people: fallborn | the Unmade
 - home: tower | The Tear in the sky above the Tower
 - age: Not born. It came through the Tear on the day of the Fall, a hundred years ago.
 > "There was something here. Was there?"
@@ -800,6 +958,7 @@ always come back. It wants no throne: it wants the Dial unmade, hour by hour, do
 Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.
 
 ### Sir Whiskers | the Lynx Duelist | cat | loners | he | roster
+- people: ninefold | a lynx
 - home: banners | The lynx knights' old keep by the Field of Banners
 - age: 31 in this life; he is on his fourth of nine.
 > "En garde. And do try. It's so much nicer when they try."
@@ -811,6 +970,7 @@ whoever is most interesting, and lands on his feet. He once spent a life for Sil
 catch Kohaku for longer than either will admit, and she has been letting him.
 
 ### The Great Zambini | the Illusionist | magic | loners | he | roster
+- people: briar | of no court
 - home:  | Everywhere. He says Aubade, Tamerit and Gloaming, on alternate days
 - age: He says 39. He has said 39 for sixty years.
 > "Pick a hat. Any hat. Wrong."
@@ -822,6 +982,7 @@ and has never caught him cheating, which convinces Whistler that he always does.
 and Pom are his favourite audience and his worst assistants. He fights for the applause.
 
 ### Ostrel | the Ferryman | ferry | loners | he | next10
+- people: longdead
 > "Everyone crosses. The question is when."
 
 The dead of the Dial go somewhere, and Ostrel takes them there. He is the ferryman of the dead: tall and gaunt, in a long fog-grey
@@ -831,6 +992,7 @@ brings the dead of the Sands to Nebet's scale, and the dead of Gloaming when Mor
 rivers to the sea. The Deep's own ferryman, who brings the living back, is not him, and they do not speak.
 
 ### Asenet | the Uncrowned | curse | loners | she | next20
+- people: dune
 > "It's yours now. It never stays."
 
 Asenet was queen of the Sands when the sun fell, and the Sands blamed her. Her brother Sefu took the Dune Throne the next year, and on

@@ -223,7 +223,179 @@ def check(lore):
     for p in lore['places']:
         if p['faction'] not in facs and p['faction'] != 'none':
             errs.append(f"place {p['id']}: unknown faction {p['faction']}")
+    # Peoples: every hero has exactly one known people; siblings share one; a people's home is a place.
+    peoples = lore['peoples']
+    place_ids = {p['id'] for p in lore['places']}
+    if not 8 <= len(peoples) <= 12:
+        errs.append(f'{len(peoples)} peoples (8 to 12)')
+    for pid, pe in peoples.items():
+        if pe['kind'] not in ('human', 'changed', 'other'):
+            errs.append(f"people {pid}: kind '{pe['kind']}' (human, changed or other)")
+        if pe.get('home') not in place_ids:
+            errs.append(f"people {pid}: home '{pe.get('home')}' is not a place")
+        for k in ('look', 'life'):
+            if not pe.get(k):
+                errs.append(f'people {pid}: no {k}')
+    for h in lore['heroes']:
+        if not h['people']:
+            errs.append(f"{h['name']}: no people")
+        elif h['people'] not in peoples:
+            errs.append(f"{h['name']}: unknown people {h['people']}")
+    by = {h['name']: h for h in lore['heroes']}
+    for t in lore['ties']:
+        if t['kind'] in ('siblings', 'sisters') and t['a'] in by and t['b'] in by and by[t['a']]['people'] != by[t['b']]['people']:
+            errs.append(f"{t['a']} and {t['b']} are {t['kind']} but of different peoples")
     return errs
+
+# --------------------------------------------------------------------------------------------------------------------------
+# Codex checks (docs/lore/codex/, since 2026-11-15): links, hero pages, ties both ways, names
+
+
+CODEX = ROOT / 'docs' / 'lore' / 'codex'
+# Run with --partial while the hero pages are being written: a missing page is listed, not an error.
+PARTIAL = '--partial' in sys.argv
+HERO_SECTIONS = ['Biography', 'People and appearance', 'Voice', 'Voice lines', 'Secrets', 'What * from the Tower', 'Ties']
+
+# Names that belong to other games, books, films and shows: none may appear in the codex. A list, not a proof: it holds the
+# well-known names of the big franchises a player is likely to know (checked by hand 2026-11-15); add to it when in doubt.
+FRANCHISE = '''
+Azeroth Arthas Sylvanas Thrall Jaina Illidan Stormwind Orgrimmar Lordaeron Kalimdor Northrend Dalaran Quel'Thalas Ragnaros
+Runeterra Demacia Noxus Piltover Zaun Shurima Bilgewater Freljord Ahri Jinx Teemo Yasuo Thresh Kayle Morgana Ezreal Garen Katarina
+Roshan Pudge Invoker Tracer Reinhardt Overwatch Tamriel Skyrim Whiterun Morrowind Oblivion-Gate Geralt Yennefer Ciri Novigrad
+Kaer Hyrule Ganon Ganondorf Zelda Sephiroth Midgar Chocobo Lordran Anor Londo Gwyn Artorias Aldrich Lothric Godrick Malenia
+Radahn Ranni Marika Limgrave Leyndell Hallownest Teyvat Mondstadt Liyue Inazuma Paimon Westeros Winterfell Lannister Targaryen
+Hogwarts Voldemort Dumbledore Jedi Sith Tatooine Aslan Narnia Arrakis Atreides Harkonnen Fremen Shai-Hulud Ankh-Morpork
+Zagreus Tyrael Deckard Tyria Dominaria Sigmar Nagash Faerun Waterdeep Drizzt Gandalf Frodo Mordor Gondor Rohan Rivendell
+Lothlorien Eregion Hollin Pippin Bilbo Sauron Saruman Isengard Moria Smaug Concord Pikachu Kirby Hollow-Knight Sanctuary-Diablo
+Ulduar Karazhan Ashenvale Darnassus Teldrassil Kirin Pandaria Vaelastrasz Deathwing Kel'Thuzad Mephisto Baal Diablo Lilith
+Ixalan Kaladesh Ravnica Innistrad Theros Zendikar Kaldheim Strixhaven Eberron Ravenloft Greyhawk Dragonlance Krynn Raistlin
+Elminster Mystra Xanathar Vecna Tiamat-Dragonlance Bahamut-FF Ifrit-FF Shiva-FF Cid Tifa Aerith Yuna Lightning-FF Noctis
+Drakengard Nier Yorha Bayonetta Dante Vergil Kratos Atreus Ezio Altair Arno Lara Croft Nathan Drake Ellie Joel Aloy Senua Hornet-HK
+Ori Celeste Hades-Supergiant Transistor Bastion Pyre Kassandra Eivor Thedas Ferelden Orlais Kirkwall Tevinter Shepard Normandy
+Commonwealth Vault-Tec Brotherhood-Steel Gwent Velen Toussaint Skellige Rivia Witcher Planescape Torment Baldur Neverwinter
+'''.split()
+_COMMON = set('Bastion Torment Pyre Commonwealth Celeste Normandy Shepard Transistor Ori Dante Lara Croft Nathan Drake Ellie Joel Kirin Cid Kaer Baal Lilith Baldur Toussaint Altair Arno Atreus Kratos Vergil Mephisto Kirby Thrall Tracer Invoker'.split())
+FRANCHISE = [w for w in FRANCHISE if ('-' not in w or w in ('Ankh-Morpork', 'Shai-Hulud')) and w not in _COMMON]
+
+
+def _md_files():
+    return sorted(CODEX.rglob('*.md'))
+
+
+def _sections(text):
+    """[(heading, [lines])] for the ## headings of a page."""
+    out, cur = [], None
+    for ln in text.splitlines():
+        if ln.startswith('## '):
+            cur = (ln[3:].strip(), [])
+            out.append(cur)
+        elif cur is not None:
+            cur[1].append(ln)
+    return out
+
+
+def _game_names():
+    """Names already used in the game: heroes, titles, spells, passives, factions, places, the Climb's people and rulers."""
+    names = set()
+    for f in list((ROOT / 'src' / 'kits').glob('*.ts')) + list((ROOT / 'src' / 'traits').glob('*.ts')):
+        names |= set(re.findall(r"name: '([^']+)'", f.read_text(encoding='utf-8')))
+    names |= set(re.findall(r"name: '([^']+)'", (ROOT / 'src' / 'tower' / 'world' / 'folk.ts').read_text(encoding='utf-8')))
+    for f in (ROOT / 'src' / 'tower' / 'world' / 'floors').rglob('*.ts'):
+        names |= set(re.findall(r'"name": "([^"]+)"', f.read_text(encoding='utf-8')))
+    return {n.lower() for n in names}
+
+
+def check_codex(lore):
+    errs = []
+    if not CODEX.is_dir():
+        return ['docs/lore/codex/ is missing']
+    files = _md_files()
+    dangling = []
+    # 1. every link inside the codex resolves to a file
+    for f in files:
+        for href in re.findall(r'\]\(([^)#\s]+\.md)(?:#[^)]*)?\)', f.read_text(encoding='utf-8')):
+            if href.startswith('http'):
+                continue
+            if not (f.parent / href).resolve().exists():
+                dangling.append(f'{f.relative_to(CODEX)}: link to {href} goes nowhere')
+    if dangling and PARTIAL:
+        print(f'  (partial) {len(dangling)} links to pages still to write')
+    else:
+        errs += dangling
+    # 2. a page for every hero, of the agreed shape
+    peoples = lore['peoples']
+    heroes = {h['name']: h for h in lore['heroes']}
+    pages, ties_on = {}, {}
+    missing = []
+    for name, h in heroes.items():
+        p = CODEX / 'heroes' / f"{slug(name)[2:]}.md"
+        if not p.exists():
+            missing.append(name)
+            continue
+        text = p.read_text(encoding='utf-8')
+        pages[name] = text
+        where = f'heroes/{p.name}'
+        if f'hero: {name}\n' not in text:
+            errs.append(f'{where}: front matter has no "hero: {name}"')
+        secs = _sections(text)
+        got = [s for s, _ in secs]
+        want = HERO_SECTIONS
+        if len(got) != len(want) or any(not re.fullmatch(w.replace('*', '.+'), g) for w, g in zip(want, got)):
+            errs.append(f'{where}: sections are {got}, want {want}')
+            continue
+        sec = dict(secs)
+        bio = len(re.findall(r"[A-Za-z0-9’'-]+", ' '.join(sec['Biography'])))
+        if not 600 <= bio <= 1000:
+            errs.append(f'{where}: biography has {bio} words (600 to 1000)')
+        lines = [ln for ln in sec['Voice lines'] if ln.startswith('- ')]
+        if len(lines) != 8 or not all(re.match(r'- \*\*[^*]+:\*\* ', ln) for ln in lines):
+            errs.append(f'{where}: {len(lines)} voice lines (eight, each "- **When:** line")')
+        pe = peoples.get(h['people'])
+        head = text.split('## Biography', 1)[0]
+        if pe and pe['name'].replace('The ', '').lower() not in head.lower():
+            errs.append(f"{where}: the line under the title does not name its people ({pe['name']})")
+        ties_on[name] = set(re.findall(r'^- \*\*\[([^\]]+)\]', '\n'.join(sec['Ties']), re.M))
+    if missing and not PARTIAL:
+        errs.append(f'{len(missing)} heroes have no codex page: {", ".join(missing)}')
+    elif missing:
+        print(f'  (partial) {len(missing)} hero pages still to write')
+    # 3. ties go both ways: every tie of LORE.md on both pages, and every tie on a page answered on the other
+    for t in lore['ties']:
+        for a, b in ((t['a'], t['b']), (t['b'], t['a'])):
+            if a in ties_on and b not in ties_on[a]:
+                errs.append(f'{a}: the tie with {b} (LORE.md) is not in the Ties of the codex page')
+    for a, others in ties_on.items():
+        for b in others:
+            if b not in heroes:
+                errs.append(f'{a}: the codex names a tie with {b}, who is not a hero')
+            elif b in ties_on and a not in ties_on[b]:
+                errs.append(f"{a}: lists {b} under Ties, but {b}'s page does not list {a}")
+    # 4. names: every new name is listed once, is new to the game, and is not another franchise's
+    names_md = CODEX / 'names.md'
+    if names_md.exists():
+        game = _game_names() | {n.lower() for n in heroes} | {h['title'].lower() for h in heroes.values()}
+        game |= {f['name'].lower() for f in lore['factions'].values()} | {p['name'].lower() for p in lore['places']}
+        text = names_md.read_text(encoding='utf-8')
+        new = text.split('## Kept from the game', 1)[0]
+        seen = set()
+        for row in re.findall(r'^\| ([^|]+) \| [^|]+ \| [^|]+ \|$', new, re.M):
+            n = row.strip()
+            if n in ('Name', '---') or set(n) <= set('-: '):
+                continue
+            if n.lower() in seen:
+                errs.append(f'names.md: {n} is listed twice')
+            seen.add(n.lower())
+            if n.lower() in game:
+                errs.append(f'names.md: {n} is already a name in the game (move it to "Kept from the game" if that is meant)')
+    elif not PARTIAL:
+        errs.append('docs/lore/codex/names.md is missing')
+    for f in files + [SRC]:
+        text = f.read_text(encoding='utf-8')
+        for w in FRANCHISE:
+            if re.search(r'(?<![A-Za-z])' + re.escape(w) + r'(?![A-Za-z])', text):
+                errs.append(f'{f.relative_to(ROOT)}: "{w}" is a name from another game or story')
+    return errs
+
 
 # --------------------------------------------------------------------------------------------------------------------------
 # Drawing
