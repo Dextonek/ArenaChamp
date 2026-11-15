@@ -9,6 +9,7 @@ Blender, so the same clips play on them. One module per figure, blender/tower/<c
 
 Writes <out>/<chapter>_<name>_v4.glb (default out: docs/tower/models/glb, not committed: it is rebuilt in a minute) and,
 with --shots, a Blender check picture of each (<chapter>_<name>.png: front, three-quarter, side, back, face, T-pose).
+A module with `LIGHT = {...}` (an enemy) is finished by foes.finish_light: decimated, its plain colours merged.
 The `_v4.glb` ending is what makes the game's figure code treat a model as one of this style (src/motion/real.ts).
 One line per figure: "BUILT <name> ..." or "FAILED <name>" with the error.
 """
@@ -44,7 +45,13 @@ for n in args:
         mod = importlib.import_module(n)
         R = mod.build()
         stem = n.replace(".", "_")
-        R.finish(os.path.join(out, f"{stem}_v4.glb"))
+        # an enemy (it comes in packs) is finished lighter: `LIGHT` in its module (foes.py)
+        light = getattr(mod, "LIGHT", None)
+        if light is not None:
+            import foes
+            foes.finish_light(R, os.path.join(out, f"{stem}_v4.glb"), **light)
+        else:
+            R.finish(os.path.join(out, f"{stem}_v4.glb"))
         if shots:
             R.render(os.path.join(shots, f"{stem}.png"))
         print(f"BUILT {n}", flush=True)

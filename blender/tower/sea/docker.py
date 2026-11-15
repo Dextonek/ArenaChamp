@@ -14,6 +14,10 @@ from real import parts_a as PA
 from real import parts_c as P
 
 
+# An enemy: it comes in packs, so it is finished lighter (foes.finish_light).
+LIGHT = {"faces": 10000}
+
+
 def build():
     R = Real("sea_docker", sex="m", height=1.02, width=0.94, depth=0.94, head=0.98, skin="#8fa69c", eyes="#b8eef0")
     z = R.z
