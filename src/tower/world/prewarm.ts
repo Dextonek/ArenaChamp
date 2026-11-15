@@ -4,7 +4,7 @@ import { TelegraphLayer } from '../../effects/telegraph';
 import type { GameApi } from '../../runtime';
 import type { EnemySpec } from './def';
 import { BUILT, FOE_MODELS } from './foeKinds';
-import { preloadFoe, returnFoe } from './foeModels';
+import { cullable, preloadFoe, returnFoe } from './foeModels';
 import { codeLookOf } from './looks';
 
 /**
@@ -79,7 +79,8 @@ export function prewarmFoes(api: GameApi, enemies: Record<string, EnemySpec>) {
         const before = s.renderer.getRenderTarget();
         try {
           s.renderer.setRenderTarget(s.target);
-          void s.renderer.compileAsync(group, s.camera, s.scene).catch(() => undefined);
+          // Compiled, they are culled like any unit (a skinned figure is drawn wherever it stands until it has a bounding sphere).
+          void s.renderer.compileAsync(group, s.camera, s.scene).catch(() => undefined).finally(() => { for (const h of held) cullable(h.fig); });
         } catch (e) {
           console.warn('Compiling the enemy models stopped early:', e);
         }

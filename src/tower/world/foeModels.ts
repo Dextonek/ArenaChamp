@@ -69,7 +69,7 @@ export function preloadFoe(id: string): Promise<RealHero> {
   return new Promise((ok) => {
     const t0 = performance.now();
     const wait = () => {
-      if (r.loaded || performance.now() - t0 > 30000) ok(r);
+      if (r.loaded) { shareSkeleton(r); ok(r); } else if (performance.now() - t0 > 30000) ok(r);
       else setTimeout(wait, 50);
     };
     wait();
@@ -94,6 +94,7 @@ function dress(r: RealHero, f: FoeModel) {
     e.m.color.copy(e.color);
   });
   for (const o of meshesOf(r)) o.castShadow = false;
+  shareSkeleton(r);
 }
 
 const meshesOf = (r: RealHero) => {
@@ -102,11 +103,28 @@ const meshesOf = (r: RealHero) => {
   return out;
 };
 const CULLED = new WeakSet<RealHero>();
+const SHARED = new WeakSet<RealHero>();
+/**
+ * One skeleton for the whole figure. The clone gives each of its meshes (one per material) a skeleton of its own over the same bones,
+ * and three updates and uploads every skeleton once a frame: five times the bone work for one unit (on a phone, a pack's frame).
+ */
+function shareSkeleton(r: RealHero) {
+  if (SHARED.has(r)) return;
+  SHARED.add(r);
+  const ms = meshesOf(r), sk = ms[0]?.skeleton;
+  if (!sk) return;
+  for (const m of ms.slice(1)) {
+    const own = m.skeleton;
+    if (own === sk || own.bones.length !== sk.bones.length || !own.bones.every((b, i) => b === sk.bones[i])) continue;
+    m.skeleton = sk;
+    own.dispose();
+  }
+}
 /**
  * Off-screen units are not drawn: three does not cull a skinned mesh by itself (RealHero leaves culling off), so each figure gets a
  * sphere measured on its first pose, half as big again for the reach of a blow.
  */
-function cullable(r: RealHero) {
+export function cullable(r: RealHero) {
   if (CULLED.has(r)) return;
   CULLED.add(r);
   r.root.updateMatrixWorld(true);
@@ -123,6 +141,8 @@ const STRIKE: Record<NonNullable<FoeModel['strike']>, string[]> = {
 /** How long a blow's end plays on after it lands, and a shot's (s). */
 const TAIL = 0.4;
 const SHOT_LEAD = 0.18;
+/** How often a unit's figure is posed (s): every other frame at 60 frames a second. */
+const POSE_STEP = 1 / 30;
 
 /**
  * A `MinionLook` drawn from a model. `fallback` is the code look shown until the model is ready; `speed` the unit's walking speed
@@ -131,8 +151,15 @@ const SHOT_LEAD = 0.18;
 export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: number; scale?: number }): MinionLook {
   return (kind, p: MinionPalette): MinionRig => {
     const hero = take(f.id);
-    // The code look only while the file is still loading (a figure from the pool is ready at once: nothing else is built).
-    const code = hero.loaded ? null : fallback(kind, p);
+    // The code look is built in any case, as before the models: building it draws on the game's random numbers, and the perf scenes
+    // and the route bot replay a seeded draw, so a unit must draw the same whether its file has landed or not. With the figure ready
+    // (from the pool) it is let go at once; while the file loads it stands in.
+    const built = fallback(kind, p);
+    let code: MinionRig | null = built;
+    if (hero.loaded) {
+      built.dispose?.();
+      code = null;
+    }
     const root = new THREE.Group();
     const holder = new THREE.Group();
     holder.scale.setScalar(f.height / NATURAL);
@@ -144,7 +171,7 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
     hero.root.rotation.set(0, 0, 0);
     // Out of step with the pack's others, without `Math.random` (the perf scenes and the route bot replay a seeded one).
     const k0 = (made++ * 0.618034) % 1;
-    let dressed = false, posed = 0, clock = k0 * 4, phase = k0, gait = 0;
+    let dressed = false, posed = 0, clock = k0 * 4, phase = k0, gait = 0, since = k0 * POSE_STEP;
     let lastSwing = -1, after = -1, which = 0, shotT = -1, lastShot = 0;
     const strikes = STRIKE[f.strike ?? 'blade'];
     const hold = f.hold ? HOLD[f.hold] : null;
@@ -211,7 +238,12 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
           if (w <= 0 || t > si.dur) shotT = -1;
           else over(sc, t, w, w * (1 - gait) * si.legs);
         }
-        hero.pose(layers);
+        // posed 30 times a second, the pack's units out of step with each other (the clips' mixing is a unit's main cost on a phone)
+        since += dt;
+        if (posed < 2 || since >= POSE_STEP) {
+          since = since >= POSE_STEP ? since % POSE_STEP : 0;
+          hero.pose(layers);
+        }
         // the hit flash: the arena drives the palette's body (tinted or white); the figure's materials follow it
         const e = p.body.emissive, k = Math.max(e.r, e.g, e.b);
         if (k > 0.01) {
