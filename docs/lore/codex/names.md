@@ -126,6 +126,9 @@ Tear, the Heart of Noon, Ash and Ember, the Sun Warden, the Sun Court, the Noon 
 Table, the Tally-house, the Gaol of Oaths, Tamerit, the Spires, the Ember Caldera, the Antler Glades, the Night Temple, the Mirror Hall, the Brass
 Road, the Lamp Road, the Glass Flats, the Prism Stair, the Tide (the Coast folk's faith, and the tide of the Climb's Sea floors), the Hymn of Noon, the Ember of Aubade, the Noon-touched, the obol, every hero, title, spell and Climb name.
 
+The check also knows the twenty new heroes' spell names (from `pipeline/designs/kit-*.md`). One meets a festival here on purpose: Nebet's
+ultimate, The Weighing, is named for the rite of the Sands it comes from.
+
 Meetings on purpose, which the check allows: Cantor and the Blind Cantor; Ostrel the Ferryman and the Deep's Ferryman; Itzel the Obsidian Herald and the
 War's Herald; the Drowned Admiral and the Drowned Captain (one ruler, two names in the code); the Scarab Colossus and the Scarab King (mother and son);
 the Last Marshal (a Climb ruler) and the azure's commander in the War of the Banners, who are the same man.

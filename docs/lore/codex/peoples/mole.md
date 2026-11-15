@@ -79,7 +79,7 @@ claws and short picks. In the open they are slow and know it, and they rarely fi
 ## Heroes and Climb people
 
 - **In the game:** [Mabel](../heroes/mabel.md).
-- **New:** [Tova](../heroes/tova.md), whose look moves from a human sapper to a mole-folk one ([revamp plan](../revamp.md)).
+- **New:** [Tova](../heroes/tova.md)<!-- team -->, whose look moves from a human sapper to a mole-folk one ([revamp plan](../revamp.md))<!-- /team -->.
 - **On the Climb:** none of the Deep's five; the Echo-Hermit learned his way by echoes from a mole-folk Old Mother ([the Deep](../climb/deep.md)).
 
 ## Ties to other peoples

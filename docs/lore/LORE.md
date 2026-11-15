@@ -860,7 +860,7 @@ to hire him for the stage.
 > "The gate is shut. Climb over me."
 
 The gate of Tamerit is kept by a great lion of sandstone and gold that wakes when its rider sits on its back, and Ramet is its rider.
-He is the Throne's gate captain, a strong, steady man in a lion-mane hood and gold-banded armour, with a long spear. He was keeping the
+He is the Throne's gate captain, a strong, steady lion of the Ninefold in gold-banded armour, with a long spear. He was keeping the
 gate on the night Sefu took the crown, and when Asenet came to it in the dark he opened it and let her go. Sefu has never asked him
 why. Every year he races Zephyr across the Glass Flats, and the lion has never lost on sand. In the Ring, break the lion and he fights
 on foot, and he is still a captain.

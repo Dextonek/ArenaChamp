@@ -87,7 +87,7 @@ archers with the mirage. A Dune army never gives battle at noon.
   (a caravan cook's daughter, who went to the Banners' camps with her mother's cleaver).
 - **New:** [Lithea](../heroes/lithea.md), [Nebet](../heroes/nebet.md), [Sahar](../heroes/sahar.md), [Asenet](../heroes/asenet.md).
 - **On the Climb:** the Sands' five, the Star-Reader, the Storm-Counter, the Beacon-Keeper, the Silk-Merchant and the
-  Glass-Seller; and the caravan raiders and slingers, who are Dune folk the Tower took in the storm ([the Sands](../climb/sands.md)).
+  Glass-Seller; and the caravan raiders and slingers, who are Dune folk caught in the storm ([the Sands](../climb/sands.md)).
 
 ## Ties to other peoples
 

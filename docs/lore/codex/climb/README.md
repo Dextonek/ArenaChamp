@@ -15,16 +15,21 @@ the Tally's page for that duel has been blank ever since. Inside was a harbour d
 gate opens to every champion of the Ring who has earned it, and the Climb has grown floor by floor: fifty floors now, in five
 chapters of ten.
 
-## What the Climb is (a proposal)
+## What the Climb is
 
-*The Tower's own story has not been chosen ([The Tower and the Sun](../tower-and-sun.md)). This is the proposal the Climb was
-written with, "a Tower that collects worlds", for the user to keep or change. The chapters below describe the floors as places, and
-fit any answer.*
+<!-- team -->*The Tower's own story has not been chosen ([The Tower and the Sun](../tower-and-sun.md)). The Climb was written with the
+proposal "a Tower that collects worlds", for the user to keep or change; this section and the chapters give it only as belief, so
+any answer fits.*<!-- /team -->
 
-Each chapter holds a realm of the Dial as it was at one hour: **the Sea** as the Drowned Harbour on the morning the water came,
-**the Wood** walking, **the Sands** and their storm, **the Deep** without light, and **the War** on the Field of Banners, where the
-two armies still fight because nobody inside has told them it is over. The people of the floors were there at that hour, and they
-still keep their posts. Each floor's ruler is the worst thing its realm had.
+Nobody knows. What every climber agrees on is what is there: each chapter is a realm of the Dial as it was at one hour. **The Sea**
+is the Drowned Harbour on the morning the water came, **the Wood** is walking, **the Sands** are in their storm, **the Deep** is
+without light, and **the War** is on the Field of Banners, where the two armies still fight because nobody inside has told them it is
+over. The people of the floors say they have always been there, and they keep their posts. Each floor's ruler is the worst thing its
+realm had.
+
+What the floors *are* is argued in every tavern of the Ringside. The Greenwood Moot says the Tower collects worlds: that it has taken
+these realms in, as they were at the hour it took them, and that the realms outside are thinner for it. The Hourkeepers say the floors
+are records, the way a clock keeps the time. The Noonsworn say they are the sun's stair. Nobody has proved any of it.
 
 ## The five chapters
 

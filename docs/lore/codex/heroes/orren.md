@@ -20,7 +20,7 @@ Before the Fall a piece of the sun's light was kept in a lantern-shrine in Aubad
 itself at its last noon. The shrine's keepers say the choir carried a lamp up the Tower that morning, as they did every midsummer,
 lit it at noon from the sun's own light, and sent it down by runner before the Hymn began. The lamp reached Aubade at dusk. By then
 the sun had fallen, and the Ember was the last of its light on the Dial that anyone could hold. The Noonsworn kept it in its
-shrine for seventy years, fed it oil of cliff olives, guarded it day and night, and argued about what it was for.
+shrine for ninety years, fed it oil of cliff olives, guarded it day and night, and argued about what it was for.
 
 Some said it was a relic, to be kept. Some said it was a seed: if it were carried to the top of the Tower and set in the Noon
 Seat, it would grow into a new sun. The second party won in the ninetieth summer, when the Tower's gate began to open to champions

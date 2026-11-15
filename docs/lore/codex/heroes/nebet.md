@@ -12,7 +12,7 @@ hero: Nebet
 When a king of the Sands dies, his heart is drawn by the embalmer and carried to the Hall of Weighing in the Valley of Lids, and set in the pan of a great scale of gold,
 and weighed against a single feather. If the heart is lighter, the king is buried with honour and will rise with the Father; if it is heavier, the king is buried
 anyway, because he is a king, and the Weigher says nothing, and remembers. The Weigher is the Throne's judge of the dead, one of the Five Offices older than any king, and
-for the last sixty years the Weigher has been Nebet.
+for the last thirty years the Weigher has been Nebet.
 
 She was born in Tamerit in the thirty-eighth summer after the Fall, the daughter of a scribe of the Throne Hall, and raised among the court's records: lists of kings and
 their hearts' weights, going back six centuries, which she read as other girls read stories. She was a tall, still, serious child who liked things to balance. At twelve she

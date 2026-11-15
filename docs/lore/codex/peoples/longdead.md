@@ -76,8 +76,8 @@ slow, they burn, and salt troubles them: a line of salt is a line most of them c
 
 ## Heroes and Climb people
 
-- **In the game:** [Mortis](../heroes/mortis.md), and [Mr. Ledger](../heroes/mr-ledger.md), whose figure moves from an old man to
-  one of the Long Dead in the [revamp plan](../revamp.md).
+- **In the game:** [Mortis](../heroes/mortis.md), and [Mr. Ledger](../heroes/mr-ledger.md)<!-- team -->, whose figure moves from an old man to
+  one of the Long Dead in the [revamp plan](../revamp.md)<!-- /team -->.
 - **New:** [Ostrel](../heroes/ostrel.md).
 - **On the Climb:** none; the Climb's walking dead (the drowned dockers, the ashen soldiers, the Drowned Admiral) are the Restless,
   not the Long Dead ([bestiary](../climb/bestiary.md)).

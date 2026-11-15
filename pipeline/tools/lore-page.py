@@ -307,6 +307,9 @@ def _game_names():
     names |= set(re.findall(r"name: '([^']+)'", (ROOT / 'src' / 'tower' / 'world' / 'folk.ts').read_text(encoding='utf-8')))
     for f in (ROOT / 'src' / 'tower' / 'world' / 'floors').rglob('*.ts'):
         names |= set(re.findall(r'"name": "([^"]+)"', f.read_text(encoding='utf-8')))
+    # the twenty new heroes' spells, from their kit sheets
+    for f in (ROOT / 'pipeline' / 'designs').glob('kit-*.md'):
+        names |= set(re.findall(r'^\| [PQWER] \| \*\*([^*]+)\*\*', f.read_text(encoding='utf-8'), re.M))
     return {n.lower() for n in names}
 
 

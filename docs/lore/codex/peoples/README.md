@@ -5,7 +5,7 @@ tags: [lore, codex, peoples]
 
 # The peoples of the Dial
 
-Twelve peoples live on the Dial. The user, 2026-11-14, of the heroes: "they seem all the same, like human". So the Dial is not
+Twelve peoples live on the Dial. <!-- team -->The user, 2026-11-14, of the heroes: "they seem all the same, like human". <!-- /team -->So the Dial is not
 only human: **four peoples are human**, each with its own build, dress, skin, hair and marks; **three are human peoples the
 Fall changed** (eyes that shine, ash-grey skin, horns); and **five are not human at all**. Back to the [codex](../README.md).
 
@@ -59,8 +59,8 @@ The pack has one face per sex, so faces alone never tell a people apart. Skin, e
 | The Fallborn | 3 | 0 | 3 |
 | **All** | **40** | **20** | **60** |
 
-Of the forty in the game, 19 are of the four human peoples, 10 of the three changed ones and 11 of the five others. With the plan's
-revamps done, no two heroes of the same people stand side by side in the line-up looking alike: see [the revamp plan](../revamp.md).
+Of the forty in the game, 19 are of the four human peoples, 10 of the three changed ones and 11 of the five others. <!-- team -->With the plan's
+revamps done, no two heroes of the same people stand side by side in the line-up looking alike: see [the revamp plan](../revamp.md).<!-- /team -->
 
 ## Where the peoples meet
 

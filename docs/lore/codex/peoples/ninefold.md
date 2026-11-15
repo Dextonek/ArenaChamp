@@ -82,8 +82,8 @@ life when a fight is worth it. In war they were the Dial's best scouts and its b
 ## Heroes and Climb people
 
 - **In the game:** [Sir Whiskers](../heroes/sir-whiskers.md), lynx line.
-- **New:** [Ramet](../heroes/ramet.md), lion line, captain of the gate of Tamerit (his look moves from a man in a lion hood to a
-  lion-headed rider: [revamp plan](../revamp.md)).
+- **New:** [Ramet](../heroes/ramet.md), lion line, captain of the gate of Tamerit<!-- team --> (his look moves from a man in a lion hood to a
+  lion-headed rider: [revamp plan](../revamp.md))<!-- /team -->.
 - **On the Climb:** the War's Turncloak, a lynx knight who fought for both banners and spent eight lives doing it; he keeps his
   helm on ([the War](../climb/war.md)).
 

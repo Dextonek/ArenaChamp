@@ -12,13 +12,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": ""
 },
 {
-"id": "tower-and-sun",
-"book": "world",
-"title": "The Tower and the Sun",
-"sub": "Two questions the Dial cannot answer: why the sun fell, and what the Tower is.",
-"hero": ""
-},
-{
 "id": "history",
 "book": "world",
 "title": "History of the Dial",
@@ -313,13 +306,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": ""
 },
 {
-"id": "heroes/README",
-"book": "heroes",
-"title": "The heroes of the Dial",
-"sub": "Sixty champions of the Ring: the forty in the game and the twenty on the cards.",
-"hero": ""
-},
-{
 "id": "heroes/ada",
 "book": "heroes",
 "title": "Ada, the Artificer",
@@ -332,20 +318,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "title": "Anka, the Firebird",
 "sub": "The Noonsworn · the Fallborn, an Ember · from the Drowned Coast",
 "hero": "Anka"
-},
-{
-"id": "heroes/arden",
-"book": "heroes",
-"title": "Arden, the Huntmaster",
-"sub": "The Greenwood Moot · Wood folk · from the Walking Wood",
-"hero": "Arden"
-},
-{
-"id": "heroes/asenet",
-"book": "heroes",
-"title": "Asenet, the Uncrowned",
-"sub": "A loner · Dune folk · from the Sands",
-"hero": "Asenet"
 },
 {
 "id": "heroes/auriel",
@@ -390,25 +362,11 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Brannoc"
 },
 {
-"id": "heroes/campana",
-"book": "heroes",
-"title": "Campana, the Bellwright",
-"sub": "The Noonsworn · Aubade folk · from Aubade",
-"hero": "Campana"
-},
-{
 "id": "heroes/cantor",
 "book": "heroes",
 "title": "Cantor, the Last Verse",
 "sub": "The Noonsworn · Aubade folk · from Aubade",
 "hero": "Cantor"
-},
-{
-"id": "heroes/corbel",
-"book": "heroes",
-"title": "Corbel, the Stonewing",
-"sub": "The Court of Dusk · Gloaming folk, stone-woken · from Gloaming",
-"hero": "Corbel"
 },
 {
 "id": "heroes/fenna",
@@ -439,13 +397,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Hank"
 },
 {
-"id": "heroes/hesk",
-"book": "heroes",
-"title": "Hesk, the Golemwright",
-"sub": "The Underforge · Kilnborn · from the Deep",
-"hero": "Hesk"
-},
-{
 "id": "heroes/isolde",
 "book": "heroes",
 "title": "Isolde, the Winter Warden",
@@ -453,46 +404,11 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Isolde"
 },
 {
-"id": "heroes/itzel",
-"book": "heroes",
-"title": "Itzel, the Obsidian Herald",
-"sub": "The Underforge · Kilnborn · from the Deep",
-"hero": "Itzel"
-},
-{
 "id": "heroes/kaia",
 "book": "heroes",
 "title": "Kaia, the Tempest Caller",
 "sub": "The Windward · Coast folk · from the Drowned Coast",
 "hero": "Kaia"
-},
-{
-"id": "heroes/kessa",
-"book": "heroes",
-"title": "Kessa, the Chainwarden",
-"sub": "The Truce of the Ring · Kilnborn · from the Drowned Coast",
-"hero": "Kessa"
-},
-{
-"id": "heroes/kohaku",
-"book": "heroes",
-"title": "Kohaku, the Foxfire",
-"sub": "The Court of Dusk · Briarkin, the Fox court · from Gloaming",
-"hero": "Kohaku"
-},
-{
-"id": "heroes/lian",
-"book": "heroes",
-"title": "Lian, the Kite Master",
-"sub": "The Windward · Coast folk · from the Drowned Coast",
-"hero": "Lian"
-},
-{
-"id": "heroes/lithea",
-"book": "heroes",
-"title": "Lithea, the Stone Gaze",
-"sub": "The Dune Throne · Dune folk · from the Sands",
-"hero": "Lithea"
 },
 {
 "id": "heroes/lyra",
@@ -530,13 +446,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Mortis"
 },
 {
-"id": "heroes/morwen",
-"book": "heroes",
-"title": "Morwen, the Saltwarden",
-"sub": "The Truce of the Ring · Coast folk · from the Drowned Coast",
-"hero": "Morwen"
-},
-{
 "id": "heroes/mr-ledger",
 "book": "heroes",
 "title": "Mr. Ledger, the Tithe-Keeper",
@@ -549,13 +458,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "title": "Mum, the Silent One",
 "sub": "The Court of Dusk · Aubade folk · from Gloaming",
 "hero": "Mum"
-},
-{
-"id": "heroes/nebet",
-"book": "heroes",
-"title": "Nebet, the Heartweigher",
-"sub": "The Dune Throne · Dune folk · from the Sands",
-"hero": "Nebet"
 },
 {
 "id": "heroes/nyx",
@@ -579,20 +481,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Opaline"
 },
 {
-"id": "heroes/orren",
-"book": "heroes",
-"title": "Orren, the Sunbearer",
-"sub": "The Noonsworn · Aubade folk · from Aubade",
-"hero": "Orren"
-},
-{
-"id": "heroes/ostrel",
-"book": "heroes",
-"title": "Ostrel, the Ferryman",
-"sub": "A loner · the Long Dead · from everywhere the dead are",
-"hero": "Ostrel"
-},
-{
 "id": "heroes/pim-and-pom",
 "book": "heroes",
 "title": "Pim and Pom, the Changeling Twins",
@@ -614,32 +502,11 @@ export const CODEX_INDEX: CodexEntry[] = [
 "hero": "Professor Puff"
 },
 {
-"id": "heroes/ramet",
-"book": "heroes",
-"title": "Ramet, the Lion of the Gate",
-"sub": "The Dune Throne · the Ninefold, a lion · from the Sands",
-"hero": "Ramet"
-},
-{
 "id": "heroes/referee-whistler",
 "book": "heroes",
 "title": "Referee Whistler, the Arbiter",
 "sub": "The Truce of the Ring · Kilnborn · from the Ring",
 "hero": "Referee Whistler"
-},
-{
-"id": "heroes/saga",
-"book": "heroes",
-"title": "Saga, the Northern Light",
-"sub": "The Hourkeepers · Northerners, lake-born · from Frostfall",
-"hero": "Saga"
-},
-{
-"id": "heroes/sahar",
-"book": "heroes",
-"title": "Sahar, the Mirage",
-"sub": "The Dune Throne · Dune folk · from the Sands",
-"hero": "Sahar"
 },
 {
 "id": "heroes/sefu",
@@ -689,27 +556,6 @@ export const CODEX_INDEX: CodexEntry[] = [
 "title": "The Great Zambini, the Illusionist",
 "sub": "A loner · Briarkin, of no court · from everywhere",
 "hero": "The Great Zambini"
-},
-{
-"id": "heroes/thessa",
-"book": "heroes",
-"title": "Thessa, the Sky-Stitcher",
-"sub": "The Hourkeepers · Northerners · from Frostfall",
-"hero": "Thessa"
-},
-{
-"id": "heroes/tova",
-"book": "heroes",
-"title": "Tova, the Hallbreaker",
-"sub": "The Underforge · Mole-folk · from the Deep",
-"hero": "Tova"
-},
-{
-"id": "heroes/vela",
-"book": "heroes",
-"title": "Vela, the Dream Moth",
-"sub": "The Greenwood Moot · Briarkin, the Moth court · from the Walking Wood",
-"hero": "Vela"
 },
 {
 "id": "heroes/vesper",

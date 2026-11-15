@@ -37,7 +37,7 @@ enemies.
 
 ## People and appearance
 
-Dune folk of the river towns, born after the Fall: forty-seven, tall and still, dark-skinned, kohl-eyed behind the veil. A sheer verdigris veil over the face, a crown of
+Dune folk of the river towns, born after the Fall: fifty-four, tall and still, dark-skinned, kohl-eyed behind the veil. A sheer verdigris veil over the face, a crown of
 bronze serpent coils, a marble-white gown with bronze edges, a short bronze staff with a serpent eye in the left hand. Her look is not built yet; its brief, which keeps
 her card, is in the [revamp plan](../revamp.md).
 

@@ -18,7 +18,7 @@ temple, the travellers' court, the wagon line, the raiders' camp, the sun shrine
 
 ## Its people
 
-All of them Dune folk, all of them caught in the storm:
+All of them Dune folk, who say the storm caught them:
 - **The Star-Reader**, the keeper of all ten floors, reads the storms in the stars, which she learned at Frostfall as a girl; she can
   see the stars through the dust when nobody else can.
 - **The Storm-Counter**, the camp's quest giver, counts the storms: how many have crossed, how many are to come. The number never
@@ -31,7 +31,7 @@ All of them Dune folk, all of them caught in the storm:
 
 The **Scarab Colossus** rules the twenty-first floor from under the sand, and burrows; above it its son the Scarab King, then the Dune
 Colossus, the Brass Sphinx, the Glass Serpent, the Mirage Lord, the Sand Tyrant, the Red Jackal and the Sun-Eater ([rulers](rulers.md)).
-Their packs are caravan raiders and slingers, Dune folk the Tower took in the storm and turned to robbing what passes; and the dust
+Their packs are caravan raiders and slingers, Dune folk caught in the storm, who rob what passes; and the dust
 wraiths; and the great ones, the Dune Mother, the Raider Chief, the Storm Count and the Glass Widow ([bestiary](bestiary.md)).
 
 ## The gate and the crown

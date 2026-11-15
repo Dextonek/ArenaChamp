@@ -79,7 +79,8 @@ violence as settlement. He is unfailingly polite. He never raises his voice; he 
 
 ## What he wants from the Tower
 
-To audit it. The Tower has taken realms, people, a sun and a market full of the Dial's dead, and none of it has been written down. And
+To audit it. If the Tower has taken realms, people, a sun and a market full of the Dial's dead, as half the Ring believes, none of it has
+been written down. And
 to know who won in year 90.
 
 ## Ties

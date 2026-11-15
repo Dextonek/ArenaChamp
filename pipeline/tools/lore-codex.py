@@ -27,12 +27,22 @@ spec.loader.exec_module(lp)
 
 # The game's books, in the order the screen shows them, and the folders or files each takes its pages from.
 BOOKS = [
-    ('world', 'The world', ['world.md', 'tower-and-sun.md', 'history.md']),
+    ('world', 'The world', ['world.md', 'history.md']),
     ('peoples', 'Peoples', ['peoples/']),
     ('realms', 'Realms', ['realms/', 'climb/']),
     ('factions', 'Factions', ['factions/']),
     ('heroes', 'Heroes', ['heroes/']),
 ]
+
+# What players see is the lore, not the team's notes. Left out of the game: the open questions for the user
+# (tower-and-sun.md), the team's index of heroes with the revamp column, and the heroes not in the game yet (LORE.md status
+# other than `roster`: their pages stay in docs/ until they ship). Inside a page: spans fenced with <!-- team --> ...
+# <!-- /team -->, whole sections with a TEAM_SECTIONS heading, and in a hero's appearance the sentences about the figure's
+# build (TEAM_SENTENCE). `check_game_text` then fails on any TEAM_WORDS left in what the game would show.
+SKIP_PAGES = {'heroes/README'}
+TEAM_SECTIONS = {'In the figure', 'The one style, and what a people can be in it'}
+TEAM_SENTENCE = re.compile(r'revamp plan|not built yet|card drew|^Today ')
+TEAM_WORDS = re.compile(r'revamp|the user|pipeline/|\.py\b|not built|the pack\b|on the cards|style-v4', re.I)
 
 
 def page_files():
@@ -45,7 +55,8 @@ def page_files():
                 if not d.is_dir():
                     continue
                 files = sorted(d.glob('*.md'), key=lambda p: (p.stem != 'README', p.stem))
-                out += [(book, f'{part}{p.stem}', p) for p in files]
+                out += [(book, f'{part}{p.stem}', p) for p in files
+                        if f'{part}{p.stem}' not in SKIP_PAGES and not (part == 'heroes/' and p.stem in UNRELEASED)]
             elif (CODEX / part).exists():
                 out.append((book, part[:-3], CODEX / part))
     return out
@@ -126,8 +137,33 @@ def to_blocks(src_id, body, known, svgs):
     return blocks
 
 
+def strip_team(text, hero_page):
+    """The page as players see it: fenced spans, team sections and, on a hero page, the figure's build notes taken out."""
+    text = re.sub(r'<!-- team -->.*?<!-- /team -->', '', text, flags=re.S)
+    out, skip = [], False
+    for ln in text.splitlines():
+        if ln.startswith('## '):
+            skip = ln[3:].strip() in TEAM_SECTIONS
+        if not skip:
+            out.append(ln)
+    text = '\n'.join(out)
+    if hero_page:
+        head, sep, rest = text.partition('## People and appearance')
+        if sep:
+            body, sep2, tail = rest.partition('\n## ')
+            paras = body.split('\n\n')
+            keep = []
+            for para in paras:
+                flat = ' '.join(x.strip() for x in para.splitlines())
+                sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z\[*(])', flat)
+                kept = [x for x in sentences if not TEAM_SENTENCE.search(x)]
+                keep.append(' '.join(kept))
+            text = head + sep + '\n\n'.join(keep) + sep2 + tail
+    return text
+
+
 def read_page(book, pid, path, known, svgs):
-    text = path.read_text(encoding='utf-8')
+    text = strip_team(path.read_text(encoding='utf-8'), pid.startswith('heroes/'))
     lines = text.splitlines()
     meta = {}
     if lines and lines[0].strip() == '---':
@@ -158,6 +194,26 @@ def read_page(book, pid, path, known, svgs):
     body = lines[i:]
     return {'id': pid, 'book': book, 'title': title, 'sub': sub, 'hero': meta.get('hero', ''),
             'blocks': to_blocks(pid, body, known, svgs)}
+
+
+def _unreleased():
+    lore = lp.read(lp.SRC)
+    return {re.sub(r'[^a-z0-9]+', '-', h['name'].lower()).strip('-') for h in lore['heroes'] if h['status'] != 'roster'}
+
+
+UNRELEASED = _unreleased()
+
+
+def check_game_text(pages):
+    """No team notes in what players see."""
+    errs = []
+    for p in pages:
+        for t in [p['title'], p['sub']] + [str(b) for b in p['blocks'] if b[0] != 'svg']:
+            m = TEAM_WORDS.search(t)
+            if m:
+                errs.append(f"{p['id']}: the game would show a team note ({m.group(0)!r}): {t[max(0, m.start() - 50):m.end() + 40]!r}")
+                break
+    return errs
 
 
 def words(path):
@@ -191,12 +247,18 @@ def main():
             print('  -', e)
         sys.exit(1)
     files = page_files()
-    print(f'codex: {len(files)} pages in the game\'s books, checks passed')
-    if '--check' in sys.argv:
-        return
     known = {pid for _, pid, _ in files}
     svgs = {'map': lp.map_svg(lore)}
     pages = [read_page(b, pid, p, known, svgs) for b, pid, p in files]
+    errs = check_game_text(pages)
+    if errs:
+        print('The game\'s Codex would show team notes:')
+        for e in errs:
+            print('  -', e)
+        sys.exit(1)
+    print(f'codex: {len(files)} pages in the game\'s books (the {len(UNRELEASED)} heroes not in the game stay in docs/), checks passed')
+    if '--check' in sys.argv:
+        return
     gen = ROOT / 'src' / 'game'
     head = ('// Made by pipeline/tools/lore-codex.py from docs/lore/codex/: edit the codex there and run the script again.\n')
     index = [{'id': p['id'], 'book': p['book'], 'title': p['title'], 'sub': re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p['sub']),

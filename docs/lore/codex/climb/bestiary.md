@@ -8,8 +8,8 @@ tags: [lore, codex, climb, enemies]
 *Every kind of enemy on the fifty floors, chapter by chapter, and what it was before the Tower held it.* · [The Climb](README.md) ·
 [Rulers](rulers.md)
 
-The enemies of the Climb are drawn in the game's own code, not built as figures; where a kind is people-shaped, its people is named.
-The dead who walk here are **the Restless**, dead who got up without a will of their own, never the [Long Dead](../peoples/longdead.md).
+<!-- team -->The enemies of the Climb are drawn in the game's own code, not built as figures; where a kind is people-shaped, its people is named.
+<!-- /team -->The dead who walk here are **the Restless**, dead who got up without a will of their own, never the [Long Dead](../peoples/longdead.md).
 
 ## The Sea (floors 1 to 10)
 
@@ -54,8 +54,8 @@ The dead who walk here are **the Restless**, dead who got up without a will of t
 
 ## The Sands (floors 21 to 30)
 
-- **Raider.** A wrapped figure in rust with a turquoise sash, a round shield and a curved blade. Dune folk of the caravan towns whom the
-  Tower took in the great storm, and who rob what passes: in the Tower, they are still waiting for the caravan.
+- **Raider.** A wrapped figure in rust with a turquoise sash, a round shield and a curved blade. Dune folk of the caravan towns, caught, the Sands say, in the great storm,
+and who rob what passes: in the Tower, they are still waiting for the caravan.
 - **Slinger.** A raider with a sling instead of a blade, from the rim of the canyon.
 - **Dust wraith.** A tall swirl of dark sand with pale rings, no legs, two pale slits for eyes. The storm given a shape; the Dune folk
   say they are the souls of caravaners lost in it.

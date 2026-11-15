@@ -25,8 +25,8 @@ like people of flame and gold: skin warm and bright, glowing faintly at its edge
 roots); hair like flame, dark red to gold; eyes like coals. They are warm to the touch, hot when angry, and they burn when they
 die, and rise from what they leave on the ground.
 
-**In the figure.** On the pack's human body: warm skin with an emissive rim at the edges, flame-coloured hair, feathers and fans
-as costume. **Cannot be:** a body made of fire (the figure keeps a solid skin; the fire is in the spells), true wings.
+<!-- team -->**In the figure.** On the pack's human body: warm skin with an emissive rim at the edges, flame-coloured hair, feathers and fans
+as costume. **Cannot be:** a body made of fire (the figure keeps a solid skin; the fire is in the spells), true wings.<!-- /team -->
 
 **Life and fire.** An Ember does not age: each fire makes it new, about twenty in a human's eyes. It can be put out only by
 cold, water held long enough, or by being kept from its ashes. It remembers every life.
@@ -42,8 +42,8 @@ the Cast in, since nobody else would, and most of them serve it.
 hard edge of violet where light catches it, and no face at all; a pale slit where eyes would be, mint or white. They cast no
 shadow of their own. They fade when they are left alone, and come back sharper when someone looks for them.
 
-**In the figure.** On the pack's human body, as Nyx is: matte black, a violet edge, a hood, no face. **Cannot be:** flat (the
-figure must keep the body's volume), a smoke without legs.
+<!-- team -->**In the figure.** On the pack's human body, as Nyx is: matte black, a violet edge, a hood, no face. **Cannot be:** flat (the
+figure must keep the body's volume), a smoke without legs.<!-- /team -->
 
 **Life.** They do not age. They are hurt by full light and by being forgotten, and nobody knows what kills them. The Hourkeepers
 count perhaps forty.
@@ -58,8 +58,8 @@ at times, rifts that drift and pull and close, and the Hourkeepers call all of t
 **Body.** It wears a shape, not a body: a towering knight in black plate, cracked with glowing pink rifts, a horned helm with one
 burning slit, a ragged cloak whose hem breaks into floating shards. What is inside the plate, if anything, nobody has seen.
 
-**In the figure.** On the pack's human body, as Oblivion is. **Cannot be:** shapeless, or a creature with more limbs; the
-pack's clips need the knight.
+<!-- team -->**In the figure.** On the pack's human body, as Oblivion is. **Cannot be:** shapeless, or a creature with more limbs; the
+pack's clips need the knight.<!-- /team -->
 
 **Life.** Not born, not ageing; whatever it touches stops being able to end. Wick, Tempo and Thessa have sworn to send it back.
 

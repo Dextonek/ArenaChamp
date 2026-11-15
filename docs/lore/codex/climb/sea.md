@@ -18,7 +18,7 @@ sea caves, the lighthouse, the drowned chapel, the sailors' chapel, the wreck, t
 
 ## Its people
 
-All of them Coast folk, all of them there on that morning:
+All of them Coast folk, who say they were there on that morning:
 - **The Bell-Warden**, the keeper of all ten floors, rings the harbour bell that [Campana](../heroes/campana.md) cast. She has rung it
   every morning since, to call the drowned home. She does not know how long that has been.
 - **The Net-Father**, the camp's quest giver, mends the sea nets, hauls them, and needs things found in them.

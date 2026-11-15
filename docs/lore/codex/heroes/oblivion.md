@@ -62,7 +62,8 @@ Rarely heard: a low, flat voice with no breath in it, like a sentence read out w
 
 ## Secrets
 
-- It did not come through the Tear. It was pulled through, by something on this side, at noon. It has been looking for what pulled it for a hundred years.
+- It believes it did not come through the Tear by its own will: that something on this side pulled, at noon. It has been looking for what pulled for a
+  hundred years, and has told only Wick, who did not believe it.
 - It loses in the Ring sometimes on purpose. It wants to know what losing is.
 - The Hourkeepers' list of things it has unmade includes, near the top, in Shiori's hand, a word: the old name of the Dial. Nobody remembers it. The word is blank.
 
