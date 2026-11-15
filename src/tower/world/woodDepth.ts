@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, seeded } from '../../arenas/common';
 import type { WoodLook } from './gen/wood';
-import { rimAt } from './land';
+import { grassStands, rimAt } from './land';
 
 /**
  * The world's depth on a Wood floor (floors 11 to 20; the user, 2026-11-14: "add depth into the worlds, make all the background fit there,
@@ -593,9 +593,11 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
     const leafTints = ['#a8803a', '#8a4a2a', '#7a7a36', '#b89a4a', '#6e5a2e'].map((h) => new THREE.Color(h));
     // Merged into one mesh a 64 m square (a square out of the camera's view is not drawn): a few draws for all of it, no shadows cast.
     const CELLM = 64, cells = new Map<string, { n: number; items: [Shape, THREE.Matrix4, number][] }>();
-    for (const [kind, list] of lists) {
+    for (const [kind, all] of lists) {
       const sh = shapes[kind];
       if (!sh) continue;
+      // grass only where the ground as drawn is gentle (land.ts `grassStands`)
+      const list = kind === 'tuft' || kind === 'dry' ? all.filter((m) => grassStands(land.height, m.elements[12] - RING.x, m.elements[14] - RING.z)) : all;
       list.forEach((m, i) => {
         const key = `${Math.floor(m.elements[12] / CELLM)}:${Math.floor(m.elements[14] / CELLM)}`;
         let cell = cells.get(key);

@@ -47,6 +47,8 @@
     }
   }
 
+  /** Where the tool's clock starts (ms): one instant every run, far past any real time the page has seen before a scene. */
+  const CLOCK0 = 1e7;
   const mulberry = (seed) => () => {
     seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -297,6 +299,10 @@
           }
         },
         print: () => [Math.round(d.playerHp), d.foe ? Math.round(a.arena.hpOf(d.foe)) : -1, quant(a.arena.caster.group.position.x), quant(a.arena.caster.group.position.z), fights],
+        // For a trace: the same to the last bit, the boss's place, and what has loaded.
+        fine: () => [d.playerHp, d.foe ? a.arena.hpOf(d.foe) : -1, a.arena.caster.group.position.x, a.arena.caster.group.position.z, d.foe?.group.position.x, d.foe?.group.position.z, fights,
+          [...d.party.values()].map((p) => (p.lite ? 'L' : p.figure.loaded ? 1 : 0)).join(''), d.figure.loaded ? 1 : 0, a.heroMode.figureLoaded ? 1 : 0],
+        ready: () => ({ party: [...d.party.values()].map((p) => (p.lite ? 'L' : p.figure.loaded ? 1 : 0)).join(''), foe: d.figure.loaded, hero: a.heroMode.figureLoaded, quality: a.quality?.level, pr: a.renderer.getPixelRatio() }),
       };
     },
 
@@ -429,8 +435,34 @@
       console.error = (...x) => { if (errors.length < 10) errors.push(x.map((v) => String(v?.stack ?? v)).join(' ').slice(0, 300)); logError(...x); };
       const onError = (e) => { if (errors.length < 10) errors.push(String(e.error?.stack ?? e.message).slice(0, 300)); };
       window.addEventListener('error', onError);
-      Math.random = mulberry(o.seed ?? 7);
+      // `set: { trace: { from, to } }`: where two runs part (docs/pipeline/performance.md, "When the print changes"): the dice's calls
+      // counted and a fine state written every frame, and who rolled each die from frame `from` to `to` (their stacks).
+      const tr = o.set?.trace ? { ...o.set.trace, n: 0, frame: -1, rolls: [], states: o.set.trace.states === false ? false : [], who: [], at: [] } : null;
+      const dice = (seed) => {
+        const roll = mulberry(seed);
+        if (!tr) return roll;
+        return () => {
+          tr.n++;
+          if ((tr.windows ?? [[tr.from ?? 0, tr.to ?? -1]]).some(([a, b]) => tr.frame >= a && tr.frame <= b) && tr.who.length < 6000) tr.who.push(`${tr.frame} ${tr.n} ${(new Error().stack ?? '').split('\n').slice(2, 7).map((l) => l.trim().replace(/https?:\/\/[^/]+\//, '').replace(/\?[^:]*/, '')).join(' < ')}`);
+          return roll();
+        };
+      };
+      Math.random = dice(o.seed ?? 7);
+      if (tr) performance.setResourceTimingBufferSize(20000);
       let out;
+      // The tool's clock, from the start of the setup: it stands still until the frames begin, and it starts at the same instant every
+      // run (`CLOCK0`). It started at the real time the setup happened to end, and the game reads the clock in its rules: a raid partner's
+      // trees (traits/timber.ts `timberNow`, the clock when no trait writes one) grow at "planted + 1.2 s" and "+ 2.5 s", which came out
+      // on one frame or the next with the fractions of that start; and anything the setup stamped (it takes a different real time every
+      // run: the models' loading, the warm-up) was that much older or younger when the fight began. A tree built a frame early or late
+      // shifts every die after it, because three.js rolls the fight's dice for the id of every object it makes. So the raid's print
+      // followed the machine's load and how the code loaded (2026-11-15: e83903c0, 34f75b29, b53a2f62, 9c4a9c48 on the same code). Waits
+      // in the setup are on timers or on what has loaded, not on this clock; Graphics `auto` times real frames to settle its pixels, so its
+      // check gets the real clock.
+      let simMs = CLOCK0;
+      performance.now = () => simMs;
+      const calibrate = a.quality?.calibrate;
+      if (calibrate) a.quality.calibrate = async (...x) => { delete performance.now; try { return await calibrate.apply(a.quality, x); } finally { performance.now = () => simMs; } };
       try {
         apply(o.set);
         // Nothing of a fight moves until the frames are this tool's: the wait for the models is a different length every run.
@@ -441,9 +473,9 @@
         await new Promise((ok) => realRaf(() => ok()));
         await tick();
         info.autoReset = false;
-        let simMs = realNow();
-        performance.now = () => simMs;
-        Math.random = mulberry(o.seed ?? 7);
+        if (tr) tr.setup = { rolls: tr.n, ready: scene.ready?.() };
+        Math.random = dice(o.seed ?? 7);
+        if (tr) tr.n = 0;
         const objects0 = objects(), memory0 = { geometries: info.memory.geometries, textures: info.memory.textures };
         const timer = o.passes ? passTimer() : null;
         const flips = o.flips ? flipWatch() : null;
@@ -457,6 +489,7 @@
         let known = new Set(info.programs ?? []);
         const began = realNow();
         for (let i = 0; i < frames; i++) {
+          if (tr) { tr.frame = i; tr.at.push(realNow()); if (i) { tr.rolls.push(tr.n); if (tr.states !== false) tr.states.push(JSON.stringify(scene.fine?.() ?? scene.print())); } }
           const wait = scene.frame(i);
           if (wait) await wait;
           if (o.set?.lightsAllLayers) a.scene.traverse((q) => { if (q.isLight) q.layers.enableAll(); });
@@ -519,11 +552,14 @@
           passes: timer?.result() ?? null, compiles, flips: flips?.result() ?? null, census: o.census ? census() : null,
           compiledShaders: compiles.reduce((n, c) => n + c.n, 0), compileMs: +compiles.reduce((n, c) => n + c.ms, 0).toFixed(0),
           print, printHash: (hash >>> 0).toString(16), errors,
+          // and the files that came in during the frames, each with the frame it came in by (what a load racing the fight looks like)
+          trace: tr ? { setup: tr.setup, rolls: tr.rolls, states: tr.states, who: tr.who, files: performance.getEntriesByType('resource').filter((e) => e.responseEnd > tr.at[0]).map((e) => `${tr.at.findIndex((t) => t > e.responseEnd)} ${e.name.replace(/^https?:\/\/[^/]+/, '')}`) } : undefined,
         };
       } catch (e) {
         delete performance.now;
         out = { scene: o.scene, opts: o, crashed: String(e?.stack ?? e).slice(0, 600), errors };
       }
+      if (calibrate) a.quality.calibrate = calibrate;
       Math.random = realRandom;
       console.error = logError;
       window.removeEventListener('error', onError);
@@ -539,14 +575,15 @@
     async parts(o) {
       const a = api(), r = a.renderer;
       Math.random = mulberry(o.seed ?? 7);
+      // the same still clock from the setup on as `run` (see there)
+      let simMs = CLOCK0;
+      performance.now = () => simMs;
       apply(o.set);
       a.view.paused = true;
       const scene = await scenes[o.scene](o);
       manual = true;
       await new Promise((ok) => realRaf(() => ok()));
       await tick();
-      let simMs = realNow();
-      performance.now = () => simMs;
       for (let i = 0; i < (o.at ?? 600); i++) {
         const wait = scene.frame(i);
         if (wait) await wait;

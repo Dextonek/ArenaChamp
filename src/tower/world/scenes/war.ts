@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { scenesOff } from './off';
+import { slopeFrame } from './sea';
 import { RING, seeded } from '../../../arenas/common';
 import type { Battlefield, WarLook } from '../warZone';
 
@@ -410,6 +411,7 @@ export function buildWarScenes(o: {
   const add = (shape: { p: Float32Array; n: Float32Array }, colour: Colour, lx: number, ly: number, lz: number, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0, roll = 0) => {
     const { x: wx, z: wz } = toW(lx, lz);
     const ground = cur.beyond ? H(wx, wz) : 0;
+    if (cur.beyond) { const [tall, wide] = sizeOf(shape); laid.push({ from: all.len, to: all.len + shape.p.length, ground, loose: fy + ly < 0.45 && tall * sy < 0.4 && wide * Math.max(sx, sz) < 1 }); }
     e.set(tilt, cur.yaw + cur.m * (fyaw + yaw), cur.m * roll, 'YXZ');
     m4.compose(v.set(wx, ground + fy + ly, wz), q.setFromEuler(e), sc.set(sx, sy, sz));
     nm.getNormalMatrix(m4);
@@ -430,6 +432,56 @@ export function buildWarScenes(o: {
       measure(X, Y, Z, ground);
     }
   };
+  // --- past the edge, the scene as one piece on its slope (as the Sea's and the Wood's: scenes/sea.ts `slopeFrame`) -------------------
+  // Each part stood on the ground under its own middle, so on a hill a tent's or a wall's downhill side stood off the ground (15 to 30
+  // cm), and dropping each part to the lowest ground under it sank a wall into its hill and left the beam it holds in the air. Now, once
+  // a scene past the edge is built, it is turned to the plane that fits the ground under the parts that stand on it (8 degrees at most)
+  // and let down until none of them is in the air (0.4 m at most). Small loose things on the ground (a helmet, a stone: under 0.4 m high
+  // and 1 m across, lying low) keep their own ground; a wide flat thing (a fallen tent's canvas, a cot) goes with the scene, or its
+  // downhill edge stood off the hill as before. Only the drawing moves: the plan, its checks and the dice are as before.
+  const laid: { from: number; to: number; ground: number; loose: boolean }[] = [];
+  const sizes = new Map<Float32Array, [number, number]>();
+  /** A shape's own height and its widest across (m). */
+  const sizeOf = (shape: { p: Float32Array }) => {
+    let z = sizes.get(shape.p);
+    if (!z) {
+      const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < shape.p.length; i++) { const k = i % 3; lo[k] = Math.min(lo[k], shape.p[i]); hi[k] = Math.max(hi[k], shape.p[i]); }
+      sizes.set(shape.p, (z = [hi[1] - lo[1], Math.max(hi[0] - lo[0], hi[2] - lo[2])]));
+    }
+    return z;
+  };
+  const fv = new THREE.Vector3(), fq = new THREE.Quaternion();
+  const seat = (s: WarScene, smoke0: number) => {
+    // where the standing parts meet the ground: their points within 6 cm of the ground they were set on, one a 0.3 m square
+    const feet = new Map<string, { wx: number; wz: number; ground: number; standing: boolean }>();
+    for (const L of laid) {
+      if (L.loose) continue;
+      for (let i = L.from; i < L.to; i += 3) {
+        if (all.p[i + 1] - L.ground > 0.06) continue;
+        const X = all.p[i], Z = all.p[i + 2], key = `${Math.round(X / 0.3)}:${Math.round(Z / 0.3)}`;
+        if (!feet.has(key)) feet.set(key, { wx: X, wz: Z, ground: H(X, Z), standing: true });
+      }
+    }
+    if (feet.size < 3) return;
+    const frame = slopeFrame([...feet.values()], s.x, s.z, H);
+    frame.decompose(fv, fq, sc);
+    const fe = frame.elements;
+    for (const L of laid) {
+      if (L.loose) continue;
+      for (let i = L.from; i < L.to; i += 3) {
+        const x = all.p[i] - s.x, y = all.p[i + 1] - L.ground, z = all.p[i + 2] - s.z;
+        all.p[i] = fe[0] * x + fe[4] * y + fe[8] * z + fe[12];
+        all.p[i + 1] = fe[1] * x + fe[5] * y + fe[9] * z + fe[13];
+        all.p[i + 2] = fe[2] * x + fe[6] * y + fe[10] * z + fe[14];
+        v.set(all.n[i], all.n[i + 1], all.n[i + 2]).applyQuaternion(fq);
+        all.n[i] = v.x; all.n[i + 1] = v.y; all.n[i + 2] = v.z;
+      }
+    }
+    // its smoke rises from where the scene now stands: the frame's plane over the smoke's spot
+    for (let k = smoke0; k < smokes.length; k++) { const c = smokes[k]; c.y = fe[1] * (c.x - s.x) + fe[9] * (c.z - s.z) + fe[13]; }
+  };
+
   /** The footprint and height, measured from what is built. */
   const measure = (X: number, Y: number, Z: number, ground: number) => {
     const dx = X - cur.x, dz = Z - cur.z, rr = dx * dx + dz * dz, hy = Y - ground; // the ground under the part (past the edge the ground rolls a little under a part: close enough for a height)
@@ -1367,7 +1419,10 @@ export function buildWarScenes(o: {
     const hp = s.host !== undefined ? look.pieces[s.host]?.o : undefined;
     hostSeg = hp ? [hp.ax, hp.az, hp.bx, hp.bz, hp.r] : null;
     nearCover = s.host === undefined ? [] : look.pieces.filter((p, i) => i !== s.host && segDist(s.x, s.z, p.o.ax, p.o.az, p.o.bx, p.o.bz) < p.o.r + s.R + 6).map((p) => [p.o.ax, p.o.az, p.o.bx, p.o.bz, p.o.r]);
+    laid.length = 0;
+    const smoke0 = smokes.length;
     KINDS[s.kind]();
+    if (s.beyond) seat(s, smoke0);
     s.r = +Math.sqrt(r2max).toFixed(2); s.h = +hmax.toFixed(2);
     if (hostSeg) { s.tallReach = +reach.toFixed(2); s.gap = +gap.toFixed(2); }
   }

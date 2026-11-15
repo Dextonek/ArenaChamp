@@ -89,6 +89,11 @@ export const CHANGELOG: Release[] = [
         title: 'Props set right in the Sands, the Deep and the War',
         text: 'Things that hung in the air, stood off their slopes or lay in pieces now sit as they should: necks on their jars, swords in their cairns, ropes on the wells, the gateway\'s lintel on its two piers, mushroom caps on their stems, spearheads on their shafts, the hedge\'s lashings on its stakes.',
       },
+      {
+        tag: 'Tower',
+        title: 'No grass on the cliffs, camps set on their hills',
+        text: 'Grass and dry shrubs no longer grow on steep cliff faces, on any chapter of the Climb. In the War, the tents, burned farmhouses, graveyards and fallen watchtowers past the field\'s edge now sit on their hillsides as one piece, with no gap under their downhill side.',
+      },
     ],
   },
   {

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../arenas/common';
+import { grassStands } from './land';
 import type { Battlefield, WarLook, WarMats } from './warZone';
 import { buildWarScenes, planWarScenes, warScenesOn, type Taken } from './scenes/war';
 
@@ -404,6 +405,9 @@ export function buildWarDepth(o: WarDepthIn) {
     const under = (mm: THREE.Matrix4) => { const x = mm.elements[12], z = mm.elements[14]; return scenes.some((s) => { const dx = x - s.x, dz = z - s.z, r = s.R + 0.3; return dx * dx + dz * dz < r * r; }); };
     for (const k of ['tuft', 'arrow', 'helm', 'spear'] as const) lists[k] = lists[k].filter((mm) => !under(mm));
   }
+
+  // grass only where the ground as drawn is gentle: none on a bank's or a hill's steep face (land.ts `grassStands`)
+  lists.tuft = lists.tuft.filter((mm) => grassStands(geo.height, mm.elements[12] - RING.x, mm.elements[14] - RING.z));
 
   // --- the instanced meshes ------------------------------------------------------------------------------------------------------------
   const tint =(g: THREE.BufferGeometry, hex: string) => {
