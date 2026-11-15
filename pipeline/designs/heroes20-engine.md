@@ -206,7 +206,7 @@ in the same step; fixed (`Duel.resolve` reads "asleep" before the hit's own hook
 | Check | Before (ef6fc16) | After |
 |---|---|---|
 | `perf.py scenes --profiles desktop --scenes duel-temple,raid-party`: duel-temple's print | 90b1abaa | 90b1abaa (every time, the final code too) |
-| the same, raid-party's print | e83903c0 | the scene varies: over six runs this code printed e83903c0 three times, 34f75b29 twice and b53a2f62 once; the untouched commit, measured the same day with `--root`, printed e83903c0 once (the first baseline) and 34f75b29 three times. Both commits printed e83903c0 and 34f75b29 |
+| the same, raid-party's print | e83903c0 | the scene varies: over six runs this code printed e83903c0 three times, 34f75b29 twice and b53a2f62 once; the untouched commit, measured the same day with `--root`, printed e83903c0 once (the first baseline) and 34f75b29 three times. Both commits printed e83903c0 and 34f75b29. (Since 2026-11-15 the perf tool's clock and dice make the print the same every run: raid-party 9c4a9c48; baseline `docs/perf/data/prints.json`.) |
 | `sim.py hero Lyra` (96 fights) | 55.2% +-9.9 | 52.1% +-10.0; on the final code 49.0% +-10.0 (the CPU's fights are random: inside the noise) |
 | `sim.py hero Isolde` (80 fights) | 33.8% +-10.4 | 37.5% +-10.6 |
 | `npx tsc --noEmit -p .`, `npm run build` | pass | pass |

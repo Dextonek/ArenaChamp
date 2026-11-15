@@ -412,7 +412,7 @@ say little beyond this: the floor alone already takes more than a frame there, a
 work on every hero add about 170 to 215 draw calls, 1 to 2 ms of step on desktop. The duel and the raid play as before: `duel-temple`
 prints 90b1abaa, as before the change; `raid-party` prints 34f75b29 instead of e83903c0, and so does the commit before this work with a
 dead, never-called function added to src/net/world.ts: the raid scene's print follows how the code is loaded, not what this code does
-(stage 1 saw it come out as one of two prints).
+(stage 1 saw it come out as one of two prints). (Since 2026-11-15 the perf tool's clock and dice make the print the same every run: raid-party 9c4a9c48; baseline `docs/perf/data/prints.json`.)
 
 ## The hero shop, raid ranks and the week's boards
 

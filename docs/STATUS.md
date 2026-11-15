@@ -22,11 +22,17 @@ The three agents below were restarted in their own threads from their saved comm
   with HP, a dash that fizzles, unseen, a cleanse), each tested, checked online with two bots. No hero or kit yet; nothing a player
   sees changes. Seventeen of the twenty can be built with no more engine work; Corbel (perching), Hesk (the golem that turns) and
   Thessa (the seam) only in a simpler form. Builders' notes are in the design file. The raid perf print varies run to run on the same
-  code (e83903c0 / 34f75b29 / b53a2f62): it cannot judge a change until that is fixed.
+  code: fixed since (the leftovers entry in this section).
 - **Fixed:** the server test "shop: timeout waiting for boards" failed on Sundays (the test moved its clock a day, into the next
   week, before its Tower report). Now 329 server checks pass.
-- **Running (2026-11-15):** the leftovers: grass tufts off cliff slopes, the War's scenes seated on their hills, and the raid perf
-  print made the same run after run (it varies on identical code), plus the Climb's perf baseline retaken.
+- **Done and merged, not live (2026-11-15): the leftovers.** Grass kept off cliff faces on every Climb chapter (one rule, `grassStands`
+  in `src/tower/world/land.ts`: the ground within 2.4 m may not rise faster than 31 degrees; the Sands' shrubs on faces over 45 degrees
+  17 -> 0); the War's scenes past the edge seated on their hills as one piece (`seat` in `src/tower/world/scenes/war.ts`, at most 8
+  degrees and 0.4 m; floating pieces 2-8 a floor -> none; tall walls lean a little with the hill, e.g. the burned mill on floor 42).
+  Pictures and numbers `docs/tower/props/cliffs/index.html`. **The perf print is now the same every run** (the tool's clock starts at
+  the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
+  change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
+  Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
 - **Done and merged, not live (2026-11-15): the Climb's own rulers (15) and enemies (15) as models** (page
   `docs/tower/models/index.html`, 100 pictures; `public/models/tower/`, 11.5 MB for all 30, a floor loads about 1.5 MB). Three rulers a
   chapter, each on three floors under its own name and tint; three enemies a chapter (melee, ranged or casting, the big one); beasts,
@@ -56,8 +62,7 @@ The three agents below were restarted in their own threads from their saved comm
   floor on M or a tap (`src/tower/world/map.ts`); Online match says how many wait in the duel queue (`queue_size`, no PROTOCOL change);
   the tactics' second pass (above). News: the release "A map of the floor, and who waits to duel" (`live: false`).
 - **Merged, not live:** the Climb's own people: 25 figures, five a chapter, no hero reused (`src/tower/world/folk.ts`,
-  `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb floor-11 print moved (467f6a06 -> 433b3ded, the new
-  models): its baseline needs taking again. Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
+  `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb prints were retaken (2026-11-15, `docs/perf/data/prints.json`). Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
 - **Twenty new heroes designed:** cards `docs/heroes/next10/`, `docs/heroes/next20/`, full kits on paper `docs/heroes/kits20/` and `pipeline/designs/kit-<theme>.md`; lore `docs/lore/` (rebuild: `python pipeline/tools/lore-page.py`, `python pipeline/tools/kits20.py`). Waiting on the user's pick and the lore's open calls.
 - **Merged, not live:** the Sea and the Wood's props set right: 37 faults fixed at their cause on floors 1-20 (`docs/tower/props/sea/`,
   `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
