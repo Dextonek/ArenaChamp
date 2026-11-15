@@ -1,9 +1,15 @@
 // Made by pipeline/tools/lore-game.py from docs/lore/LORE.md: edit the lore there and run the script again.
-// The world of the Dial, its factions and places, and each hero's lore (faction, home, age, line, legend, ties).
+// The world of the Dial, its factions, peoples and places, and each hero's lore (faction, people, home, age, line,
+// legend, ties). The depth, the Codex screen, is made from docs/lore/codex/ by pipeline/tools/lore-codex.py.
 
 export interface LoreFaction { name: string; colours: string[]; home: string; wants: string; sigil: string }
 export interface LoreTie { other: string; kind: string; pair: string; what: string; strong: boolean }
-export interface LoreHero { faction: string; place: string; from: string; age: string; line: string; legend: string; ties: LoreTie[] }
+export interface LorePeople { name: string; kind: string; look: string; life: string; text: string }
+/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind). */
+export interface LoreHero {
+  faction: string; people: string; kin: string; place: string; from: string; age: string; line: string; legend: string;
+  ties: LoreTie[];
+}
 
 export const FACTIONS: Record<string, LoreFaction> = {
  "truce": {
@@ -123,6 +129,93 @@ export const PLACES: Record<string, string> = {
  "gloaming": "Gloaming"
 };
 
+export const PEOPLES: Record<string, LorePeople> = {
+ "aubade": {
+  "name": "Aubade folk",
+  "kind": "human",
+  "look": "Tall, warm golden-brown skin, long dark-gold to black hair bound with gold thread; the dawn line, a thin gold tattoo from brow to nose, on the sworn",
+  "life": "About eighty years",
+  "text": "The people of the morning cliffs, who rang the sun up every day with the bells and sent a choir of a hundred to sing the Hymn of Noon at the Tower's top. The choir did not come home from the Fall, and the city has been in mourning, and certain, ever since."
+ },
+ "dune": {
+  "name": "Dune folk",
+  "kind": "human",
+  "look": "Lean, dark bronze to deep brown skin, black hair shaved or in fine braids, kohl to the temples, layered linen with turquoise and gold",
+  "life": "About seventy-five years",
+  "text": "The people of the Sands and the oldest court on the Dial. They call the sun the Father and say it came home into their dunes, which are still warm, and that it will rise again in a king."
+ },
+ "gloaming": {
+  "name": "Gloaming folk",
+  "kind": "changed",
+  "look": "Narrow and tall, pale skin with a blue-grey cast, dark lips, black, silver or violet hair; eyes that shine back light",
+  "life": "About ninety years",
+  "text": "A people of the north-western hills whom a hundred years of dusk changed: their eyes shine in the dark, they burn at noon, and they live by night. Mirror-makers, vintners and keepers of the night roads, and a nobility that became the Court of Dusk."
+ },
+ "north": {
+  "name": "Northerners",
+  "kind": "human",
+  "look": "Broad and tall, deep brown to umber skin, hair white by thirty in many thin braids, star lines tattooed on the jaw and hands; the lake-born frost-pale and white-haired",
+  "life": "Often past ninety",
+  "text": "The people of Frostfall, under the pole star, who measure everything and write it down. Their observatory saw the Fall better than anyone; the lake-born families of Frostfall Lake have always given the Dial its Winter Wardens."
+ },
+ "coast": {
+  "name": "Coast folk",
+  "kind": "human",
+  "look": "Wiry, sea-tanned, salt-bleached or sea-green hair, tide lines tattooed round the forearms, sea-glass in the ears",
+  "life": "About seventy years",
+  "text": "The people of the Drowned Coast and the Spires. The sea rose over their great port on the day of the Fall and the weather has had no master since, so they became the Dial's readers of the sky, and sail anyway."
+ },
+ "kiln": {
+  "name": "Kilnborn",
+  "kind": "changed",
+  "look": "Short and broad, ash-grey skin, pale amber eyes, short grey hair or braided beards; ember seams at the knuckles and throat on those who work the fire",
+  "life": "About sixty-five years",
+  "text": "The hill people of the south, who moved down to the heat when the fallen sun's fire came up through their rock. Their skin went grey as ash within a generation. They call the Fall a gift, and they build."
+ },
+ "wood": {
+  "name": "Wood folk",
+  "kind": "changed",
+  "look": "Ruddy to bark-brown skin, moss-green eyes, braided hair; those sworn to the Moot grow horns, antlers in the Wood and ram horns in the hills",
+  "life": "About seventy years",
+  "text": "The woodcutters, herders, hunters and hive-keepers of the Walking Wood. Since the Wood began to walk they follow it, and those who swear themselves to it grow horns within a year."
+ },
+ "mole": {
+  "name": "Mole-folk",
+  "kind": "other",
+  "look": "A mole's head on a short, stout frame: velvet dark fur, a long muzzle, small eyes, broad hands with long gilded claws",
+  "life": "About sixty years",
+  "text": "The Deep's first people, who call themselves the Loam. They dug the deepest seams nine hundred years before the Fall, and were the first to see the sun's light run into the crystals."
+ },
+ "ninefold": {
+  "name": "The Ninefold",
+  "kind": "other",
+  "look": "A great cat's head, lynx or lion, on a tall lithe frame; fur at the throat and hands; a count of nine worn on the costume",
+  "life": "About eighty years, if all nine lives are kept",
+  "text": "Cat-headed knights with nine lives, who swore their first oath at the Keep of Nine on the Field and have served every court since. Fewer every generation: the keep has eleven knights now."
+ },
+ "briar": {
+  "name": "Briarkin",
+  "kind": "other",
+  "look": "Pointed ears, eyes of one colour with no white, skin in forest colours; small or tall as they please; each court its own sign (moth wings, a fox's mask and tail, chitin)",
+  "life": "They do not age; they fade when forgotten",
+  "text": "The fae of the Walking Wood, in their courts under the Underbough. They will not lie, will not cross salt, and will not give their true names. Since the Fall some of their children are born two for one."
+ },
+ "longdead": {
+  "name": "The Long Dead",
+  "kind": "other",
+  "look": "Skin like old vellum drawn on bone, or bare bone; the brow, jaw and knuckles showing; eyes of cold fire",
+  "life": "Until their purpose is finished",
+  "text": "The dead whose purpose would not lie down. Since a pact four and a half centuries old they keep the ossuaries under Gloaming, and keep their promises absolutely, because a broken one would end them."
+ },
+ "fallborn": {
+  "name": "The Fallborn",
+  "kind": "other",
+  "look": "Three kinds: the Embers, warm skin glowing at its edges and hair like flame; the Cast, a matte black body with no face; the Unmade, a shape of black cracked with pink",
+  "life": "Not born, not ageing",
+  "text": "Not a people as the others are: those the Noonfall made or let in. The Embers are sparks of the sun that took a shape, the Cast are shadows thrown by its last light that walked away, and the Unmade came through the Tear."
+ }
+};
+
 export const LORE: Record<string, LoreHero> = {
  "Referee Whistler": {
   "faction": "truce",
@@ -146,7 +239,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "The twins hold the Ring's record for cards: thirty-one, all for swapping without asking",
     "strong": false
    }
-  ]
+  ],
+  "people": "kiln",
+  "kin": ""
  },
  "Mr. Ledger": {
   "faction": "truce",
@@ -184,7 +279,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Two keepers of the record: she says his book has no pictures, he says hers has no totals",
     "strong": false
    }
-  ]
+  ],
+  "people": "longdead",
+  "kin": ""
  },
  "Wick": {
   "faction": "truce",
@@ -201,7 +298,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "The keeper of every door, against the thing that makes holes where no door should be",
     "strong": true
    }
-  ]
+  ],
+  "people": "north",
+  "kin": ""
  },
  "Pip": {
   "faction": "truce",
@@ -225,7 +324,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "The fastest feet against the fastest blade; they race across the Dial every spring and the score is even",
     "strong": false
    }
-  ]
+  ],
+  "people": "aubade",
+  "kin": ""
  },
  "Madame Cleaver": {
   "faction": "truce",
@@ -249,7 +350,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Her cleaver came from his forge, and so did a promise neither of them kept",
     "strong": false
    }
-  ]
+  ],
+  "people": "dune",
+  "kin": ""
  },
  "Big Yoko": {
   "faction": "truce",
@@ -280,7 +383,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Yoko throws the salt and Gus sweeps it up, and both think the other is very patient",
     "strong": false
    }
-  ]
+  ],
+  "people": "aubade",
+  "kin": ""
  },
  "Auriel": {
   "faction": "noonsworn",
@@ -304,7 +409,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Who owns the sun: the sky, says the Paladin; my father, says the King",
     "strong": false
    }
-  ]
+  ],
+  "people": "aubade",
+  "kin": ""
  },
  "Anka": {
   "faction": "noonsworn",
@@ -321,7 +428,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He keeps the dead in the ground; she will not stay there. He has buried her three times",
     "strong": true
    }
-  ]
+  ],
+  "people": "fallborn",
+  "kin": "an Ember"
  },
  "Cantor": {
   "faction": "noonsworn",
@@ -338,7 +447,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "They sang the Hymn of Noon side by side on the day it failed. She has made no sound since; he has not stopped singing to her",
     "strong": true
    }
-  ]
+  ],
+  "people": "aubade",
+  "kin": ""
  },
  "Opaline": {
   "faction": "noonsworn",
@@ -362,7 +473,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Opaline takes the Deep's light up to Aubade; Mabel wants it left for the miners who dug to it",
     "strong": false
    }
-  ]
+  ],
+  "people": "gloaming",
+  "kin": ""
  },
  "Vesper": {
   "faction": "dusk",
@@ -393,7 +506,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Nyx is the Countess's knife, and stands in her shadow wherever she goes",
     "strong": false
    }
-  ]
+  ],
+  "people": "gloaming",
+  "kin": ""
  },
  "Silvane": {
   "faction": "dusk",
@@ -417,7 +532,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He spent one of his lives for her, and she has not paid it back",
     "strong": false
    }
-  ]
+  ],
+  "people": "gloaming",
+  "kin": ""
  },
  "Mortis": {
   "faction": "dusk",
@@ -434,7 +551,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He keeps the dead in the ground; she will not stay there. He has buried her three times",
     "strong": true
    }
-  ]
+  ],
+  "people": "longdead",
+  "kin": ""
  },
  "Nyx": {
   "faction": "dusk",
@@ -458,7 +577,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Nyx is the Countess's knife, and stands in her shadow wherever she goes",
     "strong": false
    }
-  ]
+  ],
+  "people": "fallborn",
+  "kin": "of the Cast"
  },
  "Mum": {
   "faction": "dusk",
@@ -475,7 +596,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "They sang the Hymn of Noon side by side on the day it failed. She has made no sound since; he has not stopped singing to her",
     "strong": true
    }
-  ]
+  ],
+  "people": "aubade",
+  "kin": ""
  },
  "Fenna": {
   "faction": "greenwood",
@@ -499,7 +622,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His fumes killed a whole garden of hers, and he called it a successful test",
     "strong": false
    }
-  ]
+  ],
+  "people": "wood",
+  "kin": ""
  },
  "Hank": {
   "faction": "greenwood",
@@ -523,7 +648,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "They have shared a fire, a flock and a great many silences",
     "strong": false
    }
-  ]
+  ],
+  "people": "wood",
+  "kin": ""
  },
  "Bo": {
   "faction": "greenwood",
@@ -547,7 +674,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Shepherds watch the sky, and Bo is the one man on the Dial who trusts Barry's forecasts",
     "strong": false
    }
-  ]
+  ],
+  "people": "wood",
+  "kin": "ram-horned"
  },
  "Pim and Pom": {
   "faction": "greenwood",
@@ -578,7 +707,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His favourite audience, and his worst assistants",
     "strong": false
    }
-  ]
+  ],
+  "people": "briar",
+  "kin": "the Acorn court"
  },
  "Sirix": {
   "faction": "greenwood",
@@ -595,7 +726,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Puff's gas once floated a whole hive-tree out of the Wood, and the swarm remembers his face",
     "strong": false
    }
-  ]
+  ],
+  "people": "briar",
+  "kin": "the Hive court"
  },
  "Marin": {
   "faction": "windward",
@@ -612,7 +745,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "She danced the water out of his temple, and he has kept her floor wet ever since",
     "strong": false
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Kaia": {
   "faction": "windward",
@@ -629,7 +764,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He forecasts the weather and she changes it to prove him wrong: twelve years of public argument",
     "strong": true
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Zephyr": {
   "faction": "windward",
@@ -646,7 +783,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "The fastest feet against the fastest blade; they race across the Dial every spring and the score is even",
     "strong": false
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Barry Cloudsley": {
   "faction": "windward",
@@ -677,7 +816,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His oldest flying companion: one reads the sky, the other maps it",
     "strong": false
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Professor Puff": {
   "faction": "windward",
@@ -708,7 +849,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His oldest flying companion: one reads the sky, the other maps it",
     "strong": false
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Gus": {
   "faction": "windward",
@@ -732,7 +875,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "She danced the water out of his temple, and he has kept her floor wet ever since",
     "strong": false
    }
-  ]
+  ],
+  "people": "coast",
+  "kin": ""
  },
  "Brannoc": {
   "faction": "underforge",
@@ -763,7 +908,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He taught her everything about metal, and she built a hammer that swung itself",
     "strong": false
    }
-  ]
+  ],
+  "people": "kiln",
+  "kin": ""
  },
  "Ada": {
   "faction": "underforge",
@@ -787,7 +934,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He taught her everything about metal, and she built a hammer that swung itself",
     "strong": false
    }
-  ]
+  ],
+  "people": "kiln",
+  "kin": ""
  },
  "Bram": {
   "faction": "underforge",
@@ -804,7 +953,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Every year at the Ring's opening they push the same stone, and neither has moved it farther than the other",
     "strong": false
    }
-  ]
+  ],
+  "people": "kiln",
+  "kin": ""
  },
  "Mabel": {
   "faction": "underforge",
@@ -821,7 +972,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Opaline takes the Deep's light up to Aubade; Mabel wants it left for the miners who dug to it",
     "strong": false
    }
-  ]
+  ],
+  "people": "mole",
+  "kin": ""
  },
  "Sefu": {
   "faction": "dune",
@@ -838,7 +991,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Who owns the sun: the sky, says the Paladin; my father, says the King",
     "strong": false
    }
-  ]
+  ],
+  "people": "dune",
+  "kin": ""
  },
  "Vitriol": {
   "faction": "dune",
@@ -855,7 +1010,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His fumes killed a whole garden of hers, and he called it a successful test",
     "strong": false
    }
-  ]
+  ],
+  "people": "dune",
+  "kin": ""
  },
  "Tempo": {
   "faction": "hourkeepers",
@@ -879,7 +1036,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He keeps the hours and she writes them down, and both are always a little behind",
     "strong": false
    }
-  ]
+  ],
+  "people": "north",
+  "kin": ""
  },
  "Shiori": {
   "faction": "hourkeepers",
@@ -903,7 +1062,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He keeps the hours and she writes them down, and both are always a little behind",
     "strong": false
    }
-  ]
+  ],
+  "people": "north",
+  "kin": ""
  },
  "Lyra": {
   "faction": "hourkeepers",
@@ -920,7 +1081,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "The shadow and the star archer: Lyra's stars are the one light Nyx cannot step out of",
     "strong": true
    }
-  ]
+  ],
+  "people": "north",
+  "kin": ""
  },
  "Grandma Ironknit": {
   "faction": "hourkeepers",
@@ -944,7 +1107,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "She found them on her doorstep the winter after the Fall and raised them as her own",
     "strong": false
    }
-  ]
+  ],
+  "people": "briar",
+  "kin": "the Spindle court"
  },
  "Isolde": {
   "faction": "hourkeepers",
@@ -961,7 +1126,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "Fire followed frost north once. She froze his forge solid to send him home, and neither has married",
     "strong": true
    }
-  ]
+  ],
+  "people": "north",
+  "kin": "lake-born"
  },
  "Oblivion": {
   "faction": "loners",
@@ -985,7 +1152,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "One keeps the hours; the other wants none left",
     "strong": true
    }
-  ]
+  ],
+  "people": "fallborn",
+  "kin": "the Unmade"
  },
  "Sir Whiskers": {
   "faction": "loners",
@@ -1002,7 +1171,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "He spent one of his lives for her, and she has not paid it back",
     "strong": false
    }
-  ]
+  ],
+  "people": "ninefold",
+  "kin": "a lynx"
  },
  "The Great Zambini": {
   "faction": "loners",
@@ -1026,7 +1197,9 @@ export const LORE: Record<string, LoreHero> = {
     "what": "His favourite audience, and his worst assistants",
     "strong": false
    }
-  ]
+  ],
+  "people": "briar",
+  "kin": "of no court"
  }
 };
 

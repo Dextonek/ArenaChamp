@@ -32,7 +32,7 @@ import { QUALITY_NAMES, QUALITY_ORDER } from '../quality';
 import { preloadClips } from '../motion/real';
 import { createSocial } from './social';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop' | 'boards' | 'clan';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop' | 'boards' | 'clan' | 'codex';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -166,6 +166,8 @@ const ICONS = {
   boards: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
   // a banner on a pole: the Clan
   clan: '<path d="M6 21V3M6 4h11l-2.5 4L17 12H6"/>',
+  // an open book: the Codex (the lore of the Dial)
+  codex: '<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/>',
 } as const;
 function icon(name: keyof typeof ICONS) {
   const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
@@ -297,9 +299,9 @@ function render() {
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {
-    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news' && state.screen !== 'shop' && state.screen !== 'boards') { root.append(loginScreen()); return; }
-    root.append(header(), state.screen === 'news' || state.screen === 'shop' || state.screen === 'boards'
-      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, state.screen === 'news' ? newsScreen() : state.screen === 'boards' ? social.boardsScreen() : shopScreen())
+    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news' && state.screen !== 'shop' && state.screen !== 'boards' && state.screen !== 'codex') { root.append(loginScreen()); return; }
+    root.append(header(), state.screen === 'news' || state.screen === 'shop' || state.screen === 'boards' || state.screen === 'codex'
+      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, state.screen === 'news' ? newsScreen() : state.screen === 'boards' ? social.boardsScreen() : state.screen === 'codex' ? codexScreen() : shopScreen())
       : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : state.screen === 'tower' ? towerScreen() : raidScreen()));
     keepScroll();
     return;
@@ -317,6 +319,7 @@ function render() {
                 : s === 'news' ? newsScreen()
                   : s === 'shop' ? shopScreen()
                     : s === 'boards' ? social.boardsScreen()
+                      : s === 'codex' ? codexScreen()
                       : s === 'clan' ? social.clanScreen()
                         : menuScreen(),
   );
@@ -370,13 +373,13 @@ function header() {
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Boards', 'boards', 'boards'), nav('Shop', 'shop', 'shop'), nav('News', 'news', 'news')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Boards', 'boards', 'boards'), nav('Shop', 'shop', 'shop'), nav('Codex', 'codex', 'codex'), nav('News', 'news', 'news')),
       el('div', { class: 'who' }, qualityButton(), el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
     el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'),
-      nav('Boards', 'boards', 'boards'), clanNav(), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
+      nav('Boards', 'boards', 'boards'), clanNav(), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('Codex', 'codex', 'codex'), nav('News', 'news', 'news')),
     el('div', { class: 'who full' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -1060,16 +1063,20 @@ function factionChip(fid: string) {
 function loreLine(kit: HeroKit) {
   const lore = loreData(), h = lore?.LORE[kit.name];
   if (!lore || !h) return null;
-  return el('div', { class: 'lore-line' }, factionChip(h.faction), el('span', { class: 'muted small' }, `from ${lore.PLACES[h.place] ?? h.from}`));
+  const people = lore.PEOPLES[h.people]?.name;
+  return el('div', { class: 'lore-line' }, factionChip(h.faction),
+    el('span', { class: 'muted small' }, `${people ? `${people} · ` : ''}from ${lore.PLACES[h.place] ?? h.from}`));
 }
-/** The hero's lore in full: faction, home, age, the line, the legend and the ties (a tap opens the other hero). */
+/** The hero's lore in full: faction, people, home, age, the line, the legend and the ties (a tap opens the other hero). */
 function lorePanel(kit: HeroKit) {
-  const h = loreData()?.LORE[kit.name];
+  const lore = loreData(), h = lore?.LORE[kit.name];
   if (!h) return el('div', { class: 'lore muted small' }, loreAsked && !loreMod ? 'Loading the lore…' : '');
   const fact = (k: string, v: string) => el('div', { class: 'lore-fact' }, el('span', { class: 'lore-k' }, k), el('span', {}, v));
   return el('div', { class: 'lore' },
     el('div', { class: 'lore-head' }, el('h3', {}, 'Lore'), factionChip(h.faction)),
-    el('div', { class: 'lore-facts' }, fact('From', h.from), fact('Age', h.age)),
+    el('div', { class: 'lore-facts' },
+      lore?.PEOPLES[h.people] ? fact('People', `${lore.PEOPLES[h.people].name}${h.kin ? `, ${h.kin}` : ''}`) : null,
+      fact('From', h.from), fact('Age', h.age)),
     el('blockquote', { class: 'lore-quote' }, h.line),
     el('p', { class: 'lore-legend' }, h.legend),
     h.ties.length ? el('div', { class: 'lore-ties' },
@@ -1079,7 +1086,44 @@ function lorePanel(kit: HeroKit) {
           class: `lore-tie${t.strong ? ' strong' : ''}`, title: t.what,
           onclick: (e: Event) => { e.stopPropagation(); state.heroView = t.other; scrollToHero = true; render(); },
         }, other ? portrait(other, 'portrait xs') : null, el('span', {}, el('span', { class: 'muted small' }, `${t.strong ? '★ ' : ''}${t.kind}`), el('b', {}, t.other)));
-      })) : null);
+      })) : null,
+    // The hero's full page in the Codex: biography, people, voice lines, secrets.
+    el('button', { class: 'btn small lore-more', onclick: (e: Event) => { e.stopPropagation(); openCodex(`hero:${kit.name}`); } }, `More about ${kit.name} →`));
+}
+
+// --- the Codex (docs/lore/codex/ -> src/game/codex*.ts by pipeline/tools/lore-codex.py) ---------------------------------
+// The screen and its index are loaded on first need, each book of pages when it is first opened: the start does not grow.
+let codexMod: typeof import('./codex') | null = null;
+let codexAsked = false;
+/** Where the Codex should open once it is loaded ('' its front; `hero:<name>` a hero's page). */
+let codexWant = '';
+function codexLoad() {
+  if (!codexMod && !codexAsked) {
+    codexAsked = true;
+    void import('./codex').then((m) => {
+      codexMod = m;
+      if (codexWant) m.openAt(codexWant.startsWith('hero:') ? m.heroPageId(codexWant.slice(5)) : codexWant);
+      codexWant = '';
+      if (!match.active && state.screen === 'codex') render();
+    }).catch(() => { codexAsked = false; });
+  }
+  return codexMod;
+}
+/** Show the Codex, at a page ('' its front; `hero:<name>` that hero's page). */
+function openCodex(at = '') {
+  const m = codexLoad();
+  if (m) m.openAt(at.startsWith('hero:') ? m.heroPageId(at.slice(5)) : at);
+  else codexWant = at;
+  go('codex');
+}
+function codexScreen() {
+  const m = codexLoad();
+  if (!m) return el('div', { class: 'codex muted' }, 'Opening the Codex…');
+  return m.codexView({
+    rerender: () => { if (!match.active && state.screen === 'codex') render(); },
+    // The Heroes screen needs an account; signed out, a hero's page has no kit link.
+    showHero: state.profile ? (name: string) => { state.heroView = name; scrollToHero = true; go('heroes'); } : null,
+  });
 }
 
 /** A hero's passive and four spells in full: the open row of the heroes table, and a hero's page in the Shop. */
