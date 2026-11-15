@@ -318,6 +318,13 @@ def check_canon():
             errs.append(f'{f.relative_to(ROOT)}: still says the answer is open ({m.group(0)!r})')
     if n != 1:
         errs.append(f'canon.md states the canon\'s answer {n} times, want once: "{CANON_LINE}"')
+    # story/in-game.md holds texts ready for the game's modes: they follow the game's rule too
+    plan = CODEX / 'story' / 'in-game.md'
+    if plan.exists():
+        for i, ln in enumerate(plan.read_text(encoding='utf-8').splitlines(), 1):
+            m = _NAMES_RE.search(ln)
+            if m:
+                errs.append(f'story/in-game.md:{i}: a text for the game names {m.group(1)}, who is not in the game yet')
     return errs
 
 

@@ -589,7 +589,105 @@ export const CODEX_INDEX: CodexEntry[] = [
 "id": "story/README",
 "book": "story",
 "title": "The Long Noon",
-"sub": "The story of the Dial.",
+"sub": "The story of the Dial, from the making of the Tower to the new sun: the whole arc in a page, and the fourteen chapters.",
+"hero": ""
+},
+{
+"id": "story/01-the-aumbry",
+"book": "story",
+"title": "1. The Aumbry",
+"sub": "Part one, before the Dial. A world under a failing sun, a man who could not bear to lose his daughter, and the thing he made.",
+"hero": ""
+},
+{
+"id": "story/02-the-gnomon",
+"book": "story",
+"title": "2. The Gnomon",
+"sub": "Part one, the Age of the Shadow. The Dial grows up round the Tower and sets its clocks by it, and the Tower learns the Dial.",
+"hero": ""
+},
+{
+"id": "story/03-midsummer",
+"book": "story",
+"title": "3. Midsummer",
+"sub": "Part two, the Fall. One day, a hundred years ago, from first light to the next morning, as the Dial lived it and as it was.",
+"hero": ""
+},
+{
+"id": "story/04-the-banners",
+"book": "story",
+"title": "4. The Banners",
+"sub": "Part two, years 0 to 2. The realms go to war over the sun's pieces, the Tower takes its first realms, and the Truce is sworn in its shadow.",
+"hero": ""
+},
+{
+"id": "story/05-the-hundred-years",
+"book": "story",
+"title": "5. The Hundred Years",
+"sub": "Part three, years 3 to 89. The Dial learns to live under a thin sun and settle its quarrels in the Ring, while the Tower fills its floors and waits.",
+"hero": ""
+},
+{
+"id": "story/06-the-gate",
+"book": "story",
+"title": "6. The Gate",
+"sub": "Part three, years 90 to 99. A duel nobody remembers opens the Tower's gate, and the Dial begins to climb.",
+"hero": ""
+},
+{
+"id": "story/07-the-hundredth-summer",
+"book": "story",
+"title": "7. The Hundredth Summer",
+"sub": "Part three, year 100: now. The Dial is told what the Tower is, and does not want to believe it, and then does.",
+"hero": ""
+},
+{
+"id": "story/08-the-sea-and-the-wood",
+"book": "story",
+"title": "8. The Sea and the Wood",
+"sub": "Part four, the Climb, floors 1 to 20. A drowned harbour that is still drowning, and a forest in its first year of walking.",
+"hero": ""
+},
+{
+"id": "story/09-the-sands-and-the-deep",
+"book": "story",
+"title": "9. The Sands and the Deep",
+"sub": "Part four, the Climb, floors 21 to 40. A king meets the night he was crowned, a sun's heart is weighed, and the Tower's keeper shows what it is.",
+"hero": ""
+},
+{
+"id": "story/10-the-war",
+"book": "story",
+"title": "10. The War",
+"sub": "Part four, the Climb, floors 41 to 50. A war that cannot end, a cook, a horn, and the first of the Tower's hours to be let go.",
+"hero": ""
+},
+{
+"id": "story/11-above-the-fiftieth",
+"book": "story",
+"title": "11. Above the Fiftieth",
+"sub": "Part five, the top. Three realms the Tower never showed, the choir still singing, the noon it took, and a window onto the first world it kept.",
+"hero": ""
+},
+{
+"id": "story/12-the-last-verse",
+"book": "story",
+"title": "12. The Last Verse",
+"sub": "Part five, noon on the Hundredth Midsummer. At the top, at the foot and under the Heart, at once.",
+"hero": ""
+},
+{
+"id": "story/13-after",
+"book": "story",
+"title": "13. After",
+"sub": "Part five, the first days under the new sun. What came out of the Tower, what went across, and what each of them got.",
+"hero": ""
+},
+{
+"id": "story/14-the-floors-above",
+"book": "story",
+"title": "14. The Floors Above",
+"sub": "Epilogue. A Tower that remembers, the keepings it has not yet opened, what came through the Tear before it closed, and a red star.",
 "hero": ""
 }
 ];

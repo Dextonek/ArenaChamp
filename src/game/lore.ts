@@ -1055,7 +1055,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The Hourkeepers' observatory at Frostfall",
   "age": "He looks 40. He has lived a hundred years since the Fall, every moment twice.",
   "line": "\"Again. And again.\"",
-  "legend": "When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning there comes twice. Tempo is what the Hourkeepers call an unwound hour, a man who fell out of time at the moment of the Fall and has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to wind the Dial up again before Oblivion unmakes the hours altogether.",
+  "legend": "When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning there comes twice. Tempo is what the Hourkeepers call an unwound hour: when the Tower closed its hand on the noon he was a heartbeat behind his own clock, and it took half of him, so he has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to wind the Dial up again before Oblivion unmakes the hours altogether.",
   "ties": [
    {
     "other": "Oblivion",
@@ -1223,7 +1223,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "Everywhere. He says Aubade, Tamerit and Gloaming, on alternate days",
   "age": "He says 39. He has said 39 for sixty years.",
   "line": "\"Pick a hat. Any hat. Wrong.\"",
-  "legend": "Nobody knows where The Great Zambini comes from, which is how he likes it. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim and Pom are his favourite audience and his worst assistants. He fights for the applause.",
+  "legend": "The Ringside has never known where The Great Zambini comes from, which is how he likes it: out of one of the Hundred Doors, in year 40, after three hundred years at a revel the Tower kept. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim and Pom are his favourite audience and his worst assistants. He fights for the applause.",
   "ties": [
    {
     "other": "Referee Whistler",
