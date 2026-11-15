@@ -61,7 +61,7 @@ morning after. The **Salt King** of the third floor weighed them and found them 
 headland of the fourth. On the fifth the **Tide Judge** set the tide as their sentence, and [Auriel](../heroes/auriel.md) broke it with
 her shields. The **Pearl Tyrant** of the sixth sent his pale diver after them. On the seventh floor was **the Bell Below**: the harbour's old
 cracked bell, thrown into the sea when the new one was cast, which rings underwater, and something answers. The something was the new bell, the
-Bell-Warden's, ringing back. The bellwright who had cast them both, [Campana](../heroes/campana.md), had come up to this floor once before and
+Bell-Warden's, ringing back. [Campana](../heroes/campana.md), who had cast them both, had come up to this floor once before and
 wept on the quay; this time she swam down, and put her bronze-stained hands on the old bell, and struck it once with her own hammer, on its true
 note, and it stopped answering, and hung still in the green water, and she said she would bring it home when the Tower let it go. On the eighth
 the **Lantern Leviathan** came up out of the deep sea with its lantern burning, and on the ninth the **Gull Queen**, who had fed the gulls
@@ -140,7 +140,7 @@ She came for Pim and Pom in a hedge of thorns. The twins stopped running for onc
 Ironknit had dropped three stitches at the Fall and looked for them in the cloth every night for a hundred years, and that she would look for
 Grandmother Thorn too, if they told her the name. Grandmother Thorn told them. The thorns let them through.
 
-On the Wood's floors the Moot's young Huntmaster, [Arden](../heroes/arden.md), found at last the end of a trail he had followed for ten years: a
+On the Wood's floors [Arden](../heroes/arden.md), who leads the Hunt of the Moot, found at last the end of a trail he had followed for ten years: a
 Moot speaker, the one killed by the Gloaming road in year 90, sitting under a hive-tree in the Wood's first year, alive, kept, puzzled. Beside the
 speaker's footprints in the soft ground were other prints, long and flat, that left no weight: a shadow's. Arden had always known they were not
 Nyx's. [Nyx](../heroes/nyx.md), who had come up in the Countess's shadow, crouched beside him in the dark and looked at them a long time, and said,

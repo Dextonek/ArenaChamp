@@ -39,12 +39,12 @@ asked her riddle, which nobody had ever answered: *what holds the noon and has n
 has one." The Sphinx was so surprised she forgot to fight.
 
 The **Glass Serpent**, born the day the sun's heat struck the sand, ruled the twenty-fifth. On the twenty-sixth was the **Mirage Lord**, a
-prince of the Throne who had walked onto the Glass Flats to be alone and become a mirage of himself; the Throne's archer of the mirage,
-[Sahar](../heroes/sahar.md), whose grandmother's brother he was, made him a mirage in return, of a road home across the Flats with a lamp at
+prince of the Throne who had walked onto the Glass Flats to be alone and become a mirage of himself; [Sahar](../heroes/sahar.md),
+whose grandmother's brother he was, made him a mirage in return, of a road home across the Flats with a lamp at
 the end of it, and the Mirage Lord walked onto it, and lay down in the shade of a palm that was not there, and was quiet. The **Sand Tyrant**,
 who had sold water by the cup in a drought, the **Red Jackal**, who had ridden for the crimson, and the **Sun-Eater**, a priest of the Father
-who had tried to swallow a piece of the fallen sun to become it and burned from inside, ruled the floors above. The Throne's lion of the gate,
-[Ramet](../heroes/ramet.md), on the stone lion that is not stone, carried the company through the worst of the storm. The Throne's embalmer,
+who had tried to swallow a piece of the fallen sun to become it and burned from inside, ruled the floors above. [Ramet](../heroes/ramet.md),
+on the stone lion that is not stone, carried the company through the worst of the storm. The Throne's embalmer,
 [Vitriol](../heroes/vitriol.md), took samples of everything, in small glass vials, and labelled them, and was happier than anyone had seen
 him in two hundred years.
 
@@ -67,7 +67,7 @@ the Sands was the Father's crown. He looked at the heart of the thing his line h
 and heavier with grief than any king, and he understood that it had not come home to anyone. It had been taken, and was trying to get back.
 He did not say anything for a whole floor. On the thirty-first he gave the crook to his sister to carry, without a word, and she carried it.
 
-The Throne's veiled priestess of the tombs, [Lithea](../heroes/lithea.md), had come up to look at the Heart with her veil lifted, to see
+From the tombs of the Throne, [Lithea](../heroes/lithea.md) had come up to look at the Heart with her veil lifted, to see
 whether a sun could be turned to stone. She lifted the veil. The Heart did not turn to stone. It looked back at her, the way the sun looks
 back at a face turned up to it, and the marble vein in her throat that her own gaze had left there years ago went warm, and she put the veil
 down and wept, and would not say why.
@@ -145,7 +145,7 @@ question, and he did not say no once. Whether the Tower had been made. Whether h
 was his. Whether it kept what was ending. Whether, to it, everything was. Whether it had taken their sun. Whether it would take the rest at noon on
 midsummer. Whether it would leave, after. Whether the Unmaker was what was left of that world, behind it.
 
-"What is its word?" asked [Hesk](../heroes/hesk.md), the golem-maker, who had come up with the Underforge's party to the Deep's crown and would
+"What is its word?" asked [Hesk](../heroes/hesk.md), who had come up with the Underforge's party to the Deep's crown and would
 go no higher. "Every made thing has one."
 
 The Warden looked at him for a long time, and then smiled, which none of them had seen him do. He could not say the word, because the word would
