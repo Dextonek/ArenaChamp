@@ -1,19 +1,19 @@
 """
-Pictures of the VectorCraft sample icons in the real spell bar (the duel's hero HUD), desktop and phone, with the flag
-(`?icons=vc`) and without it, for docs/icons/sample/index.html:
+Pictures of the VectorCraft icons in the real spell bar (the duel's hero HUD), desktop (1280) and phone (375), for the
+batch pages (docs/icons/batch-<n>/bar/):
 
-    python pipeline/icons/vectorcraft/bar-shots.py [--port 5263]
+    python pipeline/icons/vectorcraft/bar-shots.py <out folder> "Bram,Bo,Big Yoko" [--port 5264]
 
-Needs a dev server already running on the port (node node_modules/vite/bin/vite.js --port 5263 --strictPort), Google
-Chrome and `pip install playwright`. It starts a CPU duel in the tool page with the hero, against Brannoc held still, and
-saves docs/icons/sample/bar/<hero>-<desktop|phone>-<vc|old>.jpg.
+Needs a dev server already running on the port (node node_modules/vite/bin/vite.js --port <port> --strictPort), Google
+Chrome and `pip install playwright`. It starts a CPU duel in the tool page with each hero, against Brannoc held still,
+and saves <out>/<stem>-<desktop|phone>.jpg, printing the page's console errors. (The sample's pictures, with and
+without the old `?icons=vc` flag, are in docs/icons/sample/bar/.)
 """
 import argparse
 import asyncio
 from pathlib import Path
-
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / "docs" / "icons" / "sample" / "bar"
+
 
 START = """async (hero) => {
   const tick = () => new Promise((ok) => setTimeout(ok, 50));
@@ -49,32 +49,39 @@ BOX = """(desktop) => {
 SHOTS = [("desktop", 1280, 800, ""), ("phone", 375, 812, "&touch=1")]
 
 
-async def run(port):
+def stem(hero):
+    return "pim" if hero == "Pim and Pom" else "-".join("".join(c if c.isalnum() else " " for c in hero.lower()).split())
+
+
+async def run(port, out, heroes):
     from playwright.async_api import async_playwright
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(channel="chrome", headless=True, args=["--mute-audio", "--ignore-gpu-blocklist"])
-        for hero in ("Anka", "Mum"):
+        for hero in heroes:
             for name, w, h, extra in SHOTS:
-                for flag in ("vc", "old"):
-                    ctx = await browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=2,
-                                                    has_touch=bool(extra))
-                    page = await ctx.new_page()
-                    q = f"?icons={flag}{extra}" if flag == "vc" else (f"?{extra[1:]}" if extra else "")
-                    await page.goto(f"http://localhost:{port}/{q}", wait_until="load", timeout=120000)
-                    await page.wait_for_function("typeof vfx !== 'undefined'", timeout=120000)
-                    await asyncio.wait_for(page.evaluate(START, hero), timeout=90)
-                    await page.add_style_tag(content="*{animation:none!important;transition:none!important} .lil-gui.root{display:none!important}")
-                    await page.wait_for_timeout(400)
-                    out = OUT / f"{hero.lower()}-{name}-{flag}.jpg"
-                    box = await page.evaluate(BOX, name == "desktop")
-                    await page.screenshot(path=str(out), type="jpeg", quality=90, clip=box)
-                    print(f"saved {out}")
-                    await ctx.close()
+                ctx = await browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, has_touch=bool(extra))
+                page = await ctx.new_page()
+                errors = []
+                page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+                page.on("pageerror", lambda e: errors.append(str(e)))
+                await page.goto(f"http://localhost:{port}/" + (f"?{extra[1:]}" if extra else ""), wait_until="load", timeout=120000)
+                await page.wait_for_function("typeof vfx !== 'undefined'", timeout=120000)
+                await asyncio.wait_for(page.evaluate(START, hero), timeout=90)
+                await page.add_style_tag(content="*{animation:none!important;transition:none!important} .lil-gui.root{display:none!important}")
+                await page.wait_for_timeout(1500)
+                path = out / f"{stem(hero)}-{name}.jpg"
+                box = await page.evaluate(BOX, name == "desktop")
+                await page.screenshot(path=str(path), type="jpeg", quality=88, clip=box)
+                print(f"saved {path}; {len(errors)} console errors" + "".join(f"\n    {e[:200]}" for e in errors[:4]))
+                await ctx.close()
         await browser.close()
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", type=int, default=5263)
-    asyncio.run(run(ap.parse_args().port))
+    ap.add_argument("out")
+    ap.add_argument("heroes")
+    ap.add_argument("--port", type=int, default=5264)
+    a = ap.parse_args()
+    asyncio.run(run(a.port, Path(a.out), [h.strip() for h in a.heroes.split(",")]))

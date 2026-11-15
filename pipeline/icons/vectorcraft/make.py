@@ -123,6 +123,19 @@ def main():
                 slim(job[1])
     if failed:
         sys.exit(1)
+    list_drawn()
+
+
+def list_drawn():
+    """Writes the heroes that have their icons into src/icons/vc.ts (its DRAWN list), so the game uses them."""
+    vc = ROOT / "src" / "icons" / "vc.ts"
+    stems = sorted({f.stem.rsplit("-", 1)[0] for f in GAME.glob("*.svg")})
+    body = "".join(f"  '{s}',\n" for s in stems)
+    t = vc.read_text(encoding="utf-8")
+    t = re.sub(r"const DRAWN = new Set<string>\(\[\n.*?\]\);", lambda m: f"const DRAWN = new Set<string>([\n{body}]);", t,
+               flags=re.S)
+    vc.write_text(t, encoding="utf-8")
+    print(f"src/icons/vc.ts: {len(stems)} heroes drawn")
 
 
 if __name__ == "__main__":

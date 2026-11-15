@@ -55,8 +55,26 @@ def stems_in(folder):
     return seen
 
 
+def big(out, stems):
+    """The new icons at 128 px (as drawn) beside the same at 32 px shown twice larger, one hero to a row."""
+    W, H = 4 * 138 + 4 * 74 + 40, len(stems) * 138 + 10
+    sheet = Image.new("RGB", (W, H), BG)
+    for n, stem in enumerate(stems):
+        for i, slot in enumerate(SLOTS):
+            p = NEW / f"{stem}-{slot}.png"
+            if not p.exists():
+                continue
+            im = Image.open(p).convert("RGB")
+            sheet.paste(im, (10 + i * 138, 5 + n * 138))
+            sheet.paste(small(p).resize((64, 64), Image.NEAREST), (10 + 4 * 138 + 20 + i * 74, 37 + n * 138))
+    sheet.save(out)
+    print(f"saved {out}")
+
+
 def main():
     args = sys.argv[1:]
+    if args[0] == "big":
+        return big(Path(args[1]), args[2:])
     zoom = 3
     cols = 1
     if "--zoom" in args:

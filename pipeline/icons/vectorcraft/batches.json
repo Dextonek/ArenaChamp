@@ -1,0 +1,32 @@
+{
+ "order": "Weakest current icons first, ranked from today's 32 px sheet (docs/icons/old, sheet.py old): grey on grey, cartoon signs and faces, thin lines that vanish at 32 px. Anka and Mum were the sample.",
+ "1": {
+  "date": "2026-11-16",
+  "stems": ["bram", "bo", "big-yoko", "referee-whistler", "oblivion", "mortis", "gus", "professor-puff"],
+  "rows": {
+   "bram": "Proposed row Stone / rune (from src/kits/mason.ts): limestone, rune amber accent.",
+   "bo": "Proposed row Fold / bell (src/kits/sheep.ts): fleece to the bell's gold, a meadow green accent; the ground a dusk meadow.",
+   "big-yoko": "Proposed row Ring / shrine (src/kits/sumo.ts): rice paper, peach, his crimson, straw-rope gold.",
+   "referee-whistler": "Proposed row Arbiter (src/kits/referee.ts): ivory, horn silver, the yellow sigil; red for the rule's bar.",
+   "oblivion": "The art bible's Void row.",
+   "mortis": "The art bible's Bone row.",
+   "gus": "Proposed row Temple water (src/kits/janitor.ts): foam, water, the ward's yellow, the deep.",
+   "professor-puff": "Proposed row Aether (src/kits/balloon.ts): rose gas, a sky-blue accent, aubergine, brass."
+  },
+  "bible": {
+   "bram": ["Stone / rune", "Bram; foil: stone `#9a958c`, stone dark `#5b5853`"],
+   "bo": ["Fold / bell", "Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`"],
+   "big-yoko": ["Ring / shrine", "Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`"],
+   "referee-whistler": ["Arbiter", "Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`"],
+   "gus": ["Temple water", "Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`"],
+   "professor-puff": ["Aether", "Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`"]
+  },
+  "notes": [
+   "One sign per hero runs through its four icons: Bram's pillar Gerald with his maker's mark (a square with a dot in its corner, from his lore), Bo's crook, bell and black-faced sheep, Big Yoko's straw rope and paper charms, the Arbiter's silver horn and seals, Oblivion's black void with crimson edges, Mortis's ivory bone in teal grave-light, Gus's temple water and bronze, Puff's glass spheres of rose gas and brass.",
+   "The cartoon signs of today are gone, as the restyle asked: the traffic signs became the Arbiter's struck seals, the yellow wet-floor sign a standing ward with a water drop, the cat-face balloon a glass sphere of gas, the sumo's face a palm, a mountain and a fistful of salt.",
+   "Each hero's four differ in shape at 32 px and in grey (the sheet above), and the lower left stays quiet for the key letter.",
+   "Weakest of the batch: Bo. His sheep read as fleece and a dark face at 64 px, but at 32 px W and R are a cluster of pale curls; better than today's grey dots, not as clear as the others. Professor Puff's W (a sphere about to burst) and E (the same gas floating him away) share their round shape; the gondola and the burst lines tell them apart.",
+   "Redrawn after a first look: the Arbiter's No Running (two chevrons under the red bar read as a hammer; now an arrow), Oblivion's Gravity Slam (a black orb on black read as a ring with a cross under it), Big Yoko's Stomp (dust spikes read as teeth), Gus's Flood (its sea ran square to the corners)."
+  ]
+ }
+}

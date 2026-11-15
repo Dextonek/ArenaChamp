@@ -70,6 +70,12 @@ in small details.
 | Chrono (foil: ivory dial `#f4ecd8`) | `#ffffff` | `#f4ffd0` | `#d4ff5a` | `#ff4a4a` | `#0c100a` |
 | Phoenix (Anka; foil: pale ash `#eadcc4`, ember red `#c23a22`, gold `#e0a935`) | `#fff6d8` | `#ffc24a` | `#ff7b3a` | `#2fb8a8` | `#1a0806` |
 | Dusk / chalk (Mum; foil: ivory mask `#c4bca6`, hood `#201b2a`, gold `#d2ae55`) | `#f7f7f2` | `#b8b4f4` | `#5c4a8c` | `#d23a3a` | `#0c0c12` |
+| Stone / rune (Bram; foil: stone `#9a958c`, stone dark `#5b5853`) | `#f6efdc` | `#ffd890` | `#c9b48a` | `#ff9a2a` | `#1c1a18` |
+| Fold / bell (Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`) | `#f6f1df` | `#ffe9a8` | `#ffc462` | `#7fbf5a` | `#14110f` |
+| Ring / shrine (Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`) | `#fff8ea` | `#ffc9a0` | `#e63a3a` | `#d2ac5a` | `#1e1412` |
+| Arbiter (Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`) | `#ffffff` | `#ece6d2` | `#b8bec8` | `#e6b800` | `#141414` |
+| Temple water (Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`) | `#f2f6f8` | `#c4e4f2` | `#74c0ea` | `#ffd23a` | `#0f1a24` |
+| Aether (Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`) | `#ffffff` | `#ffd2e3` | `#ff8fb8` | `#8fd8ff` | `#2a1424` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

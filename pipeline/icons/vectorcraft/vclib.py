@@ -238,3 +238,126 @@ def circle_d(cx, cy, rx, ry=None):
     ry = ry or rx
     return (f"M{f(cx - rx)} {f(cy)} A{f(rx)} {f(ry)} 0 1 1 {f(cx + rx)} {f(cy)} "
             f"A{f(rx)} {f(ry)} 0 1 1 {f(cx - rx)} {f(cy)} Z")
+
+
+# ---------------------------------------------------------------------------------------------------------------- motifs
+# Shapes many heroes share. Each takes the Icon (`ic`) first and paints what it draws.
+
+def arc_pts(c, r, a0, a1, n=12, ry=None):
+    """Points on an arc (screen degrees, y down) from a0 to a1; `ry` makes it an ellipse's."""
+    ry = ry or r
+    return [(c[0] + r * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+             c[1] + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+
+def swoosh_d(c, r, a0, a1, w, n=14, ry=None, head=0.75):
+    """A crescent band along an arc: nothing at a0, `w` wide toward a1 (at `head` of the way), a point at a1."""
+    ry = ry or r
+    outer, inner = [], []
+    for i in range(n + 1):
+        t = i / n
+        a = math.radians(a0 + (a1 - a0) * t)
+        e = math.log(0.5) / math.log(head)
+        ww = w * math.sin(math.pi * t ** e)
+        outer.append((c[0] + (r + ww / 2) * math.cos(a), c[1] + (ry + ww / 2) * math.sin(a)))
+        inner.append((c[0] + (r - ww / 2) * math.cos(a), c[1] + (ry - ww / 2) * math.sin(a)))
+    pts = outer + list(reversed(inner))
+    return curve(pts, sharp=(0, n, n + 1, len(pts) - 1))
+
+
+def swoosh(ic, c, r, a0, a1, w, colors, ry=None, head=0.75, ink=True, ink_w=3.0):
+    d = swoosh_d(c, r, a0, a1, w, ry=ry, head=head)
+    s = ic.add("path.create", d=d)
+    if ink:
+        return ic.solid(ic.id(s), ic.grad(*colors), shadow=False, ink_w=ink_w)
+    ic.paint(ic.id(s), fill=ic.grad(*colors), stroke="none")
+    return ic.id(s)
+
+
+def ring(ic, cx, cy, rx, ry, color, w=2.6, ink_w=None, dash=None, opacity=None):
+    """A ring on the ground (an ellipse seen from the game's camera): an ink line under a coloured one."""
+    e = ic.add("shape.ellipse", x=cx - rx, y=cy - ry, width=2 * rx, height=2 * ry)
+    ic.paint(ic.id(e), fill="none", stroke=ic.p["dark"], weight=ink_w or w + 2.8)
+    e2 = ic.add("shape.ellipse", x=cx - rx, y=cy - ry, width=2 * rx, height=2 * ry)
+    opts = {"dash": list(dash)} if dash else {}
+    ic.paint(ic.id(e2), fill="none", stroke=color, weight=w, cap="round", **opts)
+    if opacity is not None:
+        ic.add("object.setProps", ids=[ic.id(e2)], opacity=opacity)
+    return ic.id(e2)
+
+
+def disc(ic, cx, cy, r, fill, ry=None, shadow=True, ink_w=INK_W, rotation=0):
+    e = ic.add("shape.ellipse", x=cx - r, y=cy - (ry or r), width=2 * r, height=2 * (ry or r), rotation=rotation)
+    return ic.solid(ic.id(e), fill, shadow=shadow, ink_w=ink_w)
+
+
+def dot(ic, cx, cy, r, color, opacity=None):
+    e = ic.add("shape.ellipse", x=cx - r, y=cy - r, width=2 * r, height=2 * r)
+    ic.paint(ic.id(e), fill=color, stroke="none")
+    if opacity is not None:
+        ic.add("object.setProps", ids=[ic.id(e)], opacity=opacity)
+    return ic.id(e)
+
+
+def glow(ic, cx, cy, r, color, opacity=70, ry=None):
+    """A soft halo under a crisp shape (art bible: soft glow only as a small halo)."""
+    e = ic.add("shape.ellipse", x=cx - r, y=cy - (ry or r), width=2 * r, height=2 * (ry or r))
+    ic.paint(ic.id(e), fill=ic.grad((0, color, 1), (0.45, color, 0.55), (1, color, 0), kind="radial", start=[cx, cy],
+                                     end=[cx + r, cy]), stroke="none")
+    ic.add("object.setProps", ids=[ic.id(e)], opacity=opacity)
+    return ic.id(e)
+
+
+def star(ic, cx, cy, r1, r2, fill, points=4, rotation=0, ink_w=2.6, shadow=False):
+    s = ic.add("shape.star", cx=cx, cy=cy, radius1=r1, radius2=r2, points=points, rotation=rotation)
+    if ink_w:
+        return ic.solid(ic.id(s), fill, shadow=shadow, ink_w=ink_w)
+    ic.paint(ic.id(s), fill=fill, stroke="none")
+    return ic.id(s)
+
+
+def spark(ic, cx, cy, r, color=None, rotation=0):
+    """A small four-point glint (no outline): highlights and motes."""
+    return star(ic, cx, cy, r, r * 0.28, color or ic.p["core"], rotation=rotation, ink_w=0)
+
+
+def streaks(ic, lines, color=None, weight=2.4, ink=True):
+    """Speed lines: (x0, y0, x1, y1) each."""
+    for x0, y0, x1, y1 in lines:
+        ic.line(poly([(x0, y0), (x1, y1)], closed=False), color or ic.p["core"], weight, ink=ink)
+
+
+def chevron(ic, tip, ang, size, color, weight=2.6, ink=True):
+    """An arrowhead line pointing along `ang` (screen degrees) with its tip at `tip`."""
+    a = math.radians(ang)
+    arms = [rot((-size, size * 0.95), a, tip), tip, rot((-size, -size * 0.95), a, tip)]
+    ic.line(poly(arms, closed=False), color, weight, ink=ink)
+
+
+def shard_pts(L, w, back=0.25):
+    """A diamond shard along +u: from u=0 to its point at u=L, widest at `back` of the way."""
+    return [(0, 0), (back * L, w), (L, 0), (back * L, -w)]
+
+
+def shard(ic, at, ang, L, w, fill, back=0.25, shadow=True, ink_w=3.0):
+    return ic.shape(poly(place(shard_pts(L, w, back), ang, at)), fill, shadow=shadow, ink_w=ink_w)
+
+
+def blob_d(c, r, n=9, wobble=0.18, phase=0.0, ry=None):
+    """A puffy round outline (fleece, cloud, smoke): `n` bumps of radius r."""
+    ry = ry or r
+    pts = []
+    for i in range(n * 2):
+        a = phase + math.pi * i / n
+        k = 1 + (wobble if i % 2 == 0 else -wobble * 0.4)
+        pts.append((c[0] + r * k * math.cos(a), c[1] + ry * k * math.sin(a)))
+    return curve(pts, k=0.9)
+
+
+def cracks(ic, c, rays, color=None, weight=1.6):
+    """Ground cracks from c: (angle, length) each, zigzagged once."""
+    for ang, L in rays:
+        a = math.radians(ang)
+        mid = (c[0] + math.cos(a + 0.25) * L * 0.5, c[1] + math.sin(a + 0.25) * L * 0.5 * 0.45)
+        end = (c[0] + math.cos(a) * L, c[1] + math.sin(a) * L * 0.45)
+        ic.line(poly([c, mid, end], closed=False), color or ic.p["dark"], weight, ink=False)
