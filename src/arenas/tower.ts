@@ -119,7 +119,7 @@ export function roman(n: number) {
 }
 
 /** The floor: slabs in rings, two gold bands, the kind's sign round the middle and the floor's number in it. */
-function roomFloor(kind: RoomKind, n: number) {
+function roomFloor(kind: RoomKind, n: number, label = n) {
   const H = HEIGHTS[towerHeight(n)];
   return canvasTexture(1280, (g, s) => {
     const rnd = seeded(300 + n), ppm = s / (TOWER_R * 2), c = s / 2;
@@ -196,7 +196,7 @@ function roomFloor(kind: RoomKind, n: number) {
         g.stroke();
       }
     }
-    const numeral = roman(n);
+    const numeral = roman(label);
     g.fillStyle = gold(0.78);
     g.textAlign = 'center';
     g.textBaseline = 'middle';
@@ -251,11 +251,12 @@ function arch(x: number, z: number, yaw: number, w: number, h: number, stone: TH
  * The stair-well room for floor `n` of kind `kind`, with `obstacles` as its cover (`towerCover`). A new def for each floor: the
  * duel keeps a room it is given twice (a floor and the landing after it are one room), and builds a new one for the next floor.
  */
-export function towerRoom(kind: RoomKind, n: number, obstacles: Obstacle[]): ArenaDef {
+/** `label`: the number written on the floor when it is not the height `n` (a Climb floor's trial). */
+export function towerRoom(kind: RoomKind, n: number, obstacles: Obstacle[], label = n): ArenaDef {
   const H = HEIGHTS[towerHeight(n)];
   return {
     id: `tower-${kind}`,
-    name: `Floor ${n}`,
+    name: `Floor ${label}`,
     ring: TOWER_R,
     obstacles,
     stage: H.stage,
@@ -267,7 +268,7 @@ export function towerRoom(kind: RoomKind, n: number, obstacles: Obstacle[]): Are
       const dark = new THREE.MeshBasicMaterial({ color: 0x030306 });
       const flame = new THREE.MeshBasicMaterial({ color: H.lantern });
       const apron = floorDisc(44, new THREE.MeshStandardMaterial({ color: 0x0c0c11, roughness: 0.96 }), 0.004, 64);
-      const disc = floorDisc(R, new THREE.MeshStandardMaterial({ map: roomFloor(kind, n), roughness: 0.8, metalness: 0.12 }));
+      const disc = floorDisc(R, new THREE.MeshStandardMaterial({ map: roomFloor(kind, n, label), roughness: 0.8, metalness: 0.12 }));
       g.add(apron, disc, flatRing(R - 0.14, R, GOLD, 0.7, 0.02));
 
       // The well's wall: tall round the north where the camera looks, stepping down toward the south so it looks over it.

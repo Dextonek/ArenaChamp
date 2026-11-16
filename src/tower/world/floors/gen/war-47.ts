@@ -3069,7 +3069,7 @@ export const WAR_47: GenFloor = {
      ]
     },
     {
-     "name": "Under no banner",
+     "name": "The last charge",
      "at": 0.33,
      "moves": [
       "cleave",

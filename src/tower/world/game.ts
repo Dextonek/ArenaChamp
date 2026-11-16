@@ -6,6 +6,7 @@ import { autoBoon } from '../run';
 import type { FloorDef, Spot, DoorDef } from './def';
 import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
 import { FLOORS, floorAbove, floorAtOrBelow } from './floors';
+import { withRivalFor } from './rival';
 import { WorldHud } from './hud';
 import { WorldMap } from './map';
 import { WorldOthers } from './others';
@@ -103,7 +104,12 @@ export class WorldGame implements DoorSink {
       this.together = f;
     }
     // A floor asked for that does not exist (not made yet) gives the highest one below it that does.
-    this.floor = FLOORS[floorAtOrBelow(o.floor ?? nextFloor())];
+    this.floor = this.asMet(FLOORS[floorAtOrBelow(o.floor ?? nextFloor())]);
+  }
+
+  /** The floor as this hero meets it: a rival who is this hero is the next one on the roster (rival.ts). */
+  private asMet(def: FloorDef): FloorDef {
+    return withRivalFor(def, this.hero, this.api.kits.map((k) => k.name));
   }
 
   /** Begins the floor: from the saved run when `resume` and it is this hero's, else from the camp. */
@@ -111,7 +117,7 @@ export class WorldGame implements DoorSink {
     const saved = o.resume ? WorldRun.from(read(KEYS.run)) : null;
     if (saved && saved.hero === this.hero && FLOORS[saved.floor] && !saved.result) {
       this.run = saved;
-      this.floor = FLOORS[saved.floor];
+      this.floor = this.asMet(FLOORS[saved.floor]);
     } else {
       const arrived = { boons: sigils().map((id) => [id, 1] as [string, number]), shards: 0 };
       this.run = WorldRun.begin(this.hero, this.floor.n, arrived);
@@ -506,7 +512,7 @@ export class WorldGame implements DoorSink {
       after = () => this.hud.say('Beaten', `A life lost: ${run.lives} left`, 2.6);
     } else if (d.piece === 'trial') {
       run.trialLost++;
-      after = () => this.hud.say('The vault holds', run.trialLost < 2 ? 'Nothing lost: the door stays open for one more try' : 'Nothing lost: the door closes', 3);
+      after = () => this.hud.say('The vault holds', run.trialLost < 2 ? 'No life lost: the door stays open for one more try' : 'No life lost: the door closes', 3);
     } else if (d.piece === 'rival') run.rival = 'lost';
     this.save();
     if (d.piece === 'gate' && out.won) {

@@ -30,7 +30,10 @@ const BLURBS = [
   'Fields the armies ploughed with their boots.', 'A line both armies held, and neither kept.', 'A village that burned twice, once for each banner.', 'The road a king rode down to a battle he did not see end.',
   'Trenches dug for a week’s fight, still dug deeper every night.', 'The crows do not take sides here.', 'A retreat that never reached anywhere.', 'The ridge where the last charge is still coming.',
 ];
-const RULERS: [string, string][] = [['The Iron Marshal', 'Two banners, one sword'], ['The Siege Lord', 'Walls fall where he points'], ['The Ashen General', 'He lost every battle and fought on'], ['The Banner Knight', 'He never lowered the flag'], ['The Crow King', 'He eats what the war leaves'], ['The Black Herald', 'He brought the declaration'], ['The War Drummer', 'Every beat a charge'], ['The Grey Captain', 'Neither army remembers him']];
+/** The last phase's name where the drawn one would not fit the codex: the horse of smoke is the Last Marshal's; the crimson's men do not
+ * fight "under no banner", the deserter does. */
+const LAST_PHASE: Record<string, string> = { 'The Iron Marshal': 'The last charge', 'The Siege Lord': 'The walls come down', 'The Black Herald': 'The last charge', 'The Grey Captain': 'Under no banner' };
+const RULERS: [string, string][] = [['The Iron Marshal', 'The crimson’s iron hand'], ['The Siege Lord', 'Walls fall where he points'], ['The Ashen General', 'He lost every battle and fought on'], ['The Banner Knight', 'He never lowered the flag'], ['The Crow King', 'He eats what the war leaves'], ['The Black Herald', 'He brought the declaration'], ['The War Drummer', 'Every beat a charge'], ['The Grey Captain', 'Neither army remembers him']];
 const TINTS = ['#8a8a96', '#7a7a8a', '#9a8e80', '#6e7486', '#8e8478', '#7e8696', '#948a8a', '#86827a'];
 const NAMED = ['The Turncoat', 'Sir Rust', 'The Hollow Captain', 'The Crow Knight', 'Old Ironside', 'The Weeping Lancer', 'The Last Sergeant', 'The Black Standard', 'Sir Ashes', 'The Grey Rider', 'The Headless Herald', 'The Mud Mother', 'The Broken Oath', 'Sir Nobody', 'The Iron Widow', 'The Lost Colonel', 'Mother Crow', 'The Pale Lancer'];
 const CHIEFS = ['The Banner Bearer', 'The Standard Bearer', 'The Ash Captain', 'The Grey Sergeant'];
@@ -526,7 +529,8 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
     phases: [
       { name: `${rulerName} ${two ? 'wake' : 'wakes'}`, at: 1, moves: ['cleave', 'lunge'], gap: [1.4, 2.2] },
       { name: 'The guard marches', at: 0.66, opener: 'guard', moves: ['guard', 'cleave', 'lunge', extra[0]], gap: [1.3, 2.1] },
-      { name: pick(['Alone on a horse of smoke', 'The last charge', 'Under no banner']), at: 0.33, moves: ['cleave', 'lunge', 'rake', extra[0]], gap: [0.9, 1.5] },
+      // The draw is kept (the random stream after it stays as it was); four rulers have a last phase of their own, by the codex.
+      { name: ((drawn: string) => LAST_PHASE[rulerName] ?? drawn)(pick(['Alone on a horse of smoke', 'The last charge', 'Under no banner'])), at: 0.33, moves: ['cleave', 'lunge', 'rake', extra[0]], gap: [0.9, 1.5] },
     ],
     sentries: { look: 'standard', spots: [[180, 8.6]], hp: Math.round(220 * (1 + 0.02 * (n - 41))), fall: { kneel: true }, from: 0 },
     line: crown ? 'A Raid boss, alone, at the second tier: the last floor of the Climb' : 'Fell the standard and his guard kneels',

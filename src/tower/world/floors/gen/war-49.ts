@@ -3073,7 +3073,7 @@ export const WAR_49: GenFloor = {
      ]
     },
     {
-     "name": "Alone on a horse of smoke",
+     "name": "Under no banner",
      "at": 0.33,
      "moves": [
       "cleave",

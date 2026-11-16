@@ -138,6 +138,11 @@ export const CHANGELOG: Release[] = [
         text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, the Turncloak no longer stands in the camp’s bench, and the last floor speaks of Ash and Ember as the two they are.',
       },
       {
+        tag: 'Tower',
+        title: 'Clearer fights and your own rival on the Climb',
+        text: 'People’s marks no longer cover the floor’s panel or your spells, and in a ruler’s or a gatekeeper’s fight the title sits under your portrait instead of over it. A trial room now shows the floor you are on. If a floor’s rival is the hero you are playing, another hero takes the rival’s place, so you never duel yourself. And the War’s rulers, its Camp-Mother and a lost trial say what they should.',
+      },
+      {
         tag: 'Online',
         title: 'See who waits to duel',
         text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',

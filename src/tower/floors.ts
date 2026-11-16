@@ -130,7 +130,7 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
   const { n, kind } = plan, arena = env.api.arena;
   const num = floorNumbers(n, plan.twist === 'restless');
   const seed = seedNumber(plan.seed);
-  const place = towerRoom(kind, n, towerCover(kind, seed));
+  const place = towerRoom(kind, n, towerCover(kind, seed), plan.label);
   const start = { ...TOWER_START };
   const starts = (boss: { x: number; z: number }): BossDef['starts'] => ({ boss, heroes: [start, start, start] });
   // The link is made last (it needs the def), and everything below only calls it once the floor is on.
