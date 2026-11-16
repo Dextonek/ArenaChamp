@@ -488,6 +488,8 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // Floor 20 is the chapter's crown: behind the lair are Ash and Ember, a Raid boss, alone (pieces/core.ts `crownFight`).
   const crown = n === 20 ? ('ash' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['Ash and Ember', 'The fire at the wood’s end'] : RULERS[(n - 12) % RULERS.length];
+  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them” (a tree or a bog stays “it”).
+  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
   const extra: [string, MoveSpec] = pick([
     ['fan', { use: 'fan', share: 0.05 }],
     ['briars', { use: 'stones', name: 'Falling Briars', share: 0.07, count: 4, radius: 1.5, cooldown: 8 }],
@@ -527,7 +529,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const poss = (s: string) => (s.endsWith('s') ? `${s}’` : `${s}’s`);
   const facing = (p: V) => r2(Math.atan2(-p.x, -p.z));
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Careful, climber. The wood walks. Two wisps are bound in it, and ${mid(rulerName)} waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens.`], quests: ['main', 'bounty1', 'bounty2'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Careful, climber. The wood walks. Two wisps are bound in it, and ${mid(rulerName)} ${rulerObj === 'them' ? 'wait' : 'waits'} at its heart, far to the north. Free the wisps, cut the roots that feed ${rulerObj}, and ${rulerPoss} door opens.`], quests: ['main', 'bounty1', 'bounty2'] },
     { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: [pick(['I lose things in this wood, and the wood keeps them. Maybe you can bring them back.', 'Two lamps, a lost tool, and nobody with the legs for it. Except you.', 'The paths move, but my lamps stay put. Mostly.'])], quests: ['g1', 'g2'] },
     { id: 'villager', hero: villagerHero, name: villagerHero, role: 'giver', at: villagerAt, face: facing(villagerAt), greet: [`You found ${lower(Vl.name)}? Then you can stand by it a while.`], quests: ['g3'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: facing(rivalAt), greet: [], quests: [] },
@@ -538,7 +540,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const quests: QuestDef[] = [
     {
       id: 'main', name: pick(['The Heart of the Wood', 'The Bound Wisps', 'The Feeding Roots']), giver: 'keeper', main: true,
-      intro: [`Clear ${lower(A.name)}, and its wisp follows you: lead it to the heart. Then ${lower(D.name)}: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed ${mid(rulerName)}, and its door opens.`],
+      intro: [`Clear ${lower(A.name)}, and its wisp follows you: lead it to the heart. Then ${lower(D.name)}: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed ${mid(rulerName)}, and ${rulerPoss} door opens.`],
       steps: [
         { verb: 'fell', text: `Clear ${lower(A.name)}`, packs: ['a'] },
         { verb: 'lead', text: `Lead the wisp from ${lower(A.name)} to the heart`, name: 'The wisp', look: 'wisp', speed: 3, from: wispA, r: 3, path: roadA },

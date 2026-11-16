@@ -3784,7 +3784,7 @@ export const WOOD_13: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and the Thorn Mother waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and the Thorn Mother waits at its heart, far to the north. Free the wisps, cut the roots that feed her, and her door opens."
     ],
     "quests": [
      "main",
@@ -3863,7 +3863,7 @@ export const WOOD_13: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the bramble, and its wisp follows you: lead it to the heart. Then the standing stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Thorn Mother, and its door opens."
+     "Clear the bramble, and its wisp follows you: lead it to the heart. Then the standing stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Thorn Mother, and her door opens."
     ],
     "steps": [
      {
