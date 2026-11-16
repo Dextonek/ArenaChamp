@@ -3745,7 +3745,7 @@ export const SANDS_26: GenFloor = {
      "r": 0.5,
      "height": 3.8
     },
-    "locked": "A brass door, shut. Oblivion has a quest about a seal."
+    "locked": "A brass door, shut. Oblivion has a quest about the sun key."
    },
    {
     "id": "trial",

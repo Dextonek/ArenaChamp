@@ -510,7 +510,7 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       steps: [{ verb: 'light', text: `Light the fires at ${lower(Cl.name)} and ${lower(E.name)}`, things: [{ id: 'fire1', at: Cl.stand }, { id: 'fire2', at: E.stand }], seconds: 2 } as Step], outro: ['Now we see it coming. Take this, from the last storm.'], reward: reward(35, { boon: true }) },
   ];
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
-    { id: 'lair', piece: 'ruler', name: crown ? 'The Sunken Heart' : `${poss(rulerName)} door`, at: S.lairDoor, r: 2.2, wall: { ax: -3.4, az: S.lairZ, bx: 3.4, bz: S.lairZ, r: 0.5, height: 3.8 }, locked: `A brass door, shut. ${keeperHero} has a quest about a seal.` },
+    { id: 'lair', piece: 'ruler', name: crown ? 'The Sunken Heart' : `${poss(rulerName)} door`, at: S.lairDoor, r: 2.2, wall: { ax: -3.4, az: S.lairZ, bx: 3.4, bz: S.lairZ, r: 0.5, height: 3.8 }, locked: `A brass door, shut. ${keeperHero} has a quest about ${mid(sealName)}.` },
     { id: 'trial', piece: 'trial', name: pick(['The Dust Court', 'The Sun Vault', 'The Glass Cellar']), at: trial, r: 2, locked: '' },
     { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} has fallen.` },
     { id: 'rival', piece: 'rival', name: `${poss(rivalHero)} arch`, at: rivalDoor, r: 2, locked: '' },

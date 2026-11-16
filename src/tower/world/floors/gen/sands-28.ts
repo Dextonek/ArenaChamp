@@ -3835,7 +3835,7 @@ export const SANDS_28: GenFloor = {
      "r": 0.5,
      "height": 3.8
     },
-    "locked": "A brass door, shut. Mabel has a quest about a seal."
+    "locked": "A brass door, shut. Mabel has a quest about the scarab seal."
    },
    {
     "id": "trial",

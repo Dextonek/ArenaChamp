@@ -3723,7 +3723,7 @@ export const SANDS_25: GenFloor = {
      "r": 0.5,
      "height": 3.8
     },
-    "locked": "A brass door, shut. Shiori has a quest about a seal."
+    "locked": "A brass door, shut. Shiori has a quest about the brass seal."
    },
    {
     "id": "trial",
