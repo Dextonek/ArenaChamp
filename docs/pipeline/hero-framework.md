@@ -566,7 +566,7 @@ lane judges differently), Air Hose (a muzzle 0.8 m ahead, aimed at the point, en
 without `projectile`, no loop switch), Pop! (fizzles without sight or beyond 11 m, knocks from his live spot, its circle follows
 the enemy: three options to the sure hit), Sumo Charge (catch and carry: a block worth building with Pim's Charge and The Shove).
 
-**The blocks gained** (`blocks.ts`, `spell.ts`; 393 -> 551 lines): the `target` shape (a sure hit, `inside`), the `zone` shape (any
+**The blocks gained** (`blocks.ts`, `spell.ts`; 393 -> 556 lines): the `target` shape (a sure hit, `inside`), the `zone` shape (any
 `TelegraphShape`, judged once with the engine's `insideTelegraph`, so the danger zone is the hit's shape; `until`); `tune` sliders
 and `Num` (a number of the rules may name a slider or be worked out from them); a `Hit` with `pull`, `status`, `projectile`,
 `from` and `none`; `facing`; `move.at: 'impact'` and `c.moved`; `on.frame`; `noDamage`, `noLoop`, `noScreen` (settings and the effect's fields keep their old keys: the roster checks
@@ -574,12 +574,19 @@ and `Num` (a number of the rules may name a slider or be worked out from them); 
 the look's `releasing`, `impacting` (before the rules: the old files drew first, and the dice must keep their order) and `idle`
 (files that aged their particles while not playing). `c.landed` is set before `impacting`; `stopped` names whom a bolt hit.
 
-**Counts:** the eight files 1,917 -> 1,520 lines (-21%); their rules blocks 19-47 lines each (the hooks 3-20 of that); the looks
-moved as they were. Time: a plain spell about 10 minutes, one with a hook 15-20, a new block 20-30, the checks about 5 minutes of
-machine time per hero (they run while the next spell is written). Estimate for the rest (~123 not ported): about 30 hours of
-agent work, about a third staying code. **Recommendation: some shapes only** (the user's page says why): new heroes on the blocks,
-a spell converted when its hero is touched anyway, the clean shapes when convenient; no conversion project.
+**Counts:** the eight files 1,917 -> 1,522 lines (-21%); their rules blocks 19-47 lines each (the hooks 3-20 of that); the looks
+moved as they were. Time (from the commits): 8 spells and 3 block steps written in about 40 minutes (about 5 minutes a spell; the
+checks of one step ran while the next was written), the references 13 minutes, the final gate 26 minutes of machine time.
+Estimate for the rest (~120 spells of 29 heroes, not ported): about 12-15 hours of agent work, a third staying code; likely slower,
+since these three were picked as the simplest. **Recommendation: some shapes only** (the user's page says why): new heroes on the
+blocks, a hero's fitting spells when that hero is next opened anyway, with its prints and the look check; no conversion project.
+
+**The look check** (new, `pipeline/tools/spell-look-compare.py`): the prints see health, places and cooldowns, not particles. The
+tool plays a spell on the tool page of two checkouts (two dev servers) with the same dice and 360 steps and compares a fingerprint
+of everything the effect draws every frame. The eight moved spells: the same for 360 frames (Air Hose, unchanged, as a control);
+a dust puff raised 1 cm on purpose was caught at frame 16. About 10 s a spell.
 
 **The checks:** Sefu's, Puff's, Yoko's and Anka's prints the same after every commit; all 80 prints the same on the finished code;
 the roster (`hero-roster.py take` / `diff`) identical; the self test of the eight moved spells and of the five never cast identical
-(Scarab Stride, never cast in the prints, stayed code); `tsc`, `build`; the Rust guard the same lines.
+(Scarab Stride, never cast in the prints, stayed code); the looks frame by frame the same; `tsc`, `build`; the Rust guard the
+same lines.

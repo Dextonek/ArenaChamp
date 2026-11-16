@@ -61,9 +61,10 @@ starts with every agent session (about 90 MB each, and it often fails to connect
   stayed code (Scarab Stride, Air Hose, Pop!, Sumo Charge: each needs a block no other spell here uses). New blocks: a sure hit
   (`target`), a zone judged once (`zone`: circle, cone, strip), sliders (`tune`), a fuller hit, facing aim, a move at the impact, a
   rules hook per frame, the look's moments before the rules. The eight files -21% lines (the looks moved as they were); rules
-  19-47 lines a spell. All 80 prints the same, roster identical, self test identical, tsc, build, guard the same. **Waiting on the
-  user: the recommendation** (some shapes only: new heroes on the blocks, a spell converted when its hero is touched anyway; no
-  conversion project of the other ~150, about 30 hours, a third staying code). Visuals are not covered by the prints.
+  19-47 lines a spell; about 5 minutes of writing a spell. All 80 prints the same, roster identical, self test identical, the looks
+  the same frame by frame (new: `pipeline/tools/spell-look-compare.py`, old code against new), tsc, build, guard the same.
+  **Waiting on the user: the recommendation** (some shapes only: new heroes on the blocks, a hero's fitting spells when it is
+  next opened anyway; no conversion project of the other ~120, about 12-15 hours, a third staying code).
 - **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
   41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
   (every spot against the cover).

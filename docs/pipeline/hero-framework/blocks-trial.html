@@ -40,8 +40,9 @@ p { margin: 6px 0 10px; color: var(--ink2); }
 .tile span { color: var(--ink2); font-size: 14px; }
 .verdict { border-left: 5px solid var(--gold); }
 .verdict b { color: var(--ink); }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.pair > div { min-width: 0; }
+@media (max-width: 640px) { .pair { grid-template-columns: minmax(0, 1fr); } }
 pre { background: var(--code); border-radius: 10px; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 6px 0; }
 pre .c { color: var(--muted); }
 .label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
@@ -79,21 +80,22 @@ ul.found li b { color: var(--ink); }
     as before. The design: <a href="index.html">the framework page</a>, <code>docs/pipeline/hero-framework.md</code> section 12.</p>
 
   <div class="tiles">
-    <div class="tile"><b>8 of 12</b><span>spells on the blocks; 4 stayed code (they need a block no other spell here uses)</span></div>
-    <div class="tile"><b>&minus;21%</b><span>lines in the eight files (1,917 to 1,520); the drawing code is unchanged</span></div>
-    <div class="tile"><b>20&ndash;47</b><span>lines of rules per spell, in one place at the end of its file</span></div>
-    <div class="tile"><b>80 / 80</b><span>fight prints the same; roster and self test identical</span></div>
+    <div class="tile"><b>8 of 12</b><span>spells on the blocks; 4 stayed code (each needs a block no other spell here uses)</span></div>
+    <div class="tile"><b>&minus;21%</b><span>lines in the eight files (1,917 to 1,522); the drawing code is unchanged</span></div>
+    <div class="tile"><b>~5 min</b><span>of writing per spell in the trial (8 spells and 3 new blocks in about 40 minutes)</span></div>
+    <div class="tile"><b>80 / 80</b><span>fight prints the same; roster, self test and the looks (frame by frame) identical</span></div>
   </div>
 
   <div class="card verdict">
-    <h3>Recommendation: some shapes only, and no big conversion project</h3>
-    <p><b>Do not convert all ~150.</b> A conversion makes a spell's rules short and in one place, and its danger zone is the
-      hit's own shape. But it saves only about a fifth of the lines, because four fifths of a spell is its look, which moves
-      as it is. A third of the spells chosen as the easiest did not fit. And the prints prove the fight, not the picture.</p>
-    <p><b>Use the blocks where they pay:</b> every new hero's spells; a spell whose hero is being fixed or rebalanced anyway; and
-      the clean shapes when convenient (a bolt, a circle with a fuse, a zone round or in front of the caster, a sure hit). Leave
-      the dashes that bite or carry, the bolts with their own flight, and the spells with a second act as code until a second
-      spell needs the same block.</p>
+    <h3>Recommendation: some shapes only, no conversion project</h3>
+    <p><b>Do not convert all ~120 as a project.</b> It is affordable (about 12&ndash;15 hours of agent work, below) and safe (three
+      checks now catch a change in the fight, the numbers and the look). But it buys little for spells that already work: a fifth
+      fewer lines, because four fifths of a spell is its look, which moves as it is; and a third of the spells chosen as the
+      easiest did not fit, so the code stays mixed anyway.</p>
+    <p><b>Use the blocks where they pay:</b> every new hero's spells (the rules, the danger zone, the sliders and the tooltip's
+      numbers come from one short block); and a hero's fitting spells when that hero is next opened for a fix or a rebalance, with
+      its prints and the look check. Leave the dashes that bite or carry, the bolts with their own flight and the spells with a
+      second act as code until a second spell needs the same block.</p>
   </div>
 
   <h2>The twelve spells, before and after</h2>
@@ -104,23 +106,22 @@ ul.found li b { color: var(--ink); }
     <div class="legend"><span><i style="background:var(--old)"></i>before</span><span><i style="background:var(--new)"></i>after</span></div>
   </div>
 
-  <h2>What a spell's rules look like now</h2>
-  <p>Before, the rules were spread through a 200&ndash;300 line class: constants at the top, a flag, the hit in the middle of the
+  <h2>Each moved spell's rules, before and after</h2>
+  <p>Before, the rules were spread through a 200&ndash;300 line class: numbers at the top, a flag, the hit in the middle of the
     frame code, the danger zone written again in <code>telegraphs()</code>, the sliders in <code>buildGui()</code>. After, the class
-    keeps only the drawing, and the rules sit at the end.</p>
+    keeps only the drawing, and the rules sit at the end of the file. Shortened where it says <code>...</code>.</p>
 
   <div class="card">
     <h3>Cobra Spit <span class="tag plain">blocks</span></h3>
     <p class="sub">Sefu, Q: a bolt that blinds. 223 to 148 lines.</p>
     <div class="pair">
-      <div><div class="label">before (the rules, scattered)</div>
+      <div><div class="label">before</div>
 <pre>const WIND_T = 0.25, REACH = 9, SPEED = 20, RADIUS = 0.35;
 <span class="c">// in update(), between the hood and the splash:</span>
-if (!this.fired &amp;&amp; t &gt;= WIND_T) {
-  this.fired = true; ...
+if (!this.fired &amp;&amp; t &gt;= WIND_T) { this.fired = true; ...
   this.bolt = ctx.projectile({ from, dir, speed: SPEED,
-    range: REACH, radius: RADIUS, hit: { damage, knock: 1,
-    color, status: { kind: 'blind', seconds: s.blind } } });
+    range: REACH, radius: RADIUS, hit: { damage: s.damage,
+    knock: 1, color, status: { kind: 'blind', seconds: s.blind } } });
 }
 <span class="c">// telegraphs(): the same line again, by hand</span>
 <span class="c">// buildGui(): loop, damage 1..150, blind 0..2</span></pre></div>
@@ -137,47 +138,186 @@ tune: { blind: [1.2, 0, 2, 0.1] },</pre></div>
   </div>
 
   <div class="card">
-    <h3>Helium Bomb <span class="tag plain">blocks</span></h3>
-    <p class="sub">Professor Puff, W: a circle at the aim that pops after a second. 232 to 180 lines.</p>
-<pre>rules: {
-  windup: 0,
-  shape: { kind: 'circle', radius: 2.5, at: (c) =&gt; [{ x: c.ctx!.point.x, z: c.ctx!.point.z }] },
-  delay: 1.0,
-  hit: { damage: 50, knock: 5, color: BALLOON_CSS.body },   <span class="c">// pushed out from the centre</span>
-},</pre>
-  </div>
-
-  <div class="card">
     <h3>Shepherd's Crook <span class="tag plain">blocks</span></h3>
     <p class="sub">Sefu, W: a sure hit on the chosen enemy that pulls and slows. 272 to 212 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>const HIT_T = 0.5, MARK_R = 1.2;
+if (!f.hit &amp;&amp; t &gt;= HIT_T) { f.hit = true; ...
+  ctx.hit(this.target, { damage: s.damage, knock: 0,
+    pull: s.pull, color, projectile: true,
+    status: { kind: 'slow', seconds: s.slow } });
+}
+<span class="c">// telegraphs(): circle MARK_R at the spot, impact HIT_T</span>
+<span class="c">// buildGui(): loop, damage, pull 0..4, slow 0..2</span></pre></div>
+      <div><div class="label">after</div>
 <pre>rules: {
   windup: 0.5,
   shape: { kind: 'target', mark: 1.2 },
-  hit: { damage: 35, knock: 0, pull: 'pull', projectile: true,
-         status: { kind: 'slow', seconds: 'slow' }, color: SAND_CSS.body },
+  hit: { damage: 35, knock: 0, pull: 'pull',
+         color: SAND_CSS.body, projectile: true,
+         status: { kind: 'slow', seconds: 'slow' } },
+  warn: 0,
 },
-tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },</pre>
+tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },</pre></div>
+    </div>
   </div>
 
   <div class="card">
-    <h3>Stomp, Salt Throw, Palm Strike <span class="tag hook">blocks + hook</span></h3>
-    <p class="sub">Big Yoko: three areas judged once, a circle round him, a cone and a strip in front of him (the way he faces).
-      The new <code>zone</code> block hands the engine's own shape to both the danger zone and the hit, so they cannot disagree.
-      The hooks are his ring: Stomp lays it (3 lines), Salt Throw shrinks it (9), Palm Strike shoves who it caught over 0.22 s (20).</p>
+    <h3>Sarcophagus <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Sefu, R: a sure hit that must still find them inside the circle (the seal), then a burst a frame after the
+      seal ends (a hook of 12 lines). 274 to 232 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>if (!this.decided &amp;&amp; t &gt;= SHUT_T) { ...
+  const inside = hypot(tg - spot) &lt;= RADIUS;
+  if (inside) { sealAt = t; endT = ...;
+    ctx.hit(tg, { damage: 0, knock: 0, color,
+      status: { kind: 'sealed', seconds: s.seal } }); }
+}
+if (sealAt &gt;= 0 &amp;&amp; burstAt &lt; 0) {
+  if (armed) burst(t);   <span class="c">// the 110, knock 2</span>
+  else if (t &gt;= sealAt + s.seal) armed = true;
+}</pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0.7,
+  shape: { kind: 'target', mark: 1.6, inside: 1.6 },
+  hit: { damage: 110, none: true, knock: 0, color,
+         status: { kind: 'sealed', seconds: 'seal' } },
+  on: { frame: (c, t) =&gt; { <span class="c">/* arm a frame after the
+    seal, then the burst: 110, knock 2 (12 lines) */</span> } },
+},
+tune: { seal: [1.2, 0.2, 1.2, 0.1] },</pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Helium Bomb <span class="tag plain">blocks</span></h3>
+    <p class="sub">Professor Puff, W: a circle at the aim that pops after a second. 232 to 180 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>if (!this.popped &amp;&amp; t &gt;= POP_T) { popped = true; pop(ctx); }
+<span class="c">// pop():</span>
+for (const e of ctx.enemies?.() ?? ctx.targets)
+  if (hypot(e - point) &lt;= BOMB_RADIUS)
+    ctx.hit(e, { damage: s.damage, knock: 5, from: point, color });
+<span class="c">// telegraphs(): circle BOMB_RADIUS at the point, impact POP_T</span></pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0,
+  shape: { kind: 'circle', radius: 2.5,
+           at: (c) =&gt; [{ x: c.ctx!.point.x, z: c.ctx!.point.z }] },
+  delay: 1.0,
+  hit: { damage: 50, knock: 5, color: BALLOON_CSS.body },
+  warn: 0,
+},</pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Hot Air <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Professor Puff, E: a push round him, then he floats away from the aim. Which way is "away" is a hook of 9
+      lines. 304 to 271 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre><span class="c">// cast(): away from the point; landing = s + dir * s.distance</span>
+if (!f.burst &amp;&amp; t &gt;= HOT_WIND) { burst = true; letGo(ctx); }
+<span class="c">// letGo(): everyone within HOT_RADIUS of where he stood:</span>
+<span class="c">//   ctx.hit(e, { damage: 0, knock: s.push * 7, from, color })</span>
+if (f.burst &amp;&amp; !f.moved) { moved = true;
+  landing = ctx.moveCaster(landing, HOT_GLIDE); }</pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0.4,
+  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'circle',
+           x: c.from.x, z: c.from.z, radius: 2.5 }) },
+  hit: { damage: 0, knock: (s) =&gt; s.push * 7, color },
+  move: { at: 'impact', to: (c) =&gt; c.state.landing, seconds: 0.7 },
+  on: { cast: (c) =&gt; { <span class="c">/* away, and where he lands */</span> } },
+},
+tune: { distance: [6, 2, 9, 0.5], push: [3, 0, 6, 0.5] },
+noDamage: true, noLoop: true,</pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Stomp <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Big Yoko, W: a circle round him, judged once; his ring is a 3-line hook. 180 to 134 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>readonly circle = { kind: 'circle', x: 0, z: 0, radius: 3 };
+if (!f.hit &amp;&amp; t &gt;= HIT_T) { ...cracks, dust...
+  for (const e of ctx.enemies?.() ?? ctx.targets)
+    if (insideTelegraph(this.circle, e.x, e.z))
+      ctx.hit(e, { damage: s.damage, knock: 0, color, from: c,
+        status: { kind: 'slow', seconds: s.slow } });
+  bookOf(ctx.caster).ring = { x, z, bornAt: now, radius: 5 };
+}</pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0.5,
+  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'circle',
+           x: c.from.x, z: c.from.z, radius: 3 }) },
+  hit: { damage: 50, knock: 0, color,
+         status: { kind: 'slow', seconds: 'slow' } },
+  on: { impact: (c) =&gt; { bookOf(c.ctx.caster).ring = ... } },
+},
+tune: { slow: [1, 0, 3, 0.1] },</pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Salt Throw <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Big Yoko, R: a cone the way he faces, a blind; shrinking his ring is a 9-line hook. 223 to 184 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>readonly cone = { kind: 'cone', x, z, radius: 6,
+  angle: 70, dir: yaw };          <span class="c">// yaw: his facing</span>
+if (!f.hit &amp;&amp; t &gt;= HIT_T) { ...
+  for (e) if (insideTelegraph(this.cone, e.x, e.z))
+    ctx.hit(e, { damage: 0, knock: 0, from: center,
+      status: { kind: 'blind', seconds: s.blind } });
+  if (liveRing(book)) { shrinkRing(book); ... }
+}</pre></div>
+      <div><div class="label">after</div>
 <pre>rules: {
   windup: 0.6, facing: true,
-  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'cone', x: c.from.x, z: c.from.z,
-           radius: 6, angle: 70, dir: c.yaw }) },
-  hit: { damage: 0, knock: 0, color: SUMO_CSS.core, status: { kind: 'blind', seconds: 'blind' } },
-  on: { impact: (c) =&gt; { <span class="c">/* his ring, if it stands, loses 2 m */</span> } },
-},</pre>
+  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'cone',
+           x: c.from.x, z: c.from.z, radius: 6, angle: 70,
+           dir: c.yaw }) },
+  hit: { damage: 0, knock: 0, color,
+         status: { kind: 'blind', seconds: 'blind' } },
+  on: { impact: (c) =&gt; { <span class="c">/* the ring loses 2 m */</span> } },
+},
+tune: { blind: [1.5, 0, 3, 0.1] }, noDamage: true,</pre></div>
+    </div>
   </div>
 
   <div class="card">
-    <h3>Sarcophagus, Hot Air <span class="tag hook">blocks + hook</span></h3>
-    <p class="sub">Sefu's seal is a sure hit that must still find them in the circle (<code>inside: 1.6</code>); the burst a
-      frame after the seal ends is 12 lines of code in a hook. Puff's push round him is a zone, then a move away from the aim
-      at the impact (<code>move: { at: 'impact' }</code>); which way is "away" is a 9-line hook.</p>
+    <h3>Palm Strike <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Big Yoko, Q: a strip the way he faces; the shove of who it caught over 0.22 s is a 20-line hook. 209 to 161 lines.</p>
+    <div class="pair">
+      <div><div class="label">before</div>
+<pre>readonly strip = { kind: 'line', x1, z1, x2, z2, width: 2 };
+if (!this.hit &amp;&amp; t &gt;= HIT_T) { ...
+  for (e) if (insideTelegraph(this.strip, e.x, e.z)) {
+    ctx.hit(e, { damage: s.damage, knock: 0, color, from });
+    caught.push(e); }
+  if (caught.length) { pushing = true; pushUntil = ...; }
+}
+if (pushing &amp;&amp; ctx.carry) { <span class="c">/* ease the shove */</span> }</pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0.4, facing: true,
+  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'line', ...,
+           width: 2 }), until: 0.1 },
+  hit: { damage: 54, knock: 0, color },
+  on: { impact: (c) =&gt; { <span class="c">/* the push window */</span> },
+        frame: (c, t, dt) =&gt; { <span class="c">/* the shove */</span> } },
+},
+tune: { push: [3, 0, 6, 0.1] }, noScreen: true,</pre></div>
+    </div>
   </div>
 
   <h2>What stayed code, and why</h2>
@@ -198,7 +338,7 @@ tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },</pre>
 
   <h2>What the blocks gained in the trial</h2>
   <p>Typed and small, each because a shape repeated or a number had to stay a slider. The runner (<code>src/heroes/framework/</code>)
-    grew from 393 to 551 lines; Anka's four spells play as before on it (her prints after every step).</p>
+    grew from 393 to 556 lines; Anka's four spells play as before on it (her prints after every step).</p>
   <ul class="found">
     <li><b>A sure hit</b> (<code>target</code>): Shepherd's Crook, Sarcophagus; Pop! with three options.</li>
     <li><b>A zone judged once</b> (<code>zone</code>, any of the engine's shapes): Stomp, Salt Throw, Palm Strike, Hot Air.</li>
@@ -211,28 +351,45 @@ tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },</pre>
   </ul>
 
   <h2>Time and risk, measured and estimated</h2>
+  <p>Measured from the trial's commits (2026-11-16). The checks of one step ran while the next spells were written.</p>
   <div class="card scroll">
     <table>
-      <tr><th></th><th class="r">this trial</th><th class="r">the other ~150</th></tr>
-      <tr><td>a plain spell (rules only)</td><td class="r">about 10 min</td><td class="r">~45 spells: 8 h</td></tr>
-      <tr><td>a spell with a hook</td><td class="r">15&ndash;20 min</td><td class="r">~50 spells: 15 h</td></tr>
-      <tr><td>a new block (when a shape repeats)</td><td class="r">20&ndash;30 min</td><td class="r">~8 blocks: 4 h</td></tr>
-      <tr><td>checks per hero (two prints, self test)</td><td class="r">~5 min machine</td><td class="r">33 heroes: 3 h</td></tr>
-      <tr><td>stays code (no fit)</td><td class="r">4 of 12</td><td class="r">~45 spells</td></tr>
-      <tr><td><b>in all</b></td><td></td><td class="r"><b>about 30 hours of agent work</b></td></tr>
+      <tr><th>step</th><th class="r">clock</th><th class="r">took</th></tr>
+      <tr><td>the untouched code's references (prints, roster, self test)</td><td class="r">16:39&ndash;16:52</td><td class="r">13 min</td></tr>
+      <tr><td>blocks step 1 (sure hit, sliders, fuller hit); Helium Bomb, Cobra Spit, Shepherd's Crook</td><td class="r">16:52&ndash;17:13</td><td class="r">21 min</td></tr>
+      <tr><td>blocks step 2 (zone, facing, hook per frame); Stomp, Salt Throw, Palm Strike</td><td class="r">to 17:17</td><td class="r">4 min*</td></tr>
+      <tr><td>blocks step 3 (move at the impact); Sarcophagus, Hot Air</td><td class="r">to 17:23</td><td class="r">6 min*</td></tr>
+      <tr><td>the final checks: all 80 prints, roster, self test, guard, build</td><td class="r">17:23&ndash;17:49</td><td class="r">26 min</td></tr>
+      <tr><td>the look check (a new tool, then 9 spells in 86 s)</td><td class="r"></td><td class="r">~15 min</td></tr>
+    </table>
+    <p class="sub">* written while the step before was being checked: about 40 minutes of writing for 8 spells and 3 block steps,
+      about 5 minutes a spell.</p>
+  </div>
+  <div class="card scroll">
+    <table>
+      <tr><th>the other ~120 spells (29 heroes, not ported, not in the trial)</th><th class="r">spells</th><th class="r">time</th></tr>
+      <tr><td>plain blocks (a quarter in the trial), ~5 min each</td><td class="r">~30</td><td class="r">2.5 h</td></tr>
+      <tr><td>blocks + hook (two fifths), ~8 min each</td><td class="r">~50</td><td class="r">7 h</td></tr>
+      <tr><td>stay code (a third): read and judged, ~2 min each</td><td class="r">~40</td><td class="r">1.5 h</td></tr>
+      <tr><td>new blocks when a shape repeats, ~10 min each</td><td class="r">~8</td><td class="r">1.5 h</td></tr>
+      <tr><td>checks per hero: two prints, self test, looks (~8 min of machine, beside the writing)</td><td class="r">29 heroes</td><td class="r">(4 h, overlapped)</td></tr>
+      <tr><td>a final gate per batch of ~6 heroes (all 80 prints, roster, build)</td><td class="r">5 batches</td><td class="r">2.5 h</td></tr>
+      <tr><td><b>in all</b></td><td></td><td class="r"><b>about 12&ndash;15 h</b></td></tr>
     </table>
   </div>
-  <p>Not included: the seven Rust-ported heroes' 28 spells, which wait for the Rust port to be graded again (it reads their
-    settings by name).</p>
+  <p>Likely slower than the trial: these three heroes were picked as the simplest. Heroes whose spells feed their passive
+    (embers, dishes, ink, rods, a ring) need more hooks. Not counted: the seven Rust-ported heroes' 28 spells, which wait for the
+    Rust port to be graded again (it reads their settings by name).</p>
   <ul class="found">
     <li><b>Risk to play: low.</b> A rule that changes shows in the two fight prints at once, and every spell cast in them is
-      proven. Spells the prints never cast (Scarab Stride, Time Skip and three others) rest on the tool page's self test only.</li>
-    <li><b>Risk to the look: medium, and unchecked.</b> The prints see health, places and cooldowns, not particles. Each look is
-      copied by hand into a new class; a slip (a wrong point, a lost puff) would play the same fight and look different.
-      A per-spell clip beside the old one would close it, at a few minutes a spell.</li>
+      proven. Spells the prints never cast rest on the tool page's self test and the look check.</li>
+    <li><b>Risk to the look: now checked.</b> The prints see health, places and cooldowns, not particles, and each look is copied
+      by hand into a new class. A new tool, <code>pipeline/tools/spell-look-compare.py</code>, plays a spell on the old and the new
+      code with the same dice and compares everything it draws, frame by frame: all eight moved spells are the same for 360 frames.
+      It caught a dust puff raised by 1 cm, put in on purpose to test it.</li>
     <li><b>Order traps:</b> the dice must roll in the same order (a puff before or after the hit is another fight); objects must be
-      made in the same order; a file that ages its particles while idle must keep doing so. All three were met in this trial
-      and are now moments of the blocks.</li>
+      made in the same order; a file that ages its particles while idle must keep doing so. All three came up in this trial and are
+      now moments of the blocks.</li>
   </ul>
 
   <h2>A new hero's spell now</h2>
@@ -266,8 +423,8 @@ const SPELLS = [
   ['Helium Bomb', 'Puff W', 232, 180, 'plain'],
   ['Hot Air', 'Puff E', 304, 271, 'hook'],
   ['Pop!', 'Puff R', 307, 307, 'code'],
-  ['Palm Strike', 'Yoko Q', 209, 160, 'hook'],
-  ['Stomp', 'Yoko W', 180, 133, 'hook'],
+  ['Palm Strike', 'Yoko Q', 209, 161, 'hook'],
+  ['Stomp', 'Yoko W', 180, 134, 'hook'],
   ['Sumo Charge', 'Yoko E', 275, 275, 'code'],
   ['Salt Throw', 'Yoko R', 223, 184, 'hook'],
 ];
@@ -277,6 +434,7 @@ const CHECKS = [
   ['All 80 fight prints', 'Every hero against both foes on the finished code: the same (a shared file changed, so all were run).'],
   ['The roster as the game sees it', 'Kits, tooltips, icons, bodies, passives, and every spell\'s targeting, bloom, settings and length: identical to the code before the trial.'],
   ['The tool page\'s self test', 'Shake, danger zones, hits, length and errors of the eight moved spells and of the five spells no print casts (Scarab Stride, Time Skip, Call It In, Foreclosure, Final Delivery): identical.'],
+  ['The looks, frame by frame', 'The eight moved spells played on the old and the new code with the same dice: everything they draw the same for 360 frames (spell-look-compare.py; Air Hose, unchanged, as a control). A dust puff raised 1 cm on purpose was caught at frame 16.'],
   ['Type check and build', 'npx tsc and npm run build pass.'],
   ['Rust guard', 'The same lines as before the trial (none of these three heroes is ported).'],
 ];
