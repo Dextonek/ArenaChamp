@@ -64,7 +64,7 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   page `docs/models/review/round2/`; the one Blender agent).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
-**Done, not merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
+**Done and merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
 floors and one by one check all things that are done and correct them"; floors 1 to 30 by another agent). Page with pictures:
 `docs/tower/review/floors-31-50/index.html` (remake: `python docs/tower/review/floors-31-50/make.py`). All 20 played through by the
 route bot with no page errors, every spot reachable, every model, line and name looked at. Eight faults fixed at their cause: the big
