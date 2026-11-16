@@ -41,11 +41,14 @@ The three agents below were restarted in their own threads from their saved comm
   the user then: a deploy drops live connections).
 - **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
   built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
-- **Running (2026-11-15): the whole story.** The user chose: **the sun fell because the Tower took it; the Tower is a collector
-  of worlds**, and "you can also make those heroes be from the Tower". One agent settles the canon across the codex, decides which
-  heroes are Tower-taken, writes the saga to its end as a new codex book `docs/lore/codex/story/` (30-50k words) shown in the game's
-  Codex, and a plan with ready texts for telling it in the Climb and the Raid later (`story/in-game.md`). It leaves the six revamped
-  heroes' appearance lines alone.
+- **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
+  words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
+  Senmere, by the vault-keeper Iselm (now the Sun Warden) to keep his dying daughter at her hour, collects worlds; it took the sun's
+  noon at the Fall. Chapters 1-6 are history up to year 100; the rest (the climb, the last verse, a new sun, the epilogue with
+  Frostfall, Aubade and the Gloaming still inside the Tower) is still to come. Six heroes are not simply Dial-born: Zambini and
+  Kohaku (Returned), Tempo (Half-kept), Anka and Nyx (Spilled), Oblivion (Followed). The game's Codex names none of the twenty
+  unreleased heroes (titles instead; a check enforces it). Ready texts to tell it in the Climb and the Raid: `story/in-game.md`
+  (not wired in). New names to confirm: the Aumbry, Senmere, Iselm, Linnet, the Market of Noon, the Dawnless, The Long Noon.
 - **Done and merged, not live (2026-11-16): six heroes reworked to show their peoples** (page `docs/heroes/revamp/index.html`, one
   commit each): Opaline (Gloaming folk: amethyst crystal in her skin, violet-black hair, amethyst gown; the dark sister beside
   Silvane), Mr. Ledger (the Long Dead: vellum skin on bone, ember eyes), Kaia (Coast folk: sea-tanned, oilskin storm coat, tide lines,
