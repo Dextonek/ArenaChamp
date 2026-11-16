@@ -1,6 +1,6 @@
 # Floor 1: The Drowned Harbour
 
-Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); two lore names left for you.
+Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler's name left for you.
 
 ## Measured
 
@@ -18,9 +18,8 @@ Plays from the camp to the gate with no error and no stuck spot; every person, p
 - **fixed: The market had two names.** The map, the keeper and the place said “the fish market”, but the main quest's step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor's maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).
   - ![Before: the keeper's quest card (phone)](fix-words-before.jpg) Before: the keeper's quest card (phone)
   - ![After](fix-words-after.jpg) After
-- **list: The ruler's name: Captain or Admiral?.** The floor calls its ruler “the Drowned Captain” (keeper's line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral's. Renaming floor 1's to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.
+- **list: The ruler's name: Captain or Admiral?** The floor calls its ruler “the Drowned Captain” (keeper's line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral's. Renaming floor 1's to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.
   - ![Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”](ruler.jpg) Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”
-- **list: The Codex's tide: 78 s, the game's: 80 s.** The Codex page The Sea says the tide comes every seventy-eight seconds; the floor's law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game's copy (lore-codex.py); left because the Codex is the lore writer's.
 - **list: On the map, “The gate up” sits on “The camp”.** The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.
   - ![The M map on a phone](phone-map.jpg) The M map on a phone
 - **ok: The props the probe flagged.** 14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.

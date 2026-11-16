@@ -1,25 +1,108 @@
 {
  "floor": 1,
- "verdict": "Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); two lore names left for you.",
+ "verdict": "Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler's name left for you.",
  "found": [
-  {"kind": "fixed", "title": "The market had two names", "text": "The map, the keeper and the place said “the fish market”, but the main quest's step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor's maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).", "pics": [["fix-words-before.jpg", "Before: the keeper's quest card (phone)"], ["fix-words-after.jpg", "After"]]},
-  {"kind": "list", "title": "The ruler's name: Captain or Admiral?", "text": "The floor calls its ruler “the Drowned Captain” (keeper's line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral's. Renaming floor 1's to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.", "pics": [["ruler.jpg", "Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”"]]},
-  {"kind": "list", "title": "The Codex's tide: 78 s, the game's: 80 s", "text": "The Codex page The Sea says the tide comes every seventy-eight seconds; the floor's law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game's copy (lore-codex.py); left because the Codex is the lore writer's."},
-  {"kind": "list", "title": "On the map, “The gate up” sits on “The camp”", "text": "The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.", "pics": [["phone-map.jpg", "The M map on a phone"]]},
-  {"kind": "ok", "title": "The props the probe flagged", "text": "14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.", "pics": [["probe-float-1.jpg", "“Float”: pines and oaks past the edge, on their hill"], ["probe-gap-4.jpg", "“Gap”: a pine on the cliff top"]]}
+  {
+   "kind": "fixed",
+   "title": "The market had two names",
+   "text": "The map, the keeper and the place said “the fish market”, but the main quest's step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor's maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).",
+   "pics": [
+    [
+     "fix-words-before.jpg",
+     "Before: the keeper's quest card (phone)"
+    ],
+    [
+     "fix-words-after.jpg",
+     "After"
+    ]
+   ]
+  },
+  {
+   "kind": "list",
+   "title": "The ruler's name: Captain or Admiral?",
+   "text": "The floor calls its ruler “the Drowned Captain” (keeper's line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral's. Renaming floor 1's to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.",
+   "pics": [
+    [
+     "ruler.jpg",
+     "Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”"
+    ]
+   ]
+  },
+  {
+   "kind": "list",
+   "title": "On the map, “The gate up” sits on “The camp”",
+   "text": "The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.",
+   "pics": [
+    [
+     "phone-map.jpg",
+     "The M map on a phone"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.",
+   "pics": [
+    [
+     "probe-float-1.jpg",
+     "“Float”: pines and oaks past the edge, on their hill"
+    ],
+    [
+     "probe-gap-4.jpg",
+     "“Gap”: a pine on the cliff top"
+    ]
+   ]
+  }
  ],
  "pictures": [
-  ["start.jpg", "The floor as it opens (the minimap comes a moment later, once the zone has drawn)"],
-  ["map.jpg", "The M map"],
-  ["person-gus.jpg", "The Bell-Warden's card"],
-  ["person-villager.jpg", "The Lamp-Bearer out in the old village"],
-  ["route-pack-caves.jpg", "The route bot fighting the caves' pack"],
-  ["pack-market.jpg", "The fish market's pack at home"],
-  ["route-gate-5.jpg", "The gate: Marin"],
-  ["door-lair.jpg", "The lair's chain, shut"],
-  ["overview.jpg", "From the south edge"],
-  ["phone-camp.jpg", "Phone: the camp"],
-  ["phone-fight.jpg", "Phone: a fight"]
+  [
+   "start.jpg",
+   "The floor as it opens (the minimap comes a moment later, once the zone has drawn)"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "person-gus.jpg",
+   "The Bell-Warden's card"
+  ],
+  [
+   "person-villager.jpg",
+   "The Lamp-Bearer out in the old village"
+  ],
+  [
+   "route-pack-caves.jpg",
+   "The route bot fighting the caves' pack"
+  ],
+  [
+   "pack-market.jpg",
+   "The fish market's pack at home"
+  ],
+  [
+   "route-gate-5.jpg",
+   "The gate: Marin"
+  ],
+  [
+   "door-lair.jpg",
+   "The lair's chain, shut"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ],
+  [
+   "phone-camp.jpg",
+   "Phone: the camp"
+  ],
+  [
+   "phone-fight.jpg",
+   "Phone: a fight"
+  ]
  ],
- "notChecked": ["the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md)", "buying at the trader (the card and prices shown; the bot's heals use it)"]
+ "notChecked": [
+  "the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md)",
+  "buying at the trader (the card and prices shown; the bot's heals use it)"
+ ]
 }

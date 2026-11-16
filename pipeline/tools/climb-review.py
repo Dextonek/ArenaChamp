@@ -75,7 +75,8 @@ async def run(a):
         await page.expose_function('__log', log)
         await page.goto(f'http://localhost:{a.port}{a.page}', wait_until='load', timeout=120000)
         await page.wait_for_function("typeof game !== 'undefined' && !!game.api", timeout=120000)
-        pre = f'window.__review = {{ floor: {a.floor}, hero: {json.dumps(a.hero)}, phone: {json.dumps(a.touch)} }};\n'
+        extra = a.extra or '{}'
+        pre = f'window.__review = {{ floor: {a.floor}, hero: {json.dumps(a.hero)}, phone: {json.dumps(a.touch)}, ...{extra} }};\n'
         try:
             result = await asyncio.wait_for(page.evaluate(f'(async () => {{\n{pre}{body}\n}})()'), timeout=a.timeout)
         except Exception as e:  # a timeout or an error in the body: keep what is known
@@ -106,6 +107,7 @@ def main():
     ap.add_argument('--json', default='')
     ap.add_argument('--pics', default='', help='where the pictures go (default: --out); the review keeps the raw ones outside the repo')
     ap.add_argument('--touch', action='store_true')
+    ap.add_argument('--extra', default='', help='more fields for window.__review, as a JS object')
     ap.add_argument('--timeout', type=float, default=590)
     asyncio.run(run(ap.parse_args()))
 

@@ -71,6 +71,10 @@ def esc(t):
     return html.escape(t, quote=True)
 
 
+def dot(t):
+    return t if t[-1:] in '.?!' else t + '.'
+
+
 def build(group, raw):
     base = ROOT / 'docs' / 'tower' / 'review' / group
     floors = []
@@ -98,7 +102,7 @@ def write_md(folder, e):
     L += [f'- {r}' for r in e['_numbers']]
     L += ['', '## Found', '']
     for it in e.get('found', []):
-        L.append(f"- **{it['kind']}: {it['title']}.** {it.get('text', '')}")
+        L.append(f"- **{it['kind']}: {dot(it['title'])}** {it.get('text', '')}")
         for p in it.get('pics', []):
             L.append(f"  - ![{p[1]}]({p[0]}) {p[1]}")
     if e.get('left'):
@@ -134,12 +138,17 @@ def pics_html(folder, pics):
     return '\n'.join(out)
 
 
+def span(group):
+    a, b = group[7:].split('-')
+    return f'{int(a)} to {int(b)}'
+
+
 def write_html(base, group, floors):
     fixed = [(e['floor'], it) for e in floors for it in e.get('found', []) if it['kind'] == 'fixed']
     listed = [(e['floor'], it) for e in floors for it in e.get('found', []) if it['kind'] == 'list']
     H = ['<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
-         f'<title>Climb Review {group[7:]}</title><style>{CSS}</style></head><body><main>',
-         f'<h1>The Climb, floor by floor: {group[7:].replace("-", " to ")}</h1>',
+         f'<title>Climb Review {span(group)}</title><style>{CSS}</style></head><body><main>',
+         f'<h1>The Climb, floor by floor: {span(group)}</h1>',
          '<p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, '
          'pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed '
          '(blue); bigger ones or matters of taste are listed for you (red).</p>',
@@ -147,12 +156,12 @@ def write_html(base, group, floors):
     if listed:
         H.append('<h2>For you to decide</h2><ul>')
         for n, it in listed:
-            H.append(f'<li><a href="#f{n:02d}">Floor {n}</a>: <b>{esc(it["title"])}.</b> {esc(it.get("text", ""))}</li>')
+            H.append(f'<li><a href="#f{n:02d}">Floor {n}</a>: <b>{esc(dot(it["title"]))}</b> {esc(it.get("text", ""))}</li>')
         H.append('</ul>')
     if fixed:
         H.append('<h2>Fixed</h2><ul>')
         for n, it in fixed:
-            H.append(f'<li><a href="#f{n:02d}">Floor {n}</a>: <b>{esc(it["title"])}.</b> {esc(it.get("text", ""))}</li>')
+            H.append(f'<li><a href="#f{n:02d}">Floor {n}</a>: <b>{esc(dot(it["title"]))}</b> {esc(it.get("text", ""))}</li>')
         H.append('</ul>')
     H.append('<h2>Floors</h2><div class="toc">')
     for e in floors:
@@ -168,7 +177,7 @@ def write_html(base, group, floors):
             last = ch
         H.append(f'<section class="floor" id="f{e["floor"]:02d}"><h3>Floor {e["floor"]}: {esc(e["_name"])}</h3><p>{esc(e.get("verdict", ""))}</p>')
         for it in e.get('found', []):
-            H.append(f'<p><span class="tag {it["kind"]}">{it["kind"]}</span><b>{esc(it["title"])}.</b> {esc(it.get("text", ""))}</p>')
+            H.append(f'<p><span class="tag {it["kind"]}">{it["kind"]}</span><b>{esc(dot(it["title"]))}</b> {esc(it.get("text", ""))}</p>')
             if it.get('pics'):
                 H.append(pics_html(e['_folder'], it['pics']))
         H.append('<details><summary>What was measured</summary><ul class="nums">' + ''.join(f'<li>{esc(r)}</li>' for r in e['_numbers']) + '</ul>')

@@ -123,10 +123,21 @@ if (!phone) {
       const fig = api.duel?.figure;
       if (g.piece === 'ruler' && fig?.loaded && i > 480) break;
     }
+    // a boss between the camera and the hero fades (duel.ts `hidesHero`): the hero steps to its south side for the picture
+    const fp0 = api.duel?.foe?.group?.position;
+    if (fp0) { api.arena.caster.group.position.set(fp0.x, 0, fp0.z + 7); api.heroMode.halt(); api.heroMode.snapCameraNow(); for (let j = 0; j < 40; j++) { api.step(1 / 60); g.tick(1 / 60); } }
     const k = api.duel?.opponentKit, fig = api.duel?.figure;
     out.ruler = { name: k?.name, title: k?.title, model: k?.model, loaded: !!fig?.loaded, real: !!fig?.real, wallMs: Math.round(performance.now() - t0), frames: i };
     api.render();
     await shot('ruler');
+    // the game's camera moved over the ruler itself (its body: `duel.foe`), a little closer
+    const foe = api.duel?.foe?.group?.position, hero = api.arena.caster.group.position, c2 = api.heroMode.host?.camera ?? api.camera;
+    if (foe && c2) {
+      const off = c2.position.clone().sub(hero).multiplyScalar(0.75);
+      out.ruler.at = [r1(foe.x), r1(foe.z)]; out.ruler.heroAt = [r1(hero.x), r1(hero.z)]; out.ruler.visible = !!fig?.group?.visible;
+      c2.position.copy(foe).add(off); c2.lookAt(foe.x, foe.y + 2, foe.z); c2.updateMatrixWorld(); api.render();
+      await __save(`${pre}ruler-close`, api.renderer.domElement.toDataURL('image/jpeg', 0.85)); out.shots.push(`${pre}ruler-close`);
+    }
   }
 } else {
   // the phone: a fight (the nearest pack awake) and the HUD over it

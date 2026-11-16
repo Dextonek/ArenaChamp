@@ -1,0 +1,134 @@
+{
+ "floor": 3,
+ "part": "climb-review-shots",
+ "wallSeconds": 31.9,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 3,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-161.4,-91.2 y6.17 depth out72n w4.9 h6.6 m1.1 p3 #304837",
+  "probe-float-1": "-183.7,97.8 y7.8 depth out71s w3.75 h3.98 m1.06 p2 #304837",
+  "probe-float-2": "-175.7,-71 y4.47 depth out74n w5.86 h4.41 m1.54 p1 #304837",
+  "probe-float-3": "-180.4,-60.5 y4.51 depth out74n w5.7 h4.28 m1.39 p1 #304837",
+  "probe-gap-4": "-85.8,-75.1 y10.21 depth edge w5.51 h4.13 m9.43 sunk-0.76 #304837",
+  "probe-gap-5": "-84.2,-75.2 y8.94 depth edge w4.2 h3.55 m8.8 sunk-1.13 #304837",
+  "probe-gap-6": "21.2,-93.3 y9.24 depth out3n w5.91 h4.44 m8.59 sunk-0.07 #304837",
+  "probe-cover-7": "21.8,-92.2 y6.84 depth edge w5.15 h3.86 m0.33 r0.5  #304837",
+  "probe-cover-8": "21.8,-92.2 y8.88 depth edge w4.03 h3.41 m0.31 r0.5  #304837",
+  "frames": {
+   "at": [
+    -76,
+    39
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 11.8,
+     "p95": 18,
+     "worst": 48
+    },
+    {
+     "med": 9.4,
+     "p95": 11.8,
+     "worst": 13.9
+    },
+    {
+     "med": 9.6,
+     "p95": 12.8,
+     "worst": 16.1
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Salt King",
+   "title": "Crowned in brine",
+   "model": "models/tower/sea_admiral_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 4447,
+   "frames": 481,
+   "at": [
+    -0.2,
+    16.5
+   ],
+   "heroAt": [
+    -0.2,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

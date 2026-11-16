@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Climb Review 01-30</title><style>
+<title>Climb Review 1 to 30</title><style>
 :root{--bg:#f6f1e7;--fg:#2a241c;--mut:#6b5f4f;--card:#fffaf0;--line:#e2d6bf;--gold:#a5781d;--ok:#2f7a45;--fix:#1f5e9e;--list:#a1402c}
 @media (prefers-color-scheme: dark){:root:not([data-theme=light]){--bg:#17140f;--fg:#ede4d3;--mut:#a8997f;--card:#211c15;--line:#3a3124;--gold:#d8ae55;--ok:#6cc38a;--fix:#7fb4ea;--list:#ec8a73}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,'Times New Roman',serif}
@@ -13,12 +13,11 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 .pics figure.ph img{max-width:200px}figcaption{font-size:.85em;color:var(--mut)}details summary{cursor:pointer;color:var(--gold)}
 .sum{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 </style></head><body><main>
-<h1>The Climb, floor by floor: 01 to 30</h1>
+<h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>2 floors checked</b> · <b>2 fixed</b> · <b>3 for you</b></div>
+<div class="sum"><b>3 floors checked</b> · <b>2 fixed</b> · <b>2 for you</b></div>
 <h2>For you to decide</h2><ul>
-<li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?.</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
-<li><a href="#f01">Floor 1</a>: <b>The Codex&#x27;s tide: 78 s, the game&#x27;s: 80 s.</b> The Codex page The Sea says the tide comes every seventy-eight seconds; the floor&#x27;s law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game&#x27;s copy (lore-codex.py); left because the Codex is the lore writer&#x27;s.</li>
+<li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
 </ul>
 <h2>Fixed</h2><ul>
@@ -28,19 +27,19 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <h2>Floors</h2><div class="toc">
 <a class="f l" href="#f01">1</a>
 <a class="f" href="#f02">2</a>
+<a class="" href="#f03">3</a>
 </div>
 <h2>I. The Sea</h2>
-<section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); two lore names left for you.</p>
+<section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
 <p><span class="tag fixed">fixed</span><b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</p>
 <div class="pics">
 <figure><a href="f01/fix-words-before.jpg"><img loading="lazy" src="f01/fix-words-before.jpg" alt="Before: the keeper&#x27;s quest card (phone)"></a><figcaption>Before: the keeper&#x27;s quest card (phone)</figcaption></figure>
 <figure><a href="f01/fix-words-after.jpg"><img loading="lazy" src="f01/fix-words-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
 </div>
-<p><span class="tag list">list</span><b>The ruler&#x27;s name: Captain or Admiral?.</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</p>
+<p><span class="tag list">list</span><b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</p>
 <div class="pics">
 <figure><a href="f01/ruler.jpg"><img loading="lazy" src="f01/ruler.jpg" alt="Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”"></a><figcaption>Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”</figcaption></figure>
 </div>
-<p><span class="tag list">list</span><b>The Codex&#x27;s tide: 78 s, the game&#x27;s: 80 s.</b> The Codex page The Sea says the tide comes every seventy-eight seconds; the floor&#x27;s law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game&#x27;s copy (lore-codex.py); left because the Codex is the lore writer&#x27;s.</p>
 <p><span class="tag list">list</span><b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</p>
 <div class="pics">
 <figure class="ph"><a href="f01/phone-map.jpg"><img loading="lazy" src="f01/phone-map.jpg" alt="The M map on a phone"></a><figcaption>The M map on a phone</figcaption></figure>
@@ -90,6 +89,25 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f02/overview.jpg"><img loading="lazy" src="f02/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 <figure class="ph"><a href="f02/phone-person-keeper.jpg"><img loading="lazy" src="f02/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
 <figure class="ph"><a href="f02/phone-map.jpg"><img loading="lazy" src="f02/phone-map.jpg" alt="Phone: the map (names apart)"></a><figcaption>Phone: the map (names apart)</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f03"><h3>Floor 3: Gull Point</h3><p>Clean: cleared with four stars and no fall; the rival (Nyx), the trial (a horde), the ruler (the Salt King, in the Admiral&#x27;s model tinted) and the gate (Tempo) all played; no console error, every spot reachable, the texts match the Codex (the Salt King rules floor 3).</p>
+<p><span class="tag ok">ok</span><b>A boss that stands between the camera and the hero fades.</b> In the first pictures the Salt King looked see-through. That is the duel&#x27;s own rule (duel.ts: a boss that hides the hero fades to a tenth), not a fault: with the hero on its other side it stands in full.</p>
+<div class="pics">
+<figure><a href="f03/ruler-close.jpg"><img loading="lazy" src="f03/ruler-close.jpg" alt="The Salt King, the hero below him"></a><figcaption>The Salt King, the hero below him</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> As on floors 1 and 2: pines on the hills and the cliff top, boats on the sea, a stone just under the sand; two pines whose trunks touch the edge of a cliff-top rock. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34953 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 16 float, 80 gap, 1 buried, 2 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1480 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Salt King (Crowned in brine), model models/tower/sea_admiral_v4.glb, loaded yes after 4447 ms of real time</li><li>Frame check at the busiest spot (-76, 39), 6 units awake: median 11.8, 9.4, 9.6 ms, p95 18, 11.8, 12.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f03/map.jpg"><img loading="lazy" src="f03/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f03/person-keeper.jpg"><img loading="lazy" src="f03/person-keeper.jpg" alt="The Bell-Warden"></a><figcaption>The Bell-Warden</figcaption></figure>
+<figure><a href="f03/person-villager.jpg"><img loading="lazy" src="f03/person-villager.jpg" alt="The Lamp-Bearer in the fishers&#x27; row"></a><figcaption>The Lamp-Bearer in the fishers&#x27; row</figcaption></figure>
+<figure><a href="f03/pack-d.jpg"><img loading="lazy" src="f03/pack-d.jpg" alt="The shipyard&#x27;s pack"></a><figcaption>The shipyard&#x27;s pack</figcaption></figure>
+<figure><a href="f03/busy.jpg"><img loading="lazy" src="f03/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
+<figure><a href="f03/overview.jpg"><img loading="lazy" src="f03/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f03/phone-person-keeper.jpg"><img loading="lazy" src="f03/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
 </div>
 </section>
 </main></body></html>
