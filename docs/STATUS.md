@@ -1,19 +1,14 @@
 # Status
 
-## STOPPED by the user (2026-11-16): "let's just finish what we've done for now and stop all agents"
+## RESUMED (2026-11-16, the user: "yes continue"; and "you can make more agents, not just 3": the limit is now 6)
 
-Nothing is running: no agents, no loops, no servers. Everything finished is merged into `feat/particle-editor` (not pushed, not
-live). Three jobs were stopped mid-work; each one's work is saved as a "Paused mid-work" commit on its own branch (unfinished,
-unchecked, NOT merged), in its worktree (`git worktree list`; each has a `node_modules` junction to the main folder):
-- `t3/climb-stage3-doors-together` (5a2b7de3): open world stage 3, doors and bosses together. Hub, protocol, door table and
-  `src/tower/world/together.ts` started; no tests or two-tab run yet.
-- `t3/hero-touches-underwear-portraits` (81d4e8cd): the sixteen touches and the underwear cover. Build files of most of the sixteen
-  changed and the TextureCraft scripts brought over; models not known to be rebuilt or checked; portraits not started.
-- `t3/vectorcraft-hero-spell-icons` (b9f173c4): spell icons for all 40 heroes; 10 commits of batches (see its `docs/icons/batch-*`),
-  the rest not drawn; its loading hook replaces the sample's `?icons=vc`.
-Not started: the hero framework (the user said yes; brief `docs/pipeline/hero-framework-brief.md`), which waits for the icon job.
-To resume: a new agent per branch in its worktree, told to finish and check from that commit (the briefs are in this session's
-transcript; the aims are in the entries below).
+Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
+- `t3/climb-stage3-doors-together` (from 5a2b7de3): open world stage 3, doors and bosses together.
+- `t3/hero-touches-underwear-portraits` (from 81d4e8cd): the sixteen touches, the underwear cover, the portraits (the one Blender agent).
+- `t3/vectorcraft-hero-spell-icons` (from b9f173c4): spell icons for all 40 heroes.
+- The hero framework, steps 1 and 2 only (the audit and design `docs/pipeline/hero-framework.md`, all 40 fight prints on today's
+  code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
+Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
 
