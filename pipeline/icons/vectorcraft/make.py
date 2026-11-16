@@ -130,12 +130,15 @@ def list_drawn():
     """Writes the heroes that have their icons into src/icons/vc.ts (its DRAWN list), so the game uses them."""
     vc = ROOT / "src" / "icons" / "vc.ts"
     stems = sorted({f.stem.rsplit("-", 1)[0] for f in GAME.glob("*.svg")})
+    # a hero in a folder of its own (src/heroes/<theme>/hero.ts) names its stem on its card, and is not listed again
+    carded = {m for f in (ROOT / "src" / "heroes").glob("*/hero.ts") for m in re.findall(r"^  icons: '([^']+)'", f.read_text(encoding="utf-8"), re.M)}
+    stems = [s for s in stems if s not in carded]
     body = "".join(f"  '{s}',\n" for s in stems)
     t = vc.read_text(encoding="utf-8")
     t = re.sub(r"const DRAWN = new Set<string>\(\[\n.*?\]\);", lambda m: f"const DRAWN = new Set<string>([\n{body}]);", t,
                flags=re.S)
     vc.write_text(t, encoding="utf-8")
-    print(f"src/icons/vc.ts: {len(stems)} heroes drawn")
+    print(f"src/icons/vc.ts: {len(stems)} heroes drawn (and {len(carded)} named by their cards)")
 
 
 if __name__ == "__main__":

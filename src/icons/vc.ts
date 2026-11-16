@@ -4,14 +4,13 @@ import type { HeroKit, HeroSpell } from '../heroes';
  * The spell icons drawn with VectorCraft (pipeline/icons/vectorcraft/make.py, docs/icons/): one SVG per spell, served from
  * `public/icons/spells/<stem>-<slot>.svg` (the picture at 118%, its big shapes over the octagon frame's edge: version B).
  *
- * A hero listed in DRAWN has its spells' `icon(g, size)` replaced by one that draws the SVG into the same canvas, so the
+ * A hero listed in DRAWN (or, for a hero in a folder of its own, whose card names its `icons` stem) has its spells' `icon(g, size)` replaced by one that draws the SVG into the same canvas, so the
  * code that builds the spell bar, the heroes table and the shop does not change. Nothing is fetched until a slot of that
  * hero is first drawn: then its four files are asked for together, and until they have loaded (or if one fails) the
  * kit's own canvas icon is drawn, and the file's picture replaces it in that canvas once it has decoded.
  */
 const DRAWN = new Set<string>([
   'ada',
-  'anka',
   'auriel',
   'barry-cloudsley',
   'big-yoko',
@@ -105,13 +104,17 @@ function paint(g: CanvasRenderingContext2D, img: HTMLImageElement, size: number)
   g.restore();
 }
 
-/** Puts the VectorCraft icons on the heroes that have them (src/heroes.ts calls this once, in the browser). */
-export function useVcIcons(kits: HeroKit[]) {
+/**
+ * Puts the VectorCraft icons on the heroes that have them (src/heroes.ts calls this once, in the browser). `cards`: the stems
+ * the folders' cards name, by hero name (src/heroes/<theme>/hero.ts `icons`).
+ */
+export function useVcIcons(kits: HeroKit[], cards: Record<string, string> = {}) {
   if (typeof document === 'undefined') return;
   for (const k of kits) {
     for (const kit of k.alt ? [k, k.alt] : [k]) {
-      const stem = heroStem(kit);
-      if (!DRAWN.has(stem)) continue;
+      const carded = Object.hasOwn(cards, kit.name);
+      const stem = carded ? cards[kit.name] : heroStem(kit);
+      if (!carded && !DRAWN.has(stem)) continue;
       const urls = kit.spells.map((s) => `/icons/spells/${stem}-${s.key.toLowerCase()}.svg${version}`);
       kit.spells.forEach((spell, i) => {
         if (KIT_ICON.has(spell)) return; // a spell shared by both halves of a hero (Tag Out) is wrapped once

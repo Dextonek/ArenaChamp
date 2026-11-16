@@ -1,6 +1,10 @@
 /**
  * Hero kits for hero mode (`src/heroMode.ts`): four spells bound to Q / W / E / R, R being the ultimate. A kit is
- * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
+ * data only; its spells are ordinary registered effects (looked up by label).
+ *
+ * The heroes are moving into folders of their own (`src/heroes/<theme>/`, docs/pipeline/hero-framework.md), found by
+ * src/heroes/index.ts: a hero in a folder is in none of the lists below, its card brings its kit, model and body, and its
+ * place in `HERO_KITS` is the card's `order`. The heroes not moved yet are still listed here by hand.
  */
 import type { BuffKind } from './effects/status';
 import type { BodyLook } from './raid/bodies/look';
@@ -43,9 +47,9 @@ import { weatherKit } from './kits/weather';
 import { sheepKit } from './kits/sheep';
 import { magicKit } from './kits/magic';
 import { doorKit } from './kits/door';
-import { phoenixKit } from './kits/phoenix';
 import { twinsKit } from './kits/twins';
 import { useVcIcons } from './icons/vc';
+import { HERO_CARDS } from './heroes/index';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -184,8 +188,6 @@ const MODELS: Record<string, string> = {
   Bo: 'models/heroes/sheep_v3.glb',
   'The Great Zambini': 'models/heroes/magic_v3.glb',
   Wick: 'models/heroes/door_v3.glb',
-  // born in the fourth style: there is no older model, so `?figs=old` shows her as she is
-  Anka: 'models/heroes/phoenix_v4.glb',
 };
 
 /**
@@ -212,10 +214,26 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
   Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
   Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
-  Anka: { radius: 0.4, height: 2.4 },
+  // the heroes in folders: their cards'
+  ...Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body])),
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit, phoenixKit].map((k) => {
+/** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
+const LISTED: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
+
+/** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
+function roster(): HeroKit[] {
+  const out: (HeroKit | undefined)[] = [];
+  for (const c of HERO_CARDS) {
+    if (out[c.order]) throw new Error(`Two heroes want place ${c.order} in the roster: ${out[c.order]!.name} and ${c.kit.name}`);
+    out[c.order] = { ...c.kit, model: c.model };
+  }
+  const listed = LISTED.slice();
+  for (let i = 0; listed.length; i++) if (!out[i]) out[i] = listed.shift();
+  return out as HeroKit[];
+}
+
+export const HERO_KITS: HeroKit[] = roster().map((k) => {
   const kit = { ...k, model: modelV4(k.model ?? MODELS[k.name]) };
   if (kit.alt) {
     // the other twin: its own model, in the same style
@@ -227,4 +245,4 @@ export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, al
 
 // The spell icons drawn with VectorCraft (src/icons/vc.ts): the heroes that have them draw them wherever a slot icon shows,
 // each hero's files fetched the first time one of its slots is drawn; the kit's own canvas icon is the fallback.
-useVcIcons(HERO_KITS);
+useVcIcons(HERO_KITS, Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.icons])));

@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { Emitter } from '../../emitter';
-import { ShockRefraction, StarBurst } from '../../effects/parts';
-import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../../effects/parts/phoenix';
-import { frameCast, type CastContext } from '../../effects/targeting';
-import type { Effect, EffectModule } from '../../effects/types';
-import { FLIGHT_AIR, FLIGHT_DAMAGE, FLIGHT_GO, FLIGHT_RADIUS, FLIGHT_RANGE, STAMP_R, emberLive, embersOf, flightEmber, spendEmber, type Ember } from '../../traits/phoenix';
+import { Emitter } from '../../../emitter';
+import { ShockRefraction, StarBurst } from '../../../effects/parts';
+import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../parts';
+import { frameCast, type CastContext } from '../../../effects/targeting';
+import type { Effect, EffectModule } from '../../../effects/types';
+import { FLIGHT_AIR, FLIGHT_DAMAGE, FLIGHT_GO, FLIGHT_RADIUS, FLIGHT_RANGE, STAMP_R } from '../numbers';
+import { emberLive, embersOf, flightEmber, spendEmber, type Ember } from '../trait';
 
 /**
  * Ember Flight (phoenix kit, E: she flies to one of her embers). At the cast the ember is chosen: of her embers within 12 m

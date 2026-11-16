@@ -322,7 +322,7 @@ def _sections(text):
 def _game_names():
     """Names already used in the game: heroes, titles, spells, passives, factions, places, the Climb's people and rulers."""
     names = set()
-    for f in list((ROOT / 'src' / 'kits').glob('*.ts')) + list((ROOT / 'src' / 'traits').glob('*.ts')):
+    for f in [*(ROOT / 'src' / 'kits').glob('*.ts'), *(ROOT / 'src' / 'traits').glob('*.ts'), *(ROOT / 'src' / 'heroes').glob('*/*.ts')]:
         names |= set(re.findall(r"name: '([^']+)'", f.read_text(encoding='utf-8')))
     names |= set(re.findall(r"name: '([^']+)'", (ROOT / 'src' / 'tower' / 'world' / 'folk.ts').read_text(encoding='utf-8')))
     for f in (ROOT / 'src' / 'tower' / 'world' / 'floors').rglob('*.ts'):

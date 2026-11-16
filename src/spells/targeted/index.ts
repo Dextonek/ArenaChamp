@@ -100,10 +100,6 @@ import { pimChargeModule } from './pimCharge';
 import { pimBonkModule } from './pimBonk';
 import { grandLobbyModule } from './grandLobby';
 import { doorSlamModule } from './doorSlam';
-import { emberFlightModule } from './emberFlight';
-import { emberQuillModule } from './emberQuill';
-import { fanTheFlamesModule } from './fanTheFlames';
-import { firebirdModule } from './firebird';
 import { wickDoorModule } from './wickDoor';
 import { keyTossModule } from './keyToss';
 import { grandFinaleModule } from './grandFinale';
@@ -298,6 +294,7 @@ import { echoBrushstrokeModule } from './echoBrushstroke';
 import { inkDoubleModule } from './inkDouble';
 import { paperFamiliarsModule } from './paperFamiliars';
 import { curvingCalligraphyModule } from './curvingCalligraphy';
+import { FOLDER_SPELLS } from '../../heroes/spells';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -396,10 +393,6 @@ export const targetedModules: EffectModule[] = [
   grandLobbyModule,
   doorSlamModule,
   wickDoorModule,
-  emberQuillModule,
-  fanTheFlamesModule,
-  emberFlightModule,
-  firebirdModule,
   keyTossModule,
   grandFinaleModule,
   hatTrickModule,
@@ -609,4 +602,6 @@ export const targetedModules: EffectModule[] = [
   summonMeleeTestModule,
   summonRangedTestModule,
   turretTestModule,
+  // the heroes in folders of their own (src/heroes/<theme>/fight.ts)
+  ...FOLDER_SPELLS,
 ];

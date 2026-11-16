@@ -1,12 +1,13 @@
 import * as THREE from 'three';
-import { Emitter } from '../../emitter';
-import { smoothstep } from '../../effects/common';
-import { ShockRefraction, StarBurst, chromaPulse, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { BIRD_HEAD, FeatherFlock, FireBird, PHOENIX, PHOENIX_CSS, nestLook, softDisc } from '../../effects/parts/phoenix';
-import { frameCast, type CastContext } from '../../effects/targeting';
-import type { Effect, EffectModule } from '../../effects/types';
-import type { Enemy } from '../../effects/common';
-import { BIRD_AIR, BIRD_DAMAGE, BIRD_LENGTH, BIRD_WIDTH, BIRD_WIND, STAMP_R, castNo, emberLive, layEmber } from '../../traits/phoenix';
+import { Emitter } from '../../../emitter';
+import { smoothstep } from '../../../effects/common';
+import { ShockRefraction, StarBurst, chromaPulse, clearScreenFx, createScreenFx, impactFrameAt } from '../../../effects/parts';
+import { BIRD_HEAD, FeatherFlock, FireBird, PHOENIX, PHOENIX_CSS, nestLook, softDisc } from '../parts';
+import { frameCast, type CastContext } from '../../../effects/targeting';
+import type { Effect, EffectModule } from '../../../effects/types';
+import type { Enemy } from '../../../effects/common';
+import { BIRD_AIR, BIRD_DAMAGE, BIRD_LENGTH, BIRD_WIDTH, BIRD_WIND, STAMP_R } from '../numbers';
+import { castNo, emberLive, layEmber } from '../trait';
 
 /**
  * Firebird (phoenix kit, R: the ultimate). Anka spreads wings of fire for 1.0 s, rooted, while the lane shows: 12 m along
@@ -65,7 +66,7 @@ export class Firebird implements Effect {
   private time = 0;
   private gone = false;
   private struck = new Set<Enemy>();
-  /** This cast's number among hers (`castNo` in src/traits/phoenix.ts): what both screens order her embers by. */
+  /** This cast's number among hers (`castNo` in src/heroes/phoenix/trait.ts): what both screens order her embers by. */
   private seq = 0;
 
   // The look.

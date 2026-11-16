@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { Emitter } from '../../emitter';
-import { ShockRefraction, StarBurst } from '../../effects/parts';
-import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../../effects/parts/phoenix';
-import { insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
-import { frameCast, type CastContext } from '../../effects/targeting';
-import type { Effect, EffectModule } from '../../effects/types';
-import { FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, MAX_EMBERS, STAMP_R, burnOut, castNo, emberLive, embersOf, type Ember } from '../../traits/phoenix';
+import { Emitter } from '../../../emitter';
+import { ShockRefraction, StarBurst } from '../../../effects/parts';
+import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../parts';
+import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph';
+import { frameCast, type CastContext } from '../../../effects/targeting';
+import type { Effect, EffectModule } from '../../../effects/types';
+import { FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, MAX_EMBERS, STAMP_R } from '../numbers';
+import { burnOut, castNo, emberLive, embersOf, type Ember } from '../trait';
 
 /**
  * Fan the Flames (phoenix kit, W: no aim). One sweep of the fan: every ember of hers that burns is the centre of a 2.2 m
@@ -52,7 +53,7 @@ export class FanTheFlames implements Effect {
   /** The circles that are hit: one per ember that burned at the cast. */
   circles: TelegraphShape[] = [];
   private recs: Ember[] = [];
-  /** This cast's number among hers (`castNo` in src/traits/phoenix.ts): what both screens order her embers by. */
+  /** This cast's number among hers (`castNo` in src/heroes/phoenix/trait.ts): what both screens order her embers by. */
   private seq = 0;
   private time = 0;
   private flared = false;

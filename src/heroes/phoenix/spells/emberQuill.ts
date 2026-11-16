@@ -1,19 +1,20 @@
 import * as THREE from 'three';
-import { boltWidth } from '../../effects/projectile';
-import { Emitter } from '../../emitter';
-import { smoothstep } from '../../effects/common';
-import { ShockRefraction, StarBurst } from '../../effects/parts';
-import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, nestLook } from '../../effects/parts/phoenix';
-import { frameCast, type CastContext } from '../../effects/targeting';
-import type { Effect, EffectModule } from '../../effects/types';
-import type { Obstacle } from '../../obstacles';
-import { QUILL_DAMAGE, QUILL_RADIUS, QUILL_RANGE, QUILL_SPEED, QUILL_WIND, STAMP_R, castNo, emberLive, layEmber } from '../../traits/phoenix';
+import { boltWidth } from '../../../effects/projectile';
+import { Emitter } from '../../../emitter';
+import { smoothstep } from '../../../effects/common';
+import { ShockRefraction, StarBurst } from '../../../effects/parts';
+import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, nestLook } from '../parts';
+import { frameCast, type CastContext } from '../../../effects/targeting';
+import type { Effect, EffectModule } from '../../../effects/types';
+import type { Obstacle } from '../../../obstacles';
+import { QUILL_DAMAGE, QUILL_RADIUS, QUILL_RANGE, QUILL_SPEED, QUILL_WIND, STAMP_R } from '../numbers';
+import { castNo, emberLive, layEmber } from '../trait';
 
 /**
  * Ember Quill (phoenix kit, Q: 10 m line skillshot, `ctx.projectile`). Anka flicks her fan (0.3 s wind-up) and a feather
  * flies down the aim at 22 m/s (radius 0.3): it reaches 6 m at 0.57 s, so a sidestep after the flick is enough. The first
  * enemy it touches takes 54. Where the quill stops (in the enemy it hit, at the end of its flight, or at a wall) it stays in
- * the floor as an EMBER and becomes her nest: the trait's (`layEmber` in src/traits/phoenix.ts, drawn there on both screens).
+ * the floor as an EMBER and becomes her nest: the trait's (`layEmber` in src/heroes/phoenix/trait.ts, drawn there on both screens).
  * Network duels: the dealer's screen has no bolt (bolts fly on the victim's screen, where the hit is decided), so there the
  * quill's stop is worked out along the aim (the first enemy or wall in the way, else 10 m), as Fenna's Seed Shot does, and
  * the feather is flown along the aim to that spot.

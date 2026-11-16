@@ -5,7 +5,7 @@
 // It is the body of an async function run in the tool page (see page-shots.py). The duel is a 'play' duel against Kaia
 // in the Night Temple; Anka's casts are made by hand (`heroMode.autoCast`) with her cooldowns cleared. The foe is
 // Brannoc, held on a spot, silenced and played by a CPU that never casts, so each picture shows her spell and nothing else.
-const P = await import('/src/traits/phoenix.ts');
+const P = await import('/src/heroes/phoenix/trait.ts');
 const { CPU_LEVELS } = await import('/src/cpuLevels.ts');
 const STILL = { ...CPU_LEVELS[0], speed: 0.01, castGap: [999, 999], cooldown: 99 };   // its damage stays: the killing hit of the Ashborn sheet is dealt in its name
 const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
