@@ -57,9 +57,11 @@ expected the ranged rulers' bolts at 1.1 m; they have none.) How far this was ch
 (`arena.ts`, the projectile system's `spawn`), and one ruler fight was logged with it hooked (30 s, floor 31); the fan and the volley
 were read in the code, and the fan was seen in a fight (floor 33, below). Not every ranged ruler's fight was logged.
 
-**The hit is the same:** `python pipeline/tools/hero-prints.py check Anka,Kaia,Sefu --port 5192` SAME before and after (bae036d3,
-cf160412, bfb83e68); the perf prints (desktop, my own before-run against the after-run, `perf-show.py shots-before shots-after`):
-world-3 (floor 21, slingers) 45b46573, world-5 (floor 41, bowmen) 216f3d58, raid-party 9c4a9c48, the same fights.
+**The hit is the same:** `python pipeline/tools/hero-prints.py check Anka,Kaia,Sefu --port 5194` SAME with the old bolt code and
+with the new (bae036d3, cf160412, bfb83e68); the perf prints (desktop, `perf.py scenes ... --port 5195`, the old code against the new,
+`perf-show.py shots-before shots-after`): world-3 (floor 21, slingers) 45b46573, world-5 (floor 41, bowmen) 216f3d58, raid-party
+9c4a9c48, the same fights. Both tools use a dev server already answering on their port, so they were run on ports checked free first:
+a first run on 5192 had measured another worktree's server (its hero-prints server stood there).
 
 From the side, a moment after the shot (top: the bowman; bottom: the slinger; left before, right after):
 
