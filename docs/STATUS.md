@@ -67,10 +67,8 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
 - **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
   (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
   user's yes before the other four chapters.
-- **Server tests flaky under load (2026-11-16, after the stage 3 merge):** with six agents running, three runs failed three different
-  timing checks (shop: a late `lobby` null after a leave; shop: timeout on `raid_gate`; doors: timeout on `door_end`); the stage 3
-  branch had 364 passing. Re-run `npm run test:server` when the machine is quiet; if one keeps failing, fix it (the shop's leave
-  should wait for its `lobby` null instead of a 100 ms pause).
+- **Server tests (2026-11-16):** failed three times under load (six agents running), each time on a different timing check; on the
+  merged code with the machine quiet they pass (`npm run test:server`).
 - Stray: `C:\c` (261 MB of misplaced scratch copies, an agent's wrong path) could not be removed (safety check); the user may delete it.
 - **Done and merged, not live (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`): every hero stood 3-12 cm
   sunk (now on the floor), hands went into long coats (arms now clear), staffs and lanterns lay crosswise in casts (now upright for 16
