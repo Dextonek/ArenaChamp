@@ -34,6 +34,9 @@ const GLOW_EYES = 1.5;
 const GLOW_RING = 0.55;
 const GLOW_BLADE = 0.6;
 
+/** How far the crown sways to either side in the last phase, on top of its wobble (rad): with the wobble it stays within about 0.35. */
+const CROWN_SWAY = 0.15;
+
 /** Each ring's own axis in the model (glTF, y up): the tilt it was built at in Blender, turned into y up. */
 const RING_AXES: Record<RingName, THREE.Vector3> = {
   ringA: new THREE.Vector3(0.1651, 0.309, 0.9366).normalize(),
@@ -217,9 +220,10 @@ export const heartLook: BodyLook = (s, p) => {
   p.size('mask', 1 / coreSize);
   p.size('crown', 1 / coreSize);
 
-  // The crown turns a little about its own front, faster in the last phase.
+  // The crown turns a little about its own front, faster in the last phase, to and fro. (It used to keep turning in the last phase, and
+  // its long upper rays came round underneath into the floor: they reach it at about half a radian of turn, model review round 3.)
   m.crown += dt * crownSpin;
-  p.turn('crown', 0, 0, Math.sin(m.crown) * (0.08 + noon * 0.12) + noon * m.crown * 0.15);
+  p.turn('crown', 0, 0, Math.sin(m.crown) * (0.08 + noon * 0.12) + noon * CROWN_SWAY * Math.sin(m.crown * 0.35));
 
   // The rings: each turns about its own axis. Brought down by The Rings Turn, it lies flat round the heart's foot and turns with its beam.
   RINGS.forEach((name, i) => {

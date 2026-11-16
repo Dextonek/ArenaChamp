@@ -141,6 +141,11 @@ const FORWARD = new THREE.Vector3(0, 0, 1);
  */
 const HELD_LEAN = 0.6, HELD_BACK = -0.45, HELD_STEP = 0.06;
 /**
+ * A staff held while kneeling (`plantHeld`): its head leans back this much at least (rad), at most this much to keep its foot on the
+ * floor, and its foot stays this far over the floor (model units).
+ */
+const PLANT_LEAN = 0.12, PLANT_MOST = 1.25, PLANT_CLEAR = 0.01;
+/**
  * How fast the arms' push-out and the held item's lean follow what they should be (1/s): an arm swings out quickly and
  * back slowly, so it does not flap in and out with every stride.
  */
@@ -378,6 +383,46 @@ export class RealHero {
   }
 
   /**
+   * Raises the model, at once, so that nothing drawn of it is under the floor (model review round 3: the pack's death clip lays a figure
+   * on its back, and on the Climb's big rulers what is thick at the back went through the floor, the Scarab Colossus's shell 1.5 m).
+   * `pose` names the pose now (the clip's time): a pose already measured is not measured again, so a body lying still costs nothing.
+   * Call after the pose (and after `plantFeet`, whose ease it overrides).
+   */
+  restOnFloor(pose: number) {
+    const m = this.model;
+    if (!m) return;
+    const scale = this.root.scale.y || 1;
+    if (pose !== this.restPose || scale !== this.restScale) {
+      this.restPose = pose;
+      this.restScale = scale;
+      this.root.updateMatrixWorld(true);
+      let low = Infinity;
+      const v = this.armP;
+      m.traverse((o) => {
+        const mesh = o as THREE.SkinnedMesh;
+        if (!mesh.isMesh) return;
+        for (let q: THREE.Object3D | null = mesh; q && q !== this.root; q = q.parent) if (!q.visible) return;
+        const P = mesh.geometry.attributes.position, every = Math.max(1, Math.floor(P.count / 4000));
+        for (let k = 0; k < P.count; k += every) {
+          if (mesh.isSkinnedMesh) mesh.getVertexPosition(k, v);
+          else v.fromBufferAttribute(P, k);
+          low = Math.min(low, v.applyMatrix4(mesh.matrixWorld).y);
+        }
+      });
+      const under = (this.root.getWorldPosition(this.armH).y - low) / scale;
+      // where the model rests on its lowest point (under it, when it is already clear: then nothing is lifted)
+      this.restLift = Number.isFinite(low) ? m.position.y + under : -Infinity;
+    }
+    // exactly what the pose needs, both ways (not the soles' slow ease back down: as the Crow King tips, his cloak swings under him
+    // and lifts him, then he lands, and an eased lift left him hanging in the air)
+    m.position.y = Math.max(this.baseLift, this.restLift);
+  }
+
+  private restPose = NaN;
+  private restScale = 0;
+  private restLift = -Infinity;
+
+  /**
    * The long axis of what the left hand holds (a staff, a scepter, a lyre, a lantern), in the hand's own frame, pointing
    * to the end that is up in the pack's torch hold; and whether it reaches well below the hand (a long staff held at its
    * middle). From the vertices bound to the hand alone, more than 13 cm from the wrist.
@@ -463,6 +508,33 @@ export class RealHero {
     // eased, so the lean does not jump a step as the hand moves (it starts where it should at a blow's or cast's start)
     this.leanNow = was <= 0.01 ? lean : this.leanNow + (lean - this.leanNow) * (1 - Math.exp(-dt * EASE_LEAN));
     want.set(0, Math.cos(this.leanNow), Math.sin(this.leanNow));
+    const turn = this.qc.setFromUnitVectors(now, want);
+    turn.slerp(this.qb.identity(), 1 - Math.min(1, weight));
+    turn.premultiply(rootQ).multiply(rootQ.invert());
+    const parentQ = hand.parent!.getWorldQuaternion(this.qb);
+    hand.quaternion.copy(parentQ.invert().multiply(turn).multiply(handQ));
+    hand.updateMatrixWorld(true);
+  }
+
+  /**
+   * Keeps what the left hand holds standing on the floor while the figure kneels (a stunned Climb ruler, model review round 3): the
+   * pack's slump let the Crow King's staff hang head-down to the floor, and the hold's own arm on the crouched body, kept upright, drove
+   * a staff's foot a metre into it. With the arm in its hold, the hand alone is turned, as in `uprightHeld`: the item upright, a little
+   * back, when the hand is high enough; lower, its head leans back toward the shoulder by the least lean that keeps its foot on the
+   * floor, planted in front. `weight`: the kneel's.
+   */
+  plantHeld(weight: number) {
+    const hand = this.heldHand, ax = this.heldAxis;
+    if (!hand || !ax || weight <= 0.01) return;
+    this.root.updateMatrixWorld(true);
+    const rootQ = this.root.getWorldQuaternion(this.qa);
+    const handQ = hand.getWorldQuaternion(this.qd);
+    const now = this.armP.copy(ax).applyQuaternion(handQ).applyQuaternion(this.qb.copy(rootQ).invert());
+    // the hand's height over the floor and the item's reach below it, both in the model's own units
+    const H = this.root.worldToLocal(hand.getWorldPosition(this.armH)), below = this.heldBelow;
+    let lean = PLANT_LEAN;
+    if (below > 0.05 && H.y - PLANT_CLEAR < below * Math.cos(lean)) lean = Math.acos(Math.max(Math.cos(PLANT_MOST), Math.min(1, (H.y - PLANT_CLEAR) / below)));
+    const want = this.armD.set(0, Math.cos(lean), -Math.sin(lean));
     const turn = this.qc.setFromUnitVectors(now, want);
     turn.slerp(this.qb.identity(), 1 - Math.min(1, weight));
     turn.premultiply(rootQ).multiply(rootQ.invert());

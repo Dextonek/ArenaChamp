@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model review, round 3</title>
+<style>
+:root { --bg:#15141a; --fg:#e8e2d4; --dim:#a59f92; --gold:#d2ae55; --card:#1f1d25; --ok:#8fd18f; --bad:#ff9a7a; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+main { max-width:980px; margin:0 auto; padding:16px; }
+h1 { color:var(--gold); font-size:1.6em; margin:0.4em 0; }
+h2 { color:var(--gold); border-top:1px solid #333; padding-top:0.8em; margin-top:1.6em; }
+h3 { color:#e8c87a; margin-bottom:0.2em; }
+a { color:#9fd0ff; }
+code { background:#2a2733; padding:0 4px; border-radius:3px; font-size:0.88em; word-break:break-word; }
+img, video { max-width:100%; height:auto; display:block; margin:8px 0; border-radius:6px; }
+.tw { overflow-x:auto; }
+table { border-collapse:collapse; font-size:0.85em; margin:8px 0; }
+td, th { border:1px solid #3a3644; padding:4px 6px; vertical-align:top; }
+th { background:var(--card); }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media (max-width:640px) { .two { grid-template-columns:1fr; } }
+.cap { color:var(--dim); font-size:0.9em; margin:0; }
+.bad { color:var(--bad); } .ok { color:var(--ok); }
+li { margin:0.3em 0; }
+</style></head><body><main>
+<h1>The model review, round 3 (2026-11-16)</h1>
+<p>The four looks you decided to fix from <a href="../round2/index.html">round 2</a>'s list, and the question about Ash on the lava. Only how the
+bodies are drawn changed: no fight, number or rule. Before and after are pictured in the real game: the Climb ruler's own door fight, and
+the bosses in their own rooms with their moves cast for real.</p>
+
+<h2>In short</h2>
+<ol>
+<li><b>Fallen rulers lie on the floor.</b> All 15 rulers: their lowest point at the end of the fall went from <span class="bad">0.1 to 1.5 m
+under the floor</span> to <span class="ok">0.00 to 0.03 m</span>. The body is lifted by exactly what its pose needs, frame by frame, so the Scarab
+Colossus lies on its shell and the Crow King on his cloak.</li>
+<li><b>Ash's feet stay on the floor.</b> In the slam, the Charge's wind-up, Drag Under, the quake, the rock, the kneel and the fall, his legs went
+<span class="bad">0.6 to 2.4 m under the floor</span>; now <span class="ok">0.00 m</span> in all of them. His rigid legs now push up into his body
+when he crouches.</li>
+<li><b>The Heart of Noon's crown keeps its rays up.</b> In its last phase the crown kept turning, so its long rays came round underneath:
+its lowest point over two minutes was <span class="bad">-1.09 m</span>. Now it sways to and fro: lowest <span class="ok">+0.81 m</span>, and
+<span class="ok">+1.78 m</span> kneeling.</li>
+<li><b>A kneeling ruler holds its staff up.</b> The Crow King's staff no longer hangs head-down to the floor. The staff's head is up by his
+shoulder and its foot planted in front. The other four staff rulers (the Elder Root, the Thorn Mother, the Prism Mother, the Lamp Warden) kneel
+the same way; none of the five staffs goes under the floor.</li>
+<li><b>Ash on the lava: not a fault in the fight.</b> His Charge always stops 1.4 m inside the floor's edge (16 m from the middle; he stops at
+14.61 m at most). His body is about 1.8 m wide from its middle, so its shoulders hang over the stone lip, not over the lava, and from the
+game's steep camera his tall body is drawn out over the lava beyond it. A player standing at the edge sees the same. Details below.</li>
+</ol>
+<p><b>Nothing a fight counts changed:</b> the seven speed-test fights (perf prints) are the same before and after, and three heroes' fight prints
+too (below). Heroes are not touched: every change is for the Climb's own figures (rulers) or a boss's body.</p>
+
+<h2>1. A fallen ruler lies on the floor</h2>
+<p>When you win a ruler's door fight, it plays the animation pack's death clip, which lays a figure on its back. On the big rulers what is
+thick at the back went through the floor. Now a fallen Climb figure is lifted by exactly what its pose needs, every frame of the fall.
+(A first try eased the lift down slowly, and the Crow King hung in the air for a moment as his cloak swung under him. It now follows the
+pose exactly: he tips, lifts on his cloak and lands.)</p>
+<h3>The Scarab Colossus, its door fight on floor 21</h3>
+<p class="cap">Each pair: the game's camera, then from the side. Kneeling, then falling at 0.3, 0.6, 0.9 and 1.2 s. Before (lowest at the end
+-1.57 m):</p>
+<a href="rulers/fight-scarab-before.jpg"><img src="rulers/fight-scarab-before.jpg" alt="The Scarab Colossus falling, before: its shell through the floor" loading="lazy"></a>
+<p class="cap">After (+0.03 m):</p>
+<a href="rulers/fight-scarab-after.jpg"><img src="rulers/fight-scarab-after.jpg" alt="The Scarab Colossus falling, after: lying on its shell" loading="lazy"></a>
+<h3>The Crow King, floor 46</h3>
+<p class="cap">Before (-1.15 m):</p>
+<a href="rulers/fight-crow-before.jpg"><img src="rulers/fight-crow-before.jpg" alt="The Crow King falling, before" loading="lazy"></a>
+<p class="cap">After (0.00 m every frame of the fall):</p>
+<a href="rulers/fight-crow-after.jpg"><img src="rulers/fight-crow-after.jpg" alt="The Crow King falling, after" loading="lazy"></a>
+<h3>All 15 rulers at the end of the fall, from the side (before | after)</h3>
+<a href="rulers/falls-all.jpg"><img src="rulers/falls-all.jpg" alt="All fifteen rulers fallen, before and after" loading="lazy"></a>
+<div class="tw"><table><tr><th>Ruler</th><th>Lowest, fallen: before</th><th>after</th></tr>
+<tr><td>The Scarab Colossus</td><td>-1.52</td><td>+0.03</td></tr>
+<tr><td>The Crow King</td><td>-1.11</td><td>+0.00</td></tr>
+<tr><td>The Antler King</td><td>-1.04</td><td>+0.02</td></tr>
+<tr><td>The Glass Abbot</td><td>-0.88</td><td>-0.00</td></tr>
+<tr><td>The Last Marshal</td><td>-0.87</td><td>+0.01</td></tr>
+<tr><td>The Prism Mother</td><td>-0.85</td><td>+0.02</td></tr>
+<tr><td>The Elder Root</td><td>-0.83</td><td>+0.00</td></tr>
+<tr><td>The Glass Serpent</td><td>-0.82</td><td>+0.00</td></tr>
+<tr><td>The Thorn Mother</td><td>-0.46</td><td>+0.02</td></tr>
+<tr><td>Mother of Wrecks</td><td>-0.36</td><td>+0.01</td></tr>
+<tr><td>The Lamp Warden</td><td>-0.31</td><td>+0.03</td></tr>
+<tr><td>The Siege Lord</td><td>-0.20</td><td>+0.02</td></tr>
+<tr><td>The Drowned Captain</td><td>-0.15</td><td>+0.00</td></tr>
+<tr><td>The Brass Sphinx</td><td>-0.12</td><td>+0.01</td></tr>
+<tr><td>The Tide Judge</td><td>-0.12</td><td>+0.01</td></tr>
+</table></div>
+<p class="cap">Metres at each ruler's first floor's size, its body's lowest point other than the feet (<code>ruler-react.js</code>). Standing,
+flinching and the knock-up are unchanged.</p>
+
+<h2>2. A kneeling ruler holds its staff up</h2>
+<p>The pack's kneel lets the arm hang, so the Crow King's staff hung head-down with its silver head on the floor. Holding it upright in its
+usual hold did not work: on the crouched body its foot went a metre into the floor (tried, measured, dropped). Now the staff arm keeps its
+hold and the hand is turned so the staff stands. Its head leans back to the shoulder only as far as it must to keep the foot on the floor,
+planted in front.</p>
+<p class="cap">The Crow King in his door fight, kneeling: before (left pair), after (right pair):</p>
+<a href="rulers/crow-kneel-fight.jpg"><img src="rulers/crow-kneel-fight.jpg" alt="The Crow King kneeling, staff head-down before, head up after" loading="lazy"></a>
+<p class="cap">The five staff rulers, 1.5 s into the kneel, three views (the game's camera, the side, the front); each: before | after:</p>
+<a href="rulers/kneel-staffs.jpg"><img src="rulers/kneel-staffs.jpg" alt="Five staff rulers kneeling, before and after" loading="lazy"></a>
+<p>None of the five staffs is under the floor; the lowest point of each kneel is its gown or cloak, as before (the Crow King's cloak -0.27 m,
+as in round 2). Worth your eye: all five now kneel with the staff up, not only the Crow King. That was the simplest rule to keep alike.</p>
+
+<h2>3. Ash's feet on the floor</h2>
+<p>His legs are rigid blocks hanging from his torso. When a cast crouched him, they went down with it. Now each leg is lifted straight up just
+enough to stand on the floor, so it pushes up into his body. Each move was cast for real through his boss link in his own room, and
+pictured at its wind-up and its strike. Lowest point of his legs (m):</p>
+<div class="tw"><table><tr><th>Moment</th><th>Before (left, right)</th><th>After</th></tr>
+<tr><td>Standing</td><td>+0.05, +0.03</td><td>+0.05, +0.03</td></tr>
+<tr><td>Ground Slam, strike</td><td>-1.00, -1.04</td><td>0.00, 0.00</td></tr>
+<tr><td>Charge, wind-up</td><td>-1.10, -1.07</td><td>0.00, 0.00</td></tr>
+<tr><td>Drag Under, wind-up</td><td>-0.93, -0.92</td><td>0.00, 0.00</td></tr>
+<tr><td>Knuckle Quake, strike</td><td>-0.91, -0.93</td><td>0.00, 0.00</td></tr>
+<tr><td>Cinder Rock, wind-up</td><td>-0.29, -0.43</td><td>0.00, 0.00</td></tr>
+<tr><td>Kneeling</td><td>-2.02, -2.06</td><td>0.00, 0.00</td></tr>
+<tr><td>Fallen</td><td>-2.02, -2.34</td><td>0.00, 0.00</td></tr>
+<tr><td>A real fight, 17 s (the lowest)</td><td>-1.28 (Charge)</td><td>0.00</td></tr>
+</table></div>
+<p>His fists still strike into the floor in the slam and the quake, as the Sun Warden's do (round 2 found that right), and in the fall his
+body still sinks as it folds forward.</p>
+<p class="cap">The real fight, the Charge's wind-up (above before, below after; left the game's camera, right from the side at floor height):</p>
+<a href="ash/clip-compare.jpg"><img src="ash/clip-compare.jpg" alt="Ash crouched in the Charge's wind-up, before and after" loading="lazy"></a>
+<div class="two">
+<div><p class="cap">Clip before (12 s: the Charge, its run, the trail, the quake)</p><video src="ash/before.mp4" poster="ash/before-poster.jpg" controls muted playsinline preload="none"></video></div>
+<div><p class="cap">Clip after</p><video src="ash/after.mp4" poster="ash/after-poster.jpg" controls muted playsinline preload="none"></video></div>
+</div>
+<p class="cap">Every move, two views each. Before:</p>
+<a href="ash/poses-before.jpg"><img src="ash/poses-before.jpg" alt="Ash's moves before" loading="lazy"></a>
+<p class="cap">After:</p>
+<a href="ash/poses-after.jpg"><img src="ash/poses-after.jpg" alt="Ash's moves after" loading="lazy"></a>
+
+<h2>4. The Heart of Noon's crown</h2>
+<p>In its last phase (Noon Falls) the crown turned on and on, a full turn about every two and a half minutes, so its long upper rays came
+round underneath into the floor. Turning it by hand showed its long rays reach the floor after only about half a radian (30 degrees) of
+turn, so "stop short of half a turn" would not have been enough. Now in the last phase it sways to and fro, up to about 20 degrees either
+way, quicker in the Crown of Rays.</p>
+<div class="tw"><table><tr><th>Lowest point of the crown (m)</th><th>Before</th><th>After</th></tr>
+<tr><td>Two minutes of the last phase, the lowest</td><td>-1.09 (70 s in)</td><td>+0.81</td></tr>
+<tr><td>Crown of Rays (wind-up, strike, after)</td><td>+1.29, +2.20, +1.66</td><td>+1.60, +2.03, +1.71</td></tr>
+<tr><td>Kneeling</td><td>+0.66 (the turn stood where it was; 1.7 m under in round 2)</td><td>+1.78</td></tr>
+</table></div>
+<p class="cap">60 s into the last phase, a Crown of Rays (above before: the long ray down at the left; below after: the long rays up):</p>
+<a href="heart/clip-compare.jpg"><img src="heart/clip-compare.jpg" alt="The Heart's crown before and after" loading="lazy"></a>
+<div class="two">
+<div><p class="cap">Clip before (10 s at 60 s into the phase)</p><video src="heart/before.mp4" poster="heart/before-poster.jpg" controls muted playsinline preload="none"></video></div>
+<div><p class="cap">Clip after</p><video src="heart/after.mp4" poster="heart/after-poster.jpg" controls muted playsinline preload="none"></video></div>
+</div>
+<p class="cap">Every 15 s of the phase, the Crown of Rays and the kneel, two views each. Before:</p>
+<a href="heart/crown-before.jpg"><img src="heart/crown-before.jpg" alt="The crown before, every 15 s" loading="lazy"></a>
+<p class="cap">After:</p>
+<a href="heart/crown-after.jpg"><img src="heart/crown-after.jpg" alt="The crown after, every 15 s" loading="lazy"></a>
+
+<h2>5. Ash on the lava?</h2>
+<p>Round 2 saw Ash past the floor's edge once, with the tool holding the hero near the edge. Measured in a real fight (his brain choosing,
+40 s, and the clip's run): <b>his middle never goes past 14.61 m from the room's middle; the floor ends at 16 m.</b> The Charge runs
+through you to the edge and stops 1.4 m short of it (the rule in <code>src/raid/ashEmber.ts</code>, <code>chargeEnd</code>; the move ends in
+a skid "up against the lip"). His body is about 1.8 m wide from its middle (his hit circle), so his shoulders and plates hang 0.4 m and more
+over the stone lip ring. From the steep game camera his 5.8 m-tall body is drawn out over the lava beyond, and that is what the picture
+showed. A player standing at the edge in his way sees the same, and nothing else happens: he does not leave the floor.</p>
+<a href="ash/charge-end.jpg"><img src="ash/charge-end.jpg" alt="Ash at the end of his Charge, at the floor's edge, from the game camera and from above" loading="lazy"></a>
+<p>The smallest change, if you want him fully on the floor: stop the Charge 1.8 m short instead of 1.4 m. That shortens the deadly run by
+0.4 m at the edge, which is a fight rule, so it is not done; it waits for a yes. (The Twin Forge and the party rooms were not measured.)</p>
+
+<h2>Proof that no fight changed</h2>
+<p>Perf prints (each a hash of a fixed fight's health and places every second), desktop, before and after on this branch:</p>
+<div class="tw"><table><tr><th>Scene</th><th>Before</th><th>After</th></tr>
+<tr><td>duel-temple</td><td>90b1abaa</td><td>90b1abaa</td></tr>
+<tr><td>raid-solo</td><td>ff20c830</td><td>ff20c830</td></tr>
+<tr><td>raid-party</td><td>9c4a9c48</td><td>9c4a9c48</td></tr>
+<tr><td>raid-ash</td><td>e47e69ce</td><td>e47e69ce</td></tr>
+<tr><td>raid-heart</td><td>d2d3cf3e</td><td>d2d3cf3e</td></tr>
+<tr><td>world-1 (the Climb, floor 1)</td><td>98b0044a</td><td>98b0044a</td></tr>
+<tr><td>world-5 (the Climb, floor 41)</td><td>b2403b4c</td><td>b2403b4c</td></tr>
+</table></div>
+<p>Hero fight prints (<code>hero-prints.py check Anka,Kaia,Sefu</code>): 3 of 3 the same (Anka bae036d3, Kaia cf160412, Sefu bfb83e68).</p>
+
+<h2>What changed in the code</h2>
+<ul>
+<li><code>src/motion/real.ts</code>: <code>restOnFloor</code> (a fallen figure lies on its lowest point), <code>plantHeld</code> (a staff stands, planted, in the kneel).</li>
+<li><code>src/heroFigure.ts</code>: both used only for the Climb's own figures (<code>climbFigure</code>, models under <code>models/tower/</code>).</li>
+<li><code>src/raid/bodies/look.ts</code>: <code>keepAbove</code> (a part lifted out of the floor); <code>src/raid/bodies/ash.ts</code> uses it on his legs.</li>
+<li><code>src/raid/bodies/heart.ts</code>: the crown's turn in the last phase is a sway (<code>CROWN_SWAY</code>).</li>
+</ul>
+<p>Tools for this round (<code>pipeline/tools/</code>): <code>ruler-fight-fall.js</code> (a ruler's door fight: kneel and fall), <code>ash-legs.js</code>
+(every move, the clip, the Charge's end), <code>heart-crown.js</code> (the turn by hand, two minutes of the phase, the clip); the rulers' numbers
+from round 2's <code>ruler-react.js</code>. Each says at its top how to run it. No model needs rebuilding in Blender.</p>
+</main></body></html>

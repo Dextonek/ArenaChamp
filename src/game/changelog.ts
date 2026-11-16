@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Raid',
+        title: 'Bosses and rulers stay out of the floor',
+        text: 'Ash keeps his feet on the floor when he crouches to slam, charge or kneel, and the Heart of Noon’s crown of rays sways in its last phase instead of turning its long rays down into the floor. On the Climb, a fallen ruler lies on the floor instead of halfway through it, and a kneeling ruler holds its staff up, planted in front of it.',
+      },
+      {
         tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',

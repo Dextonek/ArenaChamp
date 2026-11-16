@@ -1250,7 +1250,12 @@ export class HeroFigure {
 
   private poseDeath(r: RealHero) {
     r.root.position.copy(this.base);
-    if (r.loaded) r.pose([{ clip: 'Death01', t: Math.min(1, this.dying) * realClipInfo('Death01').dur * 0.92, legs: 1, torso: 1, armR: 1, armL: 1 }]);
+    if (!r.loaded) return;
+    const t = Math.min(1, this.dying) * realClipInfo('Death01').dur * 0.92;
+    r.pose([{ clip: 'Death01', t, legs: 1, torso: 1, armR: 1, armL: 1 }]);
+    // The clip lays a figure on its back: on the Climb's big rulers what is thick at the back (a shell, a cloak, antlers) went up to 1.5 m
+    // through the floor. A Climb figure lies on it instead (model review round 3); the heroes are left as they are.
+    if (this.climbFigure) r.restOnFloor(t);
   }
 
   /** The clip a real hero's basic attack plays. */
@@ -1397,7 +1402,11 @@ export class HeroFigure {
         if (planted) keepStaff();
       }
     }
-    if (this.stunW > 0.01) over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);
+    if (this.stunW > 0.01) {
+      over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);
+      // a Climb figure with a staff upright keeps that arm in its hold while it kneels (planted below, `plantHeld`)
+      keepStaff();
+    }
     if (this.liftW > 0.01) over('Jump_Loop', this.clock, true, this.liftW, this.liftW);
     r.pose(layers);
     // the hands out of a robe or a coat, but where a blow, a cast or a knock-up sends them
@@ -1406,6 +1415,9 @@ export class HeroFigure {
     // a slam or a swing carries it as its clip does
     const push = m && this.realAttackClip(m.melee) === 'Spell_Simple_Shoot' ? this.attackW : 0;
     if (this.realStyle.hold === 'torch' && !this.realStyle.keep && !this.climbFigure) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
+    // a Climb figure with a staff upright keeps it standing on the floor while it kneels, planted in front, leaning back to the
+    // shoulder: the pack's slump let the Crow King's hang head-down to the floor (model review round 3)
+    if (this.realStyle.hold === 'torch' && this.climbFigure) r.plantHeld(this.stunW * (1 - this.liftW));
     // the soles on the floor through a stride
     r.plantFeet(dt, true);
   }
