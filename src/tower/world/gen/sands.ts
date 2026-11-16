@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, FloorDef, LawDef, PackDef, PersonDef
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { SandsDecor, SandsKind, SandsLook } from '../sandsZone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Sands chapter's generator (pipeline/designs/tower-50.md): floors 22 to 30 made from floor 21's parts (the Storm Canyon: its look,
@@ -21,7 +21,7 @@ const HANDMADE_GATES = ['Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'];
 
 const FLOOR_NAMES = ['The Red Wadi', 'The Glass Flats', 'Caravan Rest', 'The Singing Dunes', 'The Brass Road', 'The Dry Wells', 'The Scorpion Steps', 'The Mirage Road'];
 const BLURBS = ['A riverbed that forgot its river.', 'Sand the sun burnt to glass, and what walks on it.', 'Where the caravans stopped, and stayed.', 'Dunes that hum when the wind is coming.', 'An old road of brass markers, half buried.', 'Wells that answer in dust.', 'Steps cut into red stone, and what nests on them.', 'A road that is never where it looks.'];
-const RULERS: [string, string][] = [['The Scarab King', 'Crowned in a shell'], ['The Dune Colossus', 'A hill that walks'], ['The Brass Sphinx', 'Riddles and claws'], ['The Glass Serpent', 'Sand burnt to glass'], ['The Mirage Lord', 'Never where it stands'], ['The Sand Tyrant', 'Every grain obeys'], ['The Red Jackal', 'It runs the wadi'], ['The Sun-Eater', 'It swallowed noon once']];
+const RULERS: [string, string][] = [['The Scarab King', 'Crowned in a shell'], ['The Dune Colossus', 'A hill that walks'], ['The Brass Sphinx', 'Riddles and claws'], ['The Glass Serpent', 'Sand burnt to glass'], ['The Mirage Lord', 'Never where he stands'], ['The Sand Tyrant', 'Every grain obeys'], ['The Red Jackal', 'He runs the wadi'], ['The Sun-Eater', 'He swallowed noon once']];
 const TINTS = ['#c0904a', '#b0703a', '#c8a050', '#a8683a', '#d0a060', '#b88040', '#a0603a', '#c89858'];
 const NAMED = ['The Dune Mother', 'Sandjaw', 'The Glass Widow', 'Old Scarab', 'The Dust Prince', 'Mother Mirage', 'The Red Rider', 'Brasshand', 'The Hollow Rider', 'Sirocco', 'Cinderveil', 'The Salt Hound', 'Two-Tails', 'The Pale Nomad', 'Grit', 'The Sun Widow', 'Ashmane', 'The Thirst'];
 const CHIEFS = ['The Raider Chief', 'The Dig Warden', 'The Brass Captain', 'The Red Chief'];
@@ -458,7 +458,7 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       { name: 'It calls the storm', at: 0.3, opener: 'storm', moves: ['burrow', 'cleave', 'lunge', 'marks', extra[0]], timed: { move: 'storm', first: 22, every: 24, most: 99 }, gap: [1.2, 1.9] },
     ],
     surge: { safe: { shell: 4.4 }, burn: 0.05, name: 'The storm', look: 'storm' },
-    line: crown ? 'A Raid boss, alone: stand still on its beat, run between' : 'It goes under the sand and comes up where you stood',
+    line: crown ? 'A Raid boss, alone: stand still on its beat, run between' : `${rulerName === 'The Brass Sphinx' ? 'She' : 'He'} goes under the sand and comes up where you stood`,
   };
   const twists = ['giant', 'swift', 'warded'] as const;
   const pieces: PiecesDef = {
@@ -494,8 +494,8 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       outro: [`The winch turns and the brass door opens, far in the north. ${rulerName} is behind it. Rest first, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dunes. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} rides the walls’ side. Nobody goes to ${lower(Vl.name)} while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road west is open again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the wadi. Nobody crosses it twice. Fell ${herIt(named1)} and the road is quieter.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dunes. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} rides the walls’ side. Nobody goes to ${lower(Vl.name)} while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road west is open again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Storm Count', giver: 'giver', intro: ['A marker stone stands out on the dunes. Find it, then hold the high ground in the north while I take the count of the storms. The raiders will not like it.'],
       steps: [

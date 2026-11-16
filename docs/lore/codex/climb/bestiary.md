@@ -39,8 +39,7 @@ tags: [lore, codex, climb, enemies]
   came back: nobody inside remembers them well enough to bring them back whole, and they are angry about it.
 - **Moss giant.** A hunched mass of stone and moss on two thick legs, boulder fists, mushrooms on its back. Slow and heavy. Standing
   stones the Wood woke when it began to walk, the oldest of which were there before the Briarkin.
-- **Feeding root.** A mound with thorny roots rising round a bulb that pulses when it throws thorns. It cannot move. Three of them feed
-  the Elder Root on the eleventh floor; cut them and its door opens.
+- **Feeding root.** A mound with thorny roots rising round a bulb that pulses when it throws thorns. It cannot move. Three of them feed the Elder Root on the eleventh floor, the oak in an old man's shape; cut them and its door opens.
 - **Wisp.** A pale blue light that bobs, with two smaller lights trailing it: lost things the Wood has bound. Not enemies: freed and
   led home, they follow you.
 - **The Stag-Crowned.** A tall gold-and-bark figure with a great crown of antlers that glows; it charges along a red line and stands

@@ -3700,7 +3700,7 @@ export const DEEP_38: GenFloor = {
     "name": "The Ore Bride",
     "giver": "keeper",
     "intro": [
-     "The Ore Bride walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Ore Bride walks the middle of the Deep. She does not need light. Fell her and the dark is a little less."
     ],
     "steps": [
      {

@@ -31,14 +31,11 @@ had heard. She did not say anything. But she walked beside her brother through t
 
 ## The worst of the storm
 
-The Sands' rulers were old, and some of them were older than the Fall. The **Scarab Colossus** of the twenty-first floor, a beetle the size
-of a house that the storm had uncovered under the canyon, burrowed and marked the sand and called the storm; the Dune folk say it rolled the
-sun across the sky once, and the mother of a god had a right to be angry that the sun was gone. Her son, the gilded **Scarab King**,
-worshipped by the raiders, ruled the twenty-second. The **Dune Colossus** walked with the dunes. The **Brass Sphinx** of the twenty-fourth
-asked her riddle, which nobody had ever answered: *what holds the noon and has no hands?* Asenet answered it. "The pin," she said, "and it
+The Sands' rulers were old, and some of them were older than the Fall. The **Scarab Colossus** of the twenty-first floor, a queen of the old Sands in the sacred beetle's shell, a giantess the storm had uncovered under the canyon, burrowed and marked the sand and called the storm; the Dune folk say she rolled the sun across the sky once, and the mother of a god had a right to be angry that the sun was gone. Her son, the gilded **Scarab King**,
+worshipped by the raiders, ruled the twenty-second. The **Dune Colossus**, the first king's giant guard of the Brass Road, walked with the dunes. The **Brass Sphinx** of the twenty-fourth, in her brass mask and lion's mane, asked her riddle, which nobody had ever answered: *what holds the noon and has no hands?* Asenet answered it. "The pin," she said, "and it
 has one." The Sphinx was so surprised she forgot to fight.
 
-The **Glass Serpent**, born the day the sun's heat struck the sand, ruled the twenty-fifth. On the twenty-sixth was the **Mirage Lord**, a
+The **Glass Serpent**, a raider born again in glass the day the sun's heat struck the sand, ruled the twenty-fifth. On the twenty-sixth was the **Mirage Lord**, a
 prince of the Throne who had walked onto the Glass Flats to be alone and become a mirage of himself; [Sahar](../heroes/sahar.md),
 whose grandmother's brother he was, made him a mirage in return, of a road home across the Flats with a lamp at
 the end of it, and the Mirage Lord walked onto it, and lay down in the shade of a palm that was not there, and was quiet. The **Sand Tyrant**,
@@ -91,11 +88,10 @@ halls. [Tova](../heroes/tova.md) closed three galleries on the lurkers coming up
 filled in, a tunnel dug from below: it was one of the Tower's roots, pushing up. [Hesk](../heroes/hesk.md) heard his first golem through the rock,
 the one that had walked into the black water with no word on its brow, still walking, and walking up.
 
-The Deep's rulers: the **Prism Mother**, a crystal the size of a hall that turned its beams in the dark to find the others; the **Hollow Queen**,
+The Deep's rulers: the **Prism Mother**, the keeper of a crystal the size of a hall, whose light went into her and who turned its beams in the dark to find the others; the **Hollow Queen**,
 an Old Mother of the mole-folk who dug too deep alone; the **Lamp Warden**, who swore the lamps would never go out and went out with them; the
-**Glass Abbot**, who cut his own eyes into crystal; **Mother of Echoes**, who answers every step a third time; the **Seam King**, who worked his
-miners in the dark; the **Gem Tyrant**, buried by the light he hoarded; and the **Drowned Lantern**, a lamp that fell into the black water and
-kept burning under it. And one more, on the thirty-seventh floor.
+**Glass Abbot**, who cut his own eyes into crystal; **Mother of Echoes**, who called for her lost crew until only her voice was left, and answers every step a third time; the **Seam King**, who worked his
+miners in the dark; the **Gem Tyrant**, buried by the light he hoarded; and the **Drowned Lantern**, a lamplighter who fell into the black water and kept his lamp burning under it. And one more, on the thirty-seventh floor.
 
 ## The Blind Cantor
 

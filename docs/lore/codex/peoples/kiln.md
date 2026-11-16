@@ -87,8 +87,7 @@ army is slow and almost impossible to move. Their duellists are tanks and engine
   [Referee Whistler](../heroes/referee-whistler.md), a mason's boy who came up the Brass Road to build the Ring and stayed to
   judge it.
 - **New:** [Itzel](../heroes/itzel.md), [Hesk](../heroes/hesk.md), [Kessa](../heroes/kessa.md).
-- **On the Climb:** the Deep's five, the Echo-Hermit, the Candle-Crowned, the Ferryman, the Crystal-Seller and the Firefly-Seller,
-  all of the far halls (so not grey) ([the Deep](../climb/deep.md)).
+- **On the Climb:** the Deep's five, the Echo-Hermit, the Candle-Crowned, the Ferryman, the Crystal-Seller and the Firefly-Seller, and the Ore-Carrier at his work on every floor, all of the far halls (so not grey) ([the Deep](../climb/deep.md)).
 
 ## Ties to other peoples
 

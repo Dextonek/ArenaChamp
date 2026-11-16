@@ -3,7 +3,7 @@ import type { DeepLook, DeepLookKind } from '../deepZone';
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { Look, Piece } from '../zone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Deep chapter's generator (pipeline/designs/tower-50.md): floor `n` (32 to 40) of the Deep, made from floor 31's parts (the
@@ -468,8 +468,8 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     ]
     : [
       main,
-      { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the Deep. It does not need light. Fell it and the dark is a little less.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dark. Keep it.'], reward: reward(45, { relic: true }) },
-      { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the west of the Deep. Nobody goes to ${lower(Vl!.name)} while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The track is open again.'], reward: reward(40) },
+      { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the Deep. ${sheIt(named1, true)} does not need light. Fell ${herIt(named1)} and the dark is a little less.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dark. Keep it.'], reward: reward(45, { relic: true }) },
+      { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the west of the Deep. Nobody goes to ${lower(Vl!.name)} while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The track is open again.'], reward: reward(40) },
       {
         id: 'g1', name: 'The Lost Lantern', giver: 'giver', intro: [`My satchel fell at ${lower(Sh.name)}. The thief took my lantern to ${lower(Po.name)}. Bring my light home.`],
         steps: [{ verb: 'reach', text: `Find the satchel at ${lower(Sh.name)}`, at: Sh.stand, r: 3 }, { verb: 'fell', text: `Take the lantern back from the Lantern Thief at ${lower(Po.name)}`, packs: ['d'] }] as Step[],

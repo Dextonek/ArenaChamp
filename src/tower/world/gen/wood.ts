@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, PackDef, PersonDef, PlaceDef, QuestD
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { Look, Piece } from '../zone';
 import type { ChapterLook, GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Wood chapter's generator (pipeline/designs/tower-50.md): floor `n` (12 to 20) of the Wood, made from floor 11's parts (The Walking
@@ -30,7 +30,7 @@ const HANDMADE_GATES = ['Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'];
 
 const FLOOR_NAMES = ['The Mossway', 'Hollowmere', 'The Thornfold', 'The Antler Glades', 'Lanternroot', 'The Whispering Stand', 'Greyoak Deep', 'The Briar Gate'];
 const BLURBS = ['A road of moss the wood keeps moving.', 'A mere in a hollow that the trees lean over.', 'Thorns folded round a wood that fold again.', 'Glades where the stags wear crowns.', 'Roots that glow like lanterns underfoot.', 'A stand of trees that talk when the wind stops.', 'Old grey oaks and the dark between them.', 'A wall of briars with one gate, and it moves.'];
-const RULERS: [string, string][] = [['The Moss Warden', 'Green over everything'], ['The Thorn Mother', 'She grows the walls'], ['The Antler King', 'Crowned in branches'], ['The Hollow Elder', 'Older than the paths'], ['The Briar Witch', 'Every thorn a word'], ['The Lantern Root', 'It drinks the light'], ['The Grey Oak', 'Bark like a shield'], ['The Mire Heart', 'It beats under the moss']];
+const RULERS: [string, string][] = [['The Moss Warden', 'Green over everything'], ['The Thorn Mother', 'She grows the walls'], ['The Antler King', 'Crowned in branches'], ['The Hollow Elder', 'Older than the paths'], ['The Briar Witch', 'Every thorn a word'], ['The Lantern Root', 'He drinks the light'], ['The Grey Oak', 'Bark like a shield'], ['The Mire Heart', 'Her heart beats under the moss']];
 const TINTS = ['#4f8a3a', '#5a7a3a', '#3f7a4a', '#6a8a3a', '#4a6a2f', '#5f8f4a', '#3a6a3f', '#6a7a3a'];
 const NAMED = ['The Bark Widow', 'Old Rootfoot', 'The Pale Stag', 'Mossjaw', 'The Lantern Thief', 'Grandmother Thorn', 'The Hollow Hunter', 'Briarback', 'The Grey Walker', 'Ashbark', 'The Wet Antler'];
 const NPCS = ['Rowan', 'Hazel', 'Bram the younger', 'Ivy', 'Alder', 'Linden', 'Sorrel', 'Fern'];
@@ -488,8 +488,9 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // Floor 20 is the chapter's crown: behind the lair are Ash and Ember, a Raid boss, alone (pieces/core.ts `crownFight`).
   const crown = n === 20 ? ('ash' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['Ash and Ember', 'The fire at the wood’s end'] : RULERS[(n - 12) % RULERS.length];
-  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them” (a tree or a bog stays “it”).
-  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
+  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them”; since the lore follows the drawn
+  // rulers (2026-11-16), the Hollow Elder, the Lantern Root and the Grey Oak are men and the Mire Heart a woman (a name not listed stays “it”).
+  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'The Hollow Elder': ['him', 'his'], 'The Lantern Root': ['him', 'his'], 'The Grey Oak': ['him', 'his'], 'The Mire Heart': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
   const extra: [string, MoveSpec] = pick([
     ['fan', { use: 'fan', share: 0.05 }],
     ['briars', { use: 'stones', name: 'Falling Briars', share: 0.07, count: 4, radius: 1.5, cooldown: 8 }],
@@ -511,7 +512,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       { name: 'The wood walks', at: 0.33, moves: ['thorns', 'walls', 'quake', 'rake', extra[0]], gap: [1.3, 2] },
     ],
     sentries: { look: 'root', spots: [[60, 8.4], [180, 8.8], [300, 8.4]], hp: 100, again: 34, fall: { stagger: 30 }, guards: { open: 9 } },
-    line: crown ? 'A Raid boss, alone: two of them, fire and ash; keep moving' : 'Cut the roots that feed it; it stands open when none is left',
+    line: crown ? 'A Raid boss, alone: two of them, fire and ash; keep moving' : `Cut the roots that feed ${rulerObj}; ${({ him: 'he', her: 'she', them: 'they' } as Record<string, string>)[rulerObj] ?? 'it'} ${rulerObj === 'them' ? 'stand' : 'stands'} open when none is left`,
   };
   const twists = ['swift', 'giant', 'warded'] as const;
   const pieces: PiecesDef = {
@@ -553,8 +554,8 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       outro: [`The wisps are home, the roots are cut. ${poss(rulerName)} door stands open, far in the north. Rest first, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks round ${lower(H.name)}. Fell it and the wood grows calmer.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the old wood. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the far glades. Nobody lights the lamps while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The glades are quiet again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks round ${lower(H.name)}. Fell ${herIt(named1)} and the wood grows calmer.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the old wood. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the far glades. Nobody lights the lamps while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The glades are quiet again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Spore Lamps', giver: 'giver', intro: [`Two spore lamps: one at ${lower(Cl.name)}, one at ${lower(E.name)}. Light both, stand by each a moment, and I can see the paths move.`],
       steps: [{ verb: 'light', text: 'Light the two spore lamps', things: [{ id: 'lamp1', at: Cl.stand }, { id: 'lamp2', at: E.stand }], seconds: 2 }] as Step[],

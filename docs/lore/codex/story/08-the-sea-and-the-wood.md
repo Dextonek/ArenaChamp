@@ -59,15 +59,13 @@ believed he had given the right order. [Sir Whiskers](../heroes/sir-whiskers.md)
 and kept his life, and told him, as the Admiral went down under his own anchor, that the right order is the one you can still give the
 morning after. The **Salt King** of the third floor weighed them and found them wanting. **Mother of Wrecks** lit false lights on the
 headland of the fourth. On the fifth the **Tide Judge** set the tide as their sentence, and [Auriel](../heroes/auriel.md) broke it with
-her shields. The **Pearl Tyrant** of the sixth sent his pale diver after them. On the seventh floor was **the Bell Below**: the harbour's old
-cracked bell, thrown into the sea when the new one was cast, which rings underwater, and something answers. The something was the new bell, the
+her shields. The **Pearl Tyrant** of the sixth, crowned in coral, sent her pale diver after them. On the seventh floor was **the Bell Below**: the ringer of the harbour's old cracked bell, who went down with it when it was thrown into the sea and wears it as his helm, and rings it underwater, and something answers. The something was the new bell, the
 Bell-Warden's, ringing back. [Campana](../heroes/campana.md), who had cast them both, had come up to this floor once before and
-wept on the quay; this time she swam down, and put her bronze-stained hands on the old bell, and struck it once with her own hammer, on its true
-note, and it stopped answering, and hung still in the green water, and she said she would bring it home when the Tower let it go. On the eighth
-the **Lantern Leviathan** came up out of the deep sea with its lantern burning, and on the ninth the **Gull Queen**, who had fed the gulls
+wept on the quay; this time she swam down, and put her bronze-stained hands on the old bell on the ringer's head, and struck it once with her own hammer, on its true note, and it stopped answering, and the ringer stood still in the green water, and she said she would bring it home when the Tower let it go. On the eighth
+the **Lantern Leviathan**, the diver who bears the great fish's name, came up out of the deep sea with the light burning in his helm, and on the ninth the **Gull Queen**, who had fed the gulls
 from her hand for forty years, and whom they would not leave.
 
-Each ruler, when it fell, said the same thing, in its own way. *It was the worst morning. Somebody had to keep it.*
+Each ruler, when they fell, said the same thing, in their own way. *It was the worst morning. Somebody had to keep it.*
 
 ## The Warden as he was
 
@@ -94,16 +92,13 @@ glowed.
 did not fight her echo. She planted a flower at its feet, and stood among the flowers with it, and they grew, and the echo, which had only the
 strength of one hour, had no flowers of its own; it stood aside. Then the two of them led the company to the forest's heart.
 
-The **Elder Root** stood there, a trunk too wide to see round, roots that arched over the paths like bridges, a core that glowed, and three
-great roots that fed it, running out through the soil to the edge of the floor and into the Tower's wall. It was the oak Fenna had planted at
-twelve, which had walked away with the Wood on the day of the Fall. The Tower had drawn the whole Wood toward itself through its roots, and
-drawn this tree furthest, into the forest's heart, and set it to drink from the Tower's own root, as a cutting is set in water. Fenna had stood
-in front of it before and known it, and it had known her. Now she put her hand on its bark and asked it, aloud, to let go.
+The **Elder Root** stood there, an old man taller than the lower branches, white-bearded and crowned with roots, his hem a spread of roots that arched over the paths like bridges, a core that glowed in the head of his staff, and three great roots that fed it, running out through the soil to the edge of the floor and into the Tower's wall. It was the oak Fenna had planted at
+twelve, which had walked away with the Wood on the day of the Fall. The Tower had drawn the whole Wood toward itself through its roots, and drawn this tree furthest, into the forest's heart, and set it to drink from the Tower's own root, as a cutting is set in water, and given it a shape that could stand before a climber. Fenna had stood
+in front of it before and known it, and it had known her. Now she put her hand on the bark of its hand and asked it, aloud, to let go.
 
 It could not. It was kept. Hank cut the three roots that fed it, one after another, with the great green-edged axe, while the bark hounds
 came out of the dark for him and the company held them off; the third root, where it went into the wall, was the one he had cut ten years
-before, and the cut on his hand opened again and bled the same glowing sap. When the third root parted the Elder Root shuddered from crown to
-foot, and its core dimmed, and the paths of the forest, for a moment, stood still.
+before, and the cut on his hand opened again and bled the same glowing sap. When the third root parted the Elder Root shuddered from crown to foot, and the core in its staff dimmed, and the paths of the forest, for a moment, stood still.
 
 "Not yet," said Fenna, to the tree, and to Hank. "But it will."
 
@@ -129,10 +124,8 @@ It was the first time anyone kept by the Tower had chosen to leave it. Shiori wr
 ## Thorns and the lost
 
 The Wood's rulers were what the Wood had been worst at in its first year. The **Moss Warden**, the Moot's first warden, guarded it from
-everyone, including the folk. The **Thorn Mother** wove thorn hedges round everything. The **Antler King** led the bark hounds in the hunt. The
-**Hollow Elder** carried a light inside it that was not a fire. The **Briar Witch** had sold curses at the Wood's edge and been taken by her own
-briars. The **Lantern Root** lured the lost with an amber light, the **Grey Oak** would not fall, and the **Mire Heart** swallowed what walked
-across it.
+everyone, including the folk. The **Thorn Mother** wove thorn hedges round everything. The **Antler King** led the bark hounds in the hunt. The **Hollow Elder**, the oldest of the Moot's elders, carried a light inside him that was not a fire. The **Briar Witch** had sold curses at the Wood's edge and been taken by her own
+briars. The **Lantern Root**, a huntsman the roots had taken, lured the lost with an amber light, the **Grey Oak**, the dead oath-tree's keeper, would not fall, and the **Mire Heart**, a bog-witch with the bog's heart beating in her, swallowed what walked across it.
 
 Among the thorn sprites, the faded Briarkin who half came back inside the Tower because nobody remembered them well enough to bring them back
 whole, was the greatest of them, **Grandmother Thorn**, who remembered being of the Spindle court and hated Grandma Ironknit for being remembered.

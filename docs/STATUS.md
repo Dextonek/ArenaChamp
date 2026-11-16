@@ -70,6 +70,24 @@ starts with every agent session (about 90 MB each, and it often fails to connect
 
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
+- **Done, not merged, not live (2026-11-16): the lore follows the floors and the models, the mothers "her", a won ruler at its door,
+  Cantor's icons in gold** (branch `t3/climb-lore-rulers-gates`; decisions 4, 6, 7, 9). Page `docs/lore/changes-2026-11-16.html`.
+  The gates: Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate, the gates above are champions the Tower drew to
+  them (LORE.md, canon 12, the Climb's pages, five heroes' pages). The rulers as drawn: the Pearl Tyrant a woman; the Bell Below, the
+  Lantern Leviathan, the Elder Root (Fenna's oak in an old man's shape), the Hollow Elder, the Lantern Root, the Grey Oak, the Mire
+  Heart, the Scarab Colossus (still the Scarab King's mother: her helm hides the face), the Dune Colossus, the Brass Sphinx, the
+  Glass Serpent, the Prism Mother, Mother of Echoes, the Drowned Lantern described as the people the models are; every event kept
+  (rulers.md, story ch. 6, 8, 9, 13, in-game.md). Floors: the named women "her" (21 lines on 19 floors), and in a commit of its own
+  the Wood keeper's him/her for the four Wood rulers now people and six "It ..." boss titles, then the ruler fights' hints ("Cut the roots that feed her...", "He goes under the
+  sand..."; floors 12-29 and 21): droppable. The six plain workers (the Dockhand, the Fishwife, the Woodcutter, the Water-Carrier,
+  the Ore-Carrier, the Gleaner) have their entries in the Climb's chapters and their peoples' pages. `game.ts` `pieceDone`: a
+  won ruler leaves the hero in front of its door. Cantor's four icons: engraved gold notes on plum lacquer (before:
+  `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
+  changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1, 21 and all 26 generated floors whose words changed (no errors, no stuck step);
+  the handmade floors' bakes (11, 21, 31, 41, the harbour) and a bake after merging the small fixes show no content change; the door rule in five cases; tsc, build; server tests: three of five runs 364 of 364; two failed on timing (one
+  "shop: timeout waiting for raid_gate", one not captured); the server imports none of this batch's files. Left for the user:
+  the War Drummer is "a boy" drawn as the Siege Lord's horned giant; the named men stay "it" (Sir Rust, Captain Candle...); floor
+  11's "cut the roots that feed it" stays (the Elder Root is still the oak).
 - Open world stage 3: done and merged (the entry below).
 - **Done, on branch `t3/b9981adf` (not merged, not live) (2026-11-16): the model review, round 3: decision 10's four ruler and boss
   looks** (page `docs/models/review/round3/index.html`, linked from round 2's). Fallen Climb rulers lie on the floor (all 15: 0.1-1.5 m

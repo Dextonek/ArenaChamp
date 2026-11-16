@@ -2839,7 +2839,7 @@ export const SANDS_28: GenFloor = {
   "hard": 1.36,
   "ruler": {
    "name": "The Red Jackal",
-   "title": "It runs the wadi",
+   "title": "He runs the wadi",
    "stand": "Cantor",
    "tint": "#a0603a",
    "scale": 2.41,
@@ -2946,7 +2946,7 @@ export const SANDS_28: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "He goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Isolde",

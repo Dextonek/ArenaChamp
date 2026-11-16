@@ -2814,7 +2814,7 @@ export const SANDS_23: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "He goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Silvane",
@@ -3380,7 +3380,7 @@ export const SANDS_23: GenFloor = {
     "name": "The Glass Widow",
     "giver": "keeper",
     "intro": [
-     "The Glass Widow walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     "The Glass Widow walks the middle of the wadi. Nobody crosses it twice. Fell her and the road is quieter."
     ],
     "steps": [
      {

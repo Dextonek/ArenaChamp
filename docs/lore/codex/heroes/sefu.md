@@ -31,7 +31,7 @@ while he rode to the Truce, to his heir during a fever, to a cousin at a festiva
 the fever, the cousin from a balcony. Sefu has not fallen. The Sands say it is because he is the sun's true heir, and he believes it. He wears layered linen, a gold collar
 and a striped gold headdress, and carries a sandstone crook, and his crook and his sarcophagus Judge his enemies: a Judged enemy cannot run far.
 
-He holds the gate of the Climb's Sands chapter, the Storm Canyon in the great storm that blew on the night he took the crown, and in the Tower he sits in judgement at its
+He holds the first gate of the Climb's Sands chapter, the Storm Canyon in the great storm that blew on the night he took the crown, and in the Tower he sits in judgement at its
 end. He sends his champions to the Ring to win the climb, and wants the Noon Seat for himself. [Nebet](nebet.md), the Throne's judge of the dead, weighs the dead for his
 Throne, and once, at his order, weighed the living. [Auriel](auriel.md), the Noonsworn's Dawn Paladin, calls his claim heresy: who owns the sun, she says, is the sky.
 "My father," Sefu answered, in the Ring, in front of forty thousand, and then, because he cannot help himself, "you never met yours." She has not forgiven it. He regrets

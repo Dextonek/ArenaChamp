@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, PackDef, PersonDef, PlaceDef, QuestD
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { SeaLook } from '../zone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The sea chapter's generator (pipeline/designs/tower-50.md): floor `n` (2 to 10) of the sea, made from floor 1's parts (the Drowned
@@ -22,7 +22,7 @@ const HANDMADE_GATES = ['Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'];
 
 const FLOOR_NAMES = ['The Salt Docks', 'Gull Point', 'The Sunken Mile', 'Wreckers’ Cove', 'The Lantern Coast', 'Kelp Hollow', 'The Anchorage', 'The Brine Steps', 'The Pearl Shallows'];
 const BLURBS = ['Docks where the salt never dries.', 'A point of rock the gulls will not leave.', 'A mile of town the sea walked into.', 'A cove that lured ships onto its rocks.', 'Lights along a coast that no ship reaches now.', 'A hollow full of kelp and the things in it.', 'An anchorage of boats that never sail.', 'Steps cut down to a sea that keeps rising.', 'Shallows where pearls lie with their divers.'];
-const RULERS: [string, string][] = [['The Drowned Admiral', 'Fleet, cannon and tide'], ['The Salt King', 'Crowned in brine'], ['Mother of Wrecks', 'She keeps what sinks'], ['The Tide Judge', 'Every tide a sentence'], ['The Pearl Tyrant', 'Hoarder of the shallows'], ['The Bell Below', 'It rings the sea in'], ['The Lantern Leviathan', 'A light that eats ships'], ['The Gull Queen', 'Wings and anchors']];
+const RULERS: [string, string][] = [['The Drowned Admiral', 'Fleet, cannon and tide'], ['The Salt King', 'Crowned in brine'], ['Mother of Wrecks', 'She keeps what sinks'], ['The Tide Judge', 'Every tide a sentence'], ['The Pearl Tyrant', 'Hoarder of the shallows'], ['The Bell Below', 'He rings the sea in'], ['The Lantern Leviathan', 'A light that eats ships'], ['The Gull Queen', 'Wings and anchors']];
 const TINTS = ['#2f8a96', '#3a7a9a', '#2a6a7a', '#4a8a8a', '#2f6f8f', '#3f8f8a', '#2a7f7a', '#4a7a9a'];
 const NAMED = ['The Brine Widow', 'Saltjaw', 'The Pale Diver', 'Captain Gull', 'Rustfin', 'Mother Kelp', 'The Tidecaller', 'Grim Anchor', 'Old Hobb’s Ghost', 'The Wet Bell', 'Barnacle Bess'];
 const NPCS = ['Tam', 'Wren', 'Marl', 'Cobb', 'Ysolde', 'Hobb', 'Nell', 'Fen'];
@@ -353,8 +353,8 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
       outro: [`The chain falls. ${poss(rulerName)} door stands open, far in the north. Take your time, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the harbour. Fell it and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the land side. Nobody goes to ${lower(Vl.name)} while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road is open again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the harbour. Fell ${herIt(named1)} and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the land side. Nobody goes to ${lower(Vl.name)} while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road is open again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Net Lines', giver: 'giver', intro: ['My boat lies on the shore. My lines are hauled from a spot in the north: hold the place while I do.'],
       steps: [

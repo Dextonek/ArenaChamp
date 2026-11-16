@@ -14,8 +14,7 @@ driven out of the Sands and is welcome nowhere else.
 ## Oblivion, the Unmaker
 
 [Oblivion](../heroes/oblivion.md) came through the Tear on the day of the Fall. It is the only one of the Unmade that has walked the Dial,
-and it wants nothing any faction can give: it wants the Dial unmade, hour by hour, door by door. It holds the gate of the War, the one
-thing on the Dial it has truly unmade. Every faction is its enemy, and three heroes (Wick, Tempo and Thessa) have sworn to send it back.
+and it wants nothing any faction can give: it wants the Dial unmade, hour by hour, door by door. It holds the War's first gate in the Climb, the one thing on the Dial it has truly unmade. Every faction is its enemy, and three heroes (Wick, Tempo and Thessa) have sworn to send it back.
 
 ## Sir Whiskers, the Lynx Duelist
 

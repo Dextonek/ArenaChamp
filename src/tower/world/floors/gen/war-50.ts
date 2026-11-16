@@ -3907,7 +3907,7 @@ export const WAR_50: GenFloor = {
     "name": "Mother Crow",
     "giver": "keeper",
     "intro": [
-     "Mother Crow walks the middle of the field, under no banner. Fell it, and let the song close."
+     "Mother Crow walks the middle of the field, under no banner. Fell her, and let the song close."
     ],
     "steps": [
      {

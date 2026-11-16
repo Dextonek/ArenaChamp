@@ -3285,7 +3285,7 @@ export const WOOD_19: GenFloor = {
   "hard": 1.22,
   "ruler": {
    "name": "The Mire Heart",
-   "title": "It beats under the moss",
+   "title": "Her heart beats under the moss",
    "stand": "Vesper",
    "tint": "#6a7a3a",
    "scale": 2.52,
@@ -3400,7 +3400,7 @@ export const WOOD_19: GenFloor = {
      "open": 9
     }
    },
-   "line": "Cut the roots that feed it; it stands open when none is left"
+   "line": "Cut the roots that feed her; she stands open when none is left"
   },
   "gate": {
    "hero": "Kaia",
@@ -3981,7 +3981,7 @@ export const WOOD_19: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and the Mire Heart waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and the Mire Heart waits at its heart, far to the north. Free the wisps, cut the roots that feed her, and her door opens."
     ],
     "quests": [
      "main",
@@ -4060,7 +4060,7 @@ export const WOOD_19: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the standing stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Mire Heart, and its door opens."
+     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the standing stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Mire Heart, and her door opens."
     ],
     "steps": [
      {

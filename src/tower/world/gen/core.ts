@@ -29,6 +29,15 @@ export function shuffle<T>(xs: readonly T[], rnd: () => number): T[] {
   return a;
 }
 
+/**
+ * A named enemy's words (the parent's decision, 2026-11-16: the named mothers are "her" everywhere): the women among the
+ * chapters' named enemies (a Mother, a Grandmother, a Widow, Bess, Annie, the Ore Bride) are "she" and "her"; every other named
+ * enemy, beast, thing or ghost, stays "it".
+ */
+export const isShe = (name: string) => /\b(Mother|Grandmother|Widow|Bess|Annie|Bride)\b/.test(name);
+export const herIt = (name: string) => (isShe(name) ? 'her' : 'it');
+export const sheIt = (name: string, cap = false) => (isShe(name) ? (cap ? 'She' : 'she') : cap ? 'It' : 'it');
+
 export const r2 = (x: number) => Math.round(x * 100) / 100;
 export const r4 = (x: number) => Math.round(x * 10000) / 10000;
 export const len = (v: V) => Math.hypot(v.x, v.z);

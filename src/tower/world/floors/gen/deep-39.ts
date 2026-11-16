@@ -3736,7 +3736,7 @@ export const DEEP_39: GenFloor = {
     "name": "Widow Cobble",
     "giver": "keeper",
     "intro": [
-     "Widow Cobble walks the west of the Deep. Nobody goes to the miners’ rest while it does."
+     "Widow Cobble walks the west of the Deep. Nobody goes to the miners’ rest while she does."
     ],
     "steps": [
      {

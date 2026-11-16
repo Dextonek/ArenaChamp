@@ -27,18 +27,21 @@ All of them Dune folk, who say the storm caught them:
 - **The Silk-Merchant** (odd floors), the last caravan's master, sells its silks and wants it brought home.
 - **The Glass-Seller** (even floors) sells lightning glass from the Flats, the glass a storm leaves where it strikes the sand.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Water-Carrier**, a Dune woman with a water jar on her head, walks between the last well that has water and the camp. She
+  has not spilt a drop in the storm, she says, in all the years it has blown.
+
 ## Its rulers and enemies
 
-The **Scarab Colossus** rules the twenty-first floor from under the sand, and burrows; above it its son the Scarab King, then the Dune
+The **Scarab Colossus**, a giantess in the beetle's shell, rules the twenty-first floor from under the sand, and burrows; above her her son the Scarab King, then the Dune
 Colossus, the Brass Sphinx, the Glass Serpent, the Mirage Lord, the Sand Tyrant, the Red Jackal and the Sun-Eater ([rulers](rulers.md)).
 Their packs are caravan raiders and slingers, Dune folk caught in the storm, who rob what passes; and the dust
 wraiths; and the great ones, the Dune Mother, the Raider Chief, the Storm Count and the Glass Widow ([bestiary](bestiary.md)).
 
 ## The gate and the crown
 
-[Sefu](../heroes/sefu.md), the Dune Sovereign, holds the chapter's gate: it is his storm, the one that blew on the night he took the
-crown, and in the Tower he still sits in judgement at its end. At the thirtieth floor, the crown, waits **the Heart of Noon**: the
-fallen sun's heart itself, or what the Tower holds of it.
+[Sefu](../heroes/sefu.md), the Dune Sovereign, holds the chapter's first gate: it is his storm, the one that blew on the night he took the
+crown, and in the Tower he still sits in judgement at its end. At the thirtieth floor, the crown, waits **the Heart of Noon**: the fallen sun's heart itself, or what the Tower holds of it. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

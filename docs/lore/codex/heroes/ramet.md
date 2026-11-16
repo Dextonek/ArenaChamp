@@ -35,8 +35,7 @@ because he is the only officer of the Throne who has never once taken a side in 
 lion's paw. It has never minded.
 
 Since the Climb opened he has been asked to take the Throne's champions up the Sands' chapter, and has done so twice, as far as the
-Brass Sphinx on the twenty-fourth floor: a lion of brass with a woman's face, from the gate of a city the Sands buried long ago, who
-asked him her riddle. He answered it. She did not let him pass anyway. He considers this the worst manners he has met in a century.
+Brass Sphinx on the twenty-fourth floor: the riddle-keeper of a city the Sands buried long ago, in a brass mask with a woman's face and a lion's mane, who asked him her riddle. He answered it. She did not let him pass anyway. He considers this the worst manners he has met in a century.
 
 Every year at the Homecoming he races [Zephyr](zephyr.md), the Spire-born wind blade, across the Glass Flats, the lion on the glass against the boy on the wind. The lion has
 never lost on sand. Zephyr has come within a length twice, and Ramet, who likes him, has started to worry about the third time.

@@ -2784,7 +2784,7 @@ export const SANDS_22: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "He goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Cantor",
@@ -3350,7 +3350,7 @@ export const SANDS_22: GenFloor = {
     "name": "The Dune Mother",
     "giver": "keeper",
     "intro": [
-     "The Dune Mother walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     "The Dune Mother walks the middle of the wadi. Nobody crosses it twice. Fell her and the road is quieter."
     ],
     "steps": [
      {

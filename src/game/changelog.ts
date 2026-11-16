@@ -49,6 +49,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'The Climb’s rulers, told as you meet them',
+        text: 'The Codex now tells each ruler as the Climb shows them: the Pearl Tyrant is a crowned woman, the Bell Below wears the old bell as his helm, the Elder Root is Fenna’s oak in an old man’s shape. The Climb’s named women are “her”, the gates above each chapter’s first are held by champions the Tower drew to them, a won ruler leaves you in front of its door, and Cantor’s spell icons carry engraved gold notes.',
+      },
+      {
+        tag: 'Tower',
         title: 'Robes that no longer glow, and Frost’s ice spires',
         text: 'On the Climb, the cream and white robes of the Sands’ and the War’s people are a shade darker, so they no longer glow white in their floors’ bright light. In Frostfall Lake, the ice shard lying at each spire’s foot is smaller, so a hero beside the spire no longer stands in it.',
       },

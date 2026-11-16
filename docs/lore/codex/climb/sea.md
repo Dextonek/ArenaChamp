@@ -26,6 +26,12 @@ All of them Coast folk, who say they were there on that morning:
 - **The Tide-Broker** (odd floors) weighs what the tide gives up and pays for it in coin a century old.
 - **The Coral-Pedlar** (even floors) sells the reef, and charms against drowning that she will not wear.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Dockhand**, a Coast man with a crate on a porter's frame, carries the morning's catch up from the quays. The morning has
+  not ended, so neither has the carrying.
+- **The Fishwife**, a Coast woman with a creel on her back, cries the catch through the drowned streets to buyers who are under
+  the water, and gives the best of it to the gulls.
+
 On the first floor a man called Tam the net-mender needs leading home.
 
 ## Its rulers and enemies
@@ -37,9 +43,9 @@ Barnacle, Saltjaw, Rustfin, Mother Kelp, Captain Gull, the Pale Diver, the Brine
 
 ## The gate and the crown
 
-[Marin](../heroes/marin.md), the Tide Dancer, holds the chapter's gate: she danced the water out of the sea temple on that very
+[Marin](../heroes/marin.md), the Tide Dancer, holds the chapter's first gate: she danced the water out of the sea temple on that very
 morning, and in the Tower she is still the one who decides when the tide goes out. At the tenth floor, the crown, **the Sun Warden**
-waits: the keeper of the sun's post at the Tower's top, who did not come down.
+waits: the keeper of the sun's post at the Tower's top, who did not come down. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

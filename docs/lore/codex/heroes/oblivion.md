@@ -20,7 +20,7 @@ Tower's stair that night, they passed the knight on the stair, going down ahead 
 It walked out of the Tower's gate before the gate was shut, and across the crater of Noonfall, and into the War of the Banners. It fought for neither side. It walked across the Field,
 and where it walked, things stopped being able to end: a wound that would not close and would not kill, a fire that would not go out and would not spread, a battle that would not stop.
 The War of the Banners ended outside the Tower in year 2, on the Ninth Field. Inside the Tower, on the Climb's War chapter, it has never ended, and the Hourkeepers believe that is the
-Unmaker's doing: that endless war is the one thing on the Dial it has truly unmade. It holds the gate there, the War's gatekeeper, the only gatekeeper who is not of the realm it guards.
+Unmaker's doing: that endless war is the one thing on the Dial it has truly unmade. It holds the first gate there, the War's gatekeeper, the only one of the five chapters' first gatekeepers who is not of the realm it guards.
 
 It wants no throne. It does not want the Noon Seat, or the sun, or anything any faction can give. What it wants, as far as anyone can tell, is the Dial unmade, hour by hour, door by door:
 not destroyed, but undone, so that nothing can begin and nothing can end. While it stands still it pulls in whatever is near, and what it pulls in does not always come back. It has

@@ -80,8 +80,11 @@ The crowns of the chapters are the sun's own: the Sun Warden on the tenth and fo
 fiftieth, and the Heart of Noon itself on the thirtieth. Above the fiftieth floor is **the Noon Seat**, where the sun rested at noon.
 It looks empty from below: it is where the Tower keeps the noon it took. Whoever reaches it decides what hangs there.
 
-Each chapter's gate is held by the Tower's echo of a hero of that realm, kept from a duel in the Ring: Marin at the Sea, Fenna at the Wood, Sefu at the Sands, Opaline at the Deep. At
-the War the gatekeeper is Oblivion, because that endless war is the one thing on the Dial it has truly unmade.
+Each chapter's first gate, at the end of its handmade first floor, is held by the Tower's echo of a hero of that realm, kept from a
+duel in the Ring: Marin at the Sea, Fenna at the Wood, Sefu at the Sands, Opaline at the Deep. At the War the first gate's keeper is
+Oblivion, because that endless war is the one thing on the Dial it has truly unmade. The gates of the floors above are held by
+champions the Tower drew to its gates: echoes of whoever has fought in the Ring, of any realm, kept from their duels as the first
+gates' are and set wherever the Tower wants a keeper, as a collector fills a shelf with what it has.
 
 ## Places
 
@@ -576,7 +579,7 @@ toward stone, which is why he hates Auriel's dawn more than any blade.
 The Walking Wood began walking on the day of the Fall, as if it had felt the sun go and set off to find it, and Fenna has kept it from
 trampling the Dial ever since. She is the Grove Warden of the Moot: a cloak of layered leaves, a pale bark collar, branches like
 antlers round her head, and a living staff that blooms in her hand. Wherever she fights she plants flowers, and she draws strength
-from standing among them. She holds the gate of the Wood. She argues with Hank about every tree he fells, and has never once won the
+from standing among them. She holds the Wood's first gate. She argues with Hank about every tree he fells, and has never once won the
 argument, or lost it. Vitriol's fumes killed a whole garden of hers, and she has not forgotten.
 
 ### Hank | the Moss Hewer | timber | greenwood | he | roster
@@ -655,8 +658,7 @@ fights in the Ring because the Hunt's quarrels are settled there, and because hi
 
 When the sun fell, its heat lifted the sea, and the sea came in over the Drowned Harbour and stayed. Marin was a dancer of the
 harbour's sea temple then, a barefoot girl in sea-glass, and she danced the water back out of the temple with ribbons of tide. She
-has danced the tide ever since. It turns every few seconds in her hands: high, it pushes; low, it pulls. She holds the gate of the
-Sea, keeps the harbour lights with the Windward, and lets Gus keep her temple floor wet. Under her tide lies the Gaol of Oaths, and
+has danced the tide ever since. It turns every few seconds in her hands: high, it pushes; low, it pulls. She holds the Sea's first gate, keeps the harbour lights with the Windward, and lets Gus keep her temple floor wet. Under her tide lies the Gaol of Oaths, and
 Kessa blames her for every flood.
 
 ### Kaia | the Tempest Caller | storm | windward | she | roster
@@ -817,8 +819,7 @@ she knocks down. Mum's unseen walls are the only walls she has never broken.
 The kings of the Sands always called the sun their father, and when it fell, the Sands said it fell there, into the dunes, which are
 still warm. Sefu took the Dune Throne the year after, from his sister Asenet, and declared himself the sun's heir: if a sun is to hang
 over the Tower again, he says, it should be his. He wears layered linen, a gold collar and a striped gold headdress, and carries a
-sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged enemy cannot run far. He holds the gate of the Sands
-and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.
+sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged enemy cannot run far. He holds the first gate of the Sands and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.
 
 ### Vitriol | the Plague Alchemist | alchemy | dune | he | roster
 - people: dune
@@ -961,8 +962,7 @@ every stitch she has put in the Tear. She keeps sewing.
 When the sun fell it tore the sky above the Tower, and something came through the Tear that the Dial has no word for. The Hourkeepers
 call it the Unmaker. It wears the shape of a towering knight in black plate cracked with glowing pink rifts, with a horned helm, one
 burning slit for an eye, and a greatsword of void. While it stands still it pulls in whatever is near, and what it pulls in does not
-always come back. It wants no throne: it wants the Dial unmade, hour by hour, door by door. It holds the gate of the War, where the
-Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.
+always come back. It wants no throne: it wants the Dial unmade, hour by hour, door by door. It holds the War's first gate, where the Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.
 
 ### Sir Whiskers | the Lynx Duelist | cat | loners | he | roster
 - people: ninefold | a lynx

@@ -217,7 +217,7 @@
    "ids": [
     "$13.id"
    ],
-   "weight": 5.4
+   "weight": 5.8
   }
  },
  {
@@ -249,11 +249,11 @@
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffb8e6"
+      "color": "#8a4a76"
      },
      {
       "offset": 1,
-      "color": "#e04aa8"
+      "color": "#3a0c2e"
      }
     ],
     "angle": -50
@@ -266,17 +266,17 @@
    "ids": [
     "$17.id"
    ],
-   "weight": 2.6,
+   "weight": 3.0,
    "cap": "round"
   }
  },
  {
   "command": "shape.ellipse",
   "params": {
-   "x": 12,
-   "y": 14,
-   "width": 40,
-   "height": 40
+   "x": 7,
+   "y": 9,
+   "width": 50,
+   "height": 50
   }
  },
  {
@@ -303,16 +303,16 @@
    "ids": [
     "$21.id"
    ],
-   "weight": 4.0
+   "weight": 0.1
   }
  },
  {
   "command": "shape.ellipse",
   "params": {
-   "x": 12,
-   "y": 14,
-   "width": 40,
-   "height": 40
+   "x": 7,
+   "y": 9,
+   "width": 50,
+   "height": 50
   }
  },
  {
@@ -330,7 +330,20 @@
    "ids": [
     "$25.id"
    ],
-   "color": "#e04aa8"
+   "gradient": {
+    "kind": "linear",
+    "stops": [
+     {
+      "offset": 0.0,
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 1,
+      "color": "#5a3f14"
+     }
+    ],
+    "angle": -50
+   }
   }
  },
  {
@@ -339,12 +352,94 @@
    "ids": [
     "$25.id"
    ],
-   "weight": 1.2,
+   "weight": 0.9,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 12,
+   "y": 14,
+   "width": 40,
+   "height": 40
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$29.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$29.id"
+   ],
+   "color": "#1e0a1a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$29.id"
+   ],
+   "weight": 3.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 12,
+   "y": 14,
+   "width": 40,
+   "height": 40
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$33.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$33.id"
+   ],
+   "color": "#f2e6d0"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$33.id"
+   ],
+   "weight": 1.0,
    "cap": "round",
    "dash": [
     2.4,
     2.4
    ]
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "ids": [
+    "$33.id"
+   ],
+   "opacity": 70
   }
  },
  {
@@ -361,7 +456,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$29.id"
+    "$38.id"
    ],
    "color": "#1e0a1a"
   }
@@ -370,7 +465,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$29.id"
+    "$38.id"
    ],
    "color": "#1e0a1a"
   }
@@ -379,7 +474,7 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$29.id"
+    "$38.id"
    ],
    "weight": 2.6,
    "join": "round",
@@ -390,28 +485,51 @@
   "command": "edit.duplicate",
   "params": {
    "ids": [
-    "$29.id"
+    "$38.id"
+   ],
+   "dx": 1.3,
+   "dy": 1.7
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "ids": "$42.ids",
+   "opacity": 55
+  }
+ },
+ {
+  "command": "object.arrange.sendBackward",
+  "params": {
+   "ids": "$42.ids"
+  }
+ },
+ {
+  "command": "edit.duplicate",
+  "params": {
+   "ids": [
+    "$38.id"
    ]
   }
  },
  {
   "command": "paint.setFill",
   "params": {
-   "ids": "$33.ids",
+   "ids": "$45.ids",
    "gradient": {
     "kind": "linear",
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffffff"
+      "color": "#f4dc94"
      },
      {
       "offset": 0.5,
-      "color": "#ffb8e6"
+      "color": "#c9a24a"
      },
      {
       "offset": 1,
-      "color": "#e04aa8"
+      "color": "#5a3f14"
      }
     ],
     "angle": -50
@@ -421,7 +539,7 @@
  {
   "command": "paint.setStroke",
   "params": {
-   "ids": "$33.ids",
+   "ids": "$45.ids",
    "none": true
   }
  },
@@ -435,7 +553,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$36.id"
+    "$48.id"
    ],
    "none": true
   }
@@ -444,7 +562,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$36.id"
+    "$48.id"
    ],
    "color": "#1e0a1a"
   }
@@ -453,9 +571,9 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$36.id"
+    "$48.id"
    ],
-   "weight": 3.61,
+   "weight": 3.8,
    "cap": "round",
    "join": "round"
   }
@@ -470,7 +588,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$40.id"
+    "$52.id"
    ],
    "none": true
   }
@@ -479,18 +597,31 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$40.id"
+    "$52.id"
    ],
-   "color": "#ffb8e6"
+   "gradient": {
+    "kind": "linear",
+    "stops": [
+     {
+      "offset": 0.0,
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 1,
+      "color": "#c9a24a"
+     }
+    ],
+    "angle": -50
+   }
   }
  },
  {
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$40.id"
+    "$52.id"
    ],
-   "weight": 1.52,
+   "weight": 1.71,
    "cap": "round",
    "join": "round"
   }
@@ -505,7 +636,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$44.id"
+    "$56.id"
    ],
    "none": true
   }
@@ -514,7 +645,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$44.id"
+    "$56.id"
    ],
    "color": "#1e0a1a"
   }
@@ -523,9 +654,9 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$44.id"
+    "$56.id"
    ],
-   "weight": 3.61,
+   "weight": 3.8,
    "cap": "round",
    "join": "round"
   }
@@ -540,7 +671,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$48.id"
+    "$60.id"
    ],
    "none": true
   }
@@ -549,18 +680,101 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$48.id"
+    "$60.id"
    ],
-   "color": "#ffb8e6"
+   "gradient": {
+    "kind": "linear",
+    "stops": [
+     {
+      "offset": 0.0,
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 1,
+      "color": "#c9a24a"
+     }
+    ],
+    "angle": -50
+   }
   }
  },
  {
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$48.id"
+    "$60.id"
    ],
-   "weight": 1.52,
+   "weight": 1.71,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M19.72 36.85 C19.72 36.85 21.43 36.21 22.19 35.81 C22.95 35.41 24.28 34.48 24.28 34.48"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$64.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$64.id"
+   ],
+   "color": "#5a3f14"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$64.id"
+   ],
+   "weight": 0.6649999999999999,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M25.7 23.46 C25.7 23.46 28.84 26.5 28.84 26.5"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$68.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$68.id"
+   ],
+   "color": "#fff4d0"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$68.id"
+   ],
+   "weight": 0.57,
    "cap": "round",
    "join": "round"
   }
@@ -579,7 +793,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$52.id"
+    "$72.id"
    ],
    "color": "#1e0a1a"
   }
@@ -588,7 +802,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$52.id"
+    "$72.id"
    ],
    "color": "#1e0a1a"
   }
@@ -597,7 +811,7 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$52.id"
+    "$72.id"
    ],
    "weight": 2.6,
    "join": "round",
@@ -608,24 +822,51 @@
   "command": "edit.duplicate",
   "params": {
    "ids": [
-    "$52.id"
+    "$72.id"
+   ],
+   "dx": 1.3,
+   "dy": 1.7
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "ids": "$76.ids",
+   "opacity": 55
+  }
+ },
+ {
+  "command": "object.arrange.sendBackward",
+  "params": {
+   "ids": "$76.ids"
+  }
+ },
+ {
+  "command": "edit.duplicate",
+  "params": {
+   "ids": [
+    "$72.id"
    ]
   }
  },
  {
   "command": "paint.setFill",
   "params": {
-   "ids": "$56.ids",
+   "ids": "$79.ids",
    "gradient": {
     "kind": "linear",
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffffff"
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 0.5,
+      "color": "#c9a24a"
      },
      {
       "offset": 1,
-      "color": "#ffd24a"
+      "color": "#5a3f14"
      }
     ],
     "angle": -50
@@ -635,7 +876,7 @@
  {
   "command": "paint.setStroke",
   "params": {
-   "ids": "$56.ids",
+   "ids": "$79.ids",
    "none": true
   }
  },
@@ -649,7 +890,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$59.id"
+    "$82.id"
    ],
    "none": true
   }
@@ -658,7 +899,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$59.id"
+    "$82.id"
    ],
    "color": "#1e0a1a"
   }
@@ -667,9 +908,9 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$59.id"
+    "$82.id"
    ],
-   "weight": 3.61,
+   "weight": 3.8,
    "cap": "round",
    "join": "round"
   }
@@ -684,7 +925,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$63.id"
+    "$86.id"
    ],
    "none": true
   }
@@ -693,18 +934,31 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$63.id"
+    "$86.id"
    ],
-   "color": "#ffb8e6"
+   "gradient": {
+    "kind": "linear",
+    "stops": [
+     {
+      "offset": 0.0,
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 1,
+      "color": "#c9a24a"
+     }
+    ],
+    "angle": -50
+   }
   }
  },
  {
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$63.id"
+    "$86.id"
    ],
-   "weight": 1.52,
+   "weight": 1.71,
    "cap": "round",
    "join": "round"
   }
@@ -719,7 +973,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$67.id"
+    "$90.id"
    ],
    "none": true
   }
@@ -728,7 +982,7 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$67.id"
+    "$90.id"
    ],
    "color": "#1e0a1a"
   }
@@ -737,9 +991,9 @@
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$67.id"
+    "$90.id"
    ],
-   "weight": 3.61,
+   "weight": 3.8,
    "cap": "round",
    "join": "round"
   }
@@ -754,7 +1008,7 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$71.id"
+    "$94.id"
    ],
    "none": true
   }
@@ -763,18 +1017,101 @@
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$71.id"
+    "$94.id"
    ],
-   "color": "#ffb8e6"
+   "gradient": {
+    "kind": "linear",
+    "stops": [
+     {
+      "offset": 0.0,
+      "color": "#f4dc94"
+     },
+     {
+      "offset": 1,
+      "color": "#c9a24a"
+     }
+    ],
+    "angle": -50
+   }
   }
  },
  {
   "command": "stroke.set",
   "params": {
    "ids": [
-    "$71.id"
+    "$94.id"
    ],
-   "weight": 1.52,
+   "weight": 1.71,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M35.72 36.85 C35.72 36.85 37.43 36.21 38.19 35.81 C38.95 35.41 40.28 34.48 40.28 34.48"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$98.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$98.id"
+   ],
+   "color": "#5a3f14"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$98.id"
+   ],
+   "weight": 0.6649999999999999,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M41.7 23.46 C41.7 23.46 44.84 26.5 44.84 26.5"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "ids": [
+    "$102.id"
+   ],
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "ids": [
+    "$102.id"
+   ],
+   "color": "#fff4d0"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "ids": [
+    "$102.id"
+   ],
+   "weight": 0.57,
    "cap": "round",
    "join": "round"
   }
@@ -794,16 +1131,16 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$75.id"
+    "$106.id"
    ],
-   "color": "#ffffff"
+   "color": "#f4dc94"
   }
  },
  {
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$75.id"
+    "$106.id"
    ],
    "none": true
   }
@@ -823,16 +1160,16 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$78.id"
+    "$109.id"
    ],
-   "color": "#ffffff"
+   "color": "#f4dc94"
   }
  },
  {
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$78.id"
+    "$109.id"
    ],
    "none": true
   }
@@ -852,16 +1189,16 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$81.id"
+    "$112.id"
    ],
-   "color": "#ffffff"
+   "color": "#f4dc94"
   }
  },
  {
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$81.id"
+    "$112.id"
    ],
    "none": true
   }
@@ -881,16 +1218,16 @@
   "command": "paint.setFill",
   "params": {
    "ids": [
-    "$84.id"
+    "$115.id"
    ],
-   "color": "#ffffff"
+   "color": "#f4dc94"
   }
  },
  {
   "command": "paint.setStroke",
   "params": {
    "ids": [
-    "$84.id"
+    "$115.id"
    ],
    "none": true
   }
@@ -904,21 +1241,29 @@
     "$21.id",
     "$25.id",
     "$29.id",
-    "$33.ids.0",
-    "$36.id",
-    "$40.id",
-    "$44.id",
+    "$33.id",
+    "$38.id",
+    "$42.ids.0",
+    "$45.ids.0",
     "$48.id",
     "$52.id",
-    "$56.ids.0",
-    "$59.id",
-    "$63.id",
-    "$67.id",
-    "$71.id",
-    "$75.id",
-    "$78.id",
-    "$81.id",
-    "$84.id"
+    "$56.id",
+    "$60.id",
+    "$64.id",
+    "$68.id",
+    "$72.id",
+    "$76.ids.0",
+    "$79.ids.0",
+    "$82.id",
+    "$86.id",
+    "$90.id",
+    "$94.id",
+    "$98.id",
+    "$102.id",
+    "$106.id",
+    "$109.id",
+    "$112.id",
+    "$115.id"
    ]
   }
  },
@@ -926,7 +1271,7 @@
   "command": "object.scale",
   "params": {
    "ids": [
-    "$87.id"
+    "$118.id"
    ],
    "sx": 118,
    "sy": 118,

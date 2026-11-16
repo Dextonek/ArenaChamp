@@ -84,8 +84,7 @@ through the forest. The Hunt of the Moot rides elk. A Wood folk fighter is hard 
 
 - **In the game:** [Fenna](../heroes/fenna.md), [Hank](../heroes/hank.md), [Bo](../heroes/bo.md).
 - **New:** [Arden](../heroes/arden.md).
-- **On the Climb:** the Wood's five, the Moss-Abbess, the Path-Lighter, the Kiln-Mother, the Amber-Seller and the Charm-Pedlar,
-  none of whom swore the Moot's oath; the Moss-Abbess's horn is an instrument, not her own ([the Wood](../climb/wood.md)).
+- **On the Climb:** the Wood's five, the Moss-Abbess, the Path-Lighter, the Kiln-Mother, the Amber-Seller and the Charm-Pedlar, and the Woodcutter at his work on every floor, none of whom swore the Moot's oath; the Moss-Abbess's horn is an instrument, not her own ([the Wood](../climb/wood.md)).
 
 ## Ties to other peoples
 
