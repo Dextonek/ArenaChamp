@@ -703,7 +703,7 @@ export function makeBannersFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
     { id: 'cantor', hero: 'Cantor', name: 'Cantor', role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: ['Hush. Two armies fought here and never stopped, and I sing for both. Take a banner in the camp: its soldiers will march with you. Then take the standards, hold the hill, and break the siege line in the north. The Marshal waits behind it.'], quests: ['main', 'bounty'] },
     { id: 'whiskers', hero: 'Sir Whiskers', name: 'Sir Whiskers', role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: ['I deserted. A cat of my breeding! Nine lives, and I used the first to run. Do me two small kindnesses and I will call it even.'], quests: ['cloth', 'braziers'] },
-    { id: 'brannoc', hero: 'Brannoc', name: 'Brannoc', role: 'giver', at: brannocAt, face: facing(brannocAt), greet: ['I hold the ground between the lines. Walk through the arch behind me, and we will see which of us the field remembers.'], quests: [] },
+    { id: 'brannoc', hero: 'Brannoc', name: 'Brannoc', role: 'rival', at: brannocAt, face: facing(brannocAt), greet: ['I hold the ground between the lines. Walk through the arch behind me, and we will see which of us the field remembers.'], quests: [] },
     { id: 'cleaver', hero: 'Madame Cleaver', name: 'Madame Cleaver', role: 'trader', at: C(-5.5, 5.5), face: 0.6, greet: ['A cook feeds both armies, and both pay. Shards for what you need.'], quests: [] },
   ];
   const quests: QuestDef[] = [
