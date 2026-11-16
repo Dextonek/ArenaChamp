@@ -41,6 +41,13 @@ The three agents below were restarted in their own threads from their saved comm
   the user then: a deploy drops live connections).
 - **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
   built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
+- **Next, the user said yes (2026-11-16): the hero framework.** One folder per hero (kit, spells, passive, weapon, look, icons, lore
+  entry; found by the game on its own), spell building blocks (bolt, dash, ground zone, shield, summon, status) so a spell is mostly a
+  description, a "new hero" command that makes the folder, lore entry, kit outline, model build file and checklist, a hero workbench
+  page (change numbers live, fight the CPU, see the balance), and automatic checks on a hero change (simulator, online sync, icon at
+  small size, model size, lore). Anka converted first as the sample, then the other 39 in batches, each checked in the simulator so
+  none plays differently; the twenty new heroes built the new way. Starts when the icon agent lands (it edits `src/heroes.ts` and
+  the kits). Brief: `docs/pipeline/hero-framework-brief.md`.
 - **Running (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
   `docs/tower/openworld/stage3/`): friends go through a door together, the boss runs the Raid's way (one brain, revives, hand-over).
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
@@ -50,7 +57,7 @@ The three agents below were restarted in their own threads from their saved comm
   Frostfall, Aubade and the Gloaming still inside the Tower) is still to come. Six heroes are not simply Dial-born: Zambini and
   Kohaku (Returned), Tempo (Half-kept), Anka and Nyx (Spilled), Oblivion (Followed). The game's Codex names none of the twenty
   unreleased heroes (titles instead; a check enforces it). Ready texts to tell it in the Climb and the Raid: `story/in-game.md`
-  (not wired in). New names to confirm: the Aumbry, Senmere, Iselm, Linnet, the Market of Noon, the Dawnless, The Long Noon.
+  (not wired in). Its new names were confirmed by the user (2026-11-16).
 - **Done and merged, not live (2026-11-16): six heroes reworked to show their peoples** (page `docs/heroes/revamp/index.html`, one
   commit each): Opaline (Gloaming folk: amethyst crystal in her skin, violet-black hair, amethyst gown; the dark sister beside
   Silvane), Mr. Ledger (the Long Dead: vellum skin on bone, ember eyes), Kaia (Coast folk: sea-tanned, oilskin storm coat, tide lines,
