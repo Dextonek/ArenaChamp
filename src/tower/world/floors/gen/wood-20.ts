@@ -4530,7 +4530,7 @@ export const WOOD_20: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once Ash and Ember has fallen."
+    "locked": "The gate is sealed. Its warden answers only once Ash and Ember have fallen."
    },
    {
     "id": "rival",

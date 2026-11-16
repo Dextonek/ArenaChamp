@@ -15,13 +15,14 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>19 floors checked</b> · <b>5 fixed</b> · <b>5 for you</b></div>
+<div class="sum"><b>20 floors checked</b> · <b>6 fixed</b> · <b>6 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
 <li><a href="#f06">Floor 6</a>: <b>The Pearl Tyrant is a man in the Codex, a crowned woman on the floor.</b> The Codex (climb/rulers.md): “A pearl merchant ... He drowned holding the strongbox.” Floor 6 draws him with the Gull Queen&#x27;s model (sea_queen, pieces/rulerModels.ts RULER_OF[6]), a crowned woman in a gown. Either the Codex says “she”, or floor 6 takes the Admiral&#x27;s or the Judge&#x27;s model (one number in RULER_OF; the three Sea models would then not be three floors each).</li>
 <li><a href="#f07">Floor 7</a>: <b>Rulers that are not people in the Codex wear a person&#x27;s figure.</b> The Codex: the Bell Below is “the harbour&#x27;s old bell ... It rings underwater”; floor 7 draws it with the Tide Judge&#x27;s model (a robed figure). The same on floor 8 (the Lantern Leviathan, “a great fish”, in the Judge&#x27;s figure) floor 17 (the Lantern Root, a root with an amber lantern, in the Antler King&#x27;s stag figure), floor 18 (the Grey Oak, a dead oak that walks, in the same) and floor 19 (the Mire Heart, a bog, in the Thorn Mother&#x27;s figure). The ruler models&#x27; floors were left to you when they were made; either the Codex says these rulers are people (the bell&#x27;s ringer, the Leviathan&#x27;s keeper...), or these floors get rulers of their own (Blender, one at a time).</li>
 <li><a href="#f17">Floor 17</a>: <b>Meeting yourself as the rival.</b> The bot played Lyra, and floor 17&#x27;s rival is Lyra: “Another climber. I am Lyra.” Any hero meets this on the floor whose rival (or gatekeeper) is that same hero. The fight is a mirror duel and works. If it should read better: the rival&#x27;s line could say so when the hero is the same (people.ts builds the card), or the floor could pick another rival for that hero (a design call).</li>
+<li><a href="#f20">Floor 20</a>: <b>The same words on floor 50 (the War&#x27;s crown, not my chapter).</b> Floor 50 says “Ash and Ember has fallen”, “Ash and Ember is behind” and “Ash and Ember waits behind” (src/tower/world/gen/war.ts, baked in floors/gen/war-50.ts). The fix would be the same as here: a plural verb when the ruler is Ash and Ember, then a re-bake of floors 42 to 50. Left to the agent of floors 31 to 50.</li>
 </ul>
 <h2>Fixed</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
@@ -29,6 +30,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <li><a href="#f04">Floor 4</a>: <b>“The salt pans is overrun”.</b> The keeper&#x27;s greeting is made from the main place&#x27;s name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea&#x27;s maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.</li>
 <li><a href="#f12">Floor 12</a>: <b>“The Lost Spade” asked for a bundle.</b> The Wood&#x27;s maker names the camp giver&#x27;s second quest “The Lost Spade”, “The Lost Lantern” or “The Lost Bundle”, but its words always spoke of a bundle. Now the thing dropped, carried and named on the HUD is the one in the quest&#x27;s name (src/tower/world/gen/wood.ts; floors 12 to 20 re-baked: only those words changed, on seven floors; it is still drawn as a bundle in the hand).</li>
 <li><a href="#f13">Floor 13</a>: <b>The keeper called the Thorn Mother “it”.</b> “... cut the roots that feed it, and its door opens”, for the Thorn Mother, the Moss Warden, the Antler King, the Briar Witch, and “Ash and Ember waits” on the crown. The Wood&#x27;s maker now gives each its word: her, him, them (a tree, a root or a bog stays “it”). src/tower/world/gen/wood.ts; floors 12-20 re-baked, only those lines changed (five floors).</li>
+<li><a href="#f20">Floor 20</a>: <b>“Once Ash and Ember has fallen”.</b> The gate&#x27;s lock spoke of the twin crown in the singular. The Wood&#x27;s maker now says “have” for them (with floor 13&#x27;s fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed.</li>
 </ul>
 <h2>Floors</h2><div class="toc">
 <a class="f l" href="#f01">1</a>
@@ -50,6 +52,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="l" href="#f17">17</a>
 <a class="" href="#f18">18</a>
 <a class="" href="#f19">19</a>
+<a class="f l" href="#f20">20</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -364,6 +367,20 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f19/map.jpg"><img loading="lazy" src="f19/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
 <figure><a href="f19/ruler-close.jpg"><img loading="lazy" src="f19/ruler-close.jpg" alt="The Mire Heart"></a><figcaption>The Mire Heart</figcaption></figure>
 <figure><a href="f19/overview.jpg"><img loading="lazy" src="f19/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f20"><h3>Floor 20: The Crown of the Wood</h3><p>Clean but for one word: the Wood&#x27;s crown. Cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; Ash and Ember (the Raid&#x27;s twin bosses, their own models, in the Cinder Court) fell on the first try; the rival (Anka), the trial and the gate (Tempo) all played.</p>
+<p><span class="tag fixed">fixed</span><b>“Once Ash and Ember has fallen”.</b> The gate&#x27;s lock spoke of the twin crown in the singular. The Wood&#x27;s maker now says “have” for them (with floor 13&#x27;s fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed.</p>
+<p><span class="tag list">list</span><b>The same words on floor 50 (the War&#x27;s crown, not my chapter).</b> Floor 50 says “Ash and Ember has fallen”, “Ash and Ember is behind” and “Ash and Ember waits behind” (src/tower/world/gen/war.ts, baked in floors/gen/war-50.ts). The fix would be the same as here: a plural verb when the ruler is Ash and Ember, then a re-bake of floors 42 to 50. Left to the agent of floors 31 to 50.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 32043 m², 32042 m²; 60 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 71 float, 97 gap, 10 buried, 3104 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1321 game s, every checkpoint reached; 25 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: Ash and Ember (Keepers of the Cinder Pit), model models/bosses/ash.glb, loaded yes after 5171 ms of real time</li><li>Frame check at the busiest spot (-86, 44), 4 units awake: median 9, 8.2, 8.8 ms, p95 12.7, 14.2, 11.2 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f20/ruler.jpg"><img loading="lazy" src="f20/ruler.jpg" alt="The Cinder Court: Ash and Ember as the fight opens"></a><figcaption>The Cinder Court: Ash and Ember as the fight opens</figcaption></figure>
+<figure><a href="f20/ruler-close.jpg"><img loading="lazy" src="f20/ruler-close.jpg" alt="Ash"></a><figcaption>Ash</figcaption></figure>
+<figure><a href="f20/person-rival.jpg"><img loading="lazy" src="f20/person-rival.jpg" alt="Anka, the rival"></a><figcaption>Anka, the rival</figcaption></figure>
+<figure><a href="f20/map.jpg"><img loading="lazy" src="f20/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f20/overview.jpg"><img loading="lazy" src="f20/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>

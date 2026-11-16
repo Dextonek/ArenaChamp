@@ -575,7 +575,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
     { id: 'lair', piece: 'ruler', name: crown ? 'The Cinder Court' : `${poss(rulerName)} door`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: lairZ, bx: 3.4, bz: lairZ, r: 0.6, height: 3.8 }, locked: `Roots hold the door shut. ${keeperHero} has a quest about the wisps.` },
     { id: 'trial', piece: 'trial', name: pick(['The Hollow Stump', 'The Root Cellar', 'The Moss Barrow']), at: trial, r: 2, locked: '' },
-    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} has fallen.` },
+    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} ${rulerObj === 'them' ? 'have' : 'has'} fallen.` },
     { id: 'rival', piece: 'rival', name: `${poss(rivalHero)} thicket`, at: rivalDoor, r: 2, locked: '' },
   ];
   const cacheDefs = caches.map((c, i) => ({ id: `c${i + 1}`, at: c, shards: shard([25, 30, 20, 30, 25, 20][i]), ...(i === 2 || i === 5 ? { boon: true } : {}) }));
