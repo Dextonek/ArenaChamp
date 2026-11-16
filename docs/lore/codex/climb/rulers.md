@@ -15,8 +15,7 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
 
 - **The Drowned Admiral (floors 1 and 2).** Admiral of Sallowmouth's fleet, who on the morning of the Fall ordered every ship to stay
   at anchor to ride out the strange tide, and went down with all of them. His flagship's wreck lies across the harbour mouth; he
-  fights with its anchor and its cannon, and calls the tide. He still believes he gave the right order. <!-- team -->(The floor's oldest code calls
-  him the Drowned Captain.)<!-- /team -->
+  fights with its anchor and its cannon, and calls the tide. He still believes he gave the right order. <!-- team -->(Floor 1's code called him the Drowned Captain until 2026-11-16.)<!-- /team -->
 - **The Salt King (3).** The master of the salt pans north of the harbour, who sold salt by weight and cheated every buyer by a
   fingertip. The sea took his pans and made him its own: crusted white, he weighs climbers now.
 - **Mother of Wrecks (4).** A wreckers' matriarch who lit false lights on the headlands to bring ships onto the rocks. The water came
