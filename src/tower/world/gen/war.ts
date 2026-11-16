@@ -665,6 +665,11 @@ export function makeBannersFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   const We = P('west'), Ea = P('east'), No = P('north'), Wa = P('wagons'), Hi = P('hill'), Ke = P('keep'), Fa = P('farm');
   for (const p of places) S.dress(p);
   const siteSpots = [We.c, Ea.c, No.c, Wa.c];
+  // The two ridges and the works have their standard on a 0.9 m stone foot in the middle (the main quest touches it there): their
+  // stand, and the armies' homes there, are 1.5 m clear of the foot, on its outer side, between the standard and the shields or
+  // catapults behind it (the model review, round 2; towards the middle they came within 15 m of the waystones there). Set after the
+  // dressing, so nothing else on the floor moves.
+  for (const p of [We, Ea, No]) { const st = add(p.c, toMid(p.c), -2.4); p.stand = { x: r2(st.x), z: r2(st.z) }; }
 
   // --- roads: the camp to the two ridges, the ridges to the north, the camp up the middle to the hill and the siege line -------------
   const middle: V = { x: r2(L.range(-5, 5)), z: r2(L.range(4, 12)) };
@@ -700,9 +705,9 @@ export function makeBannersFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   // --- the small floor's content, with its ids --------------------------------------------------------------------------------
   const enemies = { ...armies((x) => x), ...neutrals({ shard: (x) => x }) };
   const packs: PackDef[] = [
-    ...site('a', We.c, { footman: 2, bowman: 1 }),
-    ...site('b', Ea.c, { footman: 1, bowman: 1, knight: 1 }),
-    ...site('c', No.c, { footman: 2, knight: 1 }),
+    ...site('a', We.stand, { footman: 2, bowman: 1 }),
+    ...site('b', Ea.stand, { footman: 1, bowman: 1, knight: 1 }),
+    ...site('c', No.stand, { footman: 2, knight: 1 }),
     ...site('d', Wa.c, { footman: 1, bowman: 2 }),
     { id: 'siege', at: siege.c, leash: 24, mix: [{ kind: 'ashen', n: 3 }], elite: 'bearer' },
     { id: 'deserter', at: patrol[0], leash: 24, mix: [{ kind: 'deserter', n: 1 }], named: { name: 'The Deserter Knight', speed: 1.7, patrol, bounty: { shards: 45, relic: true } } },
