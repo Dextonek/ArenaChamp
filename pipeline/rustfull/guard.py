@@ -127,7 +127,12 @@ def main():
         moved = json.loads(MOVED.read_text(encoding="utf-8")) if MOVED.exists() else {}
         for pair in args.moved:
             old, new = pair.split("=")
-            moved[new] = {"from": old, "was": git_digest(old), "now": digest(new)}
+            entry = {"from": old, "was": git_digest(old), "now": digest(new)}
+            # moved twice (or an import changed, then moved): judged by where it came from first
+            first = moved.pop(old, None) if old != new else None
+            if first and first["now"] == entry["was"]:
+                entry["from"], entry["was"] = first["from"], first["was"]
+            moved[new] = entry
             print(f"  {old} -> {new}")
         MOVED.write_text(json.dumps(moved, indent=1), encoding="utf-8", newline="")
         return

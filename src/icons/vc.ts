@@ -10,13 +10,6 @@ import type { HeroKit, HeroSpell } from '../heroes';
  * kit's own canvas icon is drawn, and the file's picture replaces it in that canvas once it has decoded.
  */
 const DRAWN = new Set<string>([
-  'auriel',
-  'barry-cloudsley',
-  'brannoc',
-  'isolde',
-  'kaia',
-  'mr-ledger',
-  'sirix',
 ]);
 
 /** A hero's file stem: its name in lower case with dashes (`Big Yoko` -> `big-yoko`); the twins are `pim` and `pom`. */

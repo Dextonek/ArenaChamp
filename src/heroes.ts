@@ -2,20 +2,13 @@
  * Hero kits for hero mode (`src/heroMode.ts`): four spells bound to Q / W / E / R, R being the ultimate. A kit is
  * data only; its spells are ordinary registered effects (looked up by label).
  *
- * The heroes are moving into folders of their own (`src/heroes/<theme>/`, docs/pipeline/hero-framework.md), found by
- * src/heroes/index.ts: a hero in a folder is in none of the lists below, its card brings its kit, model and body, and its
- * place in `HERO_KITS` is the card's `order`. The heroes not moved yet are still listed here by hand.
+ * Every hero lives in a folder of its own (`src/heroes/<theme>/`, docs/pipeline/hero-framework.md), found by
+ * src/heroes/index.ts: its card brings its kit, model and body, and its place in `HERO_KITS` is the card's `order`. Nothing
+ * here is edited for a new hero.
  */
 import type { BuffKind } from './effects/status';
 import type { BodyLook } from './raid/bodies/look';
 import type { Trait } from './traits/types';
-import { dawnKit } from './kits/dawn';
-import { hiveKit } from './kits/hive';
-import { stormKit } from './kits/storm';
-import { forgeKit } from './kits/forge';
-import { frostKit } from './kits/frost';
-import { ledgerKit } from './kits/ledger';
-import { weatherKit } from './kits/weather';
 import { useVcIcons } from './icons/vc';
 import { HERO_CARDS } from './heroes/index';
 
@@ -104,11 +97,10 @@ export interface HeroKit {
 }
 
 /**
- * Each hero's rigged figure, the same one in fights and on the Heroes page. _v2: the current style (blender/heroes/moba_figures.py);
- * _v3: the new heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2 file kept beside it; the others
- * are still the first style (blender/heroes/hero_figures.py).
- */
-/**
+ * Each hero's rigged figure is on its card (`model`), the same one in fights and on the Heroes page. _v2: the second style
+ * (blender/heroes/moba_figures.py); _v3: the heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2
+ * file kept beside it; the others the first style (blender/heroes/hero_figures.py).
+ *
  * The fourth style (user, 2026-11-10: "make all heroes in that style"): a realistic body moved by the animation pack's
  * own clips (src/motion/real.ts, pipeline/designs/style-v4). Every hero has such a model beside its older one, named
  * `<theme>_v4.glb`; they are shown unless the address says `?figs=old`.
@@ -116,16 +108,6 @@ export interface HeroKit {
 const FIGS_OLD = typeof location !== 'undefined' && new URLSearchParams(location.search).get('figs') === 'old';
 /** The fourth-style model that stands in for an older one: `models/heroes/blood_v2.glb` -> `models/heroes/blood_v4.glb`. */
 export const modelV4 = (url: string | undefined) => (url && !FIGS_OLD ? url.replace(/^(models\/heroes\/[a-z]+)(_v\d+)?\.glb$/, '$1_v4.glb') : url);
-
-const MODELS: Record<string, string> = {
-  Brannoc: 'models/heroes/forge_v2.glb',
-  Isolde: 'models/heroes/frost_v2.glb',
-  Kaia: 'models/heroes/storm_v2.glb',
-  Auriel: 'models/heroes/dawn_v2.glb',
-  Sirix: 'models/heroes/hive.glb',
-  'Mr. Ledger': 'models/heroes/ledger_v3.glb',
-  'Barry Cloudsley': 'models/heroes/weather_v3.glb',
-};
 
 /**
  * The size each hero's hits are judged with, measured from its model (2026-11-04: the width 90% of its body fits in, and the
@@ -136,34 +118,22 @@ const MODELS: Record<string, string> = {
  * without the basket and the sheep; Silvane, Madame Cleaver and Sir Whiskers lost a hair tower, a tall hat and a plume;
  * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.33, so a small hero can still be clicked.
  */
-export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
-  Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
-  Kaia: { radius: 0.47, height: 3.24 },
-  Auriel: { radius: 0.47, height: 2.33 },
-  Sirix: { radius: 0.44, height: 2.31 },
-  'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  'Barry Cloudsley': { radius: 0.46, height: 3.06 },
-  // the heroes in folders: their cards'
-  ...Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body])),
-};
+export const HERO_BODIES: Record<string, { radius: number; height: number }> = Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body]));
 
-/** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
-const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, ledgerKit, weatherKit];
-
-/** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
+/** The roster in order: each hero's card at its `order` (0 = Vesper ... 39 = Anka); two cards on one place, or a gap, stop the page. */
 function roster(): HeroKit[] {
   const out: (HeroKit | undefined)[] = [];
   for (const c of HERO_CARDS) {
     if (out[c.order]) throw new Error(`Two heroes want place ${c.order} in the roster: ${out[c.order]!.name} and ${c.kit.name}`);
     out[c.order] = { ...c.kit, model: c.model };
   }
-  const listed = LISTED.slice();
-  for (let i = 0; listed.length; i++) if (!out[i]) out[i] = listed.shift();
+  const gap = out.findIndex((k) => !k);
+  if (gap >= 0 || out.length !== HERO_CARDS.length) throw new Error(`No hero's card has place ${gap} in the roster`);
   return out as HeroKit[];
 }
 
 export const HERO_KITS: HeroKit[] = roster().map((k) => {
-  const kit = { ...k, model: modelV4(k.model ?? MODELS[k.name]) };
+  const kit = { ...k, model: modelV4(k.model) };
   if (kit.alt) {
     // the other twin: its own model, in the same style
     kit.alt.model = modelV4(kit.alt.model);

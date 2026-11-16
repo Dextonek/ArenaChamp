@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { CrescentArc, clearScreenFx, createScreenFx } from '../../effects/parts';
-import { FROST, FROST_CSS, FrostFerns, RimeRing, Snow } from '../../effects/parts/frost';
+import { FROST, FROST_CSS, FrostFerns, RimeRing, Snow } from '../../heroes/frost/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

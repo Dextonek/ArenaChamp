@@ -4,7 +4,7 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, clearScreenFx, createScreenFx } from '../../effects/parts';
 import {
   LightningTree, Puddles, RainSheet, Sparks, StormCloud, STORM, STORM_CSS,
-} from '../../effects/parts/storm';
+} from '../../heroes/storm/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

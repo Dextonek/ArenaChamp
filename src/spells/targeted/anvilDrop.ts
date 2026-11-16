@@ -4,7 +4,7 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, clearScreenFx, createScreenFx } from '../../effects/parts';
 import {
   FORGE_CSS, ForgeIron, ForgeSigil, IronChunks, QuenchSteam, SlagBlobs, SlagPool, Sparks,
-} from '../../effects/parts/forge';
+} from '../../heroes/forge/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

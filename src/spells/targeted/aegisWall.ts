@@ -4,7 +4,7 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import {
   DAWN, DAWN_CSS, HaloRing, LightBeams, LightPanels, Sigil, SunEmblems, SunRays, dawnEaseOutBack, dawnFacing, dawnForward, dawnOrient,
-} from '../../effects/parts/dawn';
+} from '../../heroes/dawn/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

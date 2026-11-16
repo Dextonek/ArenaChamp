@@ -4,10 +4,10 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import {
   DAWN, DAWN_CSS, HaloRing, LightPanels, Sigil, SunRays, dawnEaseOut, dawnFacing, dawnOrient,
-} from '../../effects/parts/dawn';
+} from '../../heroes/dawn/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { DESCENT_AIR } from '../../traits/dawn';
+import { DESCENT_AIR } from '../../heroes/dawn/trait';
 
 /**
  * Dawn Descent (dawn kit, R: a leap with a landing zone). Auriel crouches on a sun sigil, the standing blades round her
