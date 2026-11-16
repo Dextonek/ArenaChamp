@@ -4,6 +4,7 @@ import { startGate, startRival, startTrial } from './duels';
 import { piecesOf } from './floors';
 import { buildRuler } from './ruler';
 import type { PieceHandle, PieceIn, PieceKind, PieceOut } from './types';
+import { rivalStandIn, renamed } from '../rival';
 
 export type { PieceHandle, PieceIn, PieceKind, PieceOut, PieceReport, PiecesDef, RulerDef } from './types';
 export { PIECES, piecesOf } from './floors';
@@ -24,7 +25,10 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
   const def = piecesOf(floor)!;
   // The seeds follow the number the pieces were tuned at (a handmade floor that moved up keeps its old fights); the titles say the floor.
   const seedN = def.tunedAs ?? floor;
-  const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: def.rival ? `Rival: ${def.rival.hero}` : 'Rival' };
+  // A rival who is the hero being played is the next hero on the roster, as the floor's zone has it (../rival.ts).
+  const stand = def.rival ? rivalStandIn(def.rival.hero, input.hero, api.kits.map((k) => k.name)) : '';
+  const rival = def.rival && stand !== def.rival.hero ? { ...def.rival, hero: stand, line: renamed(def.rival.line, def.rival.hero, stand) } : def.rival;
+  const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: rival ? `Rival: ${rival.hero}` : 'Rival' };
   const run = new PieceRun(api, { ...input, floor }, titles[kind], done);
   switch (kind) {
     case 'ruler': {
@@ -50,8 +54,8 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
       startTrial(run, def.trial, floor, seedN);
       break;
     case 'rival':
-      if (!def.rival) throw new Error(`floor ${floor} has no rival duel: the zone runs its race`);
-      startRival(run, def.rival, floor, seedN);
+      if (!rival) throw new Error(`floor ${floor} has no rival duel: the zone runs its race`);
+      startRival(run, rival, floor, seedN);
       break;
   }
   return run;
