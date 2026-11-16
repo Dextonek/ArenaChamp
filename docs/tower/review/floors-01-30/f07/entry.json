@@ -1,0 +1,16 @@
+{
+ "floor": 7,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable; the rival (Silvane), the trial (a horde), the ruler (the Bell Below; the bot lost the first try and won the second, as a person may) and the gate (Kaia) all played.",
+ "found": [
+  {"kind": "list", "title": "The Bell Below is a bell in the Codex, a judge on the floor", "text": "The Codex: “The harbour's old bell ... It rings underwater, and something answers.” Floor 7 draws it with the Tide Judge's model (a robed figure), as RULER_OF puts the Judge on floors 5, 7 and 8 (floor 8's Lantern Leviathan, “a great fish”, too). The ruler models' names and floors were left to you when the models were made; this is one more reason to look: the Codex could say the bell's ringer is what climbers fight, or these two floors get rulers of their own.", "pics": [["ruler-close.jpg", "The Bell Below as drawn"]]},
+  {"kind": "ok", "title": "The props the probe flagged", "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths, three shells just under the sand. Nothing in the air."}
+ ],
+ "pictures": [
+  ["person-rival.jpg", "Silvane, the rival"],
+  ["pack-d.jpg", "The boat sheds' pack"],
+  ["person-villager.jpg", "The Lamp-Bearer in the old village"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

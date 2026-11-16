@@ -1,0 +1,130 @@
+{
+ "floor": 7,
+ "part": "climb-review-shots",
+ "wallSeconds": 67.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 7,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-49.2,-147.4 y11.32 depth out72n w5.78 h6.14 m1.58 p2 #304837",
+  "probe-float-1": "-109.7,-115.8 y11.61 depth out74n w5.23 h3.93 m1.27 p1 #304837",
+  "probe-float-2": "-104.4,-116.9 y11.82 depth out71n w4.83 h6.51 m1.16 p3 #304837",
+  "probe-float-3": "-121,-104.2 y11.51 depth out72n w5.75 h7.74 m1.35 p3 #304837",
+  "probe-gap-4": "10.9,-92.6 y8.96 depth edge w4.42 h3.75 m8.03 sunk-0.77 #304837",
+  "probe-gap-5": "10.7,-93.6 y9.72 depth out3n w4.37 h3.29 m7.75 sunk-0.91 #304837",
+  "probe-gap-6": "-66.6,-59.7 y8.78 depth edge w4.28 h3.22 m7.16 sunk-1.24 #304837",
+  "frames": {
+   "at": [
+    -65,
+    29
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 12.9,
+     "p95": 23.1,
+     "worst": 34.5
+    },
+    {
+     "med": 11.6,
+     "p95": 21.4,
+     "worst": 33.8
+    },
+    {
+     "med": 11.1,
+     "p95": 15.6,
+     "worst": 17.5
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Bell Below",
+   "title": "It rings the sea in",
+   "model": "models/tower/sea_judge_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 4851,
+   "frames": 481,
+   "at": [
+    -0.2,
+    15.5
+   ],
+   "heroAt": [
+    -0.2,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}
