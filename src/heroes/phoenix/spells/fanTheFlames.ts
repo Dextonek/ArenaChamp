@@ -1,21 +1,20 @@
 import * as THREE from 'three';
-import { Emitter } from '../../../emitter';
 import { ShockRefraction, StarBurst } from '../../../effects/parts';
-import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../parts';
-import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph';
-import { frameCast, type CastContext } from '../../../effects/targeting';
-import type { Effect, EffectModule } from '../../../effects/types';
+import type { Look } from '../../framework/blocks';
+import { spell, type Cast } from '../../framework/spell';
+import anka from '../hero';
 import { FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, MAX_EMBERS, STAMP_R } from '../numbers';
+import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } from '../parts';
 import { burnOut, castNo, emberLive, embersOf, type Ember } from '../trait';
 
 /**
- * Fan the Flames (phoenix kit, W: no aim). One sweep of the fan: every ember of hers that burns is the centre of a 2.2 m
- * ring. For 0.8 s each ring fills; then they flare: an enemy inside any of them at that moment, on its LIVE position
- * (`ctx.enemies`, not the list frozen at the cast), takes 60, once, however many rings it stands in. An ember stamped out
- * meanwhile does not flare. Then every ember burns out (the trait's `burnOut`, both screens): she has no nest until the
- * next quill lands. The rings come from the embers at the cast (the trait's records, the same on both screens): they are
- * the telegraph (impact 0.8 s: she is rooted until then) and the hit shape. 2.2 m takes 0.8 s to leave with a reaction, so
- * the answer holds from the very middle. The CPU casts it only with the enemy inside a ring (`aiHold`). Clean by 1.6 s.
+ * Fan the Flames (Anka's W: no aim). One sweep of the fan: every ember of hers that burns is the centre of a 2.2 m ring. For
+ * 0.8 s each ring fills; then they flare: an enemy inside any of them at that moment, on its LIVE position, takes 54, once,
+ * however many rings it stands in. An ember stamped out meanwhile does not flare. Then every ember of her earlier casts burns
+ * out (the passive's `burnOut`, both screens): she has no nest until the next quill lands. The rings come from the embers at
+ * the cast (the passive's records, the same on both screens): they are the danger zones (impact 0.8 s: she is rooted until
+ * then) and the hit shape. 2.2 m takes 0.8 s to leave with a reaction, so the answer holds from the very middle. The CPU casts
+ * it only with the enemy inside a ring (the passive's `aiHold`). Clean by 1.6 s.
  *
  * The look. For the 0.8 s each ring fills: flame orange spreads from the ember to the gold rim (a thin pale ash line outside
  * it), small flames stand up along the rim and grow, and feathers of flame light one after another round the ember, turning
@@ -23,46 +22,26 @@ import { burnOut, castNo, emberLive, embersOf, type Ember } from '../trait';
  * outward along the floor and stops at the rim (2.2 m: what is drawn is what is hit), over a gold flash in the middle
  * (bright, not white), with a small star, a few red feathers thrown up and a ring of force. Short: gone 0.55 s after it.
  * Timeline: fill 0-0.8, flare 0.8, clean by 1.6 s.
- * Without a trait (the VFX tool) the effect draws the embers' feathers itself, and with no ember at all it shows one ring
+ * Without a passive (the VFX tool) the effect draws the embers' feathers itself, and with no ember at all it shows one ring
  * at the aim point, for the look only: nothing is hit there.
  */
-export interface FanTheFlamesSettings {
-  damage: number;
-  loop: boolean;
+interface Fan {
+  /** This cast's number among hers (`castNo`): what both screens order her embers by. */
+  seq: number;
+  /** The embers that burn at the cast: the rings' centres. */
+  recs: Ember[];
 }
 
-export const defaultFanTheFlames = (): FanTheFlamesSettings => ({ damage: FLARE_DAMAGE, loop: false });
-
-const HIT_T = FLARE_WIND;
-const DURATION = HIT_T + 0.8;
 const HIT_R = FLARE_RADIUS;
 // The look only.
 const SWIRL = 14; // feathers of flame turning round each ember
 const RIM = 16; // small flames standing along each rim
 const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
-export class FanTheFlames implements Effect {
-  readonly group = new THREE.Group();
-  readonly settings: FanTheFlamesSettings;
-  readonly emitters: Emitter[] = [];
-  shake = 0;
-  playing = false;
-
-  /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
-  ctx: CastContext | null = null;
-  /** The circles that are hit: one per ember that burned at the cast. */
-  circles: TelegraphShape[] = [];
-  private recs: Ember[] = [];
-  /** This cast's number among hers (`castNo` in src/heroes/phoenix/trait.ts): what both screens order her embers by. */
-  private seq = 0;
-  private time = 0;
-  private flared = false;
-  private lit: boolean[] = [];
-
-  // The look.
-  /** Where it is drawn: at each ember of the cast; with none at all and no trait (the VFX tool), one spot at the aim point, for show. */
+class FanLook implements Look<Fan> {
+  /** Where it is drawn: at each ember of the cast; with none at all and no passive (the VFX tool), one spot at the aim point, for show. */
   private spots: { x: number; z: number }[] = [];
-  /** No trait draws the embers on this screen (the VFX tool): the effect draws their feathers itself. */
+  /** No passive draws the embers on this screen (the VFX tool): the effect draws their feathers itself. */
   private own = false;
   private burstDone = false;
   private discs: THREE.Mesh[] = [];
@@ -79,8 +58,7 @@ export class FanTheFlames implements Effect {
   private v2 = new THREE.Vector3();
   private v3 = new THREE.Vector3();
 
-  constructor(settings: FanTheFlamesSettings = defaultFanTheFlames()) {
-    this.settings = settings;
+  constructor(private group: THREE.Group) {
     for (let i = 0; i < MAX_EMBERS; i++) {
       const d = disc(HIT_R, PHOENIX.body, 0, 0.03), r = ring(HIT_R, PHOENIX.hot, 0, 0.05, 0.1), f = ring(HIT_R + 0.08, PHOENIX.ash, 0, 0.045, 0.05);
       const b = ring(HIT_R, PHOENIX.hot, 0, 0.06, 0.45), g = softDisc(1.2, PHOENIX.hot, 0, 0.055, 3);
@@ -93,48 +71,12 @@ export class FanTheFlames implements Effect {
       this.glows.push(g);
       this.stars.push(star);
       this.shocks.push(shock);
-      this.group.add(d, f, r, b, g, star.mesh, shock.mesh);
+      group.add(d, f, r, b, g, star.mesh, shock.mesh);
     }
-    this.group.add(this.flames.mesh, this.plumes.mesh);
-    this.reset();
+    group.add(this.flames.mesh, this.plumes.mesh);
   }
 
-  get duration() {
-    return DURATION;
-  }
-
-  get impactTime() {
-    return HIT_T;
-  }
-
-  cast(ctx: CastContext) {
-    this.ctx = ctx;
-    this.seq = castNo(ctx.caster);
-    // The embers that burn now: the same records on both screens.
-    this.recs = embersOf(ctx.caster).slice(0, MAX_EMBERS);
-    this.circles = this.recs.map((e): TelegraphShape => ({ kind: 'circle', x: e.x, z: e.z, radius: HIT_R }));
-    // The look: where it is drawn, and whether the embers' own feathers are ours to draw.
-    this.own = !emberLive(ctx.caster);
-    this.spots = this.recs.map((e) => ({ x: e.x, z: e.z }));
-    if (this.own && this.spots.length === 0) this.spots = [{ x: ctx.point.x, z: ctx.point.z }];
-    while (this.own && this.locals.length < this.spots.length) {
-      const o = emberLook(STAMP_R);
-      o.visible = false;
-      this.locals.push(o);
-      this.group.add(o);
-    }
-  }
-
-  play() {
-    this.reset();
-    this.playing = true;
-  }
-
-  private reset() {
-    this.time = 0;
-    this.shake = 0;
-    this.flared = false;
-    this.lit = [];
+  reset() {
     this.burstDone = false;
     this.flames.reset();
     this.plumes.reset();
@@ -144,6 +86,25 @@ export class FanTheFlames implements Effect {
       this.shocks[i].set(this.v1, 0, 0);
     }
     for (const o of this.locals) o.visible = false;
+  }
+
+  /** Where it is drawn, and whether the embers' own feathers are ours to draw. */
+  cast(c: Cast<Fan>) {
+    const ctx = c.ctx!;
+    this.own = !emberLive(ctx.caster);
+    this.spots = c.state.recs.map((e) => ({ x: e.x, z: e.z }));
+    if (this.own && this.spots.length === 0) this.spots = [{ x: ctx.point.x, z: ctx.point.z }];
+    while (this.own && this.locals.length < this.spots.length) {
+      const o = emberLook(STAMP_R);
+      o.visible = false;
+      this.locals.push(o);
+      this.group.add(o);
+    }
+  }
+
+  tick(dt: number) {
+    this.flames.update(dt);
+    this.plumes.update(dt);
   }
 
   /** The ring at spot `i` while it fills (`k` 0..1): the floor, the small flames on the rim, the feathers of flame turning and rising. */
@@ -195,48 +156,14 @@ export class FanTheFlames implements Effect {
     return m.material as THREE.MeshBasicMaterial;
   }
 
-  private flare() {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    // Only the embers that still burn flare (one stamped out meanwhile does not).
-    const live = new Set(embersOf(ctx.caster).map((e) => e.id));
-    this.lit = this.recs.map((e) => live.has(e.id));
-    const shapes = this.circles.filter((_, i) => this.lit[i]);
-    if (shapes.length) {
-      for (const en of ctx.enemies?.() ?? ctx.targets) {
-        const p = en.group.position;
-        const at = shapes.find((s) => insideTelegraph(s, p.x, p.z));
-        if (!at || at.kind !== 'circle') continue;
-        ctx.hit(en, { damage: this.settings.damage, knock: 3, from: new THREE.Vector3(at.x, 0, at.z), color: PHOENIX_CSS.body });
-      }
-      this.shake = 0.3;
-    }
-    // Only the embers of casts before this one: a quill thrown after the fan stays, whichever screen it landed on first.
-    burnOut(ctx.caster, this.seq);
-  }
-
-  update(dt: number) {
-    for (const e of this.emitters) e.update(dt);
-    if (!this.playing) return;
-    this.flames.update(dt);
-    this.plumes.update(dt);
-    this.time += dt;
-    const t = this.time;
-    if (t >= DURATION) {
-      const loop = this.settings.loop;
-      this.playing = false;
-      this.shake = 0;
-      this.reset();
-      if (loop) this.play();
-      return;
-    }
-    const ctx = this.ctx;
-    const live = ctx && !this.flared ? new Set(embersOf(ctx.caster).map((e) => e.id)) : null;
-    const k = Math.min(1, t / HIT_T);
-    // The look, while the rings fill. A spot with no ember behind it (the tool's show ring) always burns.
+  /** While the rings fill. A spot with no ember behind it (the tool's show ring) always burns. */
+  frame(c: Cast<Fan>, t: number) {
+    const ctx = c.ctx;
+    const live = ctx && !c.impacted ? new Set(embersOf(ctx.caster).map((e) => e.id)) : null;
+    const k = Math.min(1, t / FLARE_WIND);
     for (let i = 0; i < this.spots.length; i++) {
-      if (this.flared) break;
-      const e = this.recs[i];
+      if (c.impacted) break;
+      const e = c.state.recs[i];
       // An ember stamped out meanwhile loses its ring at once.
       const on = !e || !live || live.has(e.id);
       if (on) this.drawFill(i, t, k);
@@ -246,18 +173,21 @@ export class FanTheFlames implements Effect {
         this.locals[i].position.set(this.spots[i].x, 0.02, this.spots[i].z);
       }
     }
-    if (!this.flared && t >= HIT_T) {
-      this.flared = true;
-      this.flare();
-    }
-    // The look of the flare: only the embers that still burned burst.
-    if (this.flared) {
-      const a = t - HIT_T, p = Math.min(1, a / 0.35), out = 1 - (1 - p) ** 3;
+  }
+
+  impact(c: Cast<Fan>, lit: readonly boolean[]) {
+    if (lit.some(Boolean)) c.shake = 0.3;
+  }
+
+  /** The flare: only the embers that still burned burst. */
+  after(c: Cast<Fan>, t: number, dt: number) {
+    if (c.impacted) {
+      const a = t - FLARE_WIND, p = Math.min(1, a / 0.35), out = 1 - (1 - p) ** 3;
       const first = !this.burstDone;
       this.burstDone = true;
       for (let i = 0; i < this.spots.length; i++) {
         const { x, z } = this.spots[i];
-        const lit = this.recs[i] ? !!this.lit[i] : true;
+        const lit = c.state.recs[i] ? !!c.lit[i] : true;
         if (first && lit) this.burstAt(i);
         if (this.locals[i]) this.locals[i].visible = false;
         this.discs[i].visible = this.rims[i].visible = lit && a < 0.4;
@@ -279,30 +209,43 @@ export class FanTheFlames implements Effect {
         this.shocks[i].set(this.v1.set(x, 0, z), 0.4 + HIT_R * 1.1 * out, lit ? 0.045 * (1 - p) * (1 - p) : 0);
       }
     }
-    this.shake *= 0.88;
+    c.shake *= 0.88;
   }
 }
 
-export const fanTheFlamesModule: EffectModule = {
-  label: 'fan the flames',
+export const fanTheFlamesModule = spell<Fan>({
+  label: anka.kit.spells[1].label,
   category: 'hero: phoenix',
   // Cast on herself: the rings are at her embers, wherever they are.
   targeting: { mode: 'self', radius: 30 },
-  create: () => new FanTheFlames(),
-  telegraphs(effect) {
-    const e = effect as FanTheFlames;
-    if (!e.ctx) return [];
-    // The real shape: a circle at each ember; it roots her until the flare.
-    return e.circles.map((shape) => ({ shape, start: 0.04, impact: HIT_T }));
+  seconds: FLARE_WIND + 0.8,
+  state: () => ({ seq: 0, recs: [] }),
+  rules: {
+    windup: 0,
+    delay: FLARE_WIND,
+    shape: {
+      kind: 'circle', radius: FLARE_RADIUS,
+      // the embers that burn now: the same records on both screens, where they lie at the cast (a quill's ember that the
+      // other screen's note moves later does not move its ring)
+      at: (c) => c.state.recs.map((e) => ({ x: e.x, z: e.z })),
+      // only the embers that still burn flare (one stamped out meanwhile does not)
+      still: (c) => {
+        const live = new Set(embersOf(c.ctx!.caster).map((e) => e.id));
+        return c.state.recs.map((e) => live.has(e.id));
+      },
+    },
+    hit: { damage: FLARE_DAMAGE, knock: 3, color: PHOENIX_CSS.body },
+    on: {
+      cast: (c) => {
+        c.state.seq = castNo(c.ctx!.caster);
+        c.state.recs = embersOf(c.ctx!.caster).slice(0, MAX_EMBERS);
+      },
+      // only the embers of casts before this one: a quill thrown after the fan stays, whichever screen it landed on first
+      impact: (c) => burnOut(c.ctx!.caster, c.state.seq),
+    },
   },
+  look: FanLook,
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
-  frameCamera(camera, controls, effect) {
-    const e = effect as FanTheFlames;
-    if (e.ctx) frameCast(camera, controls, e.ctx, 3);
-  },
-  buildGui(f, effect) {
-    const s = (effect as FanTheFlames).settings;
-    f.add(s, 'loop');
-    f.add(s, 'damage', 1, 150, 1);
-  },
-};
+  frame: 3,
+  maxDamage: 150,
+});
