@@ -1,0 +1,19 @@
+{
+ "floor": 11,
+ "verdict": "Clean: the Wood's handmade floor. Cleared with four stars and no fall, no console error; every spot reachable in both states of the walking paths; the wisps, the roots, the rival (Nyx), the trial, the Elder Root (own model) and the gate (Fenna) all played; the people and their lines match the Codex (the Moss-Abbess's horn, the Path-Lighter's spore lamps).",
+ "found": [
+  {"kind": "ok", "title": "Two packs the bot never woke", "text": "The bramble's thorn sprites and the giants' glade sleep through the bot's route: nothing it is asked to do takes it near them (they spawn and fight as anyone walks in: pictures below)."},
+  {"kind": "ok", "title": "The props the probe flagged", "text": "The Wood's trees are its cover, so the probe's thousands of “in cover” are the trees themselves; the “float” are white spore motes drifting in the air (meant), and pines on the hills past the edge; a few leaves lie a hair under the ground."}
+ ],
+ "pictures": [
+  ["start.jpg", "The camp as it opens"],
+  ["person-bo.jpg", "The Moss-Abbess"],
+  ["pack-bramble.jpg", "The bramble's thorn sprites"],
+  ["pack-giants.jpg", "The giants' glade and the Stag-Crowned"],
+  ["ruler-close.jpg", "The Elder Root"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"],
+  ["phone-person-bo.jpg", "Phone: the keeper's card"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

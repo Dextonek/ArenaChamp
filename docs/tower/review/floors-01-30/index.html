@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>10 floors checked</b> · <b>3 fixed</b> · <b>4 for you</b></div>
+<div class="sum"><b>11 floors checked</b> · <b>3 fixed</b> · <b>4 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -38,6 +38,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f08">8</a>
 <a class="" href="#f09">9</a>
 <a class="" href="#f10">10</a>
+<a class="" href="#f11">11</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -222,6 +223,24 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f10/person-rival.jpg"><img loading="lazy" src="f10/person-rival.jpg" alt="Isolde, the rival"></a><figcaption>Isolde, the rival</figcaption></figure>
 <figure><a href="f10/map.jpg"><img loading="lazy" src="f10/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
 <figure><a href="f10/overview.jpg"><img loading="lazy" src="f10/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<h2>II. The Wood</h2>
+<section class="floor" id="f11"><h3>Floor 11: The Walking Wood</h3><p>Clean: the Wood&#x27;s handmade floor. Cleared with four stars and no fall, no console error; every spot reachable in both states of the walking paths; the wisps, the roots, the rival (Nyx), the trial, the Elder Root (own model) and the gate (Fenna) all played; the people and their lines match the Codex (the Moss-Abbess&#x27;s horn, the Path-Lighter&#x27;s spore lamps).</p>
+<p><span class="tag ok">ok</span><b>Two packs the bot never woke.</b> The bramble&#x27;s thorn sprites and the giants&#x27; glade sleep through the bot&#x27;s route: nothing it is asked to do takes it near them (they spawn and fight as anyone walks in: pictures below).</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> The Wood&#x27;s trees are its cover, so the probe&#x27;s thousands of “in cover” are the trees themselves; the “float” are white spore motes drifting in the air (meant), and pines on the hills past the edge; a few leaves lie a hair under the ground.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31761 m², 31761 m²; 48 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 58 float, 72 gap, 12 buried, 3170 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1031 game s, every checkpoint reached; 10 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Elder Root (The heart of the wood), model models/tower/wood_elder_v4.glb, loaded yes after 4725 ms of real time</li><li>Frame check at the busiest spot (-77, 23), 4 units awake: median 6.6, 5.7, 6.5 ms, p95 9.7, 8.4, 8.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f11/start.jpg"><img loading="lazy" src="f11/start.jpg" alt="The camp as it opens"></a><figcaption>The camp as it opens</figcaption></figure>
+<figure><a href="f11/person-bo.jpg"><img loading="lazy" src="f11/person-bo.jpg" alt="The Moss-Abbess"></a><figcaption>The Moss-Abbess</figcaption></figure>
+<figure><a href="f11/pack-bramble.jpg"><img loading="lazy" src="f11/pack-bramble.jpg" alt="The bramble&#x27;s thorn sprites"></a><figcaption>The bramble&#x27;s thorn sprites</figcaption></figure>
+<figure><a href="f11/pack-giants.jpg"><img loading="lazy" src="f11/pack-giants.jpg" alt="The giants&#x27; glade and the Stag-Crowned"></a><figcaption>The giants&#x27; glade and the Stag-Crowned</figcaption></figure>
+<figure><a href="f11/ruler-close.jpg"><img loading="lazy" src="f11/ruler-close.jpg" alt="The Elder Root"></a><figcaption>The Elder Root</figcaption></figure>
+<figure><a href="f11/map.jpg"><img loading="lazy" src="f11/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f11/overview.jpg"><img loading="lazy" src="f11/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f11/phone-person-bo.jpg"><img loading="lazy" src="f11/phone-person-bo.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
 </div>
 </section>
 </main></body></html>
