@@ -93,7 +93,7 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   (6) a man in the lore, drawn as a crowned woman; many rulers are beasts or things in the lore but drawn as people (accepted line-ups:
   change the lore's words, or new models); named enemies all "it" (the Dune Mother "her" on 21 only); on a phone the hero's badge box
   is taller than its contents (`src/tower/world/hud.ts`).
-- **Waiting on the user (2026-11-16): the Sea's life** (branch `t3/climb-sea-chapter-life` a8d3d4c3, NOT merged; page
+- **Done and merged, not live (2026-11-16): the Sea's life** (branch `t3/climb-sea-chapter-life` a8d3d4c3; page
   `docs/tower/life/index.html` in that worktree): gulls, smoke, cloth in the wind, boats, rings and fish, walkers, small things on the
   ground, as a layer `src/tower/world/life/` (3 lines in `world.ts`; `?life=0` off, `?life=lite` the phone set). Fights the same with
   it on or off; desktop +0.3-1 ms, phone about +2-5 ms (noisy). Asked: yes for the other four chapters? Coast workers built for the

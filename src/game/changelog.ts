@@ -68,6 +68,11 @@ export const CHANGELOG: Release[] = [
         text: 'The game’s first download is a fifth smaller: about 140 showcase and test spells that are not in the game no longer come with it. The page opens sooner, most of all on a phone.',
       },
       {
+        tag: 'Tower',
+        title: 'The Sea comes alive',
+        text: 'On the Climb’s first ten floors gulls sit on the roofs, wrecks and sand and lift off as you walk up, smoke rises from fires and chimneys, washing and pennants move in the wind, boats rock at their moorings, fish leap in the shallows and people walk between the places.',
+      },
+      {
         tag: 'Heroes',
         title: 'The Story: why the sun fell, and how it ends',
         text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',
