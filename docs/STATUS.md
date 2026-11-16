@@ -8,6 +8,9 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
 - `t3/vectorcraft-hero-spell-icons` (from b9f173c4): spell icons for all 40 heroes.
 - The hero framework, steps 1 and 2 only (the audit and design `docs/pipeline/hero-framework.md`, all 40 fight prints on today's
   code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
+- The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
+  floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
+  for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
