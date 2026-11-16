@@ -12,7 +12,7 @@ import { addRod } from '../trait';
  * engine at the cast). She points the hooked staff; a blue ring closes round the enemy on both screens and follows it for
  * 0.35 s while a small dark cloud gathers over it and sparks crackle along the staff. At 0.35 s one thick lightning tree falls
  * from the cloud onto the enemy's LIVE position (it cannot be walked out of; the red circle from `telegraphs` is the warning):
- * 50, `projectile: true`. Then the spell plants a rod 1.5 m in front of the enemy, toward her (`addRod` in
+ * 60, `projectile: true`. Then the spell plants a rod 1.5 m in front of the enemy, toward her (`addRod` in
  * `src/traits/storm.ts`, on both screens, and after the hit, so the arcs of its own hit do not use it up): a ground fork runs
  * from the strike to the rod. The rod lands short on purpose: it is 1.5 m from the enemy, so it is not grounded at once.
  * Rods already standing within 5 m of the enemy arc on this hit as the passive says (the trait's `dealt`). Cooldown 4.

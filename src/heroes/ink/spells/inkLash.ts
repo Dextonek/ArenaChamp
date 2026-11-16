@@ -12,7 +12,7 @@ import { addStroke, inkLive } from '../trait';
 
 /**
  * Ink Lash (ink kit v5, Q: a skillshot that leaves a stroke). A 0.3 s wind-up (a wet sweep of the brush round her hand), then
- * a lash of ink (22 m/s, 9 m, `ctx.projectile`, radius 0.35) flies out: 50. It reaches 6 m at 0.57 s, so a sidestep beats it.
+ * a lash of ink (22 m/s, 9 m, `ctx.projectile`, radius 0.35) flies out: 66. It reaches 6 m at 0.57 s, so a sidestep beats it.
  * The stroke runs along its path, from where it left to where it stopped (the hit, cover or full range), and is added to
  * her ink at the end of the flight (`addStroke`, traits/ink.ts), on both screens: it lies on the ground for 5 s, slows and
  * Stains whoever stands on it, and makes a crossing where it cuts an older stroke. A wet ribbon rides the lash and then

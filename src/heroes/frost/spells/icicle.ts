@@ -15,15 +15,15 @@ import {
 /**
  * Icicle (frost kit v5, Q: a piercing skillshot, then Shatter on the recast; `src/traits/frost.ts` is the rules). Cast: she
  * breathes a long icicle into being at her hand (0.3 s wind-up, `ICICLE_WIND`), which then flies down the aim at 22 m/s,
- * 11 m (`ctx.projectile`, piercing, radius 0.35): 52 damage and 2 Chill to everything it touches (the trait adds the Chill).
+ * 11 m (`ctx.projectile`, piercing, radius 0.35): 42 damage and 2 Chill to everything it touches (the trait adds the Chill).
  * It reaches 6 m at 0.57 s. At the end of its flight, or where cover stopped it, it sticks in the floor and stands there for
  * 2 s: the standing icicle and a pale 2 m ring around it are the trait's ground mark (`marks`, `icicleStandingLook`), drawn on
  * both screens from the `icicles` record this effect writes at the cast. The record's spot is worked out at the cast from
  * `sentFrom` (else `from`) and the aim, stepping the 11 m line with the engine's own sight test (`blocksSight` against
  * `ctx.obstacles()`), so both screens of a network duel agree without a bolt flying on the caster's screen.
- * Recast (the trait's free second cast, `arm` 1.3 s, open to 2.8 s): the effect tells the two apart itself, by a clock per
+ * Recast (the trait's free second cast, `arm` 1.6 s, open to 2.8 s): the effect tells the two apart itself, by a clock per
  * caster figure (a second cast within 3 s of an unshattered first one is the Shatter; the `mode` setting forces one). The
- * standing icicle cracks (a flare, a ring of fern cracks to 2 m), and 0.15 s later bursts: 30 damage and 1 Chill (the trait)
+ * standing icicle cracks (a flare, a ring of fern cracks to 2 m), and 0.15 s later bursts: 26 damage and 1 Chill (the trait)
  * to everyone whose live position is within 2 m of the spot (`projectile: true`). If the icicle has already melted (the press
  * is later than 2 s after it stuck: a short flight melts before the window closes) or is gone, the Shatter only puffs snow.
  * Clean by about 1.5 s (the Shatter 1.0). The `icicles` record, not this effect, outlives the cast: the CPU's side reuses

@@ -46,7 +46,8 @@ export interface TraitHit {
   victim: Enemy;
   victimIsHero: boolean;
   /**
-   * Set by the victim's `taken` hook: the hit is swallowed whole (Isolde's ice block, Oblivion's mantle). No damage,
+   * Set by the victim's `taken` hook: the hit is swallowed whole (Tempo's Time Skip, Anka's ashes and her rise, Zephyr in
+   * the wind, Marin's mist; the engine also sets it on a sealed hero). No damage,
    * no status, debuff, knockback or pull, and the dealer does not learn it landed.
    */
   blocked?: boolean;
@@ -253,6 +254,11 @@ export interface Trait {
   castOrigin?(t: TraitView, slot: number): { x: number; z: number } | null;
   /** The CPU playing this hero holds its basic attack now (a sleeper wakes at the first hit: Vela lets it sleep). */
   aiHoldAttack?(t: TraitView): boolean;
+  /**
+   * Nothing can land on this hero now: its `taken` swallows every hit (Tempo's Time Skip, Anka in her ashes, Zephyr in the wind,
+   * Marin's mist). The enemy CPU holds its spells meanwhile. The same test `taken` uses, so the two never disagree.
+   */
+  untouchable?(t: TraitView): boolean;
   /**
    * Cuts in this hero's HP bar at these HP values, asked every frame on both screens (read `own`, `hp`, `maxHp`): Ramet's lion
    * in front of his own part. Beats `HeroKit.hpChunks`. Null or empty: none.

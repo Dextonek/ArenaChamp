@@ -11,7 +11,7 @@ import { geraldHere, geraldLive, geraldOf, moodNow, raiseGeraldAt } from '../tra
  * Raise Gerald (mason kit, Q: a fixed circle that bursts). A circle 1.5 m across marks a spot (9 m): dark cracks spread over
  * the floor, a pale ring tightens, dust and small stones hop out of the cracks and the ground trembles. At 0.7 s Gerald, a
  * 3.5 m limestone pillar with a face, bursts up out of the floor there: whoever is inside the circle then (judged on live
- * positions, `ctx.enemies`) takes `damage` (50) and a 0.5 s knock-up. He arrives alarmed (a drop of sweat), then settles
+ * positions, `ctx.enemies`) takes `damage` (76) and a 0.5 s knock-up. He arrives alarmed (a drop of sweat), then settles
  * into boredom. Any older Gerald crumbles into a heap of rubble, without a word.
  *
  * Gerald himself is the record in `src/traits/mason.ts` (`raiseGeraldAt`): a real obstacle, a hidden 220 HP unit, drawn by

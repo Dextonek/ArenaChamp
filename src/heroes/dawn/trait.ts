@@ -15,12 +15,12 @@ export const PARRY_SECONDS = 0.6;
 export const DESCENT_AIR = 1.0;
 
 // --- Kits v5 numbers (pipeline/designs/kits-v5.md, "Auriel") ------------------------------------------------------
-/** Q First Light: the shield its hit gives, and the burst when it ends (60% of the shield, 3 m). */
+/** Q First Light: the shield its hit gives, and the burst when it ends (8, about 60% of the 14 shield, 3 m). */
 export const Q_SHIELD = 14;
 export const Q_SHIELD_SECONDS = 3;
 export const Q_BURST = 8;
 export const Q_BURST_RADIUS = 3;
-/** W Dawnward: shield, its life, the burst (42 = 60% of 70, 3 m) and the extra basic-attack reach while it holds. */
+/** W Dawnward: shield, its life, the burst (27 = 60% of 45, 3 m) and the extra basic-attack reach while it holds. */
 export const W_SHIELD = 45;
 export const W_SHIELD_SECONDS = 3;
 export const W_BURST = 27;
@@ -29,7 +29,7 @@ export const W_REACH = 3;
 /** E Oathbrand: how long the brand lasts, and the stun a burst adds to a branded enemy. */
 export const BRAND_SECONDS = 2.5;
 export const BRAND_STUN = 0.8;
-/** R Sunrise: shield and life, then the fixed ring (radius, seconds it closes) and its burst (120 = 60% of 200). */
+/** R Sunrise: shield and life, then the fixed ring (radius, seconds it closes) and its burst (80, about 60% of 130). */
 export const R_SHIELD = 130;
 export const R_SHIELD_SECONDS = 5;
 export const R_RING_RADIUS = 5;

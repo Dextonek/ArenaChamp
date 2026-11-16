@@ -42,7 +42,7 @@ export interface FigureState {
   attack?: { wind: number; release: number; melee: boolean };
   /** Its status effects (stun slumps, knock-up flails, root struggles). */
   status?: StatusSet;
-  /** Locked solid (Isolde's ice block): the pose freezes, breath included. */
+  /** Held by its trait (`hold`: Vesper's Feast, Brannoc's Quench, Anka's ashes...): the pose freezes, breath included. */
   held?: boolean;
 }
 
@@ -286,7 +286,7 @@ interface BodyNow {
  * feet, hip and chest counter-turn, arms swinging with the elbows following through, a level head, momentum on starts
  * and stops; robed heroes take shorter steps), the basic attack's swing, a wind-up / strike / settle per cast style
  * (`cast`), a flinch and a tinted flash when hit (`hit`), slumps and flails under stun and knock-up, a frozen pose
- * in an ice block, and spring-driven hair, sashes and robe tails. `fall` crumples it. Add `group` to the scene.
+ * while its trait holds it, and spring-driven hair, sashes and robe tails. `fall` crumples it. Add `group` to the scene.
  * Heavy heroes (high HP) plant wider and sway their chest more; fast ones lean in and run with bent arms; hammer and
  * greatsword heroes swing overhead with both hands.
  */

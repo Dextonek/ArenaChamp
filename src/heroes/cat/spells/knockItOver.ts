@@ -12,7 +12,7 @@ import { POT_DAMAGE, POT_DELAY, POT_RADIUS, POT_RANGE, POT_STUN, nearestCover } 
  * (`ctx.obstacles()`, the surface of a pillar or a wall) and bats a clay pot off its top. The pot rocks on the ledge for 0.2 s, a
  * small claw swipe goes at it, then it tips off and falls along an arc, tumbling and wobbling, onto the spot where the enemy was aimed
  * (9 m at most, the aim clamped), shown from the cast as a dark disc with a cream rim and an amber ring closing on it. At 0.7 s it
- * lands: whoever stands inside the 1.5 m circle, on their live position, takes 50 and is stunned 0.5 s; the pot shatters into
+ * lands: whoever stands inside the 1.5 m circle, on their live position, takes 60 and is stunned 0.5 s; the pot shatters into
  * shards, dust runs out along the floor and a CRASH word flies. With no cover in reach it does nothing: he bats at the air, MEH, no zone
  * and no hit (the CPU holds it then: `aiHold`). Both screens find the same cover and the same spot (`sentFrom`, the aim and the obstacle
  * list). Telegraph: the circle, impact 0.7 s. Clean by about 2.2 s. See pipeline/designs/kit-cat.md.

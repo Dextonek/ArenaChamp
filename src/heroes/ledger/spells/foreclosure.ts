@@ -179,7 +179,8 @@ export class Foreclosure implements Effect {
   private slam(ctx: CastContext | null) {
     const p = this.point;
     if (ctx) {
-      for (const e of ctx.targets) {
+      // Whoever stands in the circle as the stamp falls, wherever they stood at the cast.
+      for (const e of ctx.enemies?.() ?? ctx.targets) {
         const q = e.group.position;
         if (Math.hypot(q.x - p.x, q.z - p.z) > STAMP_RADIUS) continue;
         // Cover saves them: the stamp needs Ledger to see them when it lands.

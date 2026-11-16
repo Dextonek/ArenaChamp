@@ -10,7 +10,7 @@ import { COLD_DAMAGE, COLD_KNOCK, COLD_RADIUS, COLD_RANGE, COLD_SPEED, COLD_WIND
 
 /**
  * Cold Front (weather kit, Q: a gust). Barry sweeps his pointer and a gust forms at his hand over the 0.25 s wind-up (three helices
- * wound round a white puff, spinning) and leaves as a real bolt (`ctx.projectile`: 9 m from him, 20 m/s, radius 0.4): 50 damage. It
+ * wound round a white puff, spinning) and leaves as a real bolt (`ctx.projectile`: 9 m from him, 20 m/s, radius 0.4): 64 damage. It
  * reaches 6 m at 0.55 s. What flies with it is the weather of the moment (read from his trait's book at the cast): in Rain blue drops
  * fall off it, in Sun it sheds gold sparkles, in Wind it throws leaves. The rule is the trait's, in `dealt` (src/traits/weather.ts),
  * where the hit is decided: in Rain it slows the target for 1.5 s, in Wind it knocks them further. A hit bursts into the weather's

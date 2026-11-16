@@ -15,7 +15,7 @@ import {
  * Hand Mirror (mirror kit v5, Q: a bank shot with a catch). Silvane draws a hand mirror out at her side over the 0.3 s wind-up and
  * throws it as a real bolt (`ctx.projectile`: 10 m from her, 22 m/s, radius 0.3) that SPINS as a mirror, not a glowing ball: a
  * silver-rimmed oval of glass, a handle, turning about the vertical so the pane flashes at the camera. It reflects off up to three
- * walls, pillars, crystals or standing mirrors (`reflect: 3`): 40 damage, +25% per bounce (the engine multiplies it), +2 m of range each.
+ * walls, pillars, crystals or standing mirrors (`reflect: 3`): 64 damage, +25% per bounce (the engine multiplies it), +2 m of range each.
  * Every bounce flashes (a pale star, glass slivers). It reaches 6 m at 0.57 s.
  *
  * The catch: when the flight ends after at least one bounce without hitting anyone, the mirror stays on the floor where it stopped

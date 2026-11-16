@@ -20,7 +20,7 @@ const kit: HeroKit = {
       icon: icons.Q,
     },
     {
-      key: 'W', label: "shepherd's crook", name: "Shepherd's Crook", range: 6, cooldown: 10, cc: true,
+      key: 'W', label: "shepherd's crook", name: "Shepherd's Crook", range: 6, cooldown: 10,
       blurb: 'He hooks the crook round an enemy 6 m away (he must see them) and drags them 3 m toward him: 35 damage and slowed 0.5 s. The enemy is Judged for 3 s.',
       icon: icons.W,
     },

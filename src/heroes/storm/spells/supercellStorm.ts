@@ -13,7 +13,7 @@ import { nearestRod } from '../trait';
  * for 6 s, with a thin rain under it and lightning flickering inside. Every 0.8 s (at 0.8, 1.6 ... 4.8 s, six checks) each
  * enemy in the cast's list is tested on its LIVE position: within 7 m of her, or within 3 m of one of her rods
  * (`nearestRod`). If so a bolt marks the spot it stands on: a 1.2 m circle shown for 0.6 s (drawn by this effect: it is a moving
- * mark, so it is not in `telegraphs`), and when the 0.6 s are over a bolt falls there and hits 30 if the enemy is still within 1.2
+ * mark, so it is not in `telegraphs`), and when the 0.6 s are over a bolt falls there and hits 32 if the enemy is still within 1.2
  * m of the mark (`projectile: true`, so the engine does no zone check: the effect's own circle test is the dodge, and the hit
  * always passes the duel's zone and age filters). Rods arc as normal on each hit (the trait's `dealt`). The storm's pip 'storm' is
  * the trait's. Keep moving: 1.2 m takes 0.55 s with a 0.25 s reaction, inside the 0.6 s. Targeting is `self` with radius 14 so

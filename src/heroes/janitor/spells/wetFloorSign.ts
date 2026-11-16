@@ -9,6 +9,7 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import type { Obstacle } from '../../../obstacles';
 import { SIGN_HALF, SIGN_HP, SIGN_LIFE, SIGN_R, SIGN_RANGE, SIGN_RISE, bookOf, type SignRecord } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Wet Floor Sign (janitor kit v5, W: terrain, two charges). A pale ring of the sign's footprint marks a spot (8 m, at least 1.5 m
@@ -124,7 +125,7 @@ export class WetFloorSignFx implements Effect {
     // The record the trait reads, on both screens (ids count casts, so both screens name it the same).
     const ctx = this.ctx;
     if (ctx) {
-      const now = performance.now(), b = bookOf(ctx.caster), C = this.centre;
+      const now = fightNow(), b = bookOf(ctx.caster), C = this.centre;
       b.signs = b.signs.filter((s) => !s.gone && now < s.until);
       this.rec = { id: ++b.seq, x: C.x, z: C.z, bornAt: now + LAND_T * 1000, until: now + BREAK_T * 1000, gone: false, broke: false, told: false, hitAt: 0, slideAt: 0 };
       b.signs.push(this.rec);

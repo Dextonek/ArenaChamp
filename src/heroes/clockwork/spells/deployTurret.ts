@@ -9,7 +9,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * Deploy Turret (clockwork kit, W: a summon, two charges). A spot within 8 m, any spot (it ignores cover). Gears and a
  * spring fly in from her backpack one after another and click together there (a flat base gear, an upright gear and a
  * small one meshing with it, a spring standing on the base), cyan sparks at every click and steam from the joints. At 0.5 s
- * the turret is summoned (`ctx.summon`, the brass tripod `turretLook`: 80 HP, 8 s, 12 damage every 1.4 s, range 8) and
+ * the turret is summoned (`ctx.summon`, the brass tripod `turretLook`: 80 HP, 8 s, 9 damage every 1.4 s, range 8) and
  * the assembly folds away under it. It deals no damage of its own: the turret does, and its shots are dodgeable bolts. Its
  * glow and its rate come from her passive (the trait sets them). It is not a zone, so there is no telegraph and no root:
  * the assembling gears are the warning. The spell's own visual is clean by 1.6 s; it stays `playing` only while the turret

@@ -4,6 +4,7 @@ import type { Look } from '../../framework/blocks';
 import { spell, type Cast } from '../../framework/spell';
 import { Palm, Puffs, Ripple, SUMO, SUMO_CSS } from '../parts';
 import { PALM_DAMAGE, PALM_PUSH, PALM_PUSH_TIME, PALM_REACH, PALM_WIDTH, PALM_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Palm Strike (sumo kit, Q: a slap you can feel). No aim of its own: it goes the way he faces. A 2.8 m by 2 m strip shows in front
@@ -136,7 +137,7 @@ export const palmStrikeModule = spell<Shove, 'push'>({
         s.age = s.pushed = 0;
         if (c.ctx && c.caught.length) {
           s.pushing = true;
-          bookOf(c.ctx.caster).pushUntil = performance.now() + (PALM_PUSH_TIME + 0.2) * 1000;
+          bookOf(c.ctx.caster).pushUntil = fightNow() + (PALM_PUSH_TIME + 0.2) * 1000;
         }
       },
       // Everyone it caught is shoved `push` m along his facing over 0.22 s.

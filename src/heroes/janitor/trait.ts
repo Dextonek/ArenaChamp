@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { wetLook } from './parts';
 import type { GroundMark, Trait, TraitView } from '../../traits/types';
+import { fightNow } from '../../fightClock';
 
 /** Big Mop (Q): damage, the cone's reach and full angle, wind-up, and the wet strip it leaves (length, width). */
 export const MOP_DAMAGE = 60;
@@ -45,7 +46,11 @@ export const BUCKET_DAMAGE = 55;
 export const BUCKET_RADIUS = 0.4;
 export const SPLASH_R = 2.5;
 
-/** Flood (R): radius, warning, seconds it floods, his surf (haste), and what his Q deals meanwhile. */
+/**
+ * Flood (R): radius, warning, seconds it floods, his surf (haste), and what his Q deals meanwhile. `FLOOD_MOP` equals
+ * `MOP_DAMAGE`, so Flood's `castMods` gives power 1: no bonus since the tuning of 2026-11-04 raised the mop from 45 to 60 and
+ * took the bonus out of the tooltip.
+ */
 export const FLOOD_RADIUS = 7;
 export const FLOOD_WARN = 1;
 export const FLOOD_LIFE = 5;
@@ -60,7 +65,7 @@ export interface WetPatch {
   yaw: number;
   length: number;
   r: number;
-  /** `performance.now()` milliseconds: when it is wet, and when it dries. */
+  /** `fightNow()` milliseconds: when it is wet, and when it dries. */
   bornAt: number;
   until: number;
 }
@@ -77,7 +82,7 @@ export interface SignRecord {
   /** The victim's screen saw it broken (`victimTick` tells his own client). `told`: that was done. */
   broke: boolean;
   told: boolean;
-  /** `performance.now()` of the last slide into it (the effect clangs), and of the last one that hurt (the gap). */
+  /** `fightNow()` of the last slide into it (the effect clangs), and of the last one that hurt (the gap). */
   hitAt: number;
   slideAt: number;
 }
@@ -97,14 +102,14 @@ export function bookOf(who: object): JanitorBook {
 
 /** Writes a patch (both screens, from the effect that lands it), dropping dry ones. */
 export function addWet(who: object, p: WetPatch) {
-  const b = bookOf(who), now = performance.now();
+  const b = bookOf(who), now = fightNow();
   b.wet = b.wet.filter((w) => now < w.until);
   if (b.wet.length >= 24) b.wet.shift();
   b.wet.push(p);
 }
 
 /** Is the floor at (x, z) wet now? A strip is a rectangle (`length` along `yaw`, `STRIP_WIDTH` across), the others discs. */
-export function isWet(b: JanitorBook, x: number, z: number, now = performance.now()): boolean {
+export function isWet(b: JanitorBook, x: number, z: number, now = fightNow()): boolean {
   for (const w of b.wet) {
     if (now < w.bornAt || now >= w.until) continue;
     const dx = x - w.x, dz = z - w.z;
@@ -135,7 +140,7 @@ function floodRunning(t: TraitView) {
  * that makes up the difference (`v - own`, times dt) goes through `t.carryEnemy`, so a hero pressing steadily is not faster at all,
  * only slower to turn and slower to stop, and cover still stops them. Off the wet floor `v` is just their own step. A sign hit needs
  * the slide's speed toward the sign to be `SIGN_SPEED` or more: walking on dry floor at 4 m/s never hurts. Flood: `afterCast` notes the
- * cast, `tick` starts the surf (haste 35%) when the water comes (1 s), `castMods` makes his Q hit for 60 meanwhile; a ring at his
+ * cast, `tick` starts the surf (haste 35%) when the water comes (1 s), `castMods` keeps his Q at 60 (power 1); a ring at his
  * feet shows the surf on both screens. The CPU: see `aiHold` and `aiGoal`.
  */
 export const janitorTrait: Trait = {
@@ -157,7 +162,7 @@ export const janitorTrait: Trait = {
     const e = t.enemy(), b = janitorBooks.get(t.self());
     if (slot === 0) return dist > MOP_REACH - 0.2;
     if (slot === 1) {
-      const now = performance.now();
+      const now = fightNow();
       const wet = !!e && !!b && isWet(b, e.group.position.x, e.group.position.z, now);
       const standing = !!b && b.signs.some((s) => !s.gone && now < s.until);
       return dist > SIGN_RANGE || !wet || standing;
@@ -172,7 +177,7 @@ export const janitorTrait: Trait = {
   aiGoal(t) {
     const e = t.enemy(), b = janitorBooks.get(t.self());
     if (!e || !b) return null;
-    const now = performance.now(), p = e.group.position;
+    const now = fightNow(), p = e.group.position;
     if (!isWet(b, p.x, p.z, now)) return null;
     const s = b.signs.find((k) => !k.gone && now >= k.bornAt && now < k.until);
     if (!s) return null;
@@ -182,7 +187,7 @@ export const janitorTrait: Trait = {
   },
 
   castMods(t, slot) {
-    // Flood: his Q is 60 while he surfs.
+    // Flood: his Q is 60 while he surfs, the same as without (`FLOOD_MOP` = `MOP_DAMAGE`, power 1: no bonus since 2026-11-04).
     if (slot === 0 && floodRunning(t) && t.time < t.mem.floodAt + FLOOD_WARN + FLOOD_LIFE) return { power: FLOOD_MOP / MOP_DAMAGE };
     return {};
   },
@@ -224,7 +229,7 @@ export const janitorTrait: Trait = {
   marks(t) {
     const b = janitorBooks.get(t.self());
     if (!b || b.wet.length === 0) return [];
-    const now = performance.now(), out: GroundMark[] = [];
+    const now = fightNow(), out: GroundMark[] = [];
     for (const w of b.wet) {
       if (now < w.bornAt || now >= w.until) continue;
       const age = (now - w.bornAt) / 1000, life = (w.until - w.bornAt) / 1000;
@@ -251,7 +256,7 @@ export const janitorTrait: Trait = {
     let ox = (p.x - m.lx) / dt, oz = (p.z - m.lz) / dt;
     const os = Math.hypot(ox, oz);
     if (os > SLIDE_CAP) { ox = (ox / os) * SLIDE_CAP; oz = (oz / os) * SLIDE_CAP; }
-    const now = performance.now();
+    const now = fightNow();
     const wet = !!b && isWet(b, p.x, p.z, now) && !t.status(e)?.cannotMove;
     if (!wet) {
       // Dry floor: what they do is what they do, and the momentum is just their step.
@@ -275,14 +280,14 @@ export const janitorTrait: Trait = {
     const s = janitorBooks.get(t.self())?.signs.find((k) => k.id === n);
     if (!s) return;
     if (name === 'signbroke') s.gone = true;
-    else if (name === 'signhit') s.hitAt = performance.now();
+    else if (name === 'signhit') s.hitAt = fightNow();
   },
   ownChanged() { /* the surf is read through `own('flood')` */ },
 
   badge(t) {
     const b = janitorBooks.get(t.self());
     if (!b || b.wet.length === 0) return '';
-    const now = performance.now(), n = b.wet.filter((w) => now >= w.bornAt && now < w.until).length;
+    const now = fightNow(), n = b.wet.filter((w) => now >= w.bornAt && now < w.until).length;
     return n > 0 ? String(n) : '';
   },
 };

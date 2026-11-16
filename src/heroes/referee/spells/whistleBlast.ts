@@ -12,7 +12,7 @@ import { WHISTLE_DAMAGE, WHISTLE_RADIUS, WHISTLE_RANGE, WHISTLE_SPEED, WHISTLE_W
  * Whistle Blast (referee kit, Q: a ring of sound). Whistler draws the chrome whistle up to his lips over the 0.3 s wind-up (his
  * cheeks are the effect's own: a pulse ring at the mouth) and blows it: a real bolt (`ctx.projectile`: 8 m from him, 22 m/s, radius
  * 0.4) that is a standing ring of sound, a fat pale hoop with a smaller one inside it, facing the way it flies and pulsing, and it
- * throws off a train of thin rings that swell and fade behind it. It reaches 6 m at 0.57 s. A hit: 50 damage and three rings burst
+ * throws off a train of thin rings that swell and fade behind it. It reaches 6 m at 0.57 s. A hit: 78 damage and three rings burst
  * out of the target, with a dark floor ring. A miss: the ring thins out where its range ends.
  *
  * Telegraph: one thin line as wide as the bolt really hits (`boltWidth`), from the cast; its `impact` is the launch (0.3 s), so

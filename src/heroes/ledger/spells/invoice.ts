@@ -12,7 +12,7 @@ import { INVOICE_DAMAGE, INVOICE_RADIUS, INVOICE_RANGE, INVOICE_SPEED, INVOICE_W
  * Invoice (ledger kit, Q: a paper that flies). Mr. Ledger pulls a fresh invoice out of the ledger at his side over the 0.25 s wind-up
  * (it unrolls and flaps) and flicks it as a real bolt (`ctx.projectile`: 9 m from him, 20 m/s, radius 0.35): a sheet of paper that
  * lies flat, flutters at its corners, rolls and pitches in the air and sheds scraps, some red. It reaches 6 m at 0.55 s. A hit: the
- * sheet slaps flat on the target in a puff of paper and a red ink stamp-mark on the floor; 50 damage that does NOT hurt now, it
+ * sheet slaps flat on the target in a puff of paper and a red ink stamp-mark on the floor; 72 damage that does NOT hurt now, it
  * goes on the target's tab (`src/traits/ledger.ts`, `dealt`). A miss: it sinks and settles on the floor where its range ends.
  *
  * Telegraph: one thin line as wide as the bolt really hits (`boltWidth`), from the cast; its `impact` is the launch (0.25 s), so

@@ -11,7 +11,7 @@ import { BONK_ANGLE, BONK_DAMAGE, BONK_REACH, BONK_WIND } from '../trait';
  * Bonk (twins kit, Pim's Q: a wooden sword). Pim hauls the toy sword up over his head and wobbles it (0.45 s, the wobble grows, a few
  * puffs of dust at his boots), then brings it down across a 3 m cone, 100 degrees wide (the shape the telegraph draws): a pale orange
  * wedge of swept floor, a fan of confetti, a spiky star with a white core, a ring, and the word BONK. Everyone inside the cone on their
- * live position takes 50 and is knocked back a little. The cone's apex is `sentFrom` and its heading the aim, so both screens agree.
+ * live position takes 72 and is knocked back a little. The cone's apex is `sentFrom` and its heading the aim, so both screens agree.
  * Telegraph: the cone, impact at the swing (he is rooted until then). Clean by about 1.5 s. See pipeline/designs/kit-twins.md.
  */
 export interface PimBonkSettings {

@@ -14,7 +14,7 @@ import { ROPE_DAMAGE, ROPE_PULL, ROPE_PULL_TIME, ROPE_RANGE, ROPE_SLACK, ROPE_WI
  * behind her, while a dashed chalk line on the floor runs from the enemy to her and marches toward her with each pull. A red
  * circle on the enemy is the telegraph (read live). At 0.5 s (`ROPE_WIND`) she heaves: if she still sees the enemy
  * (`stillSees`, her own walls count as cover) and it is no more than `ROPE_RANGE + ROPE_SLACK` (9.2 m) from her, the rope has it:
- * 30 damage (`projectile: true`, judged on its live position) and it is pulled 3 m toward her over 0.3 s, stopping 1 m short of her
+ * 55 damage (`projectile: true`, judged on its live position) and it is pulled 3 m toward her over 0.3 s, stopping 1 m short of her
  * (`ctx.carry` every frame, on its live position; offline it moves the enemy hero, online only this side's own hero; where there is
  * no `carry` the hit's `pull` does it). A step behind cover before the heave frees it: the rope goes slack, the chalk breaks into
  * chips and falls, no damage. A chalk star pops at the enemy's feet on a catch. No word. Clean by 1.6 s.

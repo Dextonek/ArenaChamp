@@ -43,6 +43,16 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Heroes',
+        title: 'Spells that do what their tooltips say',
+        text: 'Madame Cleaver’s table no longer heals the enemy who eats at it: the 50 HP are hers. Mr. Ledger’s Late Fee and Foreclosure and Barry Cloudsley’s Lightning Risk now hit whoever is in the circle when it lands, not only whoever stood there when it was cast. Online, Fenna’s late Uproot and Pim and Pom’s quick second Tag Out now reach the other player’s screen.',
+      },
+      {
+        tag: 'CPU',
+        title: 'Computer players read their spells right',
+        text: 'A computer player now waits while Tempo, Anka, Zephyr or Marin cannot be touched, instead of throwing spells into it. It treats World Tree and Sinkhole as the roots they are and Shadow Double as a summon, and no longer counts Shepherd’s Crook (a pull and a slow) as a stun. Stampede aims as a 12 m strip. Timed rules of ten heroes (Gus’s wet floor, Wick’s doors, Big Yoko’s ring and others) now follow the game’s clock, so a hidden tab or a pause no longer cuts them short.',
+      },
+      {
         tag: 'Raid',
         title: 'Bosses and rulers stay out of the floor',
         text: 'Ash keeps his feet on the floor when he crouches to slam, charge or kneel, and the Heart of Noon’s crown of rays sways in its last phase instead of turning its long rays down into the floor. On the Climb, a fallen ruler lies on the floor instead of halfway through it, and a kneeling ruler holds its staff up, planted in front of it.',

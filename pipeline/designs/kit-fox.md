@@ -100,4 +100,4 @@ In the hero's palette: accent foxfire blue with a pale snow-fox white foil besid
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'foxfire bite', 'glamour', 'borrowed name', 'wisp hunt'. Files: `src/spells/targeted/foxfireBite.ts`, `src/spells/targeted/glamour.ts`, `src/spells/targeted/borrowedName.ts`, `src/spells/targeted/wispHunt.ts`; `src/effects/parts/fox.ts`, `src/kits/fox.ts`, `src/traits/fox.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'foxfire bite', 'glamour', 'borrowed name', 'wisp hunt'. Files: `src/heroes/fox/spells/foxfireBite.ts`, `src/heroes/fox/spells/glamour.ts`, `src/heroes/fox/spells/borrowedName.ts`, `src/heroes/fox/spells/wispHunt.ts`; in `src/heroes/fox/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

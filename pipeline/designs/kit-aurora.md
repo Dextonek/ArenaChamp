@@ -100,4 +100,4 @@ In the hero's palette: accent aurora green with a pale snow foil beside every da
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'shimmer', 'curtain', 'skate', 'the sky opens'. Files: `src/spells/targeted/shimmer.ts`, `src/spells/targeted/curtain.ts`, `src/spells/targeted/skate.ts`, `src/spells/targeted/theSkyOpens.ts`; `src/effects/parts/aurora.ts`, `src/kits/aurora.ts`, `src/traits/aurora.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'shimmer', 'curtain', 'skate', 'the sky opens'. Files: `src/heroes/aurora/spells/shimmer.ts`, `src/heroes/aurora/spells/curtain.ts`, `src/heroes/aurora/spells/skate.ts`, `src/heroes/aurora/spells/theSkyOpens.ts`; in `src/heroes/aurora/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

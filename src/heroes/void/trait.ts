@@ -2,6 +2,7 @@ import type { Obstacle } from '../../obstacles';
 import { blocksSight } from '../../obstacles';
 import type { CastContext } from '../../effects/targeting';
 import type { CastMods, Trait, TraitView } from '../../traits/types';
+import { fightNow } from '../../fightClock';
 
 /** Deep Gravity: the ring is 2 m + 1 m per level and pulls 0.2 m/s + 0.2 m/s per level (level 1: 3 m, 0.4 m/s; level 4: 6 m, 1.0 m/s). */
 export const WELL_LEVEL_MAX = 4;
@@ -16,7 +17,7 @@ export const RIP_WEAKEN = { kind: 'weaken', amount: 0.2, seconds: 2 } as const;
 const BASE_ATTACK = 15;
 
 /**
- * What Oblivion's spells and effects share, per figure (effects play on both screens). Times are `performance.now()` ms.
+ * What Oblivion's spells and effects share, per figure (effects play on both screens). Times are `fightNow()` ms.
  * `collapseAt`: when Black Hole was told to collapse (written by `recastAct`, mirrored by `ownChanged`; 0 = not). `ripOffAt`: when
  * the Phase Step rip was spent or ran out. `obstacles`: how his spells read the live obstacles (his passive has no `ctx`).
  */
@@ -48,7 +49,7 @@ const ripOn = (t: TraitView) => t.time < (t.mem.ripUntil ?? 0);
 function endRip(t: TraitView) {
   t.mem.ripUntil = 0;
   t.show('rip', 0);
-  voidFx(t.self()).ripOffAt = performance.now();
+  voidFx(t.self()).ripOffAt = fightNow();
 }
 
 /** How the ring was drawn last, per figure, so it can grow smoothly and pulse at each level (both screens, read only). */
@@ -80,8 +81,8 @@ export const voidTrait: Trait = {
   },
   ownChanged(t, name, n) {
     const fx = voidFx(t.self());
-    if (name === 'rip') fx.ripOffAt = n > 0 ? 0 : performance.now();
-    if (name === 'collapse') fx.collapseAt = n > 0 ? performance.now() : 0;
+    if (name === 'rip') fx.ripOffAt = n > 0 ? 0 : fightNow();
+    if (name === 'collapse') fx.collapseAt = n > 0 ? fightNow() : 0;
   },
   speed: 3.8,
   attack: { kind: 'melee', range: 2.6, damage: BASE_ATTACK, interval: 1.2, windup: 0.3, speed: 0, look: 'cleave' },
@@ -142,7 +143,7 @@ export const voidTrait: Trait = {
   },
   recastAct(t, slot) {
     if (slot !== 3) return;
-    voidFx(t.self()).collapseAt = performance.now();
+    voidFx(t.self()).collapseAt = fightNow();
     t.show('collapse', 0);
     t.show('collapse', 1);
     t.say('COLLAPSE', '#ff2a55');

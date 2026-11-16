@@ -26,7 +26,7 @@ const kit: HeroKit = {
       icon: icons.W,
     },
     {
-      key: 'E', label: 'shadow double', name: 'Shadow Double', range: 4, cooldown: 10, dash: true,
+      key: 'E', label: 'shadow double', name: 'Shadow Double', range: 4, cooldown: 10, dash: true, summon: true,
       blurb: 'She darts 4 m, through cover if it is in the way. A shadow copy (40 HP, 2.5 s, 15 per 0.9 s) stays where she stood and walks at the enemy.',
       icon: icons.E,
     },

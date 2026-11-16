@@ -10,12 +10,13 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * Red-Hot Rivet (forge kit v5, E: a targeted flick, his rhythm tool). A click on an enemy in sight (6 m; the engine checks
  * sight at the cast). 0..0.25 s: he pulls a white-hot rivet out of his chest forge (a small rivet at his hand, sparks).
  * 0.25..0.55 s: he flicks it, a fat comet trail behind it, and it flies to the enemy's live position. At 0.55 s it
- * punches in: 30 damage (`projectile: true`, a sure hit, like Fire Vial), sparks out of the back, a small slag splash under
+ * punches in: 25 damage (`projectile: true`, a sure hit, like Fire Vial), sparks out of the back, a small slag splash under
  * them, a cold star for two frames and a ground ripple. The rivet then STAYS in them, glowing and smoking, and burns for
- * 16 in two small ticks of 8 at 1.55 s and 2.55 s (each with a few sparks; skipped if the target is gone); it cools to dull
- * iron as it burns and drops out at the end with a puff of steam. The Heat (2) and the Tempered bonus (20% more damage taken
- * for 3 s) are the trait's: Tempered is decided on the first hit, so the ticks carry it only through the debuff. No telegraph
- * (a sure hit that needs sight at the cast). The last tick is 2.6 s after the cast, inside the duel's 4.2 s window. Clean by 3.2 s.
+ * 12 in two small ticks of 6 at 1.55 s and 2.55 s (each with a few sparks; skipped if the target is gone); it cools to dull
+ * iron as it burns and drops out at the end with a puff of steam. The Heat is the trait's (+30 to his bar, and the power of
+ * the cast, x0.55 cold to x1.15 white-hot, on the hit and both ticks); there is no Tempered bonus any more. No telegraph
+ * (a sure hit that needs sight at the cast). The last tick is 2.6 s after the cast, well inside the server's 12 s hit window
+ * (`HIT_WINDOW_MS`). Clean by 3.2 s.
  * See pipeline/designs/kit-forge.md.
  */
 export interface RedHotRivetSettings {

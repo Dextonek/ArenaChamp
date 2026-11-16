@@ -10,7 +10,7 @@ import { CROOK_ANGLE, CROOK_DAMAGE, CROOK_REACH, CROOK_WIND, SPARE_SECONDS, book
 /**
  * Crook Whack (sheep kit, Q: a furious swing). Bo hauls his crook up over his shoulder and shakes it, red in the face, for 0.55 s
  * (the wobble grows), then brings it down across a 4 m cone, 100 degrees wide (the shape the telegraph draws): a pale wedge of
- * swept ground, a fan of wool tufts and dust, a pop. Everyone inside the cone on their live position takes 45. A hit on the enemy
+ * swept ground, a fan of wool tufts and dust, a pop. Everyone inside the cone on their live position takes 58. A hit on the enemy
  * hero also leaves a sheep at their feet (a real summon, `spawnSheep`: it walks to whoever is nearest, so it bumps them for Wool;
  * with the flock full, or in a network duel where there is no `ctx.summon`, no sheep is made and only its *baa* shows). The cone's
  * apex is `sentFrom` and its heading the caster's facing at the cast, so both screens agree. Telegraph: the cone, impact at the

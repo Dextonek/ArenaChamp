@@ -13,7 +13,7 @@ a circle warns at least 0.25 + radius / 4 s; a lane at least 0.25 + half width /
 (1.0 s at least); a spell's hits land within 4.2 s unless the effect is a lasting mark; knock-ups 0.4 s on a W and 0.5 s
 elsewhere at most; pulls 4 m; heals 15 a spell and 50 on an R; a lock 1.5 s; six units; HP inside the role's range; no
 two kits with the same four shapes (against the roster in docs/catalog/heroes/README.md and each other); names and theme
-words not taken in src/kits/ or src/spells/targeted/.
+words not taken by the heroes' cards and spells (src/heroes/*/hero.ts, src/heroes/*/spells/) or src/spells/targeted/.
 """
 import html
 import re
@@ -433,9 +433,9 @@ def sheet(h):
     L.append('')
     spells = [s for s in by_key if s['k'] != 'P']
     L.append('Labels: ' + ', '.join(f"'{s['name'].lower()}'" for s in spells) + '. Files: '
-             + ', '.join(f"`src/spells/targeted/{camel(s['name'])}.ts`" for s in spells)
-             + f"; `src/effects/parts/{h['theme']}.ts`, `src/kits/{h['theme']}.ts`, `src/traits/{h['theme']}.ts`. Checked against "
-             '`src/kits/` and the labels and file names in `src/spells/targeted/` by the script.')
+             + ', '.join(f"`src/heroes/{h['theme']}/spells/{camel(s['name'])}.ts`" for s in spells)
+             + f"; in `src/heroes/{h['theme']}/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against "
+             'the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.')
     L.append('')
     return '\n'.join(L)
 

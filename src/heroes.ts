@@ -116,7 +116,8 @@ export const modelV4 = (url: string | undefined) => (url && !FIGS_OLD ? url.repl
  * The _v3 restyles (2026-11-09 and 11-10) keep the radius of the body they replace where the build is the same; where the
  * vertices' 90% radius or 99% height moved by more than about a tenth it follows (Grandma Ironknit and Bo are narrower
  * without the basket and the sheep; Silvane, Madame Cleaver and Sir Whiskers lost a hair tower, a tall hat and a plume;
- * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.33, so a small hero can still be clicked.
+ * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.29 (Ada, Marin), so a small hero can still
+ * be clicked.
  */
 export const HERO_BODIES: Record<string, { radius: number; height: number }> = Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body]));
 

@@ -7,12 +7,14 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { wipeGround } from '../../../traits/ground';
 import { MOP_ANGLE, MOP_DAMAGE, MOP_REACH, MOP_WIND, STRIP_LENGTH, WET_LIFE, addWet } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Big Mop (janitor kit v5, Q: a QUICK swipe, `self` mode; label 'big mop'). Gus draws the mop back over the 0.3 s wind-up (it squeaks:
  * SQUEAK) and swings it across the cone in front of him (3.5 m, 140 degrees: the same shape the telegraph draws), its strings
- * dragging a fan of foamy water along the floor: 45 on every enemy inside it at 0.3 s on live positions (60 while he surfs on
- * Flood: the trait's `castMods` multiplies it). The mop leaves a strip of wet floor 6 m long and 2 m wide straight ahead of him
+ * dragging a fan of foamy water along the floor: 60 on every enemy inside it at 0.3 s on live positions (`MOP_DAMAGE`, Flood or
+ * not: the trait's `castMods` gives it power 1 during Flood, since the tuning of 2026-11-04 raised the mop from 45 to 60 and took the
+ * bonus out of the tooltip). The mop leaves a strip of wet floor 6 m long and 2 m wide straight ahead of him
  * (`addWet`, written on both screens at the swing; it stays wet 6 s, shining, drawn by the trait's `marks`), and wipes the enemy's
  * rods, flowers and ink along that strip (`wipeGround`, on every enemy figure on both screens: only a hero that keeps such things has
  * anything to lose). The cone's apex is `sentFrom` and its heading the caster's facing at the cast, so both screens agree.
@@ -207,7 +209,7 @@ export class BigMop implements Effect {
       ctx.hit(e, { damage: this.settings.damage, knock: 2, from: ctx.from, color: JANITOR_CSS.water });
     }
     // The strip: wet for 6 s from now, and the enemy's rods, flowers and ink along it are wiped (both screens do the same).
-    const now = performance.now();
+    const now = fightNow();
     addWet(ctx.caster, {
       kind: 'strip', x: this.from.x, z: this.from.z, yaw: this.yaw, length: STRIP_LENGTH, r: 0, bornAt: now, until: now + WET_LIFE * 1000,
     });

@@ -5,6 +5,7 @@ import type { MinionLook } from '../../effects/parts/minion';
 import type { BoltDoor } from '../../effects/projectile';
 import type { SummonUnit } from '../../effects/summon';
 import type { CastContext } from '../../effects/targeting';
+import { fightNow } from '../../fightClock';
 
 /** Key Toss (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
 export const KEY_DAMAGE = 78;
@@ -52,7 +53,7 @@ export const LOBBY_GAP = Math.SQRT2 * LOBBY_RADIUS - 2 * LOBBY_R;
 
 const WORDS = ['THIS WAY, PLEASE', 'IF YOU WOULD, SIR'];
 
-/** One door. `bornAt` / `until` are `performance.now()` milliseconds: it stands from `bornAt` (after its rise) until `until`. */
+/** One door. `bornAt` / `until` are `fightNow()` milliseconds: it stands from `bornAt` (after its rise) until `until`. */
 export interface DoorRec {
   /** Unique per figure, the same on both screens (a count of the doors made at the casts, wrapping at 900): the break message names it. */
   id: number;
@@ -139,14 +140,14 @@ export function bindList(b: DoorBook, ctx: CastContext) {
 }
 
 /** Placed (rising or standing, not gone, not out of time), and standing (risen). */
-export const placed = (d: DoorRec, now = performance.now()) => !d.gone && now < d.until;
-export const standing = (d: DoorRec, now = performance.now()) => !d.gone && now >= d.bornAt && now < d.until;
+export const placed = (d: DoorRec, now = fightNow()) => !d.gone && now < d.until;
+export const standing = (d: DoorRec, now = fightNow()) => !d.gone && now >= d.bornAt && now < d.until;
 
 /** His plain doors that are placed (oldest first), and that stand. */
-export function placedDoors(b: DoorBook, now = performance.now()) {
+export function placedDoors(b: DoorBook, now = fightNow()) {
   return b.doors.filter((d) => d.kind === 'door' && placed(d, now)).sort((a, c) => a.bornAt - c.bornAt);
 }
-export function standingDoors(b: DoorBook, now = performance.now()) {
+export function standingDoors(b: DoorBook, now = fightNow()) {
   return b.doors.filter((d) => d.kind === 'door' && standing(d, now));
 }
 
@@ -158,7 +159,7 @@ export function dropDoor(d: DoorRec, broke: boolean) {
   if (d.gone) return;
   d.gone = true;
   d.broke = broke;
-  d.goneAt = performance.now();
+  d.goneAt = fightNow();
   if (d.unit?.alive) d.unit.left = 0;
 }
 
@@ -167,7 +168,7 @@ export function dropDoor(d: DoorRec, broke: boolean) {
  * go. The second door of a pair takes the first's brass number. Writes it to the book (both screens do, so the ids agree).
  */
 export function newDoor(b: DoorBook, x: number, z: number, rise = DOOR_RISE, life = DOOR_LIFE): DoorRec {
-  const now = performance.now();
+  const now = fightNow();
   const live = placedDoors(b, now);
   while (live.length >= DOOR_MAX) dropDoor(live.shift()!, false);
   const lone = live[0];
@@ -186,7 +187,7 @@ export function newDoor(b: DoorBook, x: number, z: number, rise = DOOR_RISE, lif
 
 /** Gives a risen door its 40 HP unit, where `ctx.summon` exists (the screen that decides hits), on the bell beside it. */
 export function attachUnit(ctx: CastContext, d: DoorRec) {
-  const now = performance.now();
+  const now = fightNow();
   const sm = ctx.summon?.({
     kind: 'turret', at: new THREE.Vector3(d.x + BELL_X, 0, d.z), hp: DOOR_HP, seconds: Math.max(0.2, (d.until - now) / 1000 + 0.1),
     damage: 0, attackEvery: 999, range: 0.01, color: DOOR_CSS.brass, look: HIDDEN,
@@ -206,7 +207,7 @@ export function raiseDoor(ctx: CastContext, d: DoorRec) {
  * They are not counted against the two-door limit and have no HP. Each is the other's mate across the ring.
  */
 export function newLobby(b: DoorBook, x: number, z: number, a0: number, rise = LOBBY_WIND, life = LOBBY_LIFE): LobbyRec {
-  const now = performance.now(), bornAt = now + rise * 1000, until = bornAt + life * 1000;
+  const now = fightNow(), bornAt = now + rise * 1000, until = bornAt + life * 1000;
   if (b.lobby) endLobby(b);
   const doors: DoorRec[] = [];
   const base = 1000 + (b.rings = (b.rings + 1) % 1000) * LOBBY_DOORS;
@@ -237,7 +238,7 @@ export function endLobby(b: DoorBook) {
  * Keeps the bolt list true to what stands: ONE `BoltDoor` for his two doors while both stand (the same object all that time, because a
  * bolt that came through remembers it), and the ring's two while it stands. Safe to call every frame, from either client.
  */
-export function syncBolts(b: DoorBook, now = performance.now()) {
+export function syncBolts(b: DoorBook, now = fightNow()) {
   const list = b.list;
   if (!list) return;
   const st = standingDoors(b, now);
@@ -369,7 +370,7 @@ export const doorTrait: Trait = {
   charges: { slot: 1, count: DOOR_CHARGES, every: DOOR_EVERY },
   canCast(t, slot) {
     const b = booksOf(t);
-    const now = performance.now();
+    const now = fightNow();
     if (slot === 1 && b && placedDoors(b, now).length >= DOOR_MAX) return 'Both doors stand';
     if (slot === 2 && (!b || standingDoors(b, now).length === 0)) return 'No door stands';
     return null;
@@ -388,7 +389,7 @@ export const doorTrait: Trait = {
    */
   aiHold(t, slot, dist) {
     const b = booksOf(t);
-    const now = performance.now();
+    const now = fightNow();
     if (slot === 1) {
       if (b && placedDoors(b, now).length >= DOOR_MAX) return true;
       bookOf(t.self()).cpuAt = now;
@@ -407,7 +408,7 @@ export const doorTrait: Trait = {
   aiGoal(t) {
     const b = booksOf(t), en = t.enemy();
     if (!b || !en || t.enemyDistance() > 3) return null;
-    const now = performance.now(), me = t.self().group.position, ep = en.group.position;
+    const now = fightNow(), me = t.self().group.position, ep = en.group.position;
     if (t.time < b.self.lockUntil) return null;
     const here = Math.hypot(me.x - ep.x, me.z - ep.z);
     let best: Port | null = null, bd = 4;
@@ -424,7 +425,7 @@ export const doorTrait: Trait = {
   marks(t) {
     const b = booksOf(t);
     if (!b || b.doors.length === 0) return [];
-    const now = performance.now(), out: GroundMark[] = [];
+    const now = fightNow(), out: GroundMark[] = [];
     const pair = standingDoors(b, now);
     const paired = pair.length === 2;
     for (const d of b.doors) {
@@ -454,9 +455,9 @@ export const doorTrait: Trait = {
     const b = booksOf(t);
     if (!b) return;
     newRound(b, t.time);
-    maintain(b, performance.now());
+    maintain(b, fightNow());
     const me = t.self(), p = me.group.position;
-    const step = travel(b, b.self, p.x, p.z, t.time, performance.now(), !t.status(me)?.cannotMove);
+    const step = travel(b, b.self, p.x, p.z, t.time, fightNow(), !t.status(me)?.cannotMove);
     if (!step) return;
     t.carrySelf(step.dx, step.dz);
     t.say(WORDS[0], DOOR_CSS.hot);
@@ -466,7 +467,7 @@ export const doorTrait: Trait = {
     const b = booksOf(t);
     if (!b) return;
     newRound(b, t.time);
-    const now = performance.now();
+    const now = fightNow();
     maintain(b, now);
     for (const d of b.doors) {
       if (d.kind !== 'door' || d.gone || now < d.bornAt) continue;

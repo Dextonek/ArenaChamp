@@ -15,7 +15,7 @@ import { ToolTrees, plantTree, stageOf, timberNow } from '../trait';
  * and a pillar of radius 0.5, full at 2.5 s with radius 0.7), drawn by the trait's `marks`, so a later cast cannot cut it off; this
  * effect plants it at the cast, on both screens, and draws the moment: soil, leaves, a pale ring at the circle that will be hit.
  * A fourth normal tree makes the oldest fall over harmlessly (drawn here). At 0.7 s an enemy inside 1.5 m of the spot on its LIVE
- * position (`ctx.enemies`, not the list frozen at the cast) takes 40 and a 0.5 s knock-up, and roots burst round the spot.
+ * position (`ctx.enemies`, not the list frozen at the cast) takes 50 and a 0.5 s knock-up, and roots burst round the spot.
  * Two charges, 7 s each (the trait's `charges`). The telegraph is that 1.5 m circle with its impact at 0.7 s, so he is rooted until
  * then, as the table says. The CPU holds it within 2 m of the enemy unless Q is ready (`aiHold`). Clean by 1.8 s.
  * See pipeline/designs/kit-timber.md.

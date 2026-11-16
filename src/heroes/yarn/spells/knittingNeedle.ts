@@ -14,7 +14,7 @@ import { YARN_CSS } from '../parts';
  * Knitting Needle (yarn kit v5, Q: the plain skillshot). Grandma pulls a needle as long as a sword out of her bun and holds it up
  * over the 0.3 s wind-up (it grows out of her hand, a loose strand of rose wool trailing from its knob), then throws it as a real
  * bolt (`ctx.projectile`: 9 m from her, 22 m/s, radius 0.3) end first, turning on its own axis, a wavy thread of wool behind it:
- * 50 damage. It reaches 6 m at 0.57 s. A needle that hits pops in a pink star and a puff of wool; one that finds nothing, or a
+ * 62 damage. It reaches 6 m at 0.57 s. A needle that hits pops in a pink star and a puff of wool; one that finds nothing, or a
  * wall, sticks where it stops and quivers for a moment before it fades. The telegraph is the real bolt's line, `boltWidth`
  * wide, from her to the first cover or 9 m, shown from the cast (its impact is the throw, 0.3 s, so it roots her until then).
  * Network duels: the bolt flies on the victim's screen; the caster's screen draws the same needle along the same line (the aim

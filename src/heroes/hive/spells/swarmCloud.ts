@@ -14,7 +14,7 @@ import { CLOUD_SECONDS, MAX_WASPS, cloudWasps } from '../trait';
  * cast and its impact is 1.0 s (he is rooted until then). Ticks at 1.0, 2.0 and 3.0 s (the end): each re-checks every
  * enemy's live position against the circle and hits it for 7 per wasp (`ctx.hit`, 42 at six) and blinds it for 1 s. When
  * it ends the wasps stream back to him at 3.0 s (the trait gives them back then, up to 6). Clean by 3.6 s, inside the
- * duel's 4.2 s window for spell hits. Cloud size on screen is 3 wasps per count (at least 3) so it reads at gameplay distance.
+ * server's 12 s hit window (`HIT_WINDOW_MS`). Cloud size on screen is 3 wasps per count (at least 3) so it reads at gameplay distance.
  */
 export interface SwarmCloudSettings {
   /** Damage per wasp per tick. */

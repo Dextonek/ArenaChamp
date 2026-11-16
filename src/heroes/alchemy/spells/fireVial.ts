@@ -11,7 +11,7 @@ import { takeReaction } from '../trait';
 /**
  * Fire Vial (alchemy kit, W: a targeted hit that cannot miss, 7 m, reagent orange). She uncorks a vial of orange fire
  * (it flares in her hand), flicks it in a short high arc that follows the enemy's live position, and it bursts on them:
- * a fireball flash, glass chips, an impact frame and a camera shake, 25 at once. Then the enemy burns for 2 s: flame
+ * a fireball flash, glass chips, an impact frame and a camera shake, 18 at once. Then the enemy burns for 2 s: flame
  * tongues stand on them and five ticks of 5 follow (`ctx.hit` with `projectile: true`: a sure hit, no zone). When the hit
  * sets off a reaction the effect reads it (`takeReaction`, written by the trait inside `ctx.hit`) and plays that burst.
  * With no one to hit it bursts on the aimed spot. See pipeline/designs/kit-alchemy.md.

@@ -175,7 +175,8 @@ function chefEats(t: TraitView, d: Dish, now: number) {
  * for a burnt one) and `noteOwner('ate', id)`, where `peerNote` removes it on her screen. If both step on one dish in the same
  * instant either may win; the dish is gone on both screens. A dish does not feed whoever was standing on it as it landed: they
  * must step off and back on (`selfOK` / `foeOK`). Dinner Is Served's table is `TableRec`: whoever stands at it for 1 s eats it.
- * Missing in the shared code: healing the ENEMY (a negative hit is not capped online), so the enemy's good dish is only the speed.
+ * The enemy's good dish gives the speed and heals them too: `victimTick` calls `healEnemy(GOOD_HEAL)` (the shared code's heal for
+ * the enemy hero, run where the enemy is decided).
  */
 export const chefTrait: Trait = {
   meter: { name: 'DISHES', max: DISH_MAX, value: (t) => liveDishes(chefBooks.get(t.self())).length },
@@ -325,8 +326,8 @@ export const chefTrait: Trait = {
       if (b.standFoe >= TABLE_STAND) {
         tb.eaten = true;
         b.standFoe = 0;
+        // The enemy gets the damage only: the 50 HP are hers (the tooltip: "and for her 50 HP").
         t.hitEnemy({ damage: 0, knock: 0, color: '#f2efe6', debuff: { kind: 'might', amount: TABLE_MIGHT, seconds: TABLE_MIGHT_SECONDS } });
-        t.healEnemy(TABLE_HEAL);
         t.noteOwner('feast', 1);
       }
     } else b.standFoe = 0;

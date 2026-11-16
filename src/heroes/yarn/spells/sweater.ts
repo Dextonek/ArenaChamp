@@ -7,6 +7,7 @@ import type { Enemy } from '../../../effects/common';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { SWEATER_DAMAGE, SWEATER_RADIUS, SWEATER_RANGE, SWEATER_SLOW, SWEATER_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Sweater (yarn kit v5, E: a thrown gift). A click on the enemy (7 m): Grandma holds up a knitted sweater and throws it, folded and
@@ -14,9 +15,9 @@ import { SWEATER_DAMAGE, SWEATER_RADIUS, SWEATER_RANGE, SWEATER_SLOW, SWEATER_WI
  * the enemy's feet follows them and shows where it lands. At 0.5 s the spell checks itself: if `stillSees` the enemy (cover between
  * them stops it) and they are within 9 m, the sweater lands on them: slowed 2 s (`ctx.hit`, damage 0, `projectile: true`) and a
  * knitted sweater is drawn on them, visibly tightening, with the words KEEP WARM over their head (the trait's `enemyLabel`, from
- * the book). At 2.5 s it shrinks: 40 damage (`projectile: true`, on their live position: the sweater is on them), a pop of wool, and
+ * the book). At 2.5 s it shrinks: 50 damage (`projectile: true`, on their live position: the sweater is on them), a pop of wool, and
  * she says "ooh, it suits you" (the trait's `landed`). Otherwise it falls on the floor and unravels, no hit. Reaching cover within the
- * 0.5 s is the answer; or wait it out and take 40. Clean by 3.4 s. See pipeline/designs/kit-yarn.md.
+ * 0.5 s is the answer; or wait it out and take 50. Clean by 3.4 s. See pipeline/designs/kit-yarn.md.
  */
 export interface SweaterSettings {
   damage: number;
@@ -132,7 +133,7 @@ export class SweaterFx implements Effect {
       const sees = !!p && stillSees(ctx, p);
       if (e && near && sees) {
         f.hit = true;
-        bookOf(ctx.caster).sweater = { at: performance.now() };
+        bookOf(ctx.caster).sweater = { at: fightNow() };
         // `projectile: true`: it touched them, which is the check (a thrown thing aimed at one hero, as Sky Rend's cuts).
         ctx.hit(e, { damage: 0, knock: 0, color: YARN_CSS.pink, projectile: true, status: { kind: 'slow', seconds: this.settings.slow } });
         this.v1.set(p!.x, WORN_Y, p!.z);

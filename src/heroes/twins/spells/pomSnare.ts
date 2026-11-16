@@ -11,7 +11,7 @@ import { SNARE_DAMAGE, SNARE_DELAY, SNARE_RADIUS, SNARE_RANGE, SNARE_ROOT } from
  * Snare (twins kit, Pom's W: a net). Pom swings a bundled net over her head and throws it up and out to a spot (7 m at most, the
  * aim clamped to that): it flies as a small bundle to above the spot (0.4 s), opens as it comes down and falls onto a 2 m circle,
  * landing flat at 1.0 s with a bounce of its weights, dust and confetti and the word GOTCHA. The circle is the telegraph, shown from
- * the cast. Whoever is inside it at 1.0 s on their live position takes 20 and is rooted 1 s: the net lies over them for that second
+ * the cast. Whoever is inside it at 1.0 s on their live position takes 30 and is rooted 1 s: the net lies over them for that second
  * (a dark pool under it, blue weights round the rim) and then fades. The spot is built from `sentFrom` and the aim, so both screens
  * agree. Clean by about 2.6 s. See pipeline/designs/kit-twins.md.
  */

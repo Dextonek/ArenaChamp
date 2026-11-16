@@ -31,7 +31,7 @@ const kit: HeroKit = {
       icon: icons.E,
     },
     {
-      key: 'R', label: 'sinkhole', name: 'Sinkhole', range: 9, cooldown: 24,
+      key: 'R', label: 'sinkhole', name: 'Sinkhole', range: 9, cooldown: 24, cc: true,
       blurb: 'The ground drops under the enemy: a pit 4 m in radius at their spot (9 m, sight needed), 1.3 s warning. Whoever is inside takes 115 and is rooted 1 s.',
       icon: icons.R,
     },

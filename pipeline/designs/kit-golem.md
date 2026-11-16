@@ -99,4 +99,4 @@ In the hero's palette: accent word green with a pale fired clay foil beside ever
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'clay shot', 'write the word', 'command', 'the great word'. Files: `src/spells/targeted/clayShot.ts`, `src/spells/targeted/writeTheWord.ts`, `src/spells/targeted/command.ts`, `src/spells/targeted/theGreatWord.ts`; `src/effects/parts/golem.ts`, `src/kits/golem.ts`, `src/traits/golem.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'clay shot', 'write the word', 'command', 'the great word'. Files: `src/heroes/golem/spells/clayShot.ts`, `src/heroes/golem/spells/writeTheWord.ts`, `src/heroes/golem/spells/command.ts`, `src/heroes/golem/spells/theGreatWord.ts`; in `src/heroes/golem/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

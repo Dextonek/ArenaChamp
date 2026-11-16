@@ -5,16 +5,18 @@ import { Bubbles, Drops, JANITOR, JANITOR_CSS, Ripples, Words } from '../parts';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { FLOOD_LIFE, FLOOD_RADIUS, FLOOD_WARN, addWet } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Flood (janitor kit v5, R: the whole floor wet, `self` mode, label 'flood'). Gus pulls the plug of a pipe somewhere: for a second
  * the floor round him gurgles (the 1 s warning: bubbles well up across the 7 m disc, rings of water run in toward him, GLUG, and the
  * red telegraph shows the disc), then at 1.0 s a wave bursts out from his feet to the edge of the disc, a geyser of water leaps, and
  * the whole disc is wet for 5 s (`addWet`, a disc written on both screens at that moment, drawn by the trait's `marks`). The effect
- * deals no damage. He surfs on it: the trait gives him haste 35% (`afterCast`/`tick`) and his Q deals 60 (`castMods`) for those
- * 5 s, and a ring at his feet shows the surf on both screens; here spray and bubbles follow him wherever he goes. When it is over the
- * water drains away in a spiral of rings. The disc's centre is `sentFrom`, so both screens agree. The telegraph is the disc, impact
- * at the flood (he is rooted for the warning, which is the price of the spell and the moment a player reads: leave before it floods).
+ * deals no damage. He surfs on it: the trait gives him haste 35% (`afterCast`/`tick`) for those 5 s (his Q deals its usual 60:
+ * `castMods` gives it power 1, no bonus since the tuning of 2026-11-04), and a ring at his feet shows the surf on both screens;
+ * here spray and bubbles follow him wherever he goes. When it is over the water drains away in a spiral of rings. The disc's
+ * centre is `sentFrom`, so both screens agree. The telegraph is the disc, impact at the flood (he is rooted for the warning,
+ * which is the price of the spell and the moment a player reads: leave before it floods).
  * Clean by about 7 s. See pipeline/designs/kit-janitor.md.
  */
 export interface FloodSettings {
@@ -142,7 +144,7 @@ export class Flood implements Effect {
     if (!this.flooded && t >= FLOOD_T) {
       this.flooded = true;
       if (ctx) {
-        const now = performance.now();
+        const now = fightNow();
         addWet(ctx.caster, { kind: 'flood', x: C.x, z: C.z, yaw: 0, length: 0, r: FLOOD_RADIUS, bornAt: now, until: now + FLOOD_LIFE * 1000 });
       }
       this.ripples.fire(C.x, C.z, 0.5, FLOOD_RADIUS, 0.55, 0.9, JANITOR.foam, true);

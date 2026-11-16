@@ -12,9 +12,9 @@ import { Q_BURST, Q_BURST_RADIUS, Q_SHIELD_SECONDS, aurielShields, burstHit, typ
 /**
  * First Light (dawn kit v5, Q: a quick cone). No aim: she turns to the nearest enemy and a sun disc swells in front of her chest
  * while five blade shards gather; at 0.45 s the shards fly out and a fan of hard light fills a 6 m cone in front of her. Every
- * enemy inside the cone at that moment (live positions) takes 50 and a small shove, with a sun-wheel flash under it. That hit
- * gives her a 30 shield for 3 s, unless Dawnward or Sunrise holds (the trait's `landed`, `src/traits/dawn.ts`). Three small plates
- * orbit her while it holds. When the shield ends (broken, or run out at 3 s) it bursts for 18 in 3 m at her LIVE position
+ * enemy inside the cone at that moment (live positions) takes 40 and a small shove, with a sun-wheel flash under it. That hit
+ * gives her a 14 shield for 3 s, unless Dawnward or Sunrise holds (the trait's `landed`, `src/traits/dawn.ts`). Three small plates
+ * orbit her while it holds. When the shield ends (broken, or run out at 3 s) it bursts for 8 in 3 m at her LIVE position
  * (`projectile: true`): the plates shatter, a ring of light runs out. A branded enemy caught in it is stunned 0.8 s by the
  * trait. The effect watches the trait's `aurielShields` record (a NEW kind 1 record after the cast), so it stays alive up to
  * about 5 s after a hit; a miss ends it at 2.3 s. A Dawnward or Sunrise cast replaces the record and the plates crumble without

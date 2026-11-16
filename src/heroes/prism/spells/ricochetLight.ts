@@ -13,7 +13,7 @@ import { BANK_BONUS, BANK_MAX, BANK_RANGE, RICOCHET_DAMAGE } from '../trait';
 /**
  * Ricochet Light (prism kit v5, Q: a bank shot). A crystal forms at Opaline's wand over the 0.3 s wind-up, then it is fired
  * as a real bolt (`ctx.projectile`: 12 m from her, 24 m/s, radius 0.3) that reflects off up to two walls, pillars or
- * crystals (`reflect: 2`): 50 damage, +25% per reflection (the engine multiplies it), +2 m of range each. A hit after
+ * crystals (`reflect: 2`): 64 damage, +25% per reflection (the engine multiplies it), +2 m of range each. A hit after
  * reflections takes 1 s per reflection off this spell: decided in `src/traits/prism.ts` from the bonus in the hit.
  * Every reflection flashes (a pale star, glitter) and the bolt's white trail bends with it.
  *

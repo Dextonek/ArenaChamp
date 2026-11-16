@@ -12,7 +12,7 @@ import { FLIP_DAMAGE, FLIP_DISTANCE, FLIP_FUSE, FLIP_RADIUS, FLIP_TIME } from '.
  * into the ring and out of cover) with a trail of confetti and pale streaks, a ring of dust where she lands. Where she stood a party
  * popper is left: a blue ball with a yellow band and a lit fuse that blinks faster and faster, inside a 1.5 m circle (the telegraph,
  * shown from the cast). At 0.65 s it goes off: a star, a ring, a burst of confetti and the word POP. Whoever is inside the circle then
- * (their live position) takes 30 and is shoved back. The popper's place is `sentFrom`, so both screens agree. Network duels: the other
+ * (their live position) takes 40 and is shoved back. The popper's place is `sentFrom`, so both screens agree. Network duels: the other
  * screen has no `moveCaster` (her client streams the hop), so it draws the path from `sentFrom` and the aim. Clean by about 1.6 s.
  * Built toward the aim, like every dash: the CPU's escape aim already points away from the enemy. See pipeline/designs/kit-twins.md.
  */

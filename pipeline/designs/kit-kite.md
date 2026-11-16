@@ -101,4 +101,4 @@ In the hero's palette: accent saffron with a pale pale indigo foil beside every 
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'paper dart', 'let fly / reel in', 'firecracker', 'dragon dance'. Files: `src/spells/targeted/paperDart.ts`, `src/spells/targeted/letFlyReelIn.ts`, `src/spells/targeted/firecracker.ts`, `src/spells/targeted/dragonDance.ts`; `src/effects/parts/kite.ts`, `src/kits/kite.ts`, `src/traits/kite.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'paper dart', 'let fly / reel in', 'firecracker', 'dragon dance'. Files: `src/heroes/kite/spells/paperDart.ts`, `src/heroes/kite/spells/letFlyReelIn.ts`, `src/heroes/kite/spells/firecracker.ts`, `src/heroes/kite/spells/dragonDance.ts`; in `src/heroes/kite/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

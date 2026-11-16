@@ -12,7 +12,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * checks sight then), but the zone is the spot the enemy stood at the cast: a 1.6 m ring on the floor, soulfire
  * flickering up round it, the ground trembling, for 0.7 s (the telegraph). At 0.7 s a giant skeletal hand bursts up
  * there (the arm rises out of the floor, fingers open, palm toward Mortis): bone spires, dust, chips, a ground ripple
- * and an impact frame. If the enemy is still inside 1.6 m (its live position) the grasp lands: 60 damage and a root of
+ * and an impact frame. If the enemy is still inside 1.6 m (its live position) the grasp lands: 55 damage and a root of
  * exactly 1 s (the `status` of that one hit), the fingers close round it and the hand drags it toward Mortis, 4 m at
  * most and never closer than 1.1 m to him, over 0.6 s (`ctx.carry` every frame, on the victim's live position: offline
  * it moves the enemy hero, in a network duel only this side's own hero, as in forgeCharge.ts; where the context has no

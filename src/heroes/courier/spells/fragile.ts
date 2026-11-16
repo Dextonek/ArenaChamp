@@ -14,7 +14,7 @@ import { FRAGILE_DAMAGE, FRAGILE_DELAY, FRAGILE_RADIUS, FRAGILE_RANGE, FRAGILE_S
  * sits there ticking and rattling harder and harder, its string quivering. At 1.0 s it bursts: the paper flies, FRAGILE stickers
  * scatter outward and flutter down, and DELIVERED pops over the spot.
  *
- * The hit: at 1.0 s every enemy whose LIVE position is inside the 2.5 m circle (the module's telegraph, the real shape) takes 50 and
+ * The hit: at 1.0 s every enemy whose LIVE position is inside the 2.5 m circle (the module's telegraph, the real shape) takes 72 and
  * is slowed 1 s. A walker (0.25 s to react plus 0.63 s to cross 2.5 m) just leaves it. Clean by 2.6 s. The spot comes from
  * `sentFrom` and the aim only, so both screens of a network duel agree. See pipeline/designs/kit-courier.md.
  */

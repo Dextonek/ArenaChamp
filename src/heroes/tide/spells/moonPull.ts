@@ -14,9 +14,9 @@ import { MOON_SECONDS, tideOf } from '../trait';
  * (`ChannelBar`). The tide is held at Low and her Wave Disc and Coral Spire pulls are doubled while it lasts (the trait
  * reads `moonLeft` from `tides`, which this effect owns: set on play, counted down, cleared on reset). An enemy within
  * 12 m that she can still see (`stillSees`) is dragged toward her at 2.4 m/s (`ctx.carry` every frame, as Forge Charge
- * does; she is never touched, the drag stops 1.6 m short) and takes 15 damage a second while the drag holds (a 5 hit
+ * does; she is never touched, the drag stops 1.6 m short) and takes 24 damage a second while the drag holds (an 8 hit
  * every third of a second). A stun, silence or knock-up ends it at once (`channelBroken`: the moon fades, the tide is
- * released, `ctx.releaseCaster`), with no crash. If the moon sets by itself, a 85 tide crash lands on an enemy within
+ * released, `ctx.releaseCaster`), with no crash. If the moon sets by itself, a 110 tide crash lands on an enemy within
  * 2.5 m of her. The hits are `projectile: true`: the drag is the catch, so the duel's zone filter does not decide.
  * The look is the Low tide at full strength: blue streaks spiral in, a ring of inward chevrons pulses at her feet and
  * water tethers run from her to each enemy being dragged. See pipeline/designs/kit-tide.md.

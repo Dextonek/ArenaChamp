@@ -96,6 +96,9 @@ export function shapeMove(
   o.from = new THREE.Vector3(victim.x + (ax / l) * (m + 1), 0, victim.z + (az / l) * (m + 1));
 }
 
+/** In her mist: nothing reaches her. */
+const misted = (t: TraitView) => (t.mem.mistUntil ?? 0) > t.time;
+
 /**
  * Marin (controller). Passive Turning Tide: the tide turns every 8 s of round time, and Mist Form flips it when she
  * reforms. At High tide her spells push the enemy away; at Low tide they pull it toward her. The tide is kept in `t.mem`
@@ -149,8 +152,9 @@ export const tideTrait: Trait = {
     }
     if (slot === 3) t.hold(MOON_SECONDS);
   },
+  untouchable: (t) => misted(t),
   taken(t, hit) {
-    if ((t.mem.mistUntil ?? 0) > t.time) hit.blocked = true;
+    if (misted(t)) hit.blocked = true;
   },
   dealt(t, hit) {
     if (hit.kind !== 'spell' || (hit.slot !== 0 && hit.slot !== 1)) return;

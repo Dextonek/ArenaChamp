@@ -14,7 +14,7 @@ import { SOUP_DAMAGE, SOUP_DELAY, SOUP_RADIUS, SOUP_RANGE, SOUP_SLOW, addDish } 
  * and red bubbles breaking over its brim. At 1.0 s it tips over toward the enemy side and the whole pot of soup runs out across the
  * floor: a puddle that spreads to 2.5 m in 0.3 s, soup flying, a burst of steam.
  *
- * The hit: at 1.0 s every enemy whose LIVE position is inside the 2.5 m circle (the module's telegraph, the real shape) takes 40 and
+ * The hit: at 1.0 s every enemy whose LIVE position is inside the 2.5 m circle (the module's telegraph, the real shape) takes 56 and
  * is slowed 1.5 s. The delay is 1.0 s, so a walker (0.25 s to react plus 0.63 s to cross 2.5 m) just leaves it. At 1.3 s a fresh dish
  * (`addDish`) plops out at the circle's centre, on both screens: whoever stood in the puddle must step out and back in to eat it. The pot
  * slides off and dissolves; the puddle steams, then dries. Clean by 3.3 s. See pipeline/designs/kit-chef.md.

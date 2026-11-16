@@ -9,6 +9,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
 import {
   DOOR_APART, DOOR_LIFE, DOOR_MIN, DOOR_RANGE, DOOR_RISE, bindList, bookOf, newDoor, placedDoors, raiseDoor, syncBolts, type DoorRec,
 } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Door (door kit v5, W: a door at a spot, two charges). A brass ring and a column of warm light mark a spot (9 m, at least 1.2 m from
@@ -106,7 +107,7 @@ export class WickDoorFx implements Effect {
     len = THREE.MathUtils.clamp(len, DOOR_MIN, DOOR_RANGE);
     const b = bookOf(ctx.caster), live = placedDoors(b);
     // The CPU's first door goes close to him (the trait's aiHold marked this cast).
-    if (live.length === 0 && performance.now() - b.cpuAt < CPU_FRESH) len = Math.min(len, CPU_NEAR);
+    if (live.length === 0 && fightNow() - b.cpuAt < CPU_FRESH) len = Math.min(len, CPU_NEAR);
     let x = s.x + dx * len, z = s.z + dz * len;
     // The second door keeps its distance from the first, or the pair is a doorway to the same spot.
     const lone = live[0];

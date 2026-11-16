@@ -12,7 +12,7 @@ import { PEBBLE_DAMAGE, PEBBLE_RADIUS, PEBBLE_RANGE, PEBBLE_SPEED, PEBBLE_WIND }
 /**
  * Pebble (twins kit, Pom's Q: a slingshot). Pom holds the slingshot out and pulls the band back over the 0.3 s wind-up (a little
  * shake as it stretches), then lets go: a grey pebble flies as a real bolt (`ctx.projectile`: 9 m from her, 22 m/s, radius 0.3), tumbling,
- * with a few pale streaks behind it. It reaches 6 m at 0.57 s. A hit gives 45, a star, confetti and the word PING; a miss ends in a
+ * with a few pale streaks behind it. It reaches 6 m at 0.57 s. A hit gives 66, a star, confetti and the word PING; a miss ends in a
  * small puff where it stops (at 9 m or at cover). Telegraph: one thin line as wide as the bolt really hits (`boltWidth`), shown from
  * the cast to the end of its flight; the impact is the release (0.3 s), so the root on her ends there. Network duels: bolts fly on the
  * victim's screen, so the caster's screen draws the same pebble along the same line. Clean by about 1.8 s. See pipeline/designs/kit-twins.md.

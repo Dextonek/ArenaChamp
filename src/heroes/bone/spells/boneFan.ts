@@ -13,7 +13,7 @@ import { PILE_KEEP } from '../trait';
  * at chest height, each pointing down its own line, 18 degrees apart. A bone pile within 3 m of him (`ctx.deathSpots(8)`, see the trait's
  * Ossuary) lends one more shard (the fan holds six at most): the pile shakes, soulfire stirs on it and a shard flies
  * from it into the fan (the fan widens as it grows, the same 18 degree step). At 0.3 s every shard leaves as its own bolt
- * (`ctx.projectile`, 30 each, radius 0.2, 8 m, 20 m/s: it reaches 6 m at about 0.56 s, never before 0.5 s) and rides it; a
+ * (`ctx.projectile`, 31 each, radius 0.2, 8 m, 20 m/s: it reaches 6 m at about 0.56 s, never before 0.5 s) and rides it; a
  * hit throws chips, dust and a small ember star, a bolt at the end of its range clatters apart. Clean by 1.3 s.
  * See pipeline/designs/kit-bone.md.
  *

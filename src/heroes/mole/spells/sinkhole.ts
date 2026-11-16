@@ -11,7 +11,7 @@ import { SINK_DAMAGE, SINK_DELAY, SINK_RADIUS, SINK_ROOT } from '../trait';
  * (4 m radius) is fixed where they stood. For 1.3 s the ground shudders: Mabel taps her tiny pickaxe on the floor, a tremor ring runs out
  * from the centre with each tap (0.15, 0.5, 0.85 s), cracks run toward the rim, the ground inside darkens, pebbles hop and dust
  * rises along the edge. At 1.3 s the ground drops: a pit of the full 4 m opens (a dark hollow, a raised rim of dirt), clods fly, a dust
- * ring runs out, one short impact frame. Everyone inside the circle on their live position takes 90 and is rooted 1 s. The pit stays
+ * ring runs out, one short impact frame. Everyone inside the circle on their live position takes 115 and is rooted 1 s. The pit stays
  * a second, then crumbles shut. Telegraph: the circle, impact at the drop (she is rooted 1.3 s). Clean by about 2.8 s. See
  * pipeline/designs/kit-mole.md.
  */

@@ -14,7 +14,7 @@ import { SPIRE_PULL, SPIRE_PUSH, shapeMove, tideNow } from '../trait';
  * Coral Spire (tide kit, W: terrain). A ring of the tide's current marks a spot (8 m): foam streaks run outward at High
  * tide, blue streaks draw inward at Low tide. After 0.9 s a coral pillar bursts out of the floor there and stands for
  * 5 s as a real obstacle (`ctx.addObstacle`, a pillar of radius 0.8): it blocks walking, sight and bolts for both heroes
- * and the AI. As it rises, the enemy within 2.5 m of it is hit (55) and moved by the tide: at High tide shoved 3 m away,
+ * and the AI. As it rises, the enemy within 2.5 m of it is hit (44) and moved by the tide: at High tide shoved 3 m away,
  * at Low tide dragged 2 m toward it. The move is decided in `src/traits/tide.ts` (`dealt`); this effect hands the
  * engine the Low-tide shape (a `pull` toward the spire) and the trait flips it. Near the end the coral cracks and
  * flares, then sinks and the obstacle goes. See pipeline/designs/kit-tide.md.

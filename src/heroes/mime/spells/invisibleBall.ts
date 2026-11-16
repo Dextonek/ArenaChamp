@@ -13,7 +13,7 @@ import { BALL_DAMAGE, BALL_RADIUS, BALL_RANGE, BALL_SPEED, BALL_WIND, isOwnWall,
  * Invisible Ball (mime kit v5, Q: a skillshot you cannot see). Mum cups a ball that is not there: her right glove closes round
  * nothing, winds back (0.3 s) and throws; the left hand stays up as if to balance. Nothing flies in the air. The only sign is the
  * line on the floor: a dashed chalk line, and under it the telegraph, `boltWidth(radius)` wide, which is as wide as the ball
- * really hits. The ball is a real bolt (`ctx.projectile`: 9 m from her, 22 m/s, radius 0.3, 50 damage); it reaches 6 m at 0.54 s.
+ * really hits. The ball is a real bolt (`ctx.projectile`: 9 m from her, 22 m/s, radius 0.3, 72 damage); it reaches 6 m at 0.54 s.
  * It stops at pillars and walls of the arena but flies through her own walls: `passBolt` lifts a wall's obstacle while the bolt
  * is at it and the line is drawn through them (`isOwnWall`). Her screen of a network duel has no bolt and draws nothing more.
  * Where it hits, a chalk star and chips of chalk pop out of the air: that is when it is seen. A miss ends in a small puff of chalk

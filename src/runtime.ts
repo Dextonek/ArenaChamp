@@ -22,6 +22,7 @@ import type { CastContext, Effect, EffectModule } from './effects/types';
 import { DISTORT_LAYER } from './effects/parts/distortion';
 import type { ScreenFx } from './effects/parts/screen';
 import { AUTO_MIN_PIXELS, AUTO_MIN_SHARE, AUTO_REST_MS, FramePacer, QUALITY_SPEC, loadQuality, loadShare, saveQuality, saveShare, type QualityLevel } from './quality';
+import { advanceFightClock } from './fightClock';
 
 /**
  * The 3D runtime that the VFX tool (index.html, src/tool/) and the duel game (game.html, src/game/) are both built
@@ -955,6 +956,7 @@ export function createRuntime(opts: RuntimeOptions) {
   }
 
   function step(dt: number) {
+    advanceFightClock(dt);
     hooks.beforeStep?.(dt);
     updateEffect(active?.effect, dt);
     for (const slot of lingering) {

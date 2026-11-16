@@ -97,4 +97,4 @@ In the hero's palette: accent fuchsia with a pale powder white foil beside every
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'spark cap', 'breaching charge', 'powder leap', 'bring it down'. Files: `src/spells/targeted/sparkCap.ts`, `src/spells/targeted/breachingCharge.ts`, `src/spells/targeted/powderLeap.ts`, `src/spells/targeted/bringItDown.ts`; `src/effects/parts/sapper.ts`, `src/kits/sapper.ts`, `src/traits/sapper.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'spark cap', 'breaching charge', 'powder leap', 'bring it down'. Files: `src/heroes/sapper/spells/sparkCap.ts`, `src/heroes/sapper/spells/breachingCharge.ts`, `src/heroes/sapper/spells/powderLeap.ts`, `src/heroes/sapper/spells/bringItDown.ts`; in `src/heroes/sapper/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

@@ -15,7 +15,7 @@ import {
  * back). He grabs the nearest sheep that still has its wool and shears it in one furious stroke: the fleece bursts off it in a
  * cloud of tufts and a loud *baaa*, and the sheep runs on naked, pink and fast (1.5 x speed, bleating) for the rest of its time. The
  * wool streams into his fist over the 0.25 s wind-up and he throws it as a real bolt (`ctx.projectile`: 8 m, 20 m/s, radius 0.3, so
- * it reaches 6 m at 0.55 s) spinning as a ball of wool: 40 damage, and the trait adds 3 Wool to the enemy (`dealt`, slot 2). A
+ * it reaches 6 m at 0.55 s) spinning as a ball of wool: 50 damage, and the trait adds 3 Wool to the enemy (`dealt`, slot 2). A
  * sheep that is shorn cannot be shorn again, and the sheep that is shorn still bumps for Wool. With no sheep (a network duel has
  * none on this screen) only the throw plays. The ball is stopped by cover and units as any bolt. Telegraph: one line from Bo, as wide
  * as the bolt really hits (`boltWidth`), impact at the launch. Clean by about 1.4 s. See pipeline/designs/kit-sheep.md.

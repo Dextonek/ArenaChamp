@@ -8,6 +8,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
 import {
   BISCUIT_DAMAGE, BISCUIT_EVERY, BISCUIT_HP, BISCUIT_LIFE, BISCUIT_SPEED, bookOf, catGoal, type CatPlay,
 } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Mr. Biscuit (yarn kit v5, R: the ultimate, a cat). Grandma tips a big ball of wool out of her basket at her feet; it wobbles and
@@ -149,7 +150,7 @@ export class MrBiscuitFx implements Effect {
       this.popPos.copy(this.v1);
       this.shake = 0.2;
       const b = bookOf(ctx.caster);
-      this.play_.seen = performance.now();
+      this.play_.seen = fightNow();
       this.play_.until = 0;
       this.play_.playing = false;
       const handle = ctx.summon?.({

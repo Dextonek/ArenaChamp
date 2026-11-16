@@ -13,7 +13,7 @@ import { gardenLive, plantFlower } from '../trait';
 /**
  * Seed Shot (grove kit v5, Q: 9 m line skillshot, `ctx.projectile`). A seed swells in Fenna's hand for the 0.25 s wind-up (a
  * cream star, pollen drawn in), then flies down the aim from her feet at 20 m/s (radius 0.35): it reaches 6 m at 0.55 s, so a
- * sidestep after she raises her hand is enough. The first enemy it touches takes 50. A flower grows where the seed stops: on
+ * sidestep after she raises her hand is enough. The first enemy it touches takes 64. A flower grows where the seed stops: on
  * the enemy it hit, or where it ended its flight or struck a wall. The flower is the trait's (`plantFlower` in
  * `src/traits/grove.ts`, drawn there as a ground mark on both screens, 4 at most, 7 s): this effect only adds it at the moment
  * the seed lands, with a burst of petals and pollen. Timeline: wind-up 0-0.25, flight to 0.7, clean by 1.4 s.

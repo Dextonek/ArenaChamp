@@ -19,7 +19,7 @@ import { REND_CUT, REND_MAX_CUTS, REND_MIN_CUTS, REND_REACH, REND_WIND, skyRendC
  * enemy, and cuts from all sides: 3 to 9 cuts (`skyRendCuts`, written by his trait: 3 plus 2 per Gust spent, 9 with no entry,
  * as in the VFX tool), one every `REND_CUT` (0.16 s). Each cut is a jade afterimage that comes from a new side (the sides turn
  * 2.4 rad each time), a big crescent and speed lines through the body, a star, a refraction ring, a screen kick. Each is
- * `damage` (15) and every hit is `projectile: true`, judged on the target's live position, so the enemy cannot walk out of
+ * `damage` (22) and every hit is `projectile: true`, judged on the target's live position, so the enemy cannot walk out of
  * it (the last cut lands up to 2.1 s after the cast). The last is the finisher: bigger crescents, an impact frame, a
  * chromatic pulse, a hard knock. His real body slides to each side (`ctx.moveCaster`, 0.05 s) and then to a spot 1.4 m behind
  * the enemy (by its facing), where he steps out of the wind with a pink star and a ring. He is untouchable only while the

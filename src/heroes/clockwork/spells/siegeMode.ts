@@ -17,7 +17,7 @@ import { SIEGE_SECONDS, siegeOf } from '../trait';
  * makes her turrets within 8 m fire twice as fast, with the 8 m ring on her feet). This effect owns the heavy rounds:
  * every 0.8 s (`EVERY`, the first at 0.8 s) it picks the nearest of the cast's targets within 9 m (`REACH`) that she
  * still sees (`stillSees`) and a heavy shell (the big rivet) flies from the cannon on her shoulder (the magnetic coil)
- * to it, 0.25 s, homing on the live position. It lands for 30, `projectile: true` (the hit passes the duel's zone filter,
+ * to it, 0.25 s, homing on the live position. It lands for 23, `projectile: true` (the hit passes the duel's zone filter,
  * which is why it works for 6 s after the cast: the server allows a projectile hit up to 12 s after a cast), and only if she
  * still sees the target at the landing: stepping behind cover or a pillar catches a shell in the air. Past 9 m nothing fires.
  * It ends in three ways, all through the one record: the clock (6 s); Pack up, which clears `siegeOf(caster).live` on her

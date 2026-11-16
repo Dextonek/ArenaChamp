@@ -28,6 +28,8 @@ export declare const raidRing: (id: string, band: number) => number;
 /** The hero shop (pipeline/designs/hero-shop.md): the six kinds of play, every hero's kind and shelf (0: a starter), the numbers. */
 export declare const HERO_KINDS: Record<string, { name: string; blurb: string }>;
 export declare const HERO_SHOP: Record<string, { kind: string; shelf: number }>;
+export declare const R_TIMING: Record<string, { gapMs: number; recastMs: number }>;
+export declare function rTiming(hero: string | null | undefined): { gapMs: number; recastMs: number };
 export declare const SHOP: {
   start: number; shelves: number[]; rotation: number;
   earn: { duel: number; win: number; firstWin: number; boss: number; tier: number };

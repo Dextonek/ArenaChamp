@@ -7,6 +7,7 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { sweepHit } from '../../../obstacles';
 import { CHARGE_DAMAGE, CHARGE_DIST, CHARGE_HOLD, CHARGE_TIME, CHARGE_WIDTH, CHARGE_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Sumo Charge (sumo kit, E: a run that carries). He drops low (dust scrapes off the floor behind him at 0.1 s and 0.25 s, a red strip
@@ -232,7 +233,7 @@ export class SumoCharge implements Effect {
     this.dust.burst(this.v3.copy(best.group.position), 8, 3.5, 0.5, 0.6);
     ctx.hit(best, { damage: this.settings.damage, knock: 0, color: SUMO_CSS.core, from: this.start.clone() });
     // A shove of his is under way until he stops: a body carried out of his ring inside this window is a ring-out.
-    bookOf(ctx.caster).pushUntil = performance.now() + (Math.max(0, END_T - t) + 0.3) * 1000;
+    bookOf(ctx.caster).pushUntil = fightNow() + (Math.max(0, END_T - t) + 0.3) * 1000;
   }
 
   /** Keeps the caught body `CHARGE_HOLD` in front of him, in small steps so it cannot tunnel through stone. */

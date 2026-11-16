@@ -12,7 +12,7 @@ import { hex } from './accounts.mjs';
 import { Clans } from './clans.mjs';
 import {
   CLAN, ELO, LEADER_SIZE, HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
-  WORLD_DOORS, WORLD_PACKS, doorScale, isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
+  WORLD_DOORS, WORLD_PACKS, doorScale, isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, rTiming, shopRotation,
 } from './protocol.mjs';
 import { CLIMB_DOORS, CLIMB_PACKS } from './climb-packs.mjs';
 
@@ -31,12 +31,10 @@ const BREAK_MS = 3000;
 const PICK_MS = 15000;
 const ARENA_ID_RE = /^[a-z]{1,16}$/;
 // A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
-// (R: R_GAP_MS). Lenient on purpose: the real cooldowns live in the kits, which are still changing.
+// (R: its hero's `rTiming(hero).gapMs`, and one free second R, a recast such as Fenna's Uproot, within its `recastMs`).
+// Lenient on purpose: the real cooldowns live in the kits, which are still changing.
 const HIT_WINDOW_MS = 12000;
 const SLOT_GAP_MS = 350;
-const R_GAP_MS = 10000;
-// A free second R (a recast such as Oblivion's Collapse) may follow the first within RECAST_MS.
-const RECAST_MS = 4000;
 // Basic attacks: at most one per ATTACK_GAP_MS, a hit from one at most ATTACK_MAX damage. Heals: one at most HEAL_MAX,
 // at most HEAL_WINDOW_MAX within HEAL_WINDOW_MS. Statuses and shields the clients report are only relayed (for the
 // look on the other screen), clamped to these caps.
@@ -570,10 +568,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!match || match.state !== 'fight' || Date.now() < match.fightAt) return;
         if (![0, 1, 2, 3].includes(m.slot) || !num(m.id) || !num(m.x) || !num(m.z) || !num(m.fx) || !num(m.fz)) return;
         const me = match.players[c.side], now = Date.now();
-        const since = now - me.lastSlot[m.slot];
-        if (m.slot === 3 && since < R_GAP_MS) {
+        const since = now - me.lastSlot[m.slot], r = rTiming(me.hero);
+        if (m.slot === 3 && since < r.gapMs) {
           // Only one quick second R (a recast), and it does not restart the long gap.
-          if (since < SLOT_GAP_MS || since > RECAST_MS || me.rRecast) return;
+          if (since < SLOT_GAP_MS || since > r.recastMs || me.rRecast) return;
           me.rRecast = true;
         } else {
           if (since < SLOT_GAP_MS) return;

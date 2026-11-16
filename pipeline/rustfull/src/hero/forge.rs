@@ -1,5 +1,5 @@
-//! Brannoc, the Ashen Smith. Ports of his passive (`src/traits/forge.ts`) and of the rules inside his four spells
-//! (`src/spells/targeted/chainHammer.ts`, `forgeRoar.ts`, `redHotRivet.ts`, `moltenCore.ts`).
+//! Brannoc, the Ashen Smith. Ports of his passive (`src/heroes/forge/trait.ts`) and of the rules inside his four spells
+//! (`src/heroes/forge/spells/chainHammer.ts`, `forgeRoar.ts`, `redHotRivet.ts`, `moltenCore.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -12,7 +12,7 @@ use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::{Buff, Status};
 use crate::zone::{Shape, Zone};
 
-// src/traits/forge.ts
+// src/heroes/forge/trait.ts
 const HEAT_MAX: f64 = 3.0;
 const HEAT_SECONDS: f64 = 5.0;
 const SLAM_SECONDS: f64 = 3.0;
@@ -212,7 +212,7 @@ pub fn taken(w: &mut World, s: Side, hit: &mut THit) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-// src/spells/targeted/chainHammer.ts
+// src/heroes/forge/spells/chainHammer.ts
 const HAMMER_RELEASE: f64 = 0.3;
 const HAMMER_SPEED: f64 = 18.0;
 const HAMMER_RANGE: f64 = 9.0;
@@ -259,7 +259,7 @@ impl Spell for ChainHammer {
     }
 }
 
-// src/spells/targeted/redHotRivet.ts
+// src/heroes/forge/spells/redHotRivet.ts
 const RIVET_HIT: f64 = 0.55;
 const RIVET_TICKS: [f64; 2] = [1.55, 2.55];
 const RIVET_DURATION: f64 = 3.2;
@@ -310,7 +310,7 @@ impl Spell for RedHotRivet {
     }
 }
 
-// src/spells/targeted/moltenCore.ts
+// src/heroes/forge/spells/moltenCore.ts
 const CORE_FADE: f64 = 0.4;
 const QUENCH_RING_T: f64 = 0.6;
 const QUENCH_DURATION: f64 = 2.4;

@@ -12,7 +12,7 @@ import { FEE_DAMAGE, FEE_DELAY, FEE_RADIUS, FEE_SLOW } from '../trait';
  * radius 2.5) and an enormous LATE FEE notice drops out of the sky onto it, rolling and flapping as it comes, a loose coin or two
  * falling with it. At 1.0 s it lands flat with a slap: the ring floods red, a stamp-print of LATE FEE is left on the floor, a ground
  * ripple, a burst of paper and gold coins that bounce. Whoever stands in the ring at that moment (the live position, judged then)
- * is slowed for 1.5 s and takes 40, which goes on the tab (`src/traits/ledger.ts`) rather than hurting now. The notice lies a
+ * is slowed for 1.5 s and takes 62, which goes on the tab (`src/traits/ledger.ts`) rather than hurting now. The notice lies a
  * moment, then shrinks into the floor; clean by about 2.3 s. See pipeline/designs/kit-ledger.md.
  */
 export interface LateFeeSettings {
@@ -168,8 +168,8 @@ export class LateFee implements Effect {
   private slap(ctx: CastContext | null) {
     const p = this.point;
     if (ctx) {
-      // Re-check at impact: whoever stands in the ring now.
-      for (const e of ctx.targets) {
+      // At impact: whoever stands in the ring now, wherever they stood at the cast (the tooltip: the notice lands after 1 s).
+      for (const e of ctx.enemies?.() ?? ctx.targets) {
         const q = e.group.position;
         if (Math.hypot(q.x - p.x, q.z - p.z) <= FEE_RADIUS) {
           ctx.hit(e, { damage: this.settings.damage, knock: 2, from: p, color: LEDGER_CSS.gold, status: { kind: 'slow', seconds: this.settings.slow } });

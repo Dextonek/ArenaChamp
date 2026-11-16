@@ -8,10 +8,11 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import type { Enemy } from '../../../effects/common';
 import { BARB_SECONDS, LEAP_RANGE, LEAP_WINDOW, STINGER_KNOCK, barbedAt, leapPoison } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Barbed Stinger (hive kit v5, Q: a skillshot, then a leap on the recast). Cast: a few wasps gather at his hand (0.25 s),
- * then a chunky amber stinger with two barbs flies out (20 m/s, 8 m, `ctx.projectile`, radius 0.4) flanked by wasps: 45, and
+ * then a chunky amber stinger with two barbs flies out (20 m/s, 8 m, `ctx.projectile`, radius 0.4) flanked by wasps: 42, and
  * the trait barbs the enemy for 3 s (a stuck stinger hangs on them). It reaches 6 m at 0.55 s: a sidestep beats it. Online the
  * dealer's screen draws the flight on its nominal path (bolts fly on the victim's screen, where the hit is decided).
  * Recast (within 3 s, free, the trait's `recast`): told apart by itself with a clock per caster figure (as crosswind.ts); it
@@ -20,7 +21,7 @@ import { BARB_SECONDS, LEAP_RANGE, LEAP_WINDOW, STINGER_KNOCK, barbedAt, leapPoi
  * wasps behind him) and lands for 25 in a honeycomb burst, judged on live positions inside the landing circle. If the trait
  * says he spent 2 wasps (`leapPoison`), the enemy is also poisoned: 30 over 3 s as three 10-damage ticks (1, 2, 3 s after
  * the landing; `projectile: true` so the cast's zones do not filter them) with a few wasps over them. The poison makes this
- * recast 3.7 s long, still inside the duel's 4.2 s window for spell hits. Clean by 1.4 s otherwise. The other screen has no
+ * recast 3.7 s long, well inside the server's 12 s hit window (`HIT_WINDOW_MS`). Clean by 1.4 s otherwise. The other screen has no
  * `moveCaster` (his client streams the leap): the landing circle is built from the nominal spot.
  */
 export interface BarbedStingerSettings {
@@ -156,7 +157,7 @@ export class BarbedStinger implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    const now = performance.now();
+    const now = fightNow();
     this.castMs = now;
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
     const prev = lastCast.get(ctx.caster);

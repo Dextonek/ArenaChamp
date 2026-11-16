@@ -100,4 +100,4 @@ In the hero's palette: accent cold iron with a pale salt white foil beside every
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'iron nail', 'salt circle', 'hex bundle', 'the boundary'. Files: `src/spells/targeted/ironNail.ts`, `src/spells/targeted/saltCircle.ts`, `src/spells/targeted/hexBundle.ts`, `src/spells/targeted/theBoundary.ts`; `src/effects/parts/salt.ts`, `src/kits/salt.ts`, `src/traits/salt.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'iron nail', 'salt circle', 'hex bundle', 'the boundary'. Files: `src/heroes/salt/spells/ironNail.ts`, `src/heroes/salt/spells/saltCircle.ts`, `src/heroes/salt/spells/hexBundle.ts`, `src/heroes/salt/spells/theBoundary.ts`; in `src/heroes/salt/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

@@ -15,15 +15,16 @@ import { TREE_BURST_S, TREE_LIFE_S, gardenNow, raiseTree, treeActive, treeRecord
  * bloom at each tip and a crown bloom on top, leaves, falling petals, a ring, one impact frame. An enemy inside 3 m on live
  * positions is rooted 1 s with a hit (`damage: 0`; a zone hit, so stepping out in the 1.2 s dodges it). It stands 8 s
  * (`TREE_LIFE_S`) as a real obstacle (`ctx.addObstacle`, a pillar of radius 1.0): it blocks walking, sight and bolts for both
- * heroes. While it stands her flowers within 6 m heal 50% more (`src/traits/grove.ts`). Then the vines brown and sink, the
- * blooms shed. The tree is built from `sentFrom` and `point` only (range 9), so both screens make the same one.
+ * heroes. While it stands her flowers within 6 m heal 4 HP a second instead of 3 (`src/traits/grove.ts`). Then the vines brown
+ * and sink, the blooms shed. The tree is built from `sentFrom` and `point` only (range 9), so both screens make the same one.
  * Recast, Uproot (free, from 1.3 s, aiWait for the CPU): it is told from the first cast with the tree's record in the trait's
  * WeakMap (`treeActive`), not with the instance, because the engine may play the recast on a new instance (hero mode) or on
  * the same one (the CPU reuses one instance per label). The recast removes the obstacle (`ctx.removeObstacle`), draws a 3 m
  * ring of roots with thorn tips breaking the soil for 0.6 s while the tree shudders, then the thorns burst: 60 to everyone
  * within 3 m on live positions (`projectile: true`), and the tree sinks. The effect that owns the tree watches the record's
  * `upAt` and shudders and sinks it itself, so the first cast's look is never cut off by anything but its recast. Clean by 10.2 s.
- * Limit: the recast's targets are the enemies within 3 m of where the recast was aimed (the ground targeting), so aim it at the tree.
+ * The recast hits every live enemy (`ctx.enemies()`, else the cast's `targets`) within 3 m of the tree's spot from the record,
+ * wherever the recast was aimed.
  */
 export interface WorldTreeSettings {
   /** The root's seconds at the burst. */

@@ -1,5 +1,5 @@
-//! Isolde, the Winter Warden. Ports of her passive (`src/traits/frost.ts`) and of the rules inside her four spells
-//! (`src/spells/targeted/icicle.ts`, `hoarfrost.ts`, `rimeArmour.ts`, `wintersShatter.ts`).
+//! Isolde, the Winter Warden. Ports of her passive (`src/heroes/frost/trait.ts`) and of the rules inside her four spells
+//! (`src/heroes/frost/spells/icicle.ts`, `hoarfrost.ts`, `rimeArmour.ts`, `wintersShatter.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -12,7 +12,7 @@ use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::Status;
 use crate::zone::{Shape, Zone};
 
-// src/traits/frost.ts
+// src/heroes/frost/trait.ts
 const CHILL_MAX: f64 = 5.0;
 const CHILL_SECONDS: f64 = 4.0;
 const SLOW_AT: f64 = 3.0;
@@ -166,7 +166,7 @@ pub fn dealt(w: &mut World, s: Side, hit: &mut THit) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-// src/spells/targeted/icicle.ts
+// src/heroes/frost/spells/icicle.ts
 const SHATTER_T: f64 = 0.15;
 const ICICLE_TAIL: f64 = 0.9;
 const SHATTER_DURATION: f64 = 1.0;
@@ -282,7 +282,7 @@ impl Spell for Icicle {
     }
 }
 
-// src/spells/targeted/hoarfrost.ts
+// src/heroes/frost/spells/hoarfrost.ts
 const HOAR_HIT: f64 = 0.45;
 const HOAR_DURATION: f64 = 1.4;
 const HOAR_MARK_R: f64 = 1.1;
@@ -325,7 +325,7 @@ impl Spell for Hoarfrost {
     }
 }
 
-// src/spells/targeted/wintersShatter.ts
+// src/heroes/frost/spells/wintersShatter.ts
 const WINTER_DURATION: f64 = WINTER_WIND + 0.9;
 const WINTER_FIZZLE_END: f64 = WINTER_WIND + 0.4;
 const WINTER_MARK_R: f64 = 1.2;

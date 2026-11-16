@@ -5,12 +5,13 @@ import { GustRibbon, Leaves, SKY, SKY_CSS, SpeedLines, WindCrescent, WindWraith 
 import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Crosswind (sky kit, Q: a cone, then a dash on the recast). Cast: wind gathers on his sword arm (0.25 s, a spiral and a
  * trailing crescent), then two crescents cut across each other into an X over the 3 m cone in front of him (a pink-tinted
  * one reversed), with a star pop, a refraction ring, speed lines and blown leaves; everyone inside the cone is hit.
- * Recast (within 2 s, the trait's free second cast at two thirds power: 28 of 42): a 3 m dash-slash along the aim. He slides
+ * Recast (within 2 s, the trait's free second cast at two thirds power: 23 of 34): a 3 m dash-slash along the aim. He slides
  * the 3 m (`ctx.moveCaster`, 0.18 s) leaving a jade afterimage and a long crescent along the path; everyone in the
  * 1.8 m wide strip is hit at 0.13 s. The effect tells the two apart itself: a second cast of the same caster figure within
  * 2.2 s is the dash (a clock per figure, so the other screen of a network duel, which replays both casts, agrees); the
@@ -100,7 +101,7 @@ export class Crosswind implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    const now = performance.now();
+    const now = fightNow();
     const prev = lastCast.get(ctx.caster);
     const auto = !!prev && !prev.dash && now - prev.at < RECAST_CLOCK;
     const m = this.settings.mode;

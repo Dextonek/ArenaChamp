@@ -13,12 +13,12 @@ import { R_BURST, R_RING_RADIUS, R_RING_SECONDS, R_SHIELD_SECONDS, aurielShields
  * Sunrise (dawn kit v5, R: the biggest shield, then a fixed ring). Auriel rises on a column of light: a sun disc as big as a
  * door opens behind her, a halo crowns her, eight kite shields of hard light turn round her and six feather plates circle
  * above them, a sun-wheel sigil turns under her feet (she floats: the figure itself stays on the ground, as the engine keeps
- * hits on the ground; the look is what lifts). The shield (200 for 5 s, recast Pop) is the trait's (`src/traits/dawn.ts`); the
+ * hits on the ground; the look is what lifts). The shield (130 for 5 s, recast Pop) is the trait's (`src/traits/dawn.ts`); the
  * effect draws it and watches the trait's `aurielShields` record. When the record says it ended (broken, run out, popped)
  * the shields shatter and a RING appears FIXED at the spot she stands on at that moment: a dark amber floor of 5 m radius with
  * a gold sun-wheel, a gold disc that closes over 1.6 s (`R_RING_SECONDS`), a bright ring that shrinks with it, twelve pillars
  * of light on its rim, and the screen dims. She can walk away; the ring does not follow. At the end of the 1.6 s it bursts for
- * 120 on every enemy inside 5 m on its live position (`projectile: true`; the ring on the floor is the warning, no telegraph can
+ * 80 on every enemy inside 5 m on its live position (`projectile: true`; the ring on the floor is the warning, no telegraph can
  * carry a spot chosen at the end of the shield), with one impact frame. A branded enemy caught in it is stunned 0.8 s by the
  * trait. The cast is up to about 7.9 s old at the burst: the server allows hits for 12 s. Where the trait gives no record
  * (the VFX tool) the shield ends after 5 s on its own. If another record replaces it the shields crumble, no ring.

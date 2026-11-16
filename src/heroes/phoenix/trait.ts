@@ -308,6 +308,7 @@ export const phoenixTrait: Trait = {
     }
     return best ? { x: best.x, z: best.z } : null;
   },
+  untouchable: (t) => inAsh(t),
   /** Her own client. In ashes nothing reaches her. A hit that would fell her while a nest burns starts the second life. */
   taken(t, hit) {
     if (hit.blocked) return;

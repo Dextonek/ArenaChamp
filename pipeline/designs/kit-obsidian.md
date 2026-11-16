@@ -101,4 +101,4 @@ In the hero's palette: accent turquoise with a pale obsidian sheen foil beside e
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'obsidian edge', 'rift', 'shatterstep', 'obsidian sun'. Files: `src/spells/targeted/obsidianEdge.ts`, `src/spells/targeted/rift.ts`, `src/spells/targeted/shatterstep.ts`, `src/spells/targeted/obsidianSun.ts`; `src/effects/parts/obsidian.ts`, `src/kits/obsidian.ts`, `src/traits/obsidian.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'obsidian edge', 'rift', 'shatterstep', 'obsidian sun'. Files: `src/heroes/obsidian/spells/obsidianEdge.ts`, `src/heroes/obsidian/spells/rift.ts`, `src/heroes/obsidian/spells/shatterstep.ts`, `src/heroes/obsidian/spells/obsidianSun.ts`; in `src/heroes/obsidian/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

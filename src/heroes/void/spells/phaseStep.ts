@@ -7,6 +7,7 @@ import type { TelegraphShape } from '../../../effects/telegraph';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { RIP_SECONDS, voidFx, watchCover } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Phase Step (void kit v5, E: a short blink). He marks a spot up to 4 m toward the aim (`distance`; a shorter aim gives a
@@ -136,7 +137,7 @@ export class PhaseStep implements Effect {
   play() {
     this.reset();
     this.playing = true;
-    this.startMs = performance.now();
+    this.startMs = fightNow();
   }
 
   private reset() {
