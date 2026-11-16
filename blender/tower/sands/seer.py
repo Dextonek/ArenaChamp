@@ -19,7 +19,7 @@ def build():
     R.mat("indigo", "#1e2350", rough=0.66, double=True)
     R.mat("night", "#12142e", rough=0.75, double=True)
     R.mat("saffron", "#d0901e", rough=0.6, double=True)
-    R.mat("cream", "#e2d6b8", rough=0.75, double=True)
+    R.mat("cream", "#cdbf9c", rough=0.75, double=True)
     R.mat("gold", "#d2ae55", rough=0.32, metal=0.85, double=True)
     R.mat("glow", "#fff4d0", rough=0.3, emit="#ffd070", strength=1.0)
     R.hair(None, "#cfcac2")

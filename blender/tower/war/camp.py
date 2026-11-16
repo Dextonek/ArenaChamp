@@ -16,7 +16,7 @@ import folk as K
 def build():
     R = Real("war_camp", sex="f", height=0.99, width=1.1, depth=1.08, skin="#c99070")
     z = R.z
-    R.mat("cream", "#e2d6b8", rough=0.78, double=True)
+    R.mat("cream", "#cdbf9c", rough=0.78, double=True)
     R.mat("black", "#1d1b21", rough=0.5, double=True)
     R.mat("green", "#26372a", rough=0.7, double=True)
     R.mat("straw", "#c8a45a", rough=0.85, double=True)
