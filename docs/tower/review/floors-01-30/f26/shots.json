@@ -1,0 +1,132 @@
+{
+ "floor": 26,
+ "part": "climb-review-shots",
+ "wallSeconds": 18.3,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 26,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-gap-2",
+   "probe-gap-3",
+   "probe-gap-4",
+   "probe-cover-5",
+   "probe-cover-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-175.9,32.9 y11.76 depth out80s w33.07 h15.51 m4.28 p2 #8a4c36 #a0664a",
+  "probe-float-1": "68.3,-113.9 y26.33 depth out39n w0.71 h0.51 m0.11 p1 #8a7a4a",
+  "probe-gap-2": "22,-98.8 y3.8 depth edge w8.15 h0.1 m3.8 sunk-8.2 #c9a24a",
+  "probe-gap-3": "99.3,-5.1 y3.94 depth edge w1.58 h0.3 m3.67 sunk-1.14 #248985",
+  "probe-gap-4": "22,-98.8 y2.74 depth edge w8.04 h0.38 m2.74 sunk-9.05 #1f8a86",
+  "probe-cover-5": "-35.9,21 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+  "probe-cover-6": "68.8,-18.7 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a",
+  "frames": {
+   "at": [
+    47,
+    30
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 6.3,
+     "p95": 9.9,
+     "worst": 17.6
+    },
+    {
+     "med": 6,
+     "p95": 11.1,
+     "worst": 31.9
+    },
+    {
+     "med": 5.9,
+     "p95": 9.4,
+     "worst": 20.2
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Mirage Lord",
+   "title": "Never where it stands",
+   "model": "models/tower/sands_sphinx_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 2428,
+   "frames": 481,
+   "at": [
+    0,
+    13
+   ],
+   "heroAt": [
+    0,
+    20
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [
+    "w2"
+   ],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

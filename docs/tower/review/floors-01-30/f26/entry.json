@@ -1,0 +1,15 @@
+{
+ "floor": 26,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable; the caravan, the rival (Tempo), the trial, the Mirage Lord (the Sphinx's model, tinted) and the gate (Gus; second try) all played.",
+ "found": [
+  {"kind": "ok", "title": "A mesa the probe called floating", "text": "A 33 m mesa past the west edge (and one on floor 22) “floats” by the probe's measure, which knows only the play ground; from low beside it, it stands on the outer sand."
+   , "pics": [["probe-mesa.jpg", "The mesa from low beside it"]]},
+  {"kind": "ok", "title": "Packs and other props", "text": "The old fort's pack slept through the bot's route; the lair wall's gold edge runs into the dune; crates on the rim's slope; red rocks a little sunk."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Mirage Lord"],
+  ["pack-d.jpg", "The scarab dig's pack"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
