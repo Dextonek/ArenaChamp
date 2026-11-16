@@ -453,13 +453,18 @@ group first, then the look makes its objects in the old field order. Shake and t
   not move the old ring), while Ember Flight hits where its ember lies when she lands (the live record). The runner keeps both.
 - Ember Flight takes no cast number (`castNo`); a runner that numbered every cast would have shifted her ember ids on both screens.
 - Ember Quill's no-bolt branch never ran (every cast context has a bolt, the Climb's other players too) and is gone.
+- The shared engine files: `src/game/main.ts` changed two lines (it registers `gameModules`); `duel.ts`, `arena.ts`, `heroMode.ts`
+  and `runtime.ts` are untouched.
+- For the next heroes: `guard.py` still finds a ported hero under `src/kits`, `src/traits` and `src/spells/targeted` (and the runner
+  is not in its `CORE` yet): teach it the folders before Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger or Barry move. The icon
+  stems from the cards are keyed by hero name, so Pim and Pom (two stems, `pim` and `pom`) need the card to name both.
 - `src/runtime.ts:72` still says the game registers `targetedModules`: left, because `runtime.ts` is in the Rust guard's core list.
 
 **The checks** (all on 2026-11-16, the frozen code before the move in a scratch worktree at 4da4503d):
 - Fight prints: Anka's two the same after each of the six commits; all 40 heroes against both foes the same after 3b and again on
   the finished code (80 of 80). Her prints cast every spell (Isolde set Q 16, W 5, E 5, R 2; Brannoc set 16, 5, 3, 3); her rise is not
   in them, and its code did not change.
-- The roster as the game page sees it (a script that reads `HERO_KITS` field by field, `HERO_BODIES`, `TRAITS`, every spell's
+- The roster as the game page sees it (taken again on the finished code) (a script that reads `HERO_KITS` field by field, `HERO_BODIES`, `TRAITS`, every spell's
   targeting, bloom and settings): identical to the old code; every label a kit names is in the game's list.
 - The tool page's self test of her four spells (shake, zones, durations, impact times, no errors): identical before and after.
 - `sim.py hero Anka --fights 32`: 52.1% ±7.1 (the old code the same day: 49.5% ±7.1; her last result, 2026-11-11: 54.2% ±10).

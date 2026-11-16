@@ -23,7 +23,10 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   (`src/heroes/framework/`: bolt, circles after a fuse, a swept lane, a move; the runner). The game now registers only the spells it
   can play (`src/spells/targeted/game.ts`): its first download 7,576 KB -> 6,065 KB of script (a fifth less). Proven: 80 of 80 fight
   prints the same, the roster identical, sim 52.1% (old code 49.5%), online two screens agree 98-99% as at gate 5, perf prints the
-  same fights, Rust guard unchanged (18 lines, none hers), tsc, build, 364 server checks. No shared engine file touched. Waiting on
+  same fights, Rust guard unchanged (18 lines, none hers), tsc, build, 364 server checks. Shared engine files: only `src/game/main.ts`, two lines (the game's spell list); `duel.ts`,
+  `arena.ts`, `heroMode.ts`, `runtime.ts` untouched. For the next batches: a hero's, boss's or floor's spell goes in
+  `src/spells/targeted/game.ts` (one added only to `index.ts` is tool-only and plays nothing in the game); `guard.py` still finds
+  heroes in `src/kits` and must learn the folders before a ported hero moves. Waiting on
   the user: a look at the page, then whether to move the other 39 (about 8 a batch, each with its prints).
 - The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
   floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed

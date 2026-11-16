@@ -101,7 +101,7 @@ pre .c { color: var(--muted); }
     <div class="tile"><b>1</b><span>folder for all of Anka (she was in 5 folders and 4 lists)</span></div>
     <div class="tile"><b>80 / 80</b><span>fight prints the same (40 heroes, two foes each)</span></div>
     <div class="tile"><b>&minus;20%</b><span>the game's first download (7.6 MB of script to 6.1 MB)</span></div>
-    <div class="tile"><b>0</b><span>lines changed in the four shared engine files</span></div>
+    <div class="tile"><b>2</b><span>lines changed in the shared engine files (the game's list of spells, in its start file)</span></div>
   </div>
 
   <h2>Before: Anka in five folders</h2>
@@ -197,7 +197,7 @@ blurb: `A feather (${QUILL_RANGE} m): ${QUILL_DAMAGE} damage. Where it ends, ...
     <li>Her numbers, look and behaviour. The list of things found broken (on the framework page) is as it was, for you to decide.</li>
     <li>Ember Flight still has no "dash" flag: adding it would change what the CPU does with it.</li>
     <li>Her weapon is not in the folder: the fan and gale files in the spells folder are tool-page demos, not hers (her attack lives in her passive).</li>
-    <li>The four shared engine files (the duel, the arena, hero mode, the frame loop): not touched.</li>
+    <li>The duel, the arena, hero mode and the frame loop: not touched. The game's start file (<code>src/game/main.ts</code>) changed two lines: it now loads the game's own list of spells.</li>
     <li>Her spells still load with the page. Loading a hero's spells only for the fight it is in is the design's next step.</li>
   </ul>
 </main>
