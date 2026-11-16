@@ -10,6 +10,17 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
+**Done, not merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
+floors and one by one check all things that are done and correct them"; floors 1 to 30 by another agent). Page with pictures:
+`docs/tower/review/floors-31-50/index.html` (remake: `python docs/tower/review/floors-31-50/make.py`). All 20 played through by the
+route bot with no page errors, every spot reachable, every model, line and name looked at. Seven faults fixed at their cause: the big
+map's names overlapping and running off its edge, the minimap under people's marks (`map.ts`, all floors), floor 31's giver's line,
+floor 32's jetty through a ridge, the Deep's wall crystals hanging in the air (all ten Deep floors), Brannoc not shown as floor 41's
+rival, "Ash and Ember waits" on floor 50. News item "The Deep and the War, floor by floor, set right" (`live: false`).
+**Waiting on the user:** the list on that page (people's marks over the HUD and the ruler fights' title box over the hero's panel, both
+in files other agents held; the trial rooms' old numerals; who holds the gates; the rival can be your own hero; the War rulers' words;
+the white-robed people in the War's sun).
+
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
 
 The three agents below were restarted in their own threads from their saved commits and are running again; the deep lore starts when one finishes (three at most).
