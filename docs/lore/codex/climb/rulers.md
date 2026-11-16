@@ -27,8 +27,8 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
   the strongbox, and the Tower keeps her as she went down: crowned in red coral, in a gown of deep blue and sea-green, strung with the
   pearls she never sold. The Pale Diver serves her still.
 - **The Bell Below (7).** The ringer of the harbour's old bell, which hung in the sea temple's tower before Campana cast the new one.
-  When it cracked and was thrown into the sea he would not let it go, and went down with it; he wears it now as a helm of dark brass,
-  in a judge's black robe, and rings it underwater, and something answers.
+  When it cracked and was thrown into the sea he would not let it go, and went down with it; he wears it now as a ribbed brass helm
+  with a round window, in a judge's black robe, a long glaive in his hands, and rings it underwater, and something answers.
 - **The Lantern Leviathan (8).** A deep-sea diver of the Lantern Coast who went down after the great fish with a lantern on its head,
   and came back up on the morning the water rose, following the lamps into the harbour: a giant in a black robe and a brass diving
   helm with a light burning in its window. The Coast folk gave him the fish's name.
@@ -59,9 +59,11 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
   roots took him for it: antlered and cloaked in leaves, with a hunting spear, he carries its amber light still, and feeds on what
   comes.
 - **The Grey Oak (18).** The keeper of the Moot's oath-tree before the Fall, a dead oak grey as ash. He swore under it, and when it
-  died he took its name and its bark, which he wears on his shoulders like a shield; he would not fall, and walks anyway.
+  died he took its name: its bleached branches stand on his brow like antlers, its bark and leaves lie on his shoulders like a shield,
+  and he carries the spear he kept it with. He would not fall, and walks anyway.
 - **The Mire Heart (19).** A bog-witch of the Wood's lowest point, who drowned in her own mire on the night the Wood woke and came up
-  with the bog's heart beating in her: thorn-crowned, in a gown of black peat and briar, she swallows what walks across it.
+  with the bog's heart beating in her: thorn-crowned, in a gown of black peat with briars and their roses round it, she swallows what
+  walks across it.
 - **Ash and Ember (20, the crown).** The fallen sun's two last embers, which fell into the Cinder Pit and burn there: two shapes of fire
   who watch each other. The greatest of the [Embers](../peoples/fallborn.md). In the Tower they are met in the Wood, which fears fire
   above everything.
@@ -77,8 +79,8 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
 - **The Brass Sphinx (24).** The riddle-keeper of a city the Sands buried long ago, who kept its gate behind a brass mask with a
   woman's calm face, a lion's mane and a crown of sun rays. She asks a riddle nobody has answered, and fights everyone who tries.
 - **The Glass Serpent (25).** A raider of the Flats who was out on them the day the sun's heat struck the sand, and walked out of the
-  glass it made: born that day, his people say, his skin and spear turned to lightning glass. He strikes like the serpent they named
-  him for.
+  glass it made: born that day, his people say. He wears the raiders' black beast-mask with its tall gold-lined ears, and his spear is
+  tipped with the lightning glass he walked out of; he strikes like the serpent they named him for.
 - **The Mirage Lord (26).** A prince of the Throne who walked onto the Glass Flats to be alone and became a mirage of himself.
   [Sahar](../heroes/sahar.md) has heard of him from his grandmother.
 - **The Sand Tyrant (27).** A caravan master of the old days who sold water by the cup in a drought, and drowned in sand.
@@ -104,7 +106,7 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
   sun's cracking, and did not come down the Tower, but came out somewhere else. [Cantor](../heroes/cantor.md) does not know he is here.
 - **The Gem Tyrant (38).** A crystal-merchant who hoarded the Deep's light and was buried by it.
 - **The Drowned Lantern (39).** A lamplighter of the far halls who fell into the black water with his lamp and kept it burning under
-  it, and now walks out of it, hooded, the lamp on his staff.
+  it, and now walks out of it, hooded, a ring of silver caging his face, the lamp hung from his staff.
 - **The Sun Warden (40, the crown).** The keeper of the sun's post, met a second time, and this time himself, come down from the
   Sun Court; he remembers the first. The word that binds him makes him fight. He fights to see whether you are enough.
 
