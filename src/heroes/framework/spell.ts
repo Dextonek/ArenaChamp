@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import type { Enemy } from '../../effects/common';
 import { boltWidth } from '../../effects/projectile';
-import { frameCast, type CastContext } from '../../effects/targeting';
+import { frameCast, type CastContext, type HitOptions } from '../../effects/targeting';
 import type { TelegraphSpec } from '../../effects/telegraph';
 import type { Effect, EffectModule } from '../../effects/types';
 import type { Emitter } from '../../emitter';
-import type { Look, Move, P, SpellDef } from './blocks';
+import type { Hit, Look, Move, Num, P, SpellDef } from './blocks';
 
 type Bolt = ReturnType<NonNullable<CastContext['projectile']>>;
 
@@ -18,12 +18,13 @@ type Bolt = ReturnType<NonNullable<CastContext['projectile']>>;
  * It makes no three.js object and rolls no dice (the fight's dice also name three's objects, so one more object or roll in
  * mid-fight is another fight): the group is made first, then the look makes its own, in its own order, as before.
  */
-export class Cast<S> implements Effect {
+export class Cast<S, K extends string = never> implements Effect {
   readonly group = new THREE.Group();
   readonly emitters: Emitter[] = [];
   shake = 0;
   playing = false;
-  readonly settings: { damage: number; loop: boolean };
+  /** The tool page's numbers: the damage, the spell's `tune` sliders by name, and its loop. */
+  readonly settings: { damage: number; loop: boolean } & Record<K, number>;
 
   /** The last cast's context (null until the first). */
   ctx: CastContext | null = null;
@@ -43,16 +44,21 @@ export class Cast<S> implements Effect {
   /** Circles: their centres at the cast; landed; which still burned. */
   centres: readonly P[] = [];
   impacted = false;
+  /** A sure hit: the chosen enemy (null if none) and where they stood at the cast (on the ground). */
+  target: Enemy | null = null;
+  readonly spot = new THREE.Vector3();
   lit: readonly boolean[] = [];
   /** A move: the spot asked for and then where the engine put her; how far along the aim she got (a lane's or a bolt's length until then). */
   readonly landing = new THREE.Vector3();
   reach = 0;
-  readonly look: Look<S>;
+  readonly look: Look<S, K>;
   private endT: number;
   private struck = new Set<Enemy>();
 
-  constructor(readonly def: SpellDef<S>) {
-    this.settings = { damage: def.rules.hit.damage, loop: false };
+  constructor(readonly def: SpellDef<S, K>) {
+    const tuned = {} as Record<K, number>;
+    for (const k in def.tune) tuned[k] = def.tune[k][0];
+    this.settings = { damage: def.rules.hit.damage, ...tuned, loop: false };
     this.state = def.state();
     this.endT = def.seconds;
     this.look = new def.look(this.group, this);
@@ -68,10 +74,27 @@ export class Cast<S> implements Effect {
     this.endT = Math.max(this.endT, until);
   }
 
-  /** Seconds after play() of the release, or of circles' impact. */
+  /** Seconds after play() of the release, or of circles' (or a sure hit's) impact. */
   get impactTime() {
     const r = this.def.rules;
-    return r.windup + (r.shape.kind === 'circle' ? r.delay ?? 0 : 0);
+    return r.windup + (r.shape.kind === 'circle' || r.shape.kind === 'target' ? r.delay ?? 0 : 0);
+  }
+
+  /** A number of the rules, now: a plain one, or the tool page's slider of that name. */
+  num(v: Num<K>): number {
+    return typeof v === 'number' ? v : (this.settings as Record<K, number>)[v];
+  }
+
+  /** The engine's hit from the rules' `Hit`: only the fields given, `from` the shape's default unless the hit says. */
+  hitOptions(h: Hit<K> = this.def.rules.hit, from?: THREE.Vector3): HitOptions {
+    const o: HitOptions = { damage: h.none ? 0 : this.settings.damage, knock: this.num(h.knock) };
+    if (h.pull !== undefined) o.pull = this.num(h.pull);
+    const at = h.from === 'none' ? undefined : h.from === 'caster' ? this.from.clone() : from;
+    if (at) o.from = at;
+    o.color = h.color;
+    if (h.status) o.status = { kind: h.status.kind, seconds: this.num(h.status.seconds) };
+    if (h.projectile) o.projectile = true;
+    return o;
   }
 
   get screen() {
@@ -85,6 +108,10 @@ export class Cast<S> implements Effect {
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
     this.dir.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.reach = sh.kind === 'lane' ? sh.length : sh.kind === 'bolt' ? sh.range : 0;
+    if (sh.kind === 'target') {
+      this.target = ctx.targets[0] ?? null;
+      this.spot.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
+    }
     r.on?.cast?.(this);
     this.centres = sh.kind === 'circle' ? sh.at(this) : [];
     this.look.cast?.(this);
@@ -110,7 +137,7 @@ export class Cast<S> implements Effect {
   }
 
   /** The caster moves (where there is a `moveCaster`: not on the other screen online). */
-  private move(m: Move<S>) {
+  private move(m: Move<S, K>) {
     const ctx = this.ctx;
     if (!ctx?.moveCaster) return;
     if (m.to === 'end') this.landing.copy(this.from).addScaledVector(this.dir, this.reach);
@@ -126,34 +153,37 @@ export class Cast<S> implements Effect {
   private release() {
     const r = this.def.rules, sh = r.shape, ctx = this.ctx;
     this.released = true;
+    this.look.releasing?.(this);
     r.on?.release?.(this);
     if (r.move?.at === 'release') this.move(r.move);
     if (sh.kind === 'bolt' && ctx?.projectile) {
       this.bolt = ctx.projectile({
         from: this.from.clone(), dir: this.dir.clone(), speed: sh.speed, range: sh.range, radius: sh.radius,
-        hit: { damage: this.settings.damage, knock: r.hit.knock, color: r.hit.color },
+        hit: this.hitOptions(),
       });
-      this.bolt.onHit((_target, at) => {
+      this.bolt.onHit((target, at) => {
         this.hitSomething = true;
-        this.stop(at.x, at.z, true);
+        this.stop(at.x, at.z, true, target);
       });
     }
     this.look.released?.(this);
   }
 
   /** A bolt stops at (x, z): once a cast. */
-  private stop(x: number, z: number, hit: boolean) {
+  private stop(x: number, z: number, hit: boolean, who: Enemy | null = null) {
     if (this.stopped) return;
     this.stopped = true;
     this.def.rules.on?.stop?.(this, x, z, hit);
-    this.look.stopped?.(this, x, z);
+    this.look.stopped?.(this, x, z, who);
   }
 
   /** Circles land: every enemy inside one that still burns, on its live position, is hit once. */
   private impact() {
     const r = this.def.rules, sh = r.shape, ctx = this.ctx;
     this.impacted = true;
+    if (sh.kind === 'target') return this.strike();
     if (!ctx || sh.kind !== 'circle') return;
+    this.look.impacting?.(this);
     const centres = this.centres;
     const lit = sh.still ? sh.still(this, centres) : centres.map(() => true);
     this.lit = lit;
@@ -163,11 +193,23 @@ export class Cast<S> implements Effect {
         const p = en.group.position;
         const at = live.find((q) => Math.hypot(p.x - q.x, p.z - q.z) <= sh.radius);
         if (!at) continue;
-        ctx.hit(en, { damage: this.settings.damage, knock: r.hit.knock, from: new THREE.Vector3(at.x, 0, at.z), color: r.hit.color });
+        ctx.hit(en, this.hitOptions(r.hit, new THREE.Vector3(at.x, 0, at.z)));
       }
     }
-    r.on?.impact?.(this);
+    r.on?.impact?.(this, live.length > 0);
     this.look.impact?.(this, lit);
+  }
+
+  /** A sure hit lands on the chosen enemy (live), if it still stands inside its circle when the rules ask that. */
+  private strike() {
+    const r = this.def.rules, sh = r.shape, ctx = this.ctx;
+    if (sh.kind !== 'target') return;
+    this.look.impacting?.(this);
+    const tg = this.target, p = tg?.group.position;
+    const landed = !!ctx && !!tg && (sh.inside === undefined || Math.hypot(p!.x - this.spot.x, p!.z - this.spot.z) <= sh.inside);
+    if (landed) ctx!.hit(tg!, this.hitOptions());
+    r.on?.impact?.(this, landed);
+    this.look.impact?.(this, [landed]);
   }
 
   /** A lane's front, `t` s after play(): how far along it the hit has reached. */
@@ -191,14 +233,17 @@ export class Cast<S> implements Effect {
       const perp = Math.abs(dx * this.dir.z - dz * this.dir.x);
       if (along < 0 || along > Math.min(front, sh.length) || perp > sh.width / 2) continue;
       this.struck.add(en);
-      ctx.hit(en, { damage: this.settings.damage, knock: r.hit.knock, from: this.from.clone(), color: r.hit.color });
+      ctx.hit(en, this.hitOptions(r.hit, this.from.clone()));
       this.look.struck?.(this, en);
     }
   }
 
   update(dt: number) {
     for (const e of this.emitters) e.update(dt);
-    if (!this.playing) return;
+    if (!this.playing) {
+      this.look.idle?.(dt);
+      return;
+    }
     this.look.tick?.(dt);
     this.time += dt;
     const t = this.time;
@@ -217,7 +262,7 @@ export class Cast<S> implements Effect {
       this.stop(this.bolt.pos.x - this.dir.x * 0.2, this.bolt.pos.z - this.dir.z * 0.2, false);
     }
     this.look.frame?.(this, t, dt);
-    if (sh.kind === 'circle' && !this.impacted && t >= r.windup + (r.delay ?? 0)) this.impact();
+    if ((sh.kind === 'circle' || sh.kind === 'target') && !this.impacted && t >= r.windup + (r.delay ?? 0)) this.impact();
     if (sh.kind === 'lane' && this.released && t <= r.windup + (r.move?.seconds ?? 0) + (sh.late ?? 0)) this.sweep(t);
     this.look.after?.(this, t, dt);
   }
@@ -241,27 +286,33 @@ export class Cast<S> implements Effect {
           shape: { kind: 'line', x1: a.x, z1: a.z, x2: a.x + d.x * sh.length, z2: a.z + d.z * sh.length, width: sh.width },
           start: warn, impact: r.windup, until: r.windup + (r.move?.seconds ?? 0),
         }];
+      case 'target':
+        return [{ shape: { kind: 'circle', x: this.spot.x, z: this.spot.z, radius: sh.mark }, start: warn, impact: r.windup + (r.delay ?? 0) }];
     }
   }
 }
 
 /** A spell from its blocks: the `EffectModule` the engine and the tool page know. */
-export function spell<S>(def: SpellDef<S>): EffectModule {
+export function spell<S, K extends string = never>(def: SpellDef<S, K>): EffectModule {
   return {
     label: def.label,
     category: def.category,
     targeting: def.targeting,
     create: () => new Cast(def),
-    telegraphs: (effect) => (effect as Cast<S>).zones(),
+    telegraphs: (effect) => (effect as Cast<S, K>).zones(),
     bloom: def.bloom,
     frameCamera(camera, controls, effect) {
-      const c = effect as Cast<S>;
+      const c = effect as Cast<S, K>;
       if (c.ctx) frameCast(camera, controls, c.ctx, def.frame);
     },
     buildGui(f, effect) {
-      const s = (effect as Cast<S>).settings;
+      const s = (effect as Cast<S, K>).settings as unknown as Record<string, number>;
       f.add(s, 'loop');
       f.add(s, 'damage', 1, def.maxDamage, 1);
+      for (const k in def.tune) {
+        const [, min, max, step] = def.tune[k];
+        f.add(s, k, min, max, step);
+      }
     },
   };
 }
