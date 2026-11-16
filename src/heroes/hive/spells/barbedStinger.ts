@@ -8,6 +8,7 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import type { Enemy } from '../../../effects/common';
 import { BARB_SECONDS, LEAP_RANGE, LEAP_WINDOW, STINGER_KNOCK, barbedAt, leapPoison } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Barbed Stinger (hive kit v5, Q: a skillshot, then a leap on the recast). Cast: a few wasps gather at his hand (0.25 s),
@@ -156,7 +157,7 @@ export class BarbedStinger implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    const now = performance.now();
+    const now = fightNow();
     this.castMs = now;
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
     const prev = lastCast.get(ctx.caster);

@@ -1,5 +1,6 @@
 import { HIVE_CSS, waspMark } from './parts';
 import type { GroundMark, Trait, TraitView } from '../../traits/types';
+import { fightNow } from '../../fightClock';
 
 /** The swarm: most wasps he holds, one more every `WASP_EVERY` seconds, and one per basic attack that lands. */
 export const MAX_WASPS = 6;
@@ -162,13 +163,13 @@ export const hiveTrait: Trait = {
   peerNote(t, name) {
     if (name !== 'barbed') return;
     t.mem.barbUntil = t.time + BARB_SECONDS;
-    barbedAt.set(t.self(), performance.now());
+    barbedAt.set(t.self(), fightNow());
     announce(t, 'barbed', 0);
   },
   ownChanged(t, name, n) {
     // The other screen: the effects there read these, and the hero decided here takes the shell's stings.
     const fig = t.self();
-    if (name === 'barbed' && n > 0) barbedAt.set(fig, performance.now());
+    if (name === 'barbed' && n > 0) barbedAt.set(fig, fightNow());
     else if (name === 'leap' && n > 0) leapPoison.set(fig, n % 10 === 1);
     else if (name === 'cloud' && n > 0) cloudWasps.set(fig, n % 10);
     else if (name === 'surge' && n > 0) surgeWasps.set(fig, n % 10);
