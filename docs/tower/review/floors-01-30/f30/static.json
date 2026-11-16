@@ -1,0 +1,786 @@
+{
+ "floor": 30,
+ "part": "climb-review-static",
+ "wallSeconds": 8.9,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 30,
+  "texts": {
+   "id": "sands-30",
+   "name": "The Crown of the Sands",
+   "blurb": "Where the sands end, the sun that fell keeps the way up.",
+   "ring": 140,
+   "par": 2376,
+   "shop": {
+    "heal": 48,
+    "boon": 82,
+    "life": 116,
+    "hint": 15
+   },
+   "law": {
+    "kind": "storm",
+    "name": "The storm",
+    "text": null,
+    "raw": {
+     "kind": "storm",
+     "name": "The storm",
+     "blurb": "Every 124 seconds a wall of sand 30 m deep crosses from the north. Inside it you see a few steps and it hurts, unless you stand behind a rock."
+    }
+   },
+   "people": [
+    {
+     "id": "keeper",
+     "name": "The Star-Reader",
+     "role": "keeper",
+     "hero": "Opaline",
+     "figure": "sands_seer",
+     "at": [
+      2.6,
+      110.5
+     ],
+     "face": -0.4,
+     "greet": [
+      "Another climber. The ruined temple is full of raiders, the oasis is dry, and the Heart of Noon waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
+     ],
+     "quests": [
+      "main",
+      "bounty1",
+      "bounty2"
+     ]
+    },
+    {
+     "id": "giver",
+     "name": "The Storm-Counter",
+     "role": "giver",
+     "hero": "Oblivion",
+     "figure": "sands_counter",
+     "at": [
+      -5.5,
+      107.8
+     ],
+     "face": 0.5,
+     "greet": [
+      "The caravans will not move while the road is like this."
+     ],
+     "quests": [
+      "g1",
+      "g2"
+     ]
+    },
+    {
+     "id": "villager",
+     "name": "The Beacon-Keeper",
+     "role": "giver",
+     "hero": "Tempo",
+     "figure": "sands_beacon",
+     "at": [
+      50.4,
+      -7.2
+     ],
+     "face": -1.3,
+     "greet": [
+      "You walked all the way to the caravanserai? Then you can light a fire for me."
+     ],
+     "quests": [
+      "g3"
+     ]
+    },
+    {
+     "id": "rival",
+     "name": "Zephyr",
+     "role": "rival",
+     "hero": "Zephyr",
+     "figure": null,
+     "at": [
+      63.7,
+      -47.5
+     ],
+     "face": -0.9,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "trader",
+     "name": "The Glass-Seller",
+     "role": "trader",
+     "hero": "Vitriol",
+     "figure": "sands_glass",
+     "at": [
+      5.5,
+      114
+     ],
+     "face": -0.6,
+     "greet": [
+      "Shards for what you need. Sand is free; everything else costs."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "The Road North",
+     "giver": "keeper",
+     "main": true,
+     "intro": [
+      "Four things. Clear the ruined temple. Carry a jar from the camp spring to the palm well, so the road has water again. Then the sun key lies in the scarab dig, and the Raider Chief guards it: clear them, then bring it to the winch by the camp."
+     ],
+     "outro": [
+      "The winch turns and the brass door opens, far in the north. The Heart of Noon is behind it. Rest first, then go in."
+     ],
+     "reward": {
+      "shards": 116,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "fell",
+       "text": "Clear the ruined temple",
+       "packs": [
+        "a"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the palm well",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the palm well",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the scarab dig",
+       "packs": [
+        "d"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Bring the sun key from the scarab dig to the winch",
+       "item": "key",
+       "itemName": "The sun key",
+       "toName": "the winch",
+       "r": 2.2,
+       "opens": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty1",
+     "name": "Ashmane",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "Ashmane walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     ],
+     "outro": [
+      "A relic from the dunes. Keep it."
+     ],
+     "reward": {
+      "shards": 58,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell Ashmane",
+       "pack": "named1"
+      }
+     ]
+    },
+    {
+     "id": "bounty2",
+     "name": "The Thirst",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "The Thirst rides the walls\u2019 side. Nobody goes to the caravanserai while it does."
+     ],
+     "outro": [
+      "The road west is open again."
+     ],
+     "reward": {
+      "shards": 51
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Thirst",
+       "pack": "named2"
+      }
+     ]
+    },
+    {
+     "id": "g1",
+     "name": "The Storm Count",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "A marker stone stands out on the dunes. Find it, then hold the high ground in the north while I take the count of the storms. The raiders will not like it."
+     ],
+     "outro": [
+      "The count is done. Take your share."
+     ],
+     "reward": {
+      "shards": 65,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Find the marker stone on the dunes",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the high ground while the count is taken",
+       "r": 3.6,
+       "seconds": 20
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "name": "Nuri\u2019s Caravan",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "Nuri\u2019s caravan waits by the tombs and will not move without a guard. Walk it to the caravanserai; stand close and it follows the road. Not in a storm: it will not live through one in the open."
+     ],
+     "outro": [
+      "The caravan is in. Nuri pays in what they carry."
+     ],
+     "reward": {
+      "shards": 65
+     },
+     "steps": [
+      {
+       "verb": "lead",
+       "text": "Lead the caravan from the tombs to the caravanserai",
+       "name": "The caravan",
+       "look": "cart",
+       "speed": 2.2,
+       "r": 3
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "name": "The Watch Fires",
+     "giver": "villager",
+     "main": false,
+     "intro": [
+      "Two watch fires stand cold: at the watchtower and at the sun shrine. Light both, standing by each a moment, and we will see the storm coming."
+     ],
+     "outro": [
+      "Now we see it coming. Take this, from the last storm."
+     ],
+     "reward": {
+      "shards": 51,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "light",
+       "text": "Light the fires at the watchtower and the sun shrine",
+       "seconds": 2
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The Sunken Heart",
+     "at": [
+      0,
+      -126
+     ],
+     "locked": "A brass door, shut. The Star-Reader has a quest about the sun key.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Sun Vault",
+     "at": [
+      47.8,
+      72.5
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      -17.6,
+      115.4
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Heart of Noon has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    },
+    {
+     "id": "rival",
+     "piece": "rival",
+     "name": "Zephyr\u2019s arch",
+     "at": [
+      68.4,
+      -50.3
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Zephyr",
+    "mode": "duel",
+    "goal": "the arch",
+    "lines": [
+     "A climber on my road. I am Zephyr. Step through the arch behind me and we see who is better. Win, and I fight beside you."
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The wind stone",
+    "text": [
+     "Shade is worth more than water here.",
+     "Water you can carry."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      24.7,
+      96.7
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      72.4,
+      13.6
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      19.8,
+      -117.3
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      -41.6,
+      -107.5
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      -48.7,
+      -5.6
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      -63,
+      85.2
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      39.8,
+      22.5
+     ],
+     "name": "The ruined temple stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      42.7,
+      -12.2
+     ],
+     "name": "The caravanserai stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      45.9,
+      -52.2
+     ],
+     "name": "The tombs stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      -49.6,
+      -37.8
+     ],
+     "name": "The watchtower stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      -44.5,
+      38.6
+     ],
+     "name": "The scarab dig stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      12.6,
+      1.2
+     ],
+     "name": "The palm well stone"
+    }
+   ],
+   "enemies": {
+    "raider": {
+     "name": "Raider",
+     "blurb": "Strikes up close.",
+     "look": "raider",
+     "model": null
+    },
+    "slinger": {
+     "name": "Slinger",
+     "blurb": "Throws stones from a distance.",
+     "look": "slinger",
+     "model": null
+    },
+    "wraith": {
+     "name": "Dust wraith",
+     "blurb": "Lives only in the storm.",
+     "look": "wraith",
+     "model": null
+    },
+    "chief": {
+     "name": "The Raider Chief",
+     "blurb": "Guards the scarab dig.",
+     "look": "chief",
+     "model": null
+    },
+    "mother": {
+     "name": "Ashmane",
+     "blurb": "Walks the canyon and strikes hard.",
+     "look": "mother",
+     "model": null
+    },
+    "rider": {
+     "name": "The Thirst",
+     "blurb": "Walks the wall side and strikes hard.",
+     "look": "chief",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "a",
+     "at": [
+      55.8,
+      30.3
+     ],
+     "mix": "2xraider 2xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "d",
+     "at": [
+      -57,
+      50.7
+     ],
+     "mix": "2xraider",
+     "elite": "chief",
+     "named": null
+    },
+    {
+     "id": "b",
+     "at": [
+      53.9,
+      -66.7
+     ],
+     "mix": "1xraider 3xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "f",
+     "at": [
+      -9.6,
+      -53.7
+     ],
+     "mix": "2xraider 1xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "named1",
+     "at": [
+      16.6,
+      -3.7
+     ],
+     "mix": "1xmother",
+     "elite": null,
+     "named": {
+      "name": "Ashmane",
+      "bounty": {
+       "shards": 58,
+       "relic": true
+      }
+     }
+    },
+    {
+     "id": "named2",
+     "at": [
+      32.1,
+      27.1
+     ],
+     "mix": "1xrider",
+     "elite": null,
+     "named": {
+      "name": "The Thirst",
+      "bounty": {
+       "shards": 51,
+       "relic": false
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      112
+     ]
+    },
+    "a": {
+     "name": "The ruined temple",
+     "at": [
+      55.8,
+      30.3
+     ]
+    },
+    "v": {
+     "name": "The caravanserai",
+     "at": [
+      58.4,
+      -15.7
+     ]
+    },
+    "b": {
+     "name": "The tombs",
+     "at": [
+      53,
+      -65.5
+     ]
+    },
+    "f": {
+     "name": "The old fort",
+     "at": [
+      -9.6,
+      -53.7
+     ]
+    },
+    "c": {
+     "name": "The watchtower",
+     "at": [
+      -55.2,
+      -43.2
+     ]
+    },
+    "e": {
+     "name": "The sun shrine",
+     "at": [
+      -59.6,
+      3.4
+     ]
+    },
+    "d": {
+     "name": "The scarab dig",
+     "at": [
+      -53.8,
+      48.3
+     ]
+    },
+    "h": {
+     "name": "The palm well",
+     "at": [
+      25.6,
+      -1
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 30,
+    "hard": 1.39,
+    "ruler": {
+     "name": "The Heart of Noon",
+     "title": "The sun that fell",
+     "stand": "Isolde",
+     "tint": "#c0904a",
+     "scale": 2.37,
+     "hp": 4000,
+     "speed": 2.1,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "canyon",
+     "surge": {
+      "safe": {
+       "shell": 4.4
+      },
+      "burn": 0.05,
+      "name": "The storm",
+      "look": "storm"
+     },
+     "line": "A Raid boss, alone: stand still on its beat, run between"
+    },
+    "gate": {
+     "hero": "Bo",
+     "arena": "canyon",
+     "level": 3,
+     "twist": {
+      "kind": "hazard",
+      "name": "A storm crosses"
+     }
+    },
+    "trial": {
+     "kind": "break",
+     "height": 7
+    },
+    "crown": "heart",
+    "rival": {
+     "hero": "Zephyr",
+     "twist": "giant",
+     "line": "Zephyr waits by the arch",
+     "height": 8
+    }
+   }
+  },
+  "check": {
+   "floor": 30,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34013,
+     "ringM2": 61575,
+     "unreachable": [],
+     "spots": 55,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 5,
+    "at": [
+     40,
+     23
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 30,
+   "pieces": 6170,
+   "things": 1993,
+   "counts": {
+    "float": 3,
+    "gap": 3,
+    "buried": 20,
+    "cover": 2
+   },
+   "float": [
+    "-74.1,96.2 y0.55 depth edge w0.75 h0.53 m0.05 p1 #8a7a4a",
+    "68.6,-158 y24.16 depth out40n w0.5 h0.35 m0.06 p1 #8a7a4a",
+    "-40.7,123.6 y1.24 depth edge w0.59 h0.42 m0.12 p1 #8a7a4a"
+   ],
+   "gap": [
+    "82.1,-13.1 y6.36 depth edge w7.93 h1.1 m5.86 sunk-0.31 #6a5548",
+    "82.8,-9.9 y4.56 depth edge w1.76 h0.3 m3.53 sunk-2.08 #248985",
+    "82.9,-9.5 y2.87 depth edge w1.76 h0.3 m1.52 sunk-4.23 #248985"
+   ],
+   "buried": [
+    "2.6,-133.1 y-0.81 depth edge w4.03 h1.88 m0 p2 #8a4c36 #a0664a",
+    "15.8,-132.8 y-0.96 depth edge w3.92 h2.27 m-0.03 p2 #a0664a #6c3a2c",
+    "-13,-133.6 y-0.64 depth edge w3.07 h1.78 m-1.15 p1 #6c3a2c",
+    "-3.6,-133.8 y-0.99 depth edge w5.55 h2.39 m-0.12 p2 #6c3a2c #a0664a",
+    "71.8,-89 y-0.38 depth edge w1.44 h0.88 m-0.66 p1 #6c3a2c",
+    "58,84.9 y-0.25 depth edge w1.72 h1.01 m-0.28 p1 #6c3a2c",
+    "81,21.4 y-0.05 depth edge w1.72 h1 m-0.96 p1 #a0664a",
+    "75.8,49.6 y-0.13 depth edge w2.54 h1.46 m-0.11 p1 #8a4c36",
+    "72.4,61 y0.58 depth edge w1.52 h0.89 m-0.21 p1 #6c3a2c",
+    "32.6,113.3 y-0.1 depth edge w1.54 h0.91 m-0.64 p1 #a0664a",
+    "42.8,105.2 y0.23 depth edge w1.83 h1.05 m-0.41 p1 #6c3a2c",
+    "9,125.4 y-0.05 depth edge w2.7 h1.55 m-0.19 p1 #a0664a",
+    "13.3,122.7 y-0.41 depth edge w1.83 h1.07 m-0.31 p1 #6c3a2c",
+    "-6.2,128.3 y-0.37 depth edge w2.62 h1.5 m-0.23 p1 #8a4c36",
+    "-16.3,128.2 y-0.5 depth edge w2.09 h1.21 m-0.25 p1 #8a4c36",
+    "-30.5,127.2 y0.08 depth edge w1.59 h0.94 m-0.46 p1 #6c3a2c",
+    "-25.8,-130.7 y-0.59 depth edge w2.33 h1.38 m-0.1 p1 #a0664a",
+    "62.7,-110.7 y-0.18 depth edge w2.35 h1.37 m-1.98 p1 #6c3a2c",
+    "68.8,-101.2 y-0.7 depth edge w3.05 h1.77 m-0.39 p1 #6c3a2c",
+    "75.4,-79.4 y-0.76 depth edge w2.74 h1.76 m-0.03 p1 #6c3a2c"
+   ],
+   "cover": [
+    "28.2,-1.9 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+    "61.2,-16.8 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a"
+   ]
+  },
+  "grass": {
+   "floor": 30,
+   "planes": [
+    "596m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v6 h0.15 #2a2220",
+     "n": 8,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 21.82,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v95 h0.83 #8a7a4a",
+     "n": 547,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 0.17,
+     "nowhere": 0,
+     "steep": []
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

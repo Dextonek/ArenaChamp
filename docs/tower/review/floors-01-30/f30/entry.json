@@ -1,0 +1,15 @@
+{
+ "floor": 30,
+ "verdict": "Clean: the Sands' crown. Cleared with four stars and no fall, no console error, every spot reachable; the Heart of Noon (the Raid's boss, its own model, in the Sunken Heart) fell on the first try; the caravan, the rival (Zephyr), the trial and the gate (Bo) all played.",
+ "found": [
+  {"kind": "ok", "title": "Props", "text": "The probe's “gap” is a gateway's lintel over its passage (meant); shrubs on the rim a few cm up; red rocks a little sunk."}
+ ],
+ "pictures": [
+  ["ruler.jpg", "The Sunken Heart as the fight opens"],
+  ["ruler-close.jpg", "The Heart of Noon"],
+  ["person-rival.jpg", "Zephyr, the rival"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
