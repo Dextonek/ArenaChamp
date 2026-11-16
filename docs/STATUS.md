@@ -44,7 +44,7 @@ Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C
   shortened (an edit of the exported file, `blender/arenas/frost_shard_fix.py`); the Temple's lintels a deliberate ruin (left); the
   Glade's near crowns kept out of the lower corners (`src/arenas/glade.ts`, one line; the seeded dressing moves, the fight print
   stays). Work clips (kneel, harvest, carry) not added: +366 KB (+30 %) on the animation file every player loads.
-**Queued:** the hero bugs (design section 8), after the 39 are moved.
+**Done, not merged:** the hero bugs (design section 8), see today's entry.
 
 **Load and disk (2026-11-16; the user: "lets clean up some worktrees and make adjustments so there will be not that much load"):**
 58 worktrees of merged jobs removed (their `node_modules` links unlinked first; the main `node_modules` intact): C: free 16 -> 42 GB.
@@ -55,6 +55,23 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done, not merged (2026-11-16): the hero bugs of the audit** (branch `t3/hero-bugs-audit-fixes`; page
+  `docs/pipeline/hero-framework/bugs.html`; design section 8). One commit per fix ("Hero bugs 1" to "9", items 4 and 5 one per flag
+  or hero): Madame Cleaver's table no longer heals the enemy; Late Fee, Foreclosure and Lightning Risk hit whoever is in the circle
+  when it lands (also the Rust port); World Tree and Sinkhole `cc`, Shadow Double `summon`, Stampede `aim: 'line'`, Shepherd's Crook
+  not `cc`; the rules of ten heroes on the fight's clock (`src/fightClock.ts`, `fightNow()`); the server keeps a late Uproot and a
+  quick Tag Out (`R_TIMING` in `server/protocol.mjs`, `node server/smoke-test.mjs --relay`); the CPU holds its spells while
+  `Trait.untouchable` (Tempo, Anka, Zephyr, Marin); 93 files' stale comments; the blood kit back in `src/effects/parts/`, `kits20.py`
+  and the Rust comments on the folders. Gus's Flood needed nothing (its tooltip dropped the bonus on 2026-11-04).
+  **Held for the user** (branch `t3/hero-bugs-held-flags`, two commits): Ember Flight `dash` (silences it for the CPU: 5 flights to 0)
+  and Chain Hammer without `cc` (the CPU's Brannoc 48.8% -> 18.1%).
+  Simulator (32 fights a foe, through the lock): every changed hero inside +-7 (Mabel 60.9 -> 69.8 and 64.1, Wick 40.6/38.0 ->
+  33.3 twice: run twice, averages inside). Prints: the changed ones taken again on purpose (Madame Cleaver, Nyx, Bo, Zephyr,
+  Marin, Anka, and the frame-edge moves of Gus, Big Yoko, Mabel, Wick, proven by the clock's origin), 80 of 80 the same on the
+  final tree. Server tests 366 pass (one clan-chat timing check failed once under load, passed again).
+  Rust: `guard.py` lists 39 lines (19 before; the new ones are files whose comments item 8 corrected, the circles, Sirix's clock,
+  and Brannoc's card); `cargo test` 36 pass. **To do:** re-grade Mr. Ledger and Barry Cloudsley (`grade.py`, their circles), and
+  Brannoc's port is older than his rework (game.json re-export, port, grade); about 15 more heroes still read the computer's clock.
 - **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
   41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
   (every spot against the cover).

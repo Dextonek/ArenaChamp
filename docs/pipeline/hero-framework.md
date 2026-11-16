@@ -337,7 +337,22 @@ The scene refuses to run if the foe is not the one asked for or a spell was not 
 - After a move: `hero-prints.py check` and `check --foe Brannoc` for every hero (a shared file may have moved), `sim.py hero <Name>`
   inside its noise, `pipeline/rustfull/guard.py` no worse than today (it already lists 15 changes, section 8), and two tabs online.
 
-## 8. Found broken (for the user; nothing was fixed)
+## 8. Found broken (for the user; fixed 2026-11-16, see below)
+
+**Fixed after the move (2026-11-16; page [hero-framework/bugs.html](hero-framework/bugs.html), commits "Hero bugs 1" to "Hero bugs 9").**
+The table heal (1), the three circles (3, also in the Rust port), five kit flags (4a-4e: World Tree and Sinkhole `cc`, Shadow
+Double `summon`, Stampede `aim: 'line'`, Shepherd's Crook loses `cc`), the wall-clock rules of
+the ten named heroes (5, onto `fightNow()` in `src/fightClock.ts`), the late Uproot and quick Tag Out online (6, `R_TIMING` in
+`server/protocol.mjs`), the CPU's hold rule (7, now `Trait.untouchable`: Tempo, Anka, Zephyr, Marin), the stale comments (8) and the
+move's loose ends (9). Gus's Flood (2) needed nothing: its tooltip lost the Big Mop bonus on purpose in the tuning of 2026-11-04.
+**Held back for the user** (on the branch `t3/hero-bugs-held-flags`, two commits on top of the fixes): Ember Flight `dash` (the
+CPU's gap-closer rule then never casts it: 5 casts in Anka's print, 0 after) and Chain Hammer without `cc` (the CPU's Brannoc fell
+from 48.8% to 18.1%, his hammer from 12 casts to 3; he is the foe of 40 prints and a benchmark foe of every simulator run). Either
+needs a CPU rule first (a dash the passive aims itself; a no-cooldown spell cast on its own merit), or stays as it is.
+Still open from the list below: the wall clock in about 15 more heroes' rules (Madame Cleaver's dishes, Mum, Silvane, Brannoc's
+Quench, Isolde's icicle, Kaia's rod...), the online items other than 6, the duplicated `blackHoleModule` name, and the three
+tooltips that say more than the code (Nyx's Smoke Veil, Kaia's Supercell; the table one is fixed).
+
 
 Checked by me in the code (file and line), unless marked *by reading*: then an auditor traced it and nobody played it.
 
