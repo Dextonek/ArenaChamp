@@ -70,6 +70,20 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
 - **Running: model review round 2** (what both rounds left: the Heart of Noon and the bosses in the game, the rulers' flinch, kneel
   and fall, the 16 health bars, the older arenas' backdrops, the heroes on Climb floors, a line-up of all 40, the 1.1 m shot height;
   page `docs/models/review/round2/`; the one Blender agent).
+- **Done and merged, not live (2026-11-16): the Climb's floors 1 to 30 checked one by one** (branch 9dd77508; page
+  `docs/tower/review/floors-01-30/index.html`, an entry per floor `fNN/README.md`, tools `pipeline/tools/climb-review*`). All 30 cleared
+  by the bot with no errors and no stuck spots; every place reachable; every ruler on its own model. Eight faults, all in the words,
+  fixed in the generators (floor 1's market and beacon names, the map's names (the 31-50 version kept), "is" -> "are" on 4, 5, 28, the
+  Wood's Lost Spade item, the Thorn Mother "it", floor 20's "has fallen", the Sands' lair door naming its own key). **Waiting on the
+  user:** floor 1's ruler is "the Drowned Captain" but the lore and the model say the Drowned Admiral (five strings); the Pearl Tyrant
+  (6) a man in the lore, drawn as a crowned woman; many rulers are beasts or things in the lore but drawn as people (accepted line-ups:
+  change the lore's words, or new models); named enemies all "it" (the Dune Mother "her" on 21 only); on a phone the hero's badge box
+  is taller than its contents (`src/tower/world/hud.ts`).
+- **Waiting on the user (2026-11-16): the Sea's life** (branch `t3/climb-sea-chapter-life` a8d3d4c3, NOT merged; page
+  `docs/tower/life/index.html` in that worktree): gulls, smoke, cloth in the wind, boats, rings and fish, walkers, small things on the
+  ground, as a layer `src/tower/world/life/` (3 lines in `world.ts`; `?life=0` off, `?life=lite` the phone set). Fights the same with
+  it on or off; desktop +0.3-1 ms, phone about +2-5 ms (noisy). Asked: yes for the other four chapters? Coast workers built for the
+  walkers? more or less? phones lighter or off? sound (a new system)? `land.ts` would need one line (`landLife`) for chimneys and sails.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 **Done and merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
