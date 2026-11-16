@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anka moved</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef; --card: #fffdf8; --ink: #1d1b17; --ink2: #57534b; --muted: #8a857a; --line: #e2ddd2;
+  --bar: #2a78d6; --bar2: #9cc0ec; --ok: #1f8a4c; --okbg: #e3f3e8; --warn: #b5530c; --warnbg: #fbeadc;
+  --gold: #b8862b; --ember: #c23a22; --code: #f1ede3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+    --bar: #3987e5; --bar2: #2c4f7c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+    --gold: #e0b55a; --ember: #ff7b5a; --code: #26241e;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+  --bar: #3987e5; --bar2: #2c4f7c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+  --gold: #e0b55a; --ember: #ff7b5a; --code: #26241e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 34px 0 10px; }
+p { margin: 6px 0 10px; color: var(--ink2); }
+.sub { color: var(--muted); font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 28px; line-height: 1.1; }
+.tile span { color: var(--ink2); font-size: 14px; }
+.files { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.file { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); font-size: 14px; }
+.file code { font-size: 12.5px; word-break: break-all; }
+.file .len { height: 6px; border-radius: 3px; background: var(--ember); margin-top: 6px; }
+.file small { color: var(--muted); display: block; }
+.tree { font: 13.5px/1.6 ui-monospace, Consolas, monospace; background: var(--code); border-radius: 10px; padding: 12px; overflow-x: auto; white-space: pre; }
+.tree em { font-style: normal; color: var(--muted); }
+.tree b { color: var(--gold); }
+.chart .row { display: grid; grid-template-columns: minmax(110px, 38%) 1fr 34px; align-items: center; gap: 8px; margin: 3px 0; font-size: 14px; cursor: default; }
+.chart .row:hover .fill { filter: brightness(1.15); }
+.chart .track { height: 16px; }
+.chart .fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
+.chart .n { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+.chart .name { color: var(--ink2); }
+.stack { display: flex; height: 30px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--card); }
+.stack div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; white-space: nowrap; overflow: hidden; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink2); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+pre { background: var(--code); border-radius: 10px; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 6px 0; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.prints { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.print { background: var(--okbg); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+.print b { display: block; }
+.print code { color: var(--ok); font-size: 12px; }
+.print.bad { background: var(--warnbg); }
+.print.bad code { color: var(--warn); }
+ul.found { padding-left: 18px; margin: 6px 0; }
+ul.found li { margin: 5px 0; color: var(--ink2); }
+ul.found li b { color: var(--ink); }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--ink2); font-size: 14px; }
+table { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+td, th { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; }
+td.r { text-align: right; font-variant-numeric: tabular-nums; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 13px; padding: 5px 8px; border-radius: 6px; opacity: 0; transition: opacity .1s; max-width: 260px; }
+</style>
+<style>
+.bars .row { display: grid; grid-template-columns: minmax(120px, 40%) 1fr 48px; align-items: center; gap: 8px; margin: 4px 0; font-size: 14px; }
+.bars .track { height: 14px; background: transparent; }
+.bars .fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--ember); }
+.bars .fill.after { background: var(--ok); }
+.bars .n { text-align: right; font-variant-numeric: tabular-nums; }
+.checks { list-style: none; padding: 0; margin: 0; }
+.checks li { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--ink2); }
+.checks li b { color: var(--ink); }
+.checks .ok { color: var(--ok); font-weight: 700; }
+.checks .wait { color: var(--warn); font-weight: 700; }
+pre .k { color: var(--gold); }
+pre .c { color: var(--muted); }
+.big { font-size: 15px; color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Anka, moved into her own folder</h1>
+  <p class="sub">Step 3 of the hero framework, 2026-11-16. She plays exactly as before: every check below says so.
+    The plan it follows: <a href="index.html">the framework page</a> and <code>docs/pipeline/hero-framework.md</code> (section 10).</p>
+
+  <div class="tiles">
+    <div class="tile"><b>1</b><span>folder for all of Anka (she was in 5 folders and 4 lists)</span></div>
+    <div class="tile"><b>80 / 80</b><span>fight prints the same (40 heroes, two foes each)</span></div>
+    <div class="tile"><b>&minus;20%</b><span>the game's first download (7.6 MB of script to 6.1 MB)</span></div>
+    <div class="tile"><b>0</b><span>lines changed in the four shared engine files</span></div>
+  </div>
+
+  <h2>Before: Anka in five folders</h2>
+  <p>Her files were spread over the kits, the passives, the spells (among 300 others), the effects, and four lists edited by hand.
+    The bar is each file's length in lines.</p>
+  <div class="card bars" id="before"></div>
+
+  <h2>After: one folder, found by the game</h2>
+  <div class="tree"><b>src/heroes/phoenix/</b>
+  hero.ts           <em>58   her card: name, HP, colours, model, body, shop row, icons, the four spells' cards</em>
+                    <em>     (the tooltips are written from her numbers, so they cannot disagree with the hit)</em>
+  numbers.ts        <em>45   every number of her spells, her embers and her second life, once</em>
+  trait.ts          <em>453  the passive, Ashborn and the embers, as it was</em>
+  spells/
+    emberQuill.ts   <em>227  Q (was 363)</em>
+    fanTheFlames.ts <em>251  W (was 307)</em>
+    emberFlight.ts  <em>232  E (was 288)</em>
+    firebird.ts     <em>267  R (was 341)</em>
+  parts.ts          <em>833  feathers, nest, egg (moved as they were)</em>
+  icons.ts          <em>639  the old canvas icons and portrait: only the fallback of the new icons</em>
+  fight.ts          <em>7    what a fight needs: her four spells</em>
+<em>No list is edited for her any more: src/heroes/index.ts finds the folder, and her card says her place (39).</em>
+<em>Her icon pictures stay in public/icons/spells/anka-*.svg; her card names them.</em></div>
+  <div class="card bars" id="after"></div>
+  <p class="sub">Written once for every hero to come, not part of hers: the card's type, the spell blocks and their runner (419 lines), and the finder (54 lines).</p>
+
+  <h2>One spell, before and after: Ember Quill</h2>
+  <p>A spell's rules were spread through its file, and its danger zone was written a second time by hand. Now they are one short
+    block, and the danger zone, the hit and the tooltip come from the same numbers. The look (the fan, the feather, the landing)
+    is the same drawing code, moved as it was. The look is most of each spell's lines, so the files are only a fifth shorter.</p>
+  <div class="two">
+    <div><div class="label">Before</div><pre>// src/spells/targeted/emberQuill.ts: 363 lines; the rules are spread through them
+const WIND_T = QUILL_WIND, REACH = QUILL_RANGE, SPEED = QUILL_SPEED, RADIUS = QUILL_RADIUS;
+const FLIGHT_END = WIND_T + REACH / SPEED;
+cast(ctx) { this.seq = castNo(ctx.caster); this.from.copy(ctx.sentFrom ?? ctx.from).setY(0); ... }
+private land(x, z) {                          // where the quill stops
+  if (this.laid) return; this.laid = true;
+  if (this.ctx) layEmber(this.ctx.caster, x, z, this.seq, { ... });
+  ... the landing&#x27;s look ...
+}
+update(dt) {
+  ...
+  if (!this.fired &amp;&amp; t &gt;= WIND_T) {
+    this.fired = true; this.shake = 0.06;
+    if (ctx?.projectile) {
+      this.bolt = ctx.projectile({ from: ..., dir: ..., speed: SPEED, range: REACH, radius: RADIUS,
+        hit: { damage: this.settings.damage, knock: 1, color: PHOENIX_CSS.body } });
+      this.bolt.onHit((_target, at) =&gt; { this.hit = true; this.land(at.x, at.z); });
+    } else if (ctx) { ... 25 more lines that never run in the game ... }
+  }
+  if (this.bolt &amp;&amp; !this.bolt.alive &amp;&amp; !this.hit &amp;&amp; !this.laid) this.land(...);
+  ... the look ...
+}
+telegraphs(effect) {                          // the same line again, by hand
+  ... from, REACH, boltWidth(RADIUS), start 0.02, impact WIND_T, until FLIGHT_END ...
+}</pre></div>
+    <div><div class="label">After</div><pre>// src/heroes/phoenix/spells/emberQuill.ts: the rules, all of them
+rules: {
+  windup: QUILL_WIND,                                   // 0.3 s
+  shape: { kind: &#x27;bolt&#x27;, speed: QUILL_SPEED, range: QUILL_RANGE, radius: QUILL_RADIUS },
+  hit: { damage: QUILL_DAMAGE, knock: 1, color: PHOENIX_CSS.body },
+  warn: 0.02,
+  on: {
+    cast: (c) =&gt; { c.state.seq = castNo(c.ctx!.caster); },
+    // where it stops it stays as an ember: her nest
+    stop: (c, x, z) =&gt; { if (c.ctx) layEmber(c.ctx.caster, x, z, c.state.seq, { ... }); },
+  },
+},
+look: QuillLook,   // the fan, the feather, the landing: the drawing code as it was
+
+// and her card (hero.ts) writes the tooltip from the same numbers:
+blurb: `A feather (${QUILL_RANGE} m): ${QUILL_DAMAGE} damage. Where it ends, ...`</pre></div>
+  </div>
+  <p>Her four spells use four blocks:</p>
+  <ul class="found">
+    <li><b>Q, a bolt</b>: 22 m/s, 10 m, 0.3 s wind-up; where it stops it lays an ember.</li>
+    <li><b>W, circles after a fuse</b>: one at each ember, 2.2 m, 0.8 s, one hit of 54; then the embers burn out.</li>
+    <li><b>E, a move and a circle</b>: she flies to the chosen ember in 0.7 s, then a 1.8 m burst where she lands, if the ember still burns.</li>
+    <li><b>R, a lane swept by a front</b>: 1 s wind-up, 12 by 3 m, crossed in 0.5 s; her own hook says the front is her beak.</li>
+  </ul>
+
+  <h2>The game's first download</h2>
+  <p>Before the first picture the game loads its script. 141 spells the game never plays (the tool page's showcases, the spells of
+    heroes' earlier kits, the tool page's test spells) were part of it. They now stay on the tool page only.</p>
+  <div class="card bars" id="start"></div>
+  <p class="sub" id="start-note"></p>
+
+  <h2>Every check</h2>
+  <ul class="checks" id="checks"></ul>
+
+  <h2>Not changed on purpose</h2>
+  <ul class="found">
+    <li>Her numbers, look and behaviour. The list of things found broken (on the framework page) is as it was, for you to decide.</li>
+    <li>Ember Flight still has no "dash" flag: adding it would change what the CPU does with it.</li>
+    <li>Her weapon is not in the folder: the fan and gale files in the spells folder are tool-page demos, not hers (her attack lives in her passive).</li>
+    <li>The four shared engine files (the duel, the arena, hero mode, the frame loop): not touched.</li>
+    <li>Her spells still load with the page. Loading a hero's spells only for the fight it is in is the design's next step.</li>
+  </ul>
+</main>
+<div id="tip"></div>
+<script>
+const BEFORE = [
+  ['kits/phoenix.ts (kit + icons)', 655], ['traits/phoenix.ts (passive + all numbers)', 487], ['effects/parts/phoenix.ts (look parts)', 833],
+  ['spells/targeted/emberQuill.ts (Q)', 363], ['spells/targeted/fanTheFlames.ts (W)', 307], ['spells/targeted/emberFlight.ts (E)', 288],
+  ['spells/targeted/firebird.ts (R)', 341], ['4 lists edited by hand', 14],
+];
+const AFTER = [
+  ['hero.ts (her card)', 58], ['numbers.ts', 45], ['trait.ts (passive)', 453], ['parts.ts (look parts)', 833],
+  ['spells/emberQuill.ts (Q)', 227], ['spells/fanTheFlames.ts (W)', 251], ['spells/emberFlight.ts (E)', 232], ['spells/firebird.ts (R)', 267],
+  ['icons.ts (old icons, fallback)', 639], ['fight.ts', 7],
+];
+const START = [['Before', 7576, 2098], ['After', 6065, 1645]];
+const CHECKS = [
+  [true, 'Fight prints, Anka:', 'both of her fixed fights (against Isolde and against Brannoc) are exactly the same as before, checked after each of the six steps. They cast all four spells (Q 16, W 5, E 5, R 2 times; and 16, 5, 3, 3).'],
+  [true, 'Fight prints, all 40 heroes:', '80 of 80 the same on the finished code (each hero against both foes), and 80 of 80 after the first two steps. Nothing shared was moved by accident.'],
+  [true, 'The roster as the game sees it:', 'all 40 heroes field by field (names, HP, tooltips letter for letter, bodies, models, passives, every spell\'s aim and numbers) identical to the code before. Every spell a hero names is still in the game.'],
+  [true, 'Her four spells on the tool page:', 'their self test (shake, danger zones, timing, no errors) gives the same numbers as before.'],
+  [true, 'Simulator:', 'Anka wins 52.1% (plus or minus 7.1, 192 fights). The old code the same day: 49.5%. Her last result (11 November): 54.2%. Inside the noise.'],
+  [true, 'Online, two screens:', 'Anka against Kaia, two bots through the real server, twice. No errors. The same embers on both screens in 99% of moments (and 98% when Kaia keeps away and sidesteps); her three rises seen at the same spot on both screens; HP the same on both. Gate 5 measured 99% on the old code.'],
+  [true, 'Speed prints:', 'the 12 measured scenes (menu, two duels, two raids, the Tower, six Climb floors) play the same fights as the code before. One Climb floor (world-5) played another fight once, while the 40-hero check ran beside it; run again quietly it was the same on both codes.'],
+  [true, 'The Rust simulator\'s guard:', 'lists the same 18 changed files before and after (all from earlier work, none of Anka\'s). No worse.'],
+  [true, 'The game\'s first download:', '7,576 KB of script before, 6,065 KB after (2,098 KB to 1,645 KB compressed): a fifth smaller.'],
+  [true, 'Type check, build, server tests:', 'all pass (364 server checks, first try).'],
+];
+
+const tip = document.getElementById('tip');
+function bars(el, rows, max, cls, unit) {
+  for (const [name, n] of rows) {
+    const r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML = '<span class="name"></span><div class="track"><div class="fill"></div></div><span class="n"></span>';
+    r.querySelector('.name').textContent = name;
+    r.querySelector('.n').textContent = n.toLocaleString('en');
+    const f = r.querySelector('.fill');
+    if (cls) f.classList.add(cls);
+    f.style.width = Math.max(0.5, (100 * n) / max) + '%';
+    r.addEventListener('pointerenter', () => { tip.textContent = name + ': ' + n.toLocaleString('en') + ' ' + unit; tip.style.opacity = 1; });
+    r.addEventListener('pointermove', (e) => { tip.style.left = e.clientX + 12 + 'px'; tip.style.top = e.clientY + 12 + 'px'; });
+    r.addEventListener('pointerleave', () => { tip.style.opacity = 0; });
+    el.appendChild(r);
+  }
+}
+bars(document.getElementById('before'), BEFORE, 900, '', 'lines');
+bars(document.getElementById('after'), AFTER, 900, 'after', 'lines');
+const st = document.getElementById('start');
+bars(st, START.map(([n, kb]) => [n + ' (KB of script)', kb]), 7600, '', 'KB');
+st.querySelectorAll('.fill')[1].classList.add('after');
+document.getElementById('start-note').textContent = 'Compressed, as it travels: ' +
+  START.map(([n, , gz]) => n.toLowerCase() + ' ' + gz.toLocaleString('en') + ' KB').join(', ') + ' (the game page\'s build, npm run build).';
+const ul = document.getElementById('checks');
+for (const [ok, title, text] of CHECKS) {
+  const li = document.createElement('li');
+  li.innerHTML = '<span class="' + (ok ? 'ok' : 'wait') + '">' + (ok ? '&#10003;' : '&#8226;') + '</span><span><b></b> <span></span></span>';
+  li.querySelector('b').textContent = title;
+  li.querySelector('span span').textContent = text;
+  ul.appendChild(li);
+}
+</script>
+</body>
+</html>

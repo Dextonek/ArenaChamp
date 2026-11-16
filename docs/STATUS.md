@@ -14,11 +14,17 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
   W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
   cartoon (redraw as engraved gold?). Not tried on Safari.
-- **Done on `t3/hero-framework-audit-prints`, not merged (2026-11-16): the hero framework, steps 1 and 2.** The design
-  `docs/pipeline/hero-framework.md`, its page `docs/pipeline/hero-framework/index.html`. Two fight prints per hero, all 40 repeat:
-  `python pipeline/tools/hero-prints.py check` and `check --foe Brannoc` (references `docs/perf/data/hero-prints*.json`). Not proven
-  by the prints: Sefu E, Tempo E, Mr. Ledger E and R, Pip R (never cast in them). Waiting on the user: the design's yes, and the
-  "found broken" list (section 8: the table that heals the enemy, the Flood bonus, six kit flags...). Step 3 (move Anka) next.
+- **Done and merged, not live (2026-11-16): the hero framework, steps 1 and 2** (the design `docs/pipeline/hero-framework.md`, its page
+  `docs/pipeline/hero-framework/index.html`, two fight prints per hero: `python pipeline/tools/hero-prints.py check` and
+  `check --foe Brannoc`, add `--port 5192` or another free port). Waiting on the user: the "found broken" list (section 8).
+- **Done on `t3/hero-framework-anka-move`, not merged, not live (2026-11-16): step 3, Anka moved** (page
+  `docs/pipeline/hero-framework/anka.html`, design section 10). All of her in `src/heroes/phoenix/` (card, numbers, passive, spells,
+  look parts, old icons), found by `import.meta.glob` (`src/heroes/index.ts`); her four spells on the first spell blocks
+  (`src/heroes/framework/`: bolt, circles after a fuse, a swept lane, a move; the runner). The game now registers only the spells it
+  can play (`src/spells/targeted/game.ts`): its first download 7,576 KB -> 6,065 KB of script (a fifth less). Proven: 80 of 80 fight
+  prints the same, the roster identical, sim 52.1% (old code 49.5%), online two screens agree 98-99% as at gate 5, perf prints the
+  same fights, Rust guard unchanged (18 lines, none hers), tsc, build, 364 server checks. No shared engine file touched. Waiting on
+  the user: a look at the page, then whether to move the other 39 (about 8 a batch, each with its prints).
 - The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
   floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.

@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Menus',
+        title: 'A faster start',
+        text: 'The game’s first download is a fifth smaller: about 140 showcase and test spells that are not in the game no longer come with it. The page opens sooner, most of all on a phone.',
+      },
+      {
         tag: 'Heroes',
         title: 'The Story: why the sun fell, and how it ends',
         text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',
