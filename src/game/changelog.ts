@@ -38,9 +38,9 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
-    date: '2026-11-14',
-    title: 'Hero lore, clans, leaderboards, the Climb’s own people and a map of the floor',
-    live: false,
+    date: '2026-11-16',
+    title: 'The Climb alive and fought together, new spell icons, the heroes’ peoples, lore, clans and leaderboards',
+    live: true,
     items: [
       {
         tag: 'Heroes',
