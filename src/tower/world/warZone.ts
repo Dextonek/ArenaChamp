@@ -260,11 +260,13 @@ class Rain {
   private readonly count: number;
   private readonly reach: number;
   private readonly top: number;
+  /** Its own dice (a seeded stream): the rain is only drawn, and with the fight's dice every drop that landed moved the fight's. */
+  private readonly rnd = seeded(5207);
   constructor(count = 520, reach = 34, top = 18) {
     this.count = count; this.reach = reach; this.top = top;
     this.pos = new Float32Array(count * 6);
     this.speed = new Float32Array(count);
-    for (let i = 0; i < count; i++) this.drop(i, Math.random() * top);
+    for (let i = 0; i < count; i++) this.drop(i, this.rnd() * top);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
     this.lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xa8b6cc, transparent: true, opacity: 0.22, depthWrite: false }));
@@ -281,11 +283,11 @@ class Rain {
     };
   }
   private drop(i: number, y: number) {
-    const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * this.reach;
+    const a = this.rnd() * Math.PI * 2, r = Math.sqrt(this.rnd()) * this.reach;
     this.pos[i * 6] = Math.cos(a) * r;
     this.pos[i * 6 + 1] = y;
     this.pos[i * 6 + 2] = Math.sin(a) * r;
-    this.speed[i] = 17 + Math.random() * 6;
+    this.speed[i] = 17 + this.rnd() * 6;
   }
   update(dt: number) {
     const p = this.pos, s = this.slant;
