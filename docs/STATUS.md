@@ -63,15 +63,16 @@ starts with every agent session (about 90 MB each, and it often fails to connect
   quick Tag Out (`R_TIMING` in `server/protocol.mjs`, `node server/smoke-test.mjs --relay`); the CPU holds its spells while
   `Trait.untouchable` (Tempo, Anka, Zephyr, Marin); 93 files' stale comments; the blood kit back in `src/effects/parts/`, `kits20.py`
   and the Rust comments on the folders. Gus's Flood needed nothing (its tooltip dropped the bonus on 2026-11-04).
-  **Held for the user** (branch `t3/hero-bugs-held-flags`, two commits): Ember Flight `dash` (silences it for the CPU: 5 flights to 0)
+  **Held for the user** (branch `t3/hero-bugs-held-flags`, two commits on top of the fixes): Ember Flight `dash` (silences it for the CPU: 5 flights to 0)
   and Chain Hammer without `cc` (the CPU's Brannoc 48.8% -> 18.1%).
-  Simulator (32 fights a foe, through the lock): every changed hero inside +-7 (Mabel 60.9 -> 69.8 and 64.1, Wick 40.6/38.0 ->
-  33.3 twice: run twice, averages inside). Prints: the changed ones taken again on purpose (Madame Cleaver, Nyx, Bo, Zephyr,
+  Simulator (32 fights a foe, through the lock): every changed hero inside +-7; Mabel (64.6 -> 67.0), Wick (39.3 -> 33.3) and
+  Grandma Ironknit (69.8 -> 64.9) were run twice a side after a single run landed just past 7 (the sim is not fully seeded). Prints: the changed ones taken again on purpose (Madame Cleaver, Nyx, Bo, Zephyr,
   Marin, Anka, and the frame-edge moves of Gus, Big Yoko, Mabel, Wick, proven by the clock's origin), 80 of 80 the same on the
   final tree. Server tests: 367 pass on the final code (SMOKE_SLOW=2, first run).
-  Rust: `guard.py` lists 39 lines (19 before; the new ones are files whose comments item 8 corrected, the circles, Sirix's clock,
-  and Brannoc's card); `cargo test` 36 pass. **To do:** re-grade Mr. Ledger and Barry Cloudsley (`grade.py`, their circles), and
-  Brannoc's port is older than his rework (game.json re-export, port, grade); about 15 more heroes still read the computer's clock.
+  Rust: `guard.py` lists 38 lines (19 before; most are files whose comments item 8 corrected, plus the circles and Sirix's clock); `cargo test` 36 pass. **To do:** re-grade Mr. Ledger and Barry Cloudsley (`grade.py`, their circles), and
+  Brannoc's port is older than his rework (game.json re-export, port, grade); `python pipeline/rustsim/refresh.py` and the perf
+  prints were not run after these CPU and clock changes; fix 6 is proven at the hub (server checks), not on two screens; about 15 more
+  heroes still read the computer's clock.
 - **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
   41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
   (every spot against the cover).
