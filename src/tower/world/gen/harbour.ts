@@ -7,7 +7,7 @@ import type { GenFloor } from './types';
  * Floor 1, the Drowned Harbour, grown to the Climb's new size (the user, 2026-11-14: the maps five times larger, "it doesnt need to
  * have circular shape", and the handmade floors grow too). The sea's generator lays the floor out (floor 1's numbers, the sea to the
  * east, as the harbour always had it); this dresses it as the harbour: its names, its people (Gus, Anka, Pip, Zephyr), its quests and
- * their words, Old Barnacle, Tam the Net-Mender, Zephyr's race to the lighthouse, the Drowned Captain behind the lair's door.
+ * their words, Old Barnacle, Tam the Net-Mender, Zephyr's race to the lighthouse, the Drowned Admiral behind the lair's door.
  *
  * A run saved on the small harbour carries on: the ids it keeps are the old ones (the quests `main`, `bounty`, `anka-net`, `anka-tam`;
  * the packs `market`, `wreck`, `caves`, `barnacle`; the places `market`, `caves`, `lighthouse`, `wreck`). Its set pieces are floor 1's
@@ -55,7 +55,7 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
     main: {
       name: 'The Captain’s Key',
       intro: ['Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the captain’s key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp.'],
-      outro: ['The chain falls. The Drowned Captain’s door stands open, far in the north. Take your time, then go in.'],
+      outro: ['The chain falls. The Drowned Admiral’s door stands open, far in the north. Take your time, then go in.'],
     },
     bounty: { name: 'Old Barnacle', intro: ['Old Barnacle walks the middle of the harbour. A hundred tides on him. Fell him and the sea quietens a little.'], outro: ['A relic from a barnacle. Keep it.'] },
     'anka-net': { intro: ['My boat lies on the shore. My net lines are hauled from a spot far in the north: hold the place while I do.'] },
@@ -66,7 +66,7 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
     return { ...q, id, giver: PERSON[q.giver] ?? q.giver, steps: q.steps.map(renameStep), ...(words[id] ?? {}) };
   });
   const greet: Record<string, string> = {
-    gus: 'Another climber. The tide took the last ones, and the market is overrun. The Drowned Captain sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads.',
+    gus: 'Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads.',
     anka: 'The sea washed me up here. I keep losing things to it. Perhaps you can fetch them.',
     pip: 'Shards for what you need. Prices are fixed; the sea does not haggle either.',
   };
@@ -88,9 +88,9 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
     lines: ['Another climber? I am Zephyr, and I am faster. To the lighthouse: whoever touches its foot first. Care to try?'],
   };
   f.doors = f.doors.filter((d) => d.piece !== 'rival').map((d) => {
-    if (d.piece === 'ruler') return { ...d, name: 'The Drowned Captain’s lair', locked: 'A chain holds the lair shut. Gus has a quest about a key.' };
+    if (d.piece === 'ruler') return { ...d, name: 'The Drowned Admiral’s lair', locked: 'A chain holds the lair shut. Gus has a quest about a key.' };
     if (d.piece === 'trial') return { ...d, name: 'The Flooded Vault' };
-    if (d.piece === 'gate') return { ...d, locked: 'The gate is sealed. Its warden answers only once the Drowned Captain has fallen.' };
+    if (d.piece === 'gate') return { ...d, locked: 'The gate is sealed. Its warden answers only once the Drowned Admiral has fallen.' };
     return d;
   });
 

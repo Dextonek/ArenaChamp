@@ -54,6 +54,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'The Drowned Admiral, a tidier phone screen, shots from the hand',
+        text: 'Floor 1’s ruler is called the Drowned Admiral, as in the lore, and on a phone the box with your hero’s passive fits what is in it. Bowmen, slingers and net casters loose their shots from the hand, and on the Field of Banners each army waits beside its standard, not inside its stone foot.',
+      },
+      {
+        tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
       },

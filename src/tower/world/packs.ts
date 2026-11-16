@@ -266,7 +266,7 @@ export class Pack {
       const mind = roleOf(sp) && !(globalThis as { __noTactics?: boolean }).__noTactics ? this.mind.brain : undefined;
       const handle = arena.summonFor('opponent', {
         kind: sp.melee ? 'melee' : 'ranged', at: s.spot.clone(), hp: s.hp, seconds: 3600, damage: BLOW, attackEvery: sp.every, speed: sp.speed, range: sp.range ?? 9, color: sp.color,
-        look: sp.scale && sp.scale !== 1 ? (kind, p) => { const l = look(kind, p); l.root.scale.multiplyScalar(sp.scale!); l.barY = (l.barY ?? 1.8) * sp.scale!; return l; } : look,
+        look: sp.scale && sp.scale !== 1 ? (kind, p) => { const l = look(kind, p); l.root.scale.multiplyScalar(sp.scale!); l.barY = (l.barY ?? 1.8) * sp.scale!; if (l.shotY !== undefined) l.shotY *= sp.scale!; return l; } : look,
         // A melee unit asleep or on its way home walks to its own spot (where it stands, it does not walk); awake, the system's chase.
         goal: () => (this.state === 'awake' ? null : s.spot),
         // Shared: one brain that is the pack's mind while it runs here and the owner's reports while it is a copy.

@@ -110,7 +110,7 @@
           { name: 's2', seconds: 5, when: (G) => !!z() && [...z().packs.values()].some((p) => p.state === 'awake' && p.left > 0 && !p.hunter && p.units.some((u) => Math.hypot(u.pos.x - z().ctx.hero.x, u.pos.z - z().ctx.hero.z) < 10)), what: 'a pack wakes and the fight' },
           { name: 's3', seconds: 6, when: (G) => !!z() && !!z().law && z().law.status().warn && G.run.clock > 60 && +(/in (\d+) s/.exec(z().law.status().text)?.[1] ?? 99) <= 3, what: 'the tide comes in' },
           { name: 's4', seconds: 5, when: (G) => !!G.run.carry?.held, what: 'carrying the key' },
-          { name: 's5', seconds: 5, near: 12, when: (G) => G.piece === 'ruler' && pieceSteps > 60 * 28, what: 'the Drowned Captain' },
+          { name: 's5', seconds: 5, near: 12, when: (G) => G.piece === 'ruler' && pieceSteps > 60 * 28, what: 'the Drowned Admiral' },
           { name: 's6', seconds: 5, near: 11, when: (G) => G.piece === 'gate' && pieceSteps > 60 * 5, what: 'the gatekeeper' },
         ];
         let recSteps = 0; const fired = new Set(), doneSegs = new Set();

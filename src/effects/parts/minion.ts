@@ -47,6 +47,8 @@ export interface MinionRig {
   dispose?(): void;
   /** Height of the HP bar above the feet (default 1.28, a turret 1.1); a taller look sets its own. */
   barY?: number;
+  /** Where its shots leave (m above the feet: the hand at the release); none: the bolts' own height (`BOLT_HEIGHT`). */
+  shotY?: number;
 }
 
 export type MinionLook = (kind: SummonKind, palette: MinionPalette) => MinionRig;
@@ -185,6 +187,8 @@ export class MinionFx extends Enemy {
   private age = 0;
   private dying = -1;
   private barY = 1.25;
+  /** Where its look's shots leave (`MinionRig.shotY`), for the unit's bolts. */
+  shotY: number | undefined;
 
   constructor() {
     super({ bare: true });
@@ -236,6 +240,7 @@ export class MinionFx extends Enemy {
     this.rig = look(kind, this.palette);
     this.holder.add(this.rig.root);
     this.barY = this.rig.barY ?? (kind === 'turret' ? 1.1 : 1.28);
+    this.shotY = this.rig.shotY;
     this.age = 0;
     this.dying = -1;
     this.holder.visible = true;
