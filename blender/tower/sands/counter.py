@@ -17,7 +17,7 @@ import folk as K
 def build():
     R = Real("sands_counter", sex="m", height=1.02, width=0.97, depth=0.98, skin="#9a6440")
     z = R.z
-    R.mat("cream", "#e2d6b8", rough=0.8, double=True)
+    R.mat("cream", "#cdbf9c", rough=0.8, double=True)
     R.mat("terra", "#8e3e22", rough=0.7, double=True)
     R.mat("turq", "#1f7a76", rough=0.62, double=True)
     R.mat("wrap", "#3a2a22", rough=0.8, double=True)

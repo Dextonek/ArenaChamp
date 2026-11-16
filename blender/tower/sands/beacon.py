@@ -19,7 +19,7 @@ def build():
     R.mat("terra", "#9a4a28", rough=0.7, double=True)
     R.mat("saffron", "#d0901e", rough=0.62, double=True)
     R.mat("sand", "#c8a46a", rough=0.75, double=True)
-    R.mat("cream", "#e2d6b8", rough=0.8, double=True)
+    R.mat("cream", "#cdbf9c", rough=0.8, double=True)
     R.mat("wrap", "#3a2a22", rough=0.8, double=True)
     R.mat("iron", "#3c3f47", rough=0.42, metal=0.75)
     R.mat("coal", "#18171b", rough=0.9)
