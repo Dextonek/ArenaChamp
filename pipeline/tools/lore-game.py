@@ -42,6 +42,7 @@ def main():
         out_h[n] = {
             'faction': h['faction'], 'place': h['home'], 'from': h['spot'], 'age': h['age'], 'line': h['line'],
             'legend': h['legend'], 'ties': ties[n], 'people': h['people'], 'kin': h['kin'],
+            'origin': lore['origins'][n][0],
         }
     peoples = {pid: {'name': pe['name'], 'kind': pe['kind'], 'look': pe.get('look', ''), 'life': pe.get('life', ''),
                      'text': ' '.join(pe['text'])} for pid, pe in lore['peoples'].items()}
@@ -52,9 +53,12 @@ def main():
         'export interface LoreFaction { name: string; colours: string[]; home: string; wants: string; sigil: string }\n'
         'export interface LoreTie { other: string; kind: string; pair: string; what: string; strong: boolean }\n'
         'export interface LorePeople { name: string; kind: string; look: string; life: string; text: string }\n'
-        '/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind). */\n'
+        '/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind).\n'
+        ' * `origin` (the canon, 2026-11-15): dial, returned (taken by the Tower and come back out), halfkept, spilled (made by the\n'
+        ' * Fall), followed (came after the Tower through the Tear). */\n'
         'export interface LoreHero {\n'
         '  faction: string; people: string; kin: string; place: string; from: string; age: string; line: string; legend: string;\n'
+        '  origin: string;\n'
         '  ties: LoreTie[];\n'
         '}\n\n'
     )

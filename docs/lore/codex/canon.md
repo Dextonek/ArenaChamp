@@ -10,11 +10,86 @@ The facts every codex page agrees with: the peoples, which hero belongs to which
 and the new names. If a page and this sheet disagree, this sheet wins, and the page is fixed. The short source is still
 [LORE.md](../LORE.md); this sheet adds what the codex needs. Back to the [codex](README.md).
 
-## Two questions left open
+## The canon's answer
 
-Two things are never said as fact by any codex page, because the user has not chosen them: **why the sun fell** and **what
-the Tower is**. Every page gives them as what someone believes. The candidate answers are in
+The user chose, 2026-11-15: **the sun fell because the Tower took it**, and **the Tower is a collector of worlds**. This is the
+truth every page keeps to. The Dial does not know most of it in the hundredth summer: its factions believe what they always
+believed, and the pages that speak for them say so. [The Long Noon](story/README.md), the Story book, tells how the Dial learns it
+and how it ends. The full account of the factions' old beliefs, and how far each was right, is
 [The Tower and the Sun](tower-and-sun.md).
+
+1. **Why the sun fell.** The sun fell because the Tower took it. For three hundred years the Tower drew on the sun at noon,
+   which is the paling the Hourkeepers measured. At noon on midsummer day in year 0 it closed its hand: the sun stopped over it for
+   nine heartbeats, and the Tower took its noon, its light and its hour, into itself. The sun's body was too great to keep. It
+   cracked in the Tower's grip and fell: the heart to the Tower's foot, two embers into the Cinder Pit, the rest across the Dial.
+2. **What the Tower is.** A made thing. Its makers called it **the Aumbry**, the keeping-place. It was made long ago on another
+   world, **Senmere**, by a people whose sun was failing, to keep what was ending: it takes a thing at its hour and keeps it, as it
+   was, for ever. One word was set in it at its making, the word for *keep*, and the word was its maker's own name, **Iselm**.
+   When it had kept all of Senmere the word still bound it, so it crossed the dark between the stars to the next world with an
+   ageing sun. That world was the Dial. It stood at the Dial's centre before any people there could remember, and served as its
+   gnomon, because a keeper must know the hours to take them.
+3. **Why it collects.** It was made out of grief, to save. It cannot tell keeping from taking, or a thing ending from a thing
+   living: to the Aumbry, everything is ending, because everything will. It means no harm. It is the most patient thing on the
+   Dial, and it has never let anything go.
+4. **How it takes.** It takes hours, and whoever is in them. Its roots run under every realm (the Moot were right), and its hand
+   was its shadow, which swept the Dial each day and marked what it would keep. It takes a realm at the hour of its greatest loss,
+   because a world grieves most for what it loses, and the Aumbry was made to keep what is grieved. The realm outside goes on,
+   thinner: the people of that hour are gone from it (counted drowned, lost in the storm, never found), and its land remembers
+   them as a wound. Inside, they keep their posts and believe they always have. It cannot take whoever is fighting the loss with
+   everything they have (Marin dancing the water out, Isolde holding the lake): they are out of step with the hour, and it passes
+   them by. It takes those who stand still in their grief.
+5. **What it has taken, by the hundredth summer.** The sun's noon. Ninety-eight of the choir of a hundred, with the hour they sang
+   in. The midsummer market at its foot, with everyone in it: **the Market of Noon**. Then, in the Fall's first years: the Drowned
+   Harbour on the morning the water came (the Sea), the Walking Wood in its first year of walking (the Wood), the Storm Canyon in
+   the great storm (the Sands), the far halls of the Deep on the night their crystals went out (the Deep), the Field of Banners in
+   the war's last days (the War); and three realms the gate has not yet shown: Frostfall in the Long Hold, Aubade at dusk on the
+   day of the Fall, and Gloaming in the Long Dusk. Before the Fall it took a little at a time, through its doors: a revel of the
+   Fox court three hundred years before, rooms of the Spires, a drowned girl in a river four hundred years ago, single lives.
+6. **Why the floors hold years 0 to 2 though the gate opened in year 90.** It took those hours then and kept its gate shut. It
+   opened the gate in year 90 for one champion of the Ring ([Mum](heroes/mum.md), clause 7 below), and kept it open since to draw
+   the Dial's champions up; a chapter opens when climbers have proved they can reach it, which is why the Climb grew from year 90
+   to 99.
+7. **The Hymn of Noon and the blank page.** The Sun Warden taught Aubade the Hymn four hundred years before the Fall, because the
+   word bound him to. Its verses draw the sun to the Tower at noon: the Dial thought the Hymn held the sun up, and it held it *to*
+   the Tower. Its last verse, sung by the choir's master alone at each midsummer, was the Warden's own, hidden at the end: a
+   verse of letting go, that sent the sun on its way. On the day of the Fall the Tower took the choir in the hour of noon, the
+   master first, before the last verse could be sung. Mum, who was a hair behind the beat, and Cantor, who was listening to her,
+   were out of step with the hour and were left. Mum's missed beat did not drop the sun; it saved her, and the master had taught
+   her the last verse the week before. Since then she has lived a hair behind the beat, and the Tower cannot take her by an hour.
+   In year 90 she won a duel in the Ring, and the Tower took the hour of that duel instead (its winner, its record, everyone's
+   memory of it): that is the Tally's blank page. It opened its gate to her that day. She has never gone in.
+8. **The Sun Warden** is Iselm, the last of the makers, who wrote his name into the Aumbry as its word and did not let himself be
+   kept, so that someone would watch over it. He has followed it from Senmere. The word binds him to serve it and to guard its
+   crowns; it does not bind what he teaches or which doors he leaves unlocked. He wants it stopped and cannot say so. He opened
+   the door under the sea temple for Asenet in year 99.
+9. **The three crowns, in more places than one.** The Heart of Noon lies in the Hall of Noon under the Ring and still burns; the
+   Tower drinks its light as it rises each morning, which is why the day pales. Ash and Ember burn in the Cinder Pit. The Raid's
+   bosses are these pieces themselves, bound by the Tower to guard what it drinks. The Climb's crowns are the Tower's keepings of
+   them, each as it was in the hour it was taken, set at the top of a chapter as a keeper sets its best pieces at the end of a
+   room. On the tenth floor the Warden is such a keeping; on the fortieth he is himself.
+10. **The Tear** is the hole the taking tore where the sun hung. It opens onto the dark between the stars, the Aumbry's road, and
+    widens as the Aumbry fills. Through it came **the Unmaker**: what is left of Senmere, the ending its world was never allowed to
+    have, which the Aumbry drags behind it from world to world. The Fallborn are what the broken taking let fall: the Embers are
+    sparks of the sun that slipped its grip, the Cast are shadows thrown by light that was taken in mid-throw.
+11. **The Noon-touched.** Everyone alive in the hour of the Fall, or born in the week after it while the hour still hung, is held a
+    little in the kept noon, and so ages one year in five. The Hourkeepers fear they would age all at once if the noon were let
+    go. They are wrong (the Story's ending).
+12. **The Ring is the Tower's threshold.** The Truce was sworn at the Tower's foot, in its shadow, and the Aumbry keeps what is sworn
+    in its shadow: the fourth clause became its own law. The Hundred Doors under the stands are its doors into the realms. The duels
+    are its trials: it keeps an echo of every champion who fights in the Ring (the echoes of the weekly Tower, the Trials). The hero
+    who "holds the gate" of a Climb chapter (Marin, Fenna, Sefu, Opaline, Oblivion) is such an echo, set there by the Tower. Big Yoko's
+    circle stands where the Tower's shadow stopped, and holds it there.
+13. **What it means to do.** At noon on the Hundredth Midsummer it means to close its hand on what is left: the Ring and its
+    champions, the last of the light, the three untaken realms whole, and to leave by the Tear. Wick saw the Ring after, empty.
+14. **Where the heroes come from.** Most heroes are Dial-born. Six are not: two are **Returned** (taken by the Tower long ago and come
+    back out: [The Great Zambini](heroes/the-great-zambini.md), [Kohaku](heroes/kohaku.md)); one is **Half-kept** (half of him was
+    taken in the hour of the Fall: [Tempo](heroes/tempo.md)); two are **Spilled**, made by the broken taking
+    ([Anka](heroes/anka.md), [Nyx](heroes/nyx.md)); one **Followed** the Tower here ([Oblivion](heroes/oblivion.md)). The list, one
+    line a hero, is in [The Long Noon](story/README.md) and in LORE.md's `## Origins`.
+15. **The ending** is told in the Story book and has not happened in the game's year 100. In it the Tower's word is changed from
+    *keep* to *remember*, the last verse is sung, and a new sun hangs over the Tower.
+
+Nothing in the codex is unknown to the codex. What is still a mystery belongs to the characters, and the pages say whose.
 
 ## Counting the years
 
@@ -31,15 +106,16 @@ the Tower is**. Every page gives them as what someone believes. The candidate an
 
 | Year | What happened |
 |---|---|
+| before any count | The Aumbry, the Tower, comes to the Dial from Senmere, with its last maker, the Sun Warden |
 | about 1,200 before | The Long Count begins: the first star chart at Frostfall |
 | about 900 before | The mole-folk's oldest seam-songs: the Deep already dug |
 | about 600 before | The first king of the Sands takes the crook; the Dune Throne begins |
 | about 450 before | The ossuaries under Gloaming are sealed with their first lord inside |
 | about 400 before | The Hymn of Noon is first sung at the Tower's top by a choir of a hundred from Aubade |
-| about 300 before | Mortis dies, and his bones get up |
+| about 300 before | Mortis dies, and his bones get up. The Tower begins to draw on the sun at noon (the paling), and takes a revel of the Fox court at its foot, with Zambini and Kohaku in it |
 | about 250 before | The Ninefold knights swear their first oath at the Keep of Nine on the Field |
 | 80 before | Harrowmark, the kingdom of the Field, at its height under the crimson kings |
-| 0 | **The Noonfall.** The sun stops over the Tower, cracks and falls; the sea rises over the Drowned Harbour; the Wood begins to walk; the light runs into the crystals of the Deep; the Tear opens and the Unmaker comes through; Anka walks out of the sea next morning; Auriel is born |
+| 0 | **The Noonfall.** The Tower takes the sun's noon, ninety-eight of the choir and the midsummer market; the sun cracks in its grip and falls; Kohaku is spilled out of the Tower; the sea rises over the Drowned Harbour; the Wood begins to walk; the light runs into the crystals of the Deep; the Tear opens and the Unmaker comes through; Anka walks out of the sea next morning; Auriel is born |
 | 0 to 2 | **The War of the Banners**: King Orlan of Harrowmark raises the crimson banner to take the sun's pieces; the Azure League of the other realms answers |
 | 1 | Sefu takes the Dune Throne from his sister Asenet; she curses the crown |
 | 1, winter | Pim and Pom are left on Grandma Ironknit's doorstep |
@@ -48,13 +124,14 @@ the Tower is**. Every page gives them as what someone believes. The candidate an
 | 5 | The Gaol of Oaths is opened under the Drowned Harbour |
 | 12 | The Underforge and the Dune Throne open the Brass Road |
 | 35 | Gus is born |
+| 40 | The Great Zambini walks out of one of the Hundred Doors, sixty years after the Fox court lost him; Kohaku holds the door |
 | 50 | Mr. Ledger asks to write Grandma Ironknit into his book, and is knitted a scarf |
 | 60 | Gus takes the broom of the sea temple |
 | 70 to 81 | Shiori (70), Kaia (72), Ada (74), Zephyr (76), Lyra (78) and Pip (81) are born: the first great generation since the Fall |
 | 88 | Kaia's and Barry's public argument begins |
 | 90 | Arden starts tracking Nyx |
 | 86 | Auriel's first duel with Vesper, over two bell-ringers asleep on the night road |
-| 90 | **The Tower's gate opens** for a champion of the Ring, for the first time; the Tally's page for the duel is blank. Orren takes up the Ember of Aubade |
+| 90 | **The Tower's gate opens** for a champion of the Ring, for the first time: Mum, whose win the Tower took, hour and all, so the Tally's page for the duel is blank. Orren takes up the Ember of Aubade |
 | 91 | Kaia's first duel in the Ring empties the western stands; the Truce hires Morwen |
 | 97 | Asenet strikes Sefu at the Homecoming table and is sent to the Gaol of Oaths |
 | 99, spring | Asenet slips Kessa's chain on a spring tide, by a door to the sea temple's undercroft |
@@ -62,7 +139,9 @@ the Tower is**. Every page gives them as what someone believes. The candidate an
 
 ## Threads that run across pages
 
-Mysteries several heroes hold a piece of, kept open for events and seasons (none answers the two open questions):
+Mysteries several heroes hold a piece of, kept for events and seasons. Each has its answer in the canon above, and the Story
+tells when the characters learn it: who missed the beat (Mum, and it saved her), the blank page (Mum's win, taken), the door under
+the sea temple (opened by the Sun Warden), the paling (the Tower drinking the Heart), the Climb's dead (kept from crossing).
 - **Who missed the beat.** Cantor believes Ansel, Auriel's father, was a hair behind; Mum believes it was herself; Mum alone knows the Hymn's last verse.
 - **The blank page.** The duel of year 90 that opened the gate is not in the Tally: Whistler called it and cannot see the winner's face, Ledger wrote it and
   the page was never written on, Shiori's ink will not take on it, Arden's trail from that year leads to the gate.

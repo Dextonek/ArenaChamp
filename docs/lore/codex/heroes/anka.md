@@ -76,6 +76,8 @@ to fire as if it were a person. When she is about to burn she goes very quiet.
   from the Dial she will not rise at all, and she has not told the Noonsworn.
 - She remembers the girl on the shore: her name was Ama, and she was nine. Anka has visited Ama's mother's grave every midsummer.
 - Ash and Ember spoke to her at the Wood's crown. They said: "Not yet."
+- She is a spark that slipped the Tower's grip when it took the sun's noon. The rest of the fire she came from is not lost: its noon is kept at the Tower's top, over
+  the Noon Seat, and its heart burns under the Ring.
 
 ## What she wants from the Tower
 

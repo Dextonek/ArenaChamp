@@ -5,9 +5,12 @@
 export interface LoreFaction { name: string; colours: string[]; home: string; wants: string; sigil: string }
 export interface LoreTie { other: string; kind: string; pair: string; what: string; strong: boolean }
 export interface LorePeople { name: string; kind: string; look: string; life: string; text: string }
-/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind). */
+/** `people` is a key of PEOPLES; `kin` its kin inside it where that matters (a Briarkin court, a Fallborn kind).
+ * `origin` (the canon, 2026-11-15): dial, returned (taken by the Tower and come back out), halfkept, spilled (made by the
+ * Fall), followed (came after the Tower through the Tear). */
 export interface LoreHero {
   faction: string; people: string; kin: string; place: string; from: string; age: string; line: string; legend: string;
+  origin: string;
   ties: LoreTie[];
 }
 
@@ -241,7 +244,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mr. Ledger": {
   "faction": "truce",
@@ -281,7 +285,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "longdead",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Wick": {
   "faction": "truce",
@@ -300,7 +305,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Pip": {
   "faction": "truce",
@@ -326,7 +332,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Madame Cleaver": {
   "faction": "truce",
@@ -352,7 +359,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Big Yoko": {
   "faction": "truce",
@@ -385,7 +393,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Auriel": {
   "faction": "noonsworn",
@@ -411,7 +420,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Anka": {
   "faction": "noonsworn",
@@ -430,7 +440,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "an Ember"
+  "kin": "an Ember",
+  "origin": "spilled"
  },
  "Cantor": {
   "faction": "noonsworn",
@@ -449,7 +460,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Opaline": {
   "faction": "noonsworn",
@@ -475,7 +487,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Vesper": {
   "faction": "dusk",
@@ -508,7 +521,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Silvane": {
   "faction": "dusk",
@@ -534,7 +548,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "gloaming",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mortis": {
   "faction": "dusk",
@@ -553,7 +568,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "longdead",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Nyx": {
   "faction": "dusk",
@@ -579,7 +595,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "of the Cast"
+  "kin": "of the Cast",
+  "origin": "spilled"
  },
  "Mum": {
   "faction": "dusk",
@@ -598,7 +615,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "aubade",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Fenna": {
   "faction": "greenwood",
@@ -624,7 +642,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Hank": {
   "faction": "greenwood",
@@ -650,7 +669,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Bo": {
   "faction": "greenwood",
@@ -676,7 +696,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "wood",
-  "kin": "ram-horned"
+  "kin": "ram-horned",
+  "origin": "dial"
  },
  "Pim and Pom": {
   "faction": "greenwood",
@@ -709,7 +730,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Acorn court"
+  "kin": "the Acorn court",
+  "origin": "dial"
  },
  "Sirix": {
   "faction": "greenwood",
@@ -728,7 +750,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Hive court"
+  "kin": "the Hive court",
+  "origin": "dial"
  },
  "Marin": {
   "faction": "windward",
@@ -747,7 +770,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Kaia": {
   "faction": "windward",
@@ -766,7 +790,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Zephyr": {
   "faction": "windward",
@@ -785,7 +810,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Barry Cloudsley": {
   "faction": "windward",
@@ -818,7 +844,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Professor Puff": {
   "faction": "windward",
@@ -851,7 +878,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Gus": {
   "faction": "windward",
@@ -877,7 +905,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "coast",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Brannoc": {
   "faction": "underforge",
@@ -910,7 +939,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Ada": {
   "faction": "underforge",
@@ -936,7 +966,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Bram": {
   "faction": "underforge",
@@ -955,7 +986,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "kiln",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Mabel": {
   "faction": "underforge",
@@ -974,7 +1006,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "mole",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Sefu": {
   "faction": "dune",
@@ -993,7 +1026,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Vitriol": {
   "faction": "dune",
@@ -1012,7 +1046,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "dune",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Tempo": {
   "faction": "hourkeepers",
@@ -1020,7 +1055,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The Hourkeepers' observatory at Frostfall",
   "age": "He looks 40. He has lived a hundred years since the Fall, every moment twice.",
   "line": "\"Again. And again.\"",
-  "legend": "When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning there comes twice. Tempo is what the Hourkeepers call an unwound hour, a man who fell out of time at the moment of the Fall and has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to wind the Dial up again before Oblivion unmakes the hours altogether.",
+  "legend": "When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning there comes twice. Tempo is what the Hourkeepers call an unwound hour: when the Tower closed its hand on the noon he was a heartbeat behind his own clock, and it took half of him, so he has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to wind the Dial up again before Oblivion unmakes the hours altogether.",
   "ties": [
    {
     "other": "Oblivion",
@@ -1038,7 +1073,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "halfkept"
  },
  "Shiori": {
   "faction": "hourkeepers",
@@ -1064,7 +1100,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Lyra": {
   "faction": "hourkeepers",
@@ -1083,13 +1120,14 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": ""
+  "kin": "",
+  "origin": "dial"
  },
  "Grandma Ironknit": {
   "faction": "hourkeepers",
   "place": "wood",
   "from": "A cottage at the Walking Wood's edge, on the Frostfall road",
-  "age": "Looks 70. She was 50 and already spinning when the sun fell (Noon-touched).",
+  "age": "Looks 70, and has for three hundred years: a Spindle fae who came to live among mortals two centuries before the Fall, and chose to look old.",
   "line": "\"Sit down, dear. You're coming unravelled.\"",
   "legend": "The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner, fae of the Spindle court, with long pointed ears through her hood and silver eyes, in a dark shawl knitted in bands of rose thread, with two needles as long as swords and a grey cat called Mr. Biscuit, and she knits lives into the cloth of the Dial at Frostfall. She raised Pim and Pom when they turned up on her doorstep, taught Thessa to sew, and fifty years ago turned down Mr. Ledger, who wanted to write her into his book; she knitted him a scarf instead, and he still wears it under the collar. In the Ring she ties her lines across the floor and sends the cat.",
   "ties": [
@@ -1109,7 +1147,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "the Spindle court"
+  "kin": "the Spindle court",
+  "origin": "dial"
  },
  "Isolde": {
   "faction": "hourkeepers",
@@ -1128,7 +1167,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "north",
-  "kin": "lake-born"
+  "kin": "lake-born",
+  "origin": "dial"
  },
  "Oblivion": {
   "faction": "loners",
@@ -1154,7 +1194,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "fallborn",
-  "kin": "the Unmade"
+  "kin": "the Unmade",
+  "origin": "followed"
  },
  "Sir Whiskers": {
   "faction": "loners",
@@ -1173,7 +1214,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "ninefold",
-  "kin": "a lynx"
+  "kin": "a lynx",
+  "origin": "dial"
  },
  "The Great Zambini": {
   "faction": "loners",
@@ -1181,7 +1223,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "Everywhere. He says Aubade, Tamerit and Gloaming, on alternate days",
   "age": "He says 39. He has said 39 for sixty years.",
   "line": "\"Pick a hat. Any hat. Wrong.\"",
-  "legend": "Nobody knows where The Great Zambini comes from, which is how he likes it. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim and Pom are his favourite audience and his worst assistants. He fights for the applause.",
+  "legend": "The Ringside has never known where The Great Zambini comes from, which is how he likes it: out of one of the Hundred Doors, in year 40, after three hundred years at a revel the Tower kept. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim and Pom are his favourite audience and his worst assistants. He fights for the applause.",
   "ties": [
    {
     "other": "Referee Whistler",
@@ -1199,7 +1241,8 @@ export const LORE: Record<string, LoreHero> = {
    }
   ],
   "people": "briar",
-  "kin": "of no court"
+  "kin": "of no court",
+  "origin": "returned"
  }
 };
 

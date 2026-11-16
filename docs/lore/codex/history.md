@@ -13,7 +13,9 @@ those disagree.
 
 ## Before the Fall: the Age of the Shadow
 
-**Before the count.** Nobody knows who raised the Tower, or whether it was raised. Every people's oldest story has it already
+**Before the count.** The Tower was not raised on the Dial. It is the Aumbry, made on a world called Senmere to keep what was
+ending, and it came across the dark between the stars with its last maker, the Sun Warden, and planted itself at the Dial's centre
+before any people there could remember ([The Tower and the Sun](tower-and-sun.md)). Every people's oldest story has it already
 standing. The mole-folk's oldest seam-songs speak of "the pin above"; the Briarkin say it was there when they woke; the tomb
 paintings of the Sands show the first caravans walking toward it.
 
@@ -43,7 +45,8 @@ every noon from then until the Fall. The Sun Warden, already keeping his post at
 he came there.
 
 **About 300 before.** The Hourkeepers measure the first paling of the sun on their great lens: a little less light at midsummer
-than the year before. They keep measuring, and say nothing. In Gloaming, a scholar of the dead dies at his desk with a question
+than the year before. They keep measuring, and say nothing. It is the Tower beginning to draw on the sun at noon. The same summer a
+revel of the Briarkin's Fox court, held under the Tower at midsummer, does not come home: the Tower has taken its hour. In Gloaming, a scholar of the dead dies at his desk with a question
 unanswered, and three days later gets up: Mortis.
 
 **About 250 before.** The first Ninefold knight swears her oath at the Keep of Nine on the edge of the Field, then a green valley in
@@ -78,9 +81,10 @@ The day of the Fall is told hour by hour in the Noon Folio. As every people on t
 - **Before noon** the choir lights the lamp from the sun, early, as is the custom, and sends it down by a runner. It will reach
   Aubade at dusk: the **Ember of Aubade**.
 - **At noon** the choir sings the Hymn. The sun stops over the Tower. The Hourkeepers' lens records that it stops for the space of
-  nine heartbeats. Then it cracks, with a sound heard from Frostfall to the Coast, and falls.
+  nine heartbeats: the Tower has closed its hand on it, and takes its noon, its light and its hour, and the choir singing in that
+  hour. Then the sun's body, too great to keep, cracks with a sound heard from Frostfall to the Coast, and falls.
 - **The heart** comes down at the Tower's foot and goes into the ground, and the Hall of Noon opens round it. Two embers fall into a
-  pit beside it: the Cinder Pit. The festival market at the Tower's foot is gone. Big Yoko, eighteen, a shrine wrestler from the
+  pit beside it: the Cinder Pit. The festival market at the Tower's foot is gone: taken, with everyone in it, into the hour. Big Yoko, eighteen, a shrine wrestler from the
   cliffs, is standing in the straw-rope circle a mile away and is thrown off his feet.
 - **The shadow stops.** Across the Dial the Tower's shadow lies where it was at noon, and stays.
 - **The Tear opens** where the sun hung, black with a pink edge, and something steps out of it onto the Tower: the Unmaker.
@@ -158,6 +162,9 @@ thousand obols.
 
 **Year 35.** Gus is born in Saltreach.
 
+**Year 40.** A Briarkin in a violet cape walks out of one of the Hundred Doors under the Ring and asks Wick what year it is. He has
+been in the Tower for three hundred years, at a revel that never ended. He calls himself The Great Zambini.
+
 **Year 40.** Brannoc follows Isolde north to Frostfall Lake. She freezes his forge solid to send him home. It takes him a year to
 light it.
 
@@ -185,7 +192,9 @@ Her first duel with Vesper.
 **Year 88.** Kaia's and Barry Cloudsley's public argument begins, over a storm she called on a day he forecast clear.
 
 **Year 90.** **The gate opens.** At midsummer, for the first time since the Truce, the Tower's gate opens for a champion of the Ring:
-the champion is not recorded, because the Tally's page for that duel is blank, which has never happened before. Inside is the first
+the champion is not recorded, because the Tally's page for that duel is blank, which has never happened before. (The champion
+was Mum, of the Court of Dusk. The Tower could not take her, so it took the hour of her win instead, and opened its gate to her.
+Nobody, Mum included, remembers it.) Inside is the first
 floor of the Climb, a harbour drowned on the morning the water came. Orren takes up the Ember of Aubade. Arden begins tracking Nyx.
 
 **Years 90 to 99.** The Climb grows: the Sea's ten floors, then the Wood, the Sands, the Deep and the War, fifty floors in five

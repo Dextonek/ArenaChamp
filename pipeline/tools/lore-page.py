@@ -91,8 +91,16 @@ def blocks(lines, head):
 def read(path):
     sec = parse(path.read_text(encoding='utf-8'))
     lore = {'prose': {}, 'places': [], 'factions': {}, 'ftie': [], 'heroes': [], 'ties': [], 'peoples': {}}
-    for name in ('The world', 'The Noonfall', 'Why heroes come to the Ring', 'The Tower and the Climb (a proposal)'):
+    for name in ('The world', 'The Noonfall', 'Why heroes come to the Ring', 'The Tower and the Climb'):
         lore['prose'][name] = paragraphs(sec[name])
+    # Where each hero comes from (since the canon's answer, 2026-11-15): `- Name | origin | why`.
+    lore['origins'] = {}
+    for ln in sec.get('Origins', []):
+        if ln.startswith('- '):
+            name, origin, why = [x.strip() for x in ln[2:].split('|', 2)]
+            if name in lore['origins']:
+                raise SystemExit(f'{name} is listed twice under Origins in LORE.md')
+            lore['origins'][name] = (origin, why)
     for ln in sec['Places']:
         if ln.startswith('- '):
             pid, name, hour, fac, what = [p.strip() for p in ln[2:].split('|')]
@@ -228,6 +236,18 @@ def check(lore):
     for p in lore['places']:
         if p['faction'] not in facs and p['faction'] != 'none':
             errs.append(f"place {p['id']}: unknown faction {p['faction']}")
+    # Origins: every hero has exactly one, of a known kind; six heroes come from the Tower (the canon, clause 14).
+    kinds = {'dial', 'returned', 'halfkept', 'spilled', 'followed'}
+    origins = lore.get('origins', {})
+    for h in lore['heroes']:
+        o = origins.get(h['name'])
+        if not o:
+            errs.append(f"{h['name']}: no line under Origins in LORE.md")
+        elif o[0] not in kinds:
+            errs.append(f"{h['name']}: origin '{o[0]}' is not one of {sorted(kinds)}")
+    for n in origins:
+        if n not in names:
+            errs.append(f'Origins names unknown hero {n}')
     # Peoples: every hero has exactly one known people; siblings share one; a people's home is a place.
     peoples = lore['peoples']
     place_ids = {p['id'] for p in lore['places']}
@@ -686,8 +706,8 @@ def build(lore):
     P.append('<h2 id="ring">Why heroes come to the Ring</h2>')
     for p in lore['prose']['Why heroes come to the Ring']:
         P.append(f'<p>{inline(p)}</p>')
-    P.append('<h2 id="tower">The Tower and the Climb <small style="font-size:14px;color:var(--muted)">(a proposal)</small></h2>')
-    for i, p in enumerate(lore['prose']['The Tower and the Climb (a proposal)']):
+    P.append('<h2 id="tower">The Tower and the Climb</h2>')
+    for i, p in enumerate(lore['prose']['The Tower and the Climb']):
         P.append(f'<p class="note">{inline(p.strip("*"))}</p>' if i == 0 else f'<p>{inline(p)}</p>')
     P.append('</section>')
 
@@ -754,8 +774,9 @@ def build(lore):
 
     P.append('</main><footer><h3>What is yours to decide</h3>'
              '<p>Every name here is a first pick: the world (the Dial), the factions, the cities (Aubade, Tamerit, Gloaming, the Spires; Frostfall '
-             'is the arena\'s own name), the Noonfall and why the sun fell (left open on purpose), the Noon-touched (why people who saw the Fall a '
-             'hundred years ago are still young), whether the Tower "collects worlds" (a proposal; the Climb\'s story is still open), and who is a '
+             'is the arena\'s own name), the Noonfall (the sun fell because the Tower took it: the user\'s choice, 2026-11-15), the Noon-touched (why '
+             'people who saw the Fall a hundred years ago are still young), the Tower as a collector of worlds (also the user\'s choice; the whole '
+             'story is <a href="codex/story/README.md">The Long Noon</a>), where each hero comes from (most Dial-born, six from the Tower), and who is a '
              'villain (here only Oblivion is; the Court of Dusk is an enemy with its reasons). Change any of it in <code>docs/lore/LORE.md</code> '
              'and run <code>python pipeline/tools/lore-page.py</code>.</p>'
              '<p>Names that meet names the game already has: Itzel is "the Obsidian Herald" and the War\'s keeper is "the Herald"; Ostrel is '
@@ -814,7 +835,7 @@ def revamp_html():
 
 def codex_html():
     """Links into the codex."""
-    links = [('README.md', 'The codex, its index'), ('world.md', 'The Dial'), ('tower-and-sun.md', 'The Tower and the Sun: the open questions'),
+    links = [('README.md', 'The codex, its index'), ('world.md', 'The Dial'), ('story/README.md', 'The Long Noon: the whole story'), ('tower-and-sun.md', 'The Tower and the Sun'),
              ('history.md', 'History'), ('peoples/README.md', 'The peoples'), ('realms/README.md', 'The realms'), ('climb/README.md', 'The Climb'),
              ('climb/bestiary.md', 'The bestiary'), ('climb/rulers.md', 'The rulers'), ('factions/README.md', 'The factions'),
              ('heroes/README.md', 'The sixty heroes'), ('revamp.md', 'The revamp plan'), ('canon.md', 'The canon'), ('names.md', 'Names')]

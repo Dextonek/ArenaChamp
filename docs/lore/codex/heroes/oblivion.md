@@ -65,6 +65,8 @@ Rarely heard: a low, flat voice with no breath in it, like a sentence read out w
 - It believes it did not come through the Tear by its own will: that something on this side pulled, at noon. It has been looking for what pulled for a
   hundred years, and has told only Wick, who did not believe it.
 - It loses in the Ring sometimes on purpose. It wants to know what losing is.
+- What it does not know: it is the evening of Senmere, the world the Tower kept before the Dial, the ending that world was never allowed to have, which the Tower
+  drags behind it from sky to sky. What pulled it through the Tear was the Tower's taking of the sun.
 - The Hourkeepers' list of things it has unmade includes, near the top, in Shiori's hand, a word: the old name of the Dial. Nobody remembers it. The word is blank.
 
 ## What it wants from the Tower

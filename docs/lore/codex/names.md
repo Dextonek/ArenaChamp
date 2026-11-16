@@ -118,6 +118,13 @@ first pick, for the user to change.
 | Sir Aldous of Nine | the Turncloak's name | heroes |
 | Gale | Zephyr's blade | heroes |
 | The Puff Atlas | Professor Puff's chart of the winds | heroes |
+| The Aumbry | the Tower's own name, from its makers: the keeping-place | canon, story |
+| Senmere | the world the Tower was made on and kept before the Dial | canon, story |
+| Iselm | the Sun Warden's name, which is the Tower's word, *keep* | canon, story |
+| Linnet | Iselm's daughter, the Tower's first keeping | story |
+| The Market of Noon | the midsummer market the Tower took at the Fall | canon, story |
+| The Dawnless | the shadow of the Cast that carried sleepers to the Tower | story |
+| The Long Noon | the Story book | story |
 
 ## Kept from the game, and meetings on purpose
 
@@ -139,3 +146,7 @@ Searched on the web for a clash with a well-known game, book or film (2026-11-15
 the Underbough. None is a franchise's name. Harrowmark turns up only as a mercenary company in one small fan-made setting online (and is close to
 Harrowhark, a character in a novel series: a different word); "under-bough" is an old English word for a low branch. Ordinary English words (the Cast,
 the Restless, the Measure) and plain compounds (Mole-folk, Coast folk) were not searched.
+
+Searched on the web for the Story book's names (2026-11-15): the Aumbry, Senmere, Iselm, the Dawnless, The Long Noon. None is a game's,
+book's or show's name (the nearest: *The Long High Noon*, a Western novel). Linnet is an ordinary English word, a bird; a minor character in one
+fantasy series and one small game carry it. Nerys was the first pick for Iselm's daughter and was dropped: it is a famous character's name.

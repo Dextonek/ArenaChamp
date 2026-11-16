@@ -19,13 +19,13 @@ is the thread of what happens. Not fate, exactly: a Spindle fae cannot make anyt
 so that a life that was about to fray holds a little longer. They have silver eyes of one colour, long clever fingers, and great age worn lightly, and they are rarely seen
 outside the Underbough, because mortals who learn what they do tend to ask for things.
 
-About three hundred years before the Fall, a Spindle fae chose to live among mortals. Nobody in the Underbough knows why, and she has never said; the Wood folk's story is that
+A little over two hundred years before the Fall, a Spindle fae chose to live among mortals. Nobody in the Underbough knows why, and she has never said; the Wood folk's story is that
 she fell in love with a woodcutter, and the Hourkeepers' story is that she wanted to see a thread from close up. She built a stone cottage on the Frostfall road, put a spinning
 wheel in the window, took the use-name Ironknit (the Spindle court's word for a spinner who has chosen to live among mortals), and began to knit. She has been there since. She
 was knitting when the sun fell, and she says she felt every thread on the Dial jerk at once, as if someone had pulled the whole cloth, and that she dropped three stitches and
 has never found them.
 
-Two centuries before the Fall the Hourkeepers came to her door and asked her to keep the threads, as they keep the hours, and she agreed, and became one of
+Within a few years the Hourkeepers came to her door and asked her to keep the threads, as they keep the hours, and she agreed, and became one of
 them: the Weaver of the Hourkeepers, who keeps the record of lives as the library keeps the record of years. She knits it. Somewhere in her cottage, in a cloth that never ends, is
 a row for everyone alive on the Dial.
 

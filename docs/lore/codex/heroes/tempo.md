@@ -18,7 +18,8 @@ He was forty and standing at the great clock at noon on midsummer day, watching 
 touch the dial, as if the clock had stuck, and then he remembers nothing, and then he remembers reaching out to touch the dial. He did it twice. Everyone in the hall
 saw him do it twice. He has done everything twice since.
 
-The Hourkeepers call him an **unwound hour**: a man who fell out of time at the moment of the Fall, and has lived every moment twice since. He is not a ghost or an
+The Hourkeepers call him an **unwound hour**: a man who fell out of time at the moment of the Fall, and has lived every moment twice since. The truth is plainer:
+when the Tower closed its hand on the hour of noon he was, for once, a heartbeat behind his own clock, and it took half of him. He is not a ghost or an
 echo; he is one man, living twice. Every step he takes, he takes again a heartbeat later, and the first step and the second are both real. Every word he says, he says
 again, and both are heard, though most people learn not to notice. Every working he casts plays again. He has lived a hundred years since the Fall, every moment twice,
 which makes two hundred, and he looks forty, because the Noon-touched age slowly and he is not sure which of his two lives to count.
