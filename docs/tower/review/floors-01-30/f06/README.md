@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Wick), 
 ## Measured
 
 - Reachable from the camp: 34872 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 12 float, 56 gap, 2 buried, 0 in cover (each looked at; see below)
+- Props probe: 12 float, 56 gap, 2 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1964 game s, every checkpoint reached; 23 kills, 3 falls, stars 1100; ruler tries 1, gate tries 4; page errors 0
-- Ruler: The Pearl Tyrant (Hoarder of the shallows), model models/tower/sea_queen_v4.glb, loaded yes after 5659 ms of real time
+- Ruler: The Pearl Tyrant (Hoarder of the shallows), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 5659 ms of real time into the fight)
 - Frame check at the busiest spot (15, -74), 5 units awake: median 13.9, 12.1, 13.8 ms, p95 24.4, 20.8, 23 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Wick), 
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

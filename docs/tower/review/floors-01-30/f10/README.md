@@ -5,11 +5,11 @@ Clean: the Sea's crown. Cleared with four stars and no fall, no console error, e
 ## Measured
 
 - Reachable from the camp: 34825 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 16 float, 67 gap, 0 buried, 0 in cover (each looked at; see below)
+- Props probe: 16 float, 67 gap, 0 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 1
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1776 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Sun Warden (Keeper of the Sun Court), model models/bosses/warden.glb, loaded yes after 4123 ms of real time
+- Ruler: The Sun Warden (Keeper of the Sun Court), model models/bosses/warden.glb, loaded yes (its picture taken 4123 ms of real time into the fight)
 - Frame check at the busiest spot (38, -63), 5 units awake: median 5.7, 5.4, 5.7 ms, p95 8.8, 7.6, 10.1 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -20,7 +20,6 @@ Clean: the Sea's crown. Cleared with four stars and no fall, no console error, e
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

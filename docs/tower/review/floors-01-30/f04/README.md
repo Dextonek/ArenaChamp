@@ -5,11 +5,11 @@ Clean but for one line of the keeper's: cleared with four stars and no fall; the
 ## Measured
 
 - Reachable from the camp: 35004 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 18 float, 58 gap, 1 buried, 0 in cover (each looked at; see below)
+- Props probe: 18 float, 58 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1613 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: Mother of Wrecks (She keeps what sinks), model models/tower/sea_queen_v4.glb, loaded yes after 5111 ms of real time
+- Ruler: Mother of Wrecks (She keeps what sinks), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 5111 ms of real time into the fight)
 - Frame check at the busiest spot (20, -54), 6 units awake: median 13.3, 14.1, 11.2 ms, p95 24.8, 21.7, 16.8 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -23,7 +23,6 @@ Clean but for one line of the keeper's: cleared with four stars and no fall; the
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

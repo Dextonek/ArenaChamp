@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Gus), t
 ## Measured
 
 - Reachable from the camp: 34910 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 17 float, 67 gap, 2 buried, 0 in cover (each looked at; see below)
+- Props probe: 17 float, 67 gap, 2 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1819 game s, every checkpoint reached; 24 kills, 1 falls, stars 1101; ruler tries 2, gate tries 1; page errors 0
-- Ruler: The Lantern Leviathan (A light that eats ships), model models/tower/sea_judge_v4.glb, loaded yes after 3093 ms of real time
+- Ruler: The Lantern Leviathan (A light that eats ships), model models/tower/sea_judge_v4.glb, loaded yes (its picture taken 3093 ms of real time into the fight)
 - Frame check at the busiest spot (40, -79), 5 units awake: median 4.2, 3.9, 3.5 ms, p95 8.7, 9, 8.2 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -20,7 +20,6 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Gus), t
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

@@ -5,11 +5,11 @@ Plays clean: cleared with four stars and no fall, no console error, every spot r
 ## Measured
 
 - Reachable from the camp: 34093 m²; 52 spots of the floor's data, 0 cut off
-- Props probe: 0 float, 3 gap, 23 buried, 2 in cover (each looked at; see below)
+- Props probe: 0 float, 3 gap, 23 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1716 game s, every checkpoint reached; 58 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Dune Colossus (A hill that walks), model models/tower/sands_scarab_v4.glb, loaded yes after 2717 ms of real time
+- Ruler: The Dune Colossus (A hill that walks), model models/tower/sands_scarab_v4.glb, loaded yes (its picture taken 2717 ms of real time into the fight)
 - Frame check at the busiest spot (-55, 21), 6 units awake: median 5.8, 7, 6.7 ms, p95 7.6, 9.2, 9.9 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -21,7 +21,6 @@ Plays clean: cleared with four stars and no fall, no console error, every spot r
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

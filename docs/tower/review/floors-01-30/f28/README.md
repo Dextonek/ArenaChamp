@@ -5,11 +5,11 @@ Clean but for one word: cleared with four stars and no fall, no console error, e
 ## Measured
 
 - Reachable from the camp: 33938 m²; 58 spots of the floor's data, 0 cut off
-- Props probe: 4 float, 2 gap, 25 buried, 2 in cover (each looked at; see below)
+- Props probe: 4 float, 2 gap, 25 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 1
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1824 game s, every checkpoint reached; 58 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Red Jackal (It runs the wadi), model models/tower/sands_jackal_v4.glb, loaded yes after 1545 ms of real time
+- Ruler: The Red Jackal (It runs the wadi), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 1545 ms of real time into the fight)
 - Frame check at the busiest spot (52, 32), 6 units awake: median 2.7, 3, 3 ms, p95 4.3, 5.1, 5.5 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -23,7 +23,6 @@ Clean but for one word: cleared with four stars and no fall, no console error, e
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

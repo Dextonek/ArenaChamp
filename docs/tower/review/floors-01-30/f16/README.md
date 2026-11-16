@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Measured
 
 - Reachable from the camp: 31839 m², 31839 m²; 57 spots of the floor's data, 0 cut off
-- Props probe: 66 float, 61 gap, 8 buried, 3120 in cover (each looked at; see below)
+- Props probe: 66 float, 61 gap, 8 buried, 3120 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1509 game s, every checkpoint reached; 21 kills, 5 falls, stars 1101; ruler tries 1, gate tries 6; page errors 0
-- Ruler: The Briar Witch (Every thorn a word), model models/tower/wood_briar_v4.glb, loaded yes after 3760 ms of real time
+- Ruler: The Briar Witch (Every thorn a word), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 3760 ms of real time into the fight)
 - Frame check at the busiest spot (-25, -63), 5 units awake: median 8, 5.1, 5.7 ms, p95 18.9, 7.5, 15.9 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -20,7 +20,6 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

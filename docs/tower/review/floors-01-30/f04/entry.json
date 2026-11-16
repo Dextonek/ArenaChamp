@@ -2,16 +2,54 @@
  "floor": 4,
  "verdict": "Clean but for one line of the keeper's: cleared with four stars and no fall; the rival (Auriel), the trial, the ruler (Mother of Wrecks, in the Gull Queen's model) and the gate (Ada) all played; no console error, every spot reachable.",
  "found": [
-  {"kind": "fixed", "title": "“The salt pans is overrun”", "text": "The keeper's greeting is made from the main place's name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea's maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.", "pics": [["phone-fix-overrun-before.jpg", "Before"], ["phone-fix-overrun-after.jpg", "After"]]},
-  {"kind": "ok", "title": "The props the probe flagged", "text": "Pines on the hills and the cliff top, boats on the sea, three shells 10 cm over the sand, the gold edge of the lair's wall where it runs into the hill (seen and left in the props pass). Nothing in the air."}
+  {
+   "kind": "fixed",
+   "title": "“The salt pans is overrun”",
+   "text": "The keeper's greeting is made from the main place's name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea's maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.",
+   "pics": [
+    [
+     "phone-fix-overrun-before.jpg",
+     "Before"
+    ],
+    [
+     "phone-fix-overrun-after.jpg",
+     "After"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "Pines on the hills and the cliff top, boats on the sea, three shells 10 cm over the sand, the gold edge of the lair's wall where it runs into the hill (seen and left in the props pass). Nothing in the air."
+  }
  ],
  "pictures": [
-  ["ruler-close.jpg", "Mother of Wrecks"],
-  ["person-rival.jpg", "Auriel, the rival"],
-  ["pack-b.jpg", "The sea caves' pack"],
-  ["person-villager.jpg", "The Lamp-Bearer in the fishers' row"],
-  ["overview.jpg", "From the south edge"],
-  ["phone-fight.jpg", "Phone: a fight"]
+  [
+   "ruler-close.jpg",
+   "Mother of Wrecks"
+  ],
+  [
+   "person-rival.jpg",
+   "Auriel, the rival"
+  ],
+  [
+   "pack-b.jpg",
+   "The sea caves' pack"
+  ],
+  [
+   "person-villager.jpg",
+   "The Lamp-Bearer in the fishers' row"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ],
+  [
+   "phone-fight.jpg",
+   "Phone: a fight"
+  ]
  ],
- "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+ "notChecked": [
+  "the shared packs online"
+ ]
 }

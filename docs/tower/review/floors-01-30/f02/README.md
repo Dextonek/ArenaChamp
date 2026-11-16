@@ -5,11 +5,11 @@ Clean: the route bot cleared it with all four stars and no fall, the rival (Hank
 ## Measured
 
 - Reachable from the camp: 34918 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 25 float, 54 gap, 1 buried, 0 in cover (each looked at; see below)
+- Props probe: 25 float, 54 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1729 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Drowned Admiral (Fleet, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes after 5095 ms of real time
+- Ruler: The Drowned Admiral (Fleet, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes (its picture taken 5095 ms of real time into the fight)
 - Frame check at the busiest spot (14, -54), 5 units awake: median 10.7, 11.3, 11 ms, p95 17.5, 17.2, 14.8 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -24,7 +24,6 @@ Clean: the route bot cleared it with all four stars and no fall, the rival (Hank
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

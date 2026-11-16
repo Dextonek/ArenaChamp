@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Silvane
 ## Measured
 
 - Reachable from the camp: 34888 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 17 float, 81 gap, 3 buried, 0 in cover (each looked at; see below)
+- Props probe: 17 float, 81 gap, 3 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1841 game s, every checkpoint reached; 23 kills, 1 falls, stars 1101; ruler tries 2, gate tries 1; page errors 0
-- Ruler: The Bell Below (It rings the sea in), model models/tower/sea_judge_v4.glb, loaded yes after 4851 ms of real time
+- Ruler: The Bell Below (It rings the sea in), model models/tower/sea_judge_v4.glb, loaded yes (its picture taken 4851 ms of real time into the fight)
 - Frame check at the busiest spot (-65, 29), 6 units awake: median 12.9, 11.6, 11.1 ms, p95 23.1, 21.4, 15.6 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Plays clean: cleared, no console error, every spot reachable; the rival (Silvane
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

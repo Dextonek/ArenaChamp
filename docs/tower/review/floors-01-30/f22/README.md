@@ -5,11 +5,11 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Measured
 
 - Reachable from the camp: 34300 m²; 59 spots of the floor's data, 0 cut off
-- Props probe: 1 float, 1 gap, 18 buried, 2 in cover (each looked at; see below)
+- Props probe: 1 float, 1 gap, 18 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 1
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1968 game s, every checkpoint reached; 61 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Scarab King (Crowned in a shell), model models/tower/sands_scarab_v4.glb, loaded yes after 2418 ms of real time
+- Ruler: The Scarab King (Crowned in a shell), model models/tower/sands_scarab_v4.glb, loaded yes (its picture taken 2418 ms of real time into the fight)
 - Frame check at the busiest spot (52, 20), 6 units awake: median 3.3, 3.7, 3.6 ms, p95 5.8, 5.2, 5.4 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

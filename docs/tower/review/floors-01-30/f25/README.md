@@ -5,11 +5,11 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Measured
 
 - Reachable from the camp: 33962 m²; 55 spots of the floor's data, 0 cut off
-- Props probe: 4 float, 2 gap, 27 buried, 2 in cover (each looked at; see below)
+- Props probe: 4 float, 2 gap, 27 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1916 game s, every checkpoint reached; 57 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Glass Serpent (Sand burnt to glass), model models/tower/sands_jackal_v4.glb, loaded yes after 2757 ms of real time
+- Ruler: The Glass Serpent (Sand burnt to glass), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 2757 ms of real time into the fight)
 - Frame check at the busiest spot (-56, 26), 6 units awake: median 9.4, 9, 7.9 ms, p95 12.2, 16.8, 10.2 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -20,7 +20,6 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

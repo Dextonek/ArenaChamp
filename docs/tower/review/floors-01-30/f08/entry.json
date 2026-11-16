@@ -2,13 +2,31 @@
  "floor": 8,
  "verdict": "Plays clean: cleared, no console error, every spot reachable; the rival (Gus), the trial, the ruler (the Lantern Leviathan; the bot's first try lost, the second won) and the gate (Mabel) all played. The Leviathan, “a great fish” in the Codex, is drawn with the Tide Judge's figure: see floor 7's item.",
  "found": [
-  {"kind": "ok", "title": "The props the probe flagged", "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths, two stones under the ground. Nothing in the air."}
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths, two stones under the ground. Nothing in the air."
+  }
  ],
  "pictures": [
-  ["ruler-close.jpg", "The Lantern Leviathan, in the Judge's figure"],
-  ["person-rival.jpg", "Gus, the rival"],
-  ["pack-a.jpg", "The oyster market's pack"],
-  ["overview.jpg", "From the south edge"]
+  [
+   "ruler-close.jpg",
+   "The Lantern Leviathan, in the Judge's figure"
+  ],
+  [
+   "person-rival.jpg",
+   "Gus, the rival"
+  ],
+  [
+   "pack-a.jpg",
+   "The oyster market's pack"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
  ],
- "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+ "notChecked": [
+  "the shared packs online"
+ ]
 }

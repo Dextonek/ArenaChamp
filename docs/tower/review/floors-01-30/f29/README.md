@@ -5,11 +5,11 @@ Clean, and the longest floor so far: the bot's first run ran out of its 2400 gam
 ## Measured
 
 - Reachable from the camp: 34051 m²; 55 spots of the floor's data, 0 cut off
-- Props probe: 1 float, 4 gap, 34 buried, 2 in cover (each looked at; see below)
+- Props probe: 1 float, 4 gap, 34 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 2241 game s, every checkpoint reached; 65 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Sun-Eater (It swallowed noon once), model models/tower/sands_sphinx_v4.glb, loaded yes after 1554 ms of real time
+- Ruler: The Sun-Eater (It swallowed noon once), model models/tower/sands_sphinx_v4.glb, loaded yes (its picture taken 1554 ms of real time into the fight)
 - Frame check at the busiest spot (-55, 27), 6 units awake: median 3.3, 3.6, 3.9 ms, p95 5.1, 6, 6.3 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Clean, and the longest floor so far: the bot's first run ran out of its 2400 gam
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

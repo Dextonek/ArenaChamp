@@ -2,17 +2,54 @@
  "floor": 3,
  "verdict": "Clean: cleared with four stars and no fall; the rival (Nyx), the trial (a horde), the ruler (the Salt King, in the Admiral's model tinted) and the gate (Tempo) all played; no console error, every spot reachable, the texts match the Codex (the Salt King rules floor 3).",
  "found": [
-  {"kind": "ok", "title": "A boss that stands between the camera and the hero fades", "text": "In the first pictures the Salt King looked see-through. That is the duel's own rule (duel.ts: a boss that hides the hero fades to a tenth), not a fault: with the hero on its other side it stands in full.", "pics": [["ruler-close.jpg", "The Salt King, the hero below him"]]},
-  {"kind": "ok", "title": "The props the probe flagged", "text": "As on floors 1 and 2: pines on the hills and the cliff top, boats on the sea, a stone just under the sand; two pines whose trunks touch the edge of a cliff-top rock. Nothing in the air."}
+  {
+   "kind": "ok",
+   "title": "A boss that stands between the camera and the hero fades",
+   "text": "In the first pictures the Salt King looked see-through. That is the duel's own rule (duel.ts: a boss that hides the hero fades to a tenth), not a fault: with the hero on its other side it stands in full.",
+   "pics": [
+    [
+     "ruler-close.jpg",
+     "The Salt King, the hero below him"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "As on floors 1 and 2: pines on the hills and the cliff top, boats on the sea, a stone just under the sand; two pines whose trunks touch the edge of a cliff-top rock. Nothing in the air."
+  }
  ],
  "pictures": [
-  ["map.jpg", "The M map"],
-  ["person-keeper.jpg", "The Bell-Warden"],
-  ["person-villager.jpg", "The Lamp-Bearer in the fishers' row"],
-  ["pack-d.jpg", "The shipyard's pack"],
-  ["busy.jpg", "The busiest spot (the frame check)"],
-  ["overview.jpg", "From the south edge"],
-  ["phone-person-keeper.jpg", "Phone: the keeper's card"]
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "person-keeper.jpg",
+   "The Bell-Warden"
+  ],
+  [
+   "person-villager.jpg",
+   "The Lamp-Bearer in the fishers' row"
+  ],
+  [
+   "pack-d.jpg",
+   "The shipyard's pack"
+  ],
+  [
+   "busy.jpg",
+   "The busiest spot (the frame check)"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ],
+  [
+   "phone-person-keeper.jpg",
+   "Phone: the keeper's card"
+  ]
  ],
- "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+ "notChecked": [
+  "the shared packs online"
+ ]
 }

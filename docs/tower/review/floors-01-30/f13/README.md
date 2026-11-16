@@ -5,11 +5,11 @@ Clean but for one line: cleared with four stars and no fall, no console error, e
 ## Measured
 
 - Reachable from the camp: 31625 m², 31624 m²; 57 spots of the floor's data, 0 cut off
-- Props probe: 60 float, 91 gap, 9 buried, 3365 in cover (each looked at; see below)
+- Props probe: 60 float, 91 gap, 9 buried, 3365 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1438 game s, every checkpoint reached; 21 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Thorn Mother (She grows the walls), model models/tower/wood_briar_v4.glb, loaded yes after 5393 ms of real time
+- Ruler: The Thorn Mother (She grows the walls), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 5393 ms of real time into the fight)
 - Frame check at the busiest spot (-6, -38), 4 units awake: median 8.8, 8.6, 8.8 ms, p95 12.4, 15.6, 11.7 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -23,7 +23,6 @@ Clean but for one line: cleared with four stars and no fall, no console error, e
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

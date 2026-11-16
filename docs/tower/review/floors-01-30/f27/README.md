@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable; the caravan, the r
 ## Measured
 
 - Reachable from the camp: 34030 m²; 58 spots of the floor's data, 0 cut off
-- Props probe: 3 float, 4 gap, 21 buried, 2 in cover (each looked at; see below)
+- Props probe: 3 float, 4 gap, 21 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 2126 game s, every checkpoint reached; 59 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0
-- Ruler: The Sand Tyrant (Every grain obeys), model models/tower/sands_jackal_v4.glb, loaded yes after 1644 ms of real time
+- Ruler: The Sand Tyrant (Every grain obeys), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 1644 ms of real time into the fight)
 - Frame check at the busiest spot (-57, 25), 6 units awake: median 3.5, 4.1, 3.6 ms, p95 5.4, 6.2, 6 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Plays clean: cleared, no console error, every spot reachable; the caravan, the r
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

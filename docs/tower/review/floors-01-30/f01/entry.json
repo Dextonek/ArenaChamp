@@ -53,6 +53,17 @@
      "“Gap”: a pine on the cliff top"
     ]
    ]
+  },
+  {
+   "kind": "ok",
+   "title": "The trader (checked here for every chapter)",
+   "text": "The trader's card and its four buys were run on floors 1, 11 and 21: a life back (80 shards), a hint (15: a pillar of light over a cache) and a boon (55: the pick of three) each took their price; a heal is greyed out at full health, as meant. On their routes the bot bought heals, lives and boons from the traders of many floors (floor 1: “heal, boon”, “heal, life”).",
+   "pics": [
+    [
+     "trader-boon.jpg",
+     "Floor 1: the trader's boon, the pick of three"
+    ]
+   ]
   }
  ],
  "pictures": [
@@ -102,7 +113,6 @@
   ]
  ],
  "notChecked": [
-  "the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md)",
-  "buying at the trader (the card and prices shown; the bot's heals use it)"
+  "the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md)"
  ]
 }

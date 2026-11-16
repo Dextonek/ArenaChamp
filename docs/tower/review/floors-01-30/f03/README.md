@@ -5,11 +5,11 @@ Clean: cleared with four stars and no fall; the rival (Nyx), the trial (a horde)
 ## Measured
 
 - Reachable from the camp: 34953 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 16 float, 80 gap, 1 buried, 2 in cover (each looked at; see below)
+- Props probe: 16 float, 80 gap, 1 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1480 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Salt King (Crowned in brine), model models/tower/sea_admiral_v4.glb, loaded yes after 4447 ms of real time
+- Ruler: The Salt King (Crowned in brine), model models/tower/sea_admiral_v4.glb, loaded yes (its picture taken 4447 ms of real time into the fight)
 - Frame check at the busiest spot (-76, 39), 6 units awake: median 11.8, 9.4, 9.6 ms, p95 18, 11.8, 12.8 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Clean: cleared with four stars and no fall; the rival (Nyx), the trial (a horde)
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

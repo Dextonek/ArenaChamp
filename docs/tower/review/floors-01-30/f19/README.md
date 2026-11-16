@@ -5,11 +5,11 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Measured
 
 - Reachable from the camp: 31736 m², 31735 m²; 56 spots of the floor's data, 0 cut off
-- Props probe: 63 float, 85 gap, 6 buried, 3160 in cover (each looked at; see below)
+- Props probe: 63 float, 85 gap, 6 buried, 3160 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1459 game s, every checkpoint reached; 26 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Mire Heart (It beats under the moss), model models/tower/wood_briar_v4.glb, loaded yes after 3766 ms of real time
+- Ruler: The Mire Heart (It beats under the moss), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 3766 ms of real time into the fight)
 - Frame check at the busiest spot (28, -49), 4 units awake: median 5.5, 4.4, 4.7 ms, p95 7.5, 6.3, 6.2 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -21,7 +21,6 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

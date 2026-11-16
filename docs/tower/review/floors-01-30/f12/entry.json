@@ -2,15 +2,50 @@
  "floor": 12,
  "verdict": "Plays clean: cleared, no console error, every spot reachable in both states of the paths; the wisps, the roots, the rival (Vesper), the trial, the ruler (the Moss Warden, in the Elder's model) and the gate (Nyx; second try) all played. One quest's words fixed.",
  "found": [
-  {"kind": "fixed", "title": "“The Lost Spade” asked for a bundle", "text": "The Wood's maker names the camp giver's second quest “The Lost Spade”, “The Lost Lantern” or “The Lost Bundle”, but its words always spoke of a bundle. Now the thing dropped, carried and named on the HUD is the one in the quest's name (src/tower/world/gen/wood.ts; floors 12 to 20 re-baked: only those words changed, on seven floors; it is still drawn as a bundle in the hand).", "pics": [["fix-spade-before.jpg", "Before"], ["fix-spade-after.jpg", "After"]]},
-  {"kind": "ok", "title": "The props the probe flagged", "text": "As on floor 11: the trees are the cover; spore motes in the air; trees on the hills past the edge. Nothing out of place by eye."}
+  {
+   "kind": "fixed",
+   "title": "“The Lost Spade” asked for a bundle",
+   "text": "The Wood's maker names the camp giver's second quest “The Lost Spade”, “The Lost Lantern” or “The Lost Bundle”, but its words always spoke of a bundle. Now the thing dropped, carried and named on the HUD is the one in the quest's name (src/tower/world/gen/wood.ts; floors 12 to 20 re-baked: only those words changed, on seven floors; it is still drawn as a bundle in the hand).",
+   "pics": [
+    [
+     "fix-spade-before.jpg",
+     "Before"
+    ],
+    [
+     "fix-spade-after.jpg",
+     "After"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "As on floor 11: the trees are the cover; spore motes in the air; trees on the hills past the edge. Nothing out of place by eye."
+  }
  ],
  "pictures": [
-  ["person-villager.jpg", "The Kiln-Mother at the burners' clearing"],
-  ["pack-d.jpg", "The old stones and the Stag-Crowned"],
-  ["ruler-close.jpg", "The Moss Warden"],
-  ["map.jpg", "The M map"],
-  ["overview.jpg", "From the south edge"]
+  [
+   "person-villager.jpg",
+   "The Kiln-Mother at the burners' clearing"
+  ],
+  [
+   "pack-d.jpg",
+   "The old stones and the Stag-Crowned"
+  ],
+  [
+   "ruler-close.jpg",
+   "The Moss Warden"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
  ],
- "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+ "notChecked": [
+  "the shared packs online"
+ ]
 }

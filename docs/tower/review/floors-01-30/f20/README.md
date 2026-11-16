@@ -5,11 +5,11 @@ Clean but for one word: the Wood's crown. Cleared with four stars and no fall, n
 ## Measured
 
 - Reachable from the camp: 32043 m², 32042 m²; 60 spots of the floor's data, 0 cut off
-- Props probe: 71 float, 97 gap, 10 buried, 3104 in cover (each looked at; see below)
+- Props probe: 71 float, 97 gap, 10 buried, 3104 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1321 game s, every checkpoint reached; 25 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: Ash and Ember (Keepers of the Cinder Pit), model models/bosses/ash.glb, loaded yes after 5171 ms of real time
+- Ruler: Ash and Ember (Keepers of the Cinder Pit), model models/bosses/ash.glb, loaded yes (its picture taken 5171 ms of real time into the fight)
 - Frame check at the busiest spot (-86, 44), 4 units awake: median 9, 8.2, 8.8 ms, p95 12.7, 14.2, 11.2 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -21,7 +21,6 @@ Clean but for one word: the Wood's crown. Cleared with four stars and no fall, n
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

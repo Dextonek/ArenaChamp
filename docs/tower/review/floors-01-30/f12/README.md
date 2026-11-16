@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Measured
 
 - Reachable from the camp: 31826 m², 31827 m²; 57 spots of the floor's data, 0 cut off
-- Props probe: 57 float, 132 gap, 4 buried, 3174 in cover (each looked at; see below)
+- Props probe: 57 float, 132 gap, 4 buried, 3174 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1421 game s, every checkpoint reached; 21 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0
-- Ruler: The Moss Warden (Green over everything), model models/tower/wood_elder_v4.glb, loaded yes after 3436 ms of real time
+- Ruler: The Moss Warden (Green over everything), model models/tower/wood_elder_v4.glb, loaded yes (its picture taken 3436 ms of real time into the fight)
 - Frame check at the busiest spot (-59, 5), 5 units awake: median 4.2, 4.6, 4.4 ms, p95 5.5, 5.7, 5.1 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -23,7 +23,6 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

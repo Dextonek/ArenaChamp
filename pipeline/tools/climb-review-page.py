@@ -48,7 +48,7 @@ def numbers(folder):
         rows.append(f"Reachable from the camp: {', '.join(str(q['reachableM2']) + ' m²' for q in st)}; {x['check']['states'][0]['spots']} spots of the floor's data, {cut} cut off")
         c = x.get('props', {}).get('counts', {})
         if c:
-            rows.append(f"Props probe: {c.get('float', 0)} float, {c.get('gap', 0)} gap, {c.get('buried', 0)} buried, {c.get('cover', 0)} in cover (each looked at; see below)")
+            rows.append(f"Props probe: {c.get('float', 0)} float, {c.get('gap', 0)} gap, {c.get('buried', 0)} buried, {c.get('cover', 0)} in cover (sorted by kind; one or more of each kind looked at by eye)")
         steep = sum(k['over06'] for k in x.get('grass', {}).get('kinds', []))
         rows.append(f"Grass and small things on ground steeper than 31°: {steep}")
         rows.append(f"Packs table for the open world (server/climb-packs.mjs): {'matches' if x['packsTable'].get('same') else 'DIFFERS'}")
@@ -59,7 +59,7 @@ def numbers(folder):
         x = sh['result']
         if x.get('ruler'):
             u = x['ruler']
-            rows.append(f"Ruler: {u['name']} ({u['title']}), model {u['model'] or 'none (crown or stand-in)'}, loaded {'yes' if u['loaded'] else 'NO'} after {u['wallMs']} ms of real time")
+            rows.append(f"Ruler: {u['name']} ({u['title']}), model {u['model'] or 'none (crown or stand-in)'}, loaded {'yes' if u['loaded'] else 'NO'} (its picture taken {u['wallMs']} ms of real time into the fight)")
         if x.get('frames'):
             f = x['frames']
             rows.append(f"Frame check at the busiest spot ({f['at'][0]}, {f['at'][1]}), {f['units']} units awake: median {', '.join(str(v['med']) for v in f['runs'])} ms, p95 {', '.join(str(v['p95']) for v in f['runs'])} ms (desktop, machine shared: rough)")
@@ -151,7 +151,7 @@ def write_html(base, group, floors):
          f'<h1>The Climb, floor by floor: {span(group)}</h1>',
          '<p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, '
          'pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed '
-         '(blue); bigger ones or matters of taste are listed for you (red).</p>',
+         '(blue); bigger ones or matters of taste are listed for you (red). The look was judged by eye against the art bible (mythic and elegant, never cartoon-goofy); the texts against the Codex Climb pages (docs/lore/codex/climb/). Times are rough: the machine was shared with other agents.</p>',
          f'<div class="sum"><b>{len(floors)} floors checked</b> · <b>{len(fixed)} fixed</b> · <b>{len(listed)} for you</b></div>']
     if listed:
         H.append('<h2>For you to decide</h2><ul>')

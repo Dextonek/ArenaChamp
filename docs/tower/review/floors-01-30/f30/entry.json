@@ -2,14 +2,50 @@
  "floor": 30,
  "verdict": "Clean: the Sands' crown. Cleared with four stars and no fall, no console error, every spot reachable; the Heart of Noon (the Raid's boss, its own model, in the Sunken Heart) fell on the first try; the caravan, the rival (Zephyr), the trial and the gate (Bo) all played.",
  "found": [
-  {"kind": "ok", "title": "Props", "text": "The probe's “gap” is a gateway's lintel over its passage (meant); shrubs on the rim a few cm up; red rocks a little sunk."}
+  {
+   "kind": "ok",
+   "title": "Props",
+   "text": "The probe's “gap” is a gateway's lintel over its passage (meant); shrubs on the rim a few cm up; red rocks a little sunk."
+  },
+  {
+   "kind": "list",
+   "title": "Phone: the hero's passive box runs under the floor panel",
+   "text": "On a phone, once the minimap shows, the box with the hero's badge and passive (Far Sight) is taller than what is in it and its frame runs behind the floor's panel (time, lives, shards). Every floor; small. The merge fixed the people's marks over the HUD and the map's names (pictures: after the merge). The fix would be in the Climb's HUD (src/tower/world/hud.ts): fit the box to its content, or step the floor panel down by the box's height while the minimap shows.",
+   "pics": [
+    [
+     "phone-after-merge-fight.jpg",
+     "Phone, after the merge: the passive box over the floor panel"
+    ],
+    [
+     "phone-after-merge-map.jpg",
+     "Phone, after the merge: the map's names inside its edge"
+    ]
+   ]
+  }
  ],
  "pictures": [
-  ["ruler.jpg", "The Sunken Heart as the fight opens"],
-  ["ruler-close.jpg", "The Heart of Noon"],
-  ["person-rival.jpg", "Zephyr, the rival"],
-  ["map.jpg", "The M map"],
-  ["overview.jpg", "From the south edge"]
+  [
+   "ruler.jpg",
+   "The Sunken Heart as the fight opens"
+  ],
+  [
+   "ruler-close.jpg",
+   "The Heart of Noon"
+  ],
+  [
+   "person-rival.jpg",
+   "Zephyr, the rival"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
  ],
- "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+ "notChecked": [
+  "the shared packs online"
+ ]
 }

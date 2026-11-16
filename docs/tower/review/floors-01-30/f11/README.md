@@ -5,11 +5,11 @@ Clean: the Wood's handmade floor. Cleared with four stars and no fall, no consol
 ## Measured
 
 - Reachable from the camp: 31761 m², 31761 m²; 48 spots of the floor's data, 0 cut off
-- Props probe: 58 float, 72 gap, 12 buried, 3170 in cover (each looked at; see below)
+- Props probe: 58 float, 72 gap, 12 buried, 3170 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1031 game s, every checkpoint reached; 10 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Elder Root (The heart of the wood), model models/tower/wood_elder_v4.glb, loaded yes after 4725 ms of real time
+- Ruler: The Elder Root (The heart of the wood), model models/tower/wood_elder_v4.glb, loaded yes (its picture taken 4725 ms of real time into the fight)
 - Frame check at the busiest spot (-77, 23), 4 units awake: median 6.6, 5.7, 6.5 ms, p95 9.7, 8.4, 8.5 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -21,7 +21,6 @@ Clean: the Wood's handmade floor. Cleared with four stars and no fall, no consol
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

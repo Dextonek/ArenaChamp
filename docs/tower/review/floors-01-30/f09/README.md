@@ -5,11 +5,11 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Measured
 
 - Reachable from the camp: 34888 m²; 51 spots of the floor's data, 0 cut off
-- Props probe: 14 float, 67 gap, 1 buried, 0 in cover (each looked at; see below)
+- Props probe: 14 float, 67 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1716 game s, every checkpoint reached; 19 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0
-- Ruler: The Gull Queen (Wings and anchors), model models/tower/sea_queen_v4.glb, loaded yes after 3461 ms of real time
+- Ruler: The Gull Queen (Wings and anchors), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 3461 ms of real time into the fight)
 - Frame check at the busiest spot (-72, 34), 6 units awake: median 4.8, 3.9, 3.8 ms, p95 8.3, 6.5, 5 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -20,7 +20,6 @@ Clean: cleared with four stars and no fall, no console error, every spot reachab
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 

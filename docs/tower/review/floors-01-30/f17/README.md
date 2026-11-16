@@ -5,11 +5,11 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Measured
 
 - Reachable from the camp: 31926 m², 31926 m²; 56 spots of the floor's data, 0 cut off
-- Props probe: 72 float, 99 gap, 7 buried, 3125 in cover (each looked at; see below)
+- Props probe: 72 float, 99 gap, 7 buried, 3125 in cover (sorted by kind; one or more of each kind looked at by eye)
 - Grass and small things on ground steeper than 31°: 0
 - Packs table for the open world (server/climb-packs.mjs): matches
 - Route bot (Lyra): cleared in 1539 game s, every checkpoint reached; 25 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0
-- Ruler: The Lantern Root (It drinks the light), model models/tower/wood_antler_v4.glb, loaded yes after 6948 ms of real time
+- Ruler: The Lantern Root (It drinks the light), model models/tower/wood_antler_v4.glb, loaded yes (its picture taken 6948 ms of real time into the fight)
 - Frame check at the busiest spot (23, -72), 4 units awake: median 11.6, 10, 9.9 ms, p95 21.9, 15.7, 13.5 ms (desktop, machine shared: rough)
 - Console errors while taking the pictures: 0
 
@@ -22,7 +22,6 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 ## Not checked
 
 - the shared packs online
-- buying at the trader (card and prices shown)
 
 ## Pictures
 
