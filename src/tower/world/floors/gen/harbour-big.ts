@@ -3360,7 +3360,7 @@ export const HARBOUR: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The tide took the last ones, and the market is overrun. The Drowned Captain sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads."
+     "Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads."
     ],
     "quests": [
      "main",
@@ -3496,7 +3496,7 @@ export const HARBOUR: GenFloor = {
      }
     ],
     "outro": [
-     "The chain falls. The Drowned Captain’s door stands open, far in the north. Take your time, then go in."
+     "The chain falls. The Drowned Admiral’s door stands open, far in the north. Take your time, then go in."
     ],
     "reward": {
      "shards": 80,
@@ -3782,7 +3782,7 @@ export const HARBOUR: GenFloor = {
    {
     "id": "lair",
     "piece": "ruler",
-    "name": "The Drowned Captain’s lair",
+    "name": "The Drowned Admiral’s lair",
     "at": {
      "x": 0,
      "z": -105.81
@@ -3821,7 +3821,7 @@ export const HARBOUR: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once the Drowned Captain has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Drowned Admiral has fallen."
    }
   ],
   "rival": {

@@ -2811,8 +2811,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
     "z": 11.88,
     "r": 8,
     "stand": {
-     "x": -74.94,
-     "z": 11.88
+     "x": -77.33,
+     "z": 12.04
     }
    },
    "east": {
@@ -2822,8 +2822,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
     "z": 7.39,
     "r": 8,
     "stand": {
-     "x": 69.34,
-     "z": 7.39
+     "x": 71.74,
+     "z": 7.4
     }
    },
    "north": {
@@ -2833,8 +2833,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
     "z": -46.77,
     "r": 8,
     "stand": {
-     "x": 49.56,
-     "z": -46.77
+     "x": 51.19,
+     "z": -48.53
     }
    },
    "wagons": {
@@ -3071,8 +3071,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "a-r",
     "at": {
-     "x": -74.94,
-     "z": 11.88
+     "x": -77.33,
+     "z": 12.04
     },
     "leash": 24,
     "mix": [
@@ -3089,8 +3089,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "a-b",
     "at": {
-     "x": -74.94,
-     "z": 11.88
+     "x": -77.33,
+     "z": 12.04
     },
     "leash": 24,
     "mix": [
@@ -3107,8 +3107,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "b-r",
     "at": {
-     "x": 69.34,
-     "z": 7.39
+     "x": 71.74,
+     "z": 7.4
     },
     "leash": 24,
     "mix": [
@@ -3129,8 +3129,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "b-b",
     "at": {
-     "x": 69.34,
-     "z": 7.39
+     "x": 71.74,
+     "z": 7.4
     },
     "leash": 24,
     "mix": [
@@ -3151,8 +3151,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "c-r",
     "at": {
-     "x": 49.56,
-     "z": -46.77
+     "x": 51.19,
+     "z": -48.53
     },
     "leash": 24,
     "mix": [
@@ -3169,8 +3169,8 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
    {
     "id": "c-b",
     "at": {
-     "x": 49.56,
-     "z": -46.77
+     "x": 51.19,
+     "z": -48.53
     },
     "leash": 24,
     "mix": [

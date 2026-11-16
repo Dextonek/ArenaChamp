@@ -14,6 +14,13 @@ export interface CardButton { label: string; sub?: string; off?: boolean; tone?:
 export interface Mark { id: string; glyph: string; label?: string; tone: string; x: number; y: number; show: boolean; click(): void }
 
 const small = () => TOUCH || innerWidth < 760;
+/** The top of the hero's plate on a phone (heroMode's touch HUD), without the minimap; the panel keeps 6 px under its bottom. */
+export const PLATE_TOP = 78;
+/**
+ * While the Climb's panel shows (`world-hud-on` on the page): the plate's buff row is hidden when it is empty (it kept 18 px under the
+ * passive's name), so the plate fits what is in it.
+ */
+let room: HTMLStyleElement | null = null;
 const TONES = { gold: '#ffd27a', green: '#9df0b4', blue: '#8cc4ff', red: '#ff9a8a' };
 
 export class WorldHud {
@@ -41,6 +48,15 @@ export class WorldHud {
   private lawText = '';
   private questKey = '';
   private statKey = '';
+  /**
+   * On a phone, the hero's plate (the touch HUD's portrait and passive, in heroMode) sits over this panel: its height is kept in the
+   * page's `--plate-h`, so the minimap's rule (map.ts) puts the panel under it. Looked for once a second (a new hero builds a new plate).
+   */
+  private plate: HTMLElement | null = null;
+  private plateWatch = TOUCH && typeof ResizeObserver !== 'undefined'
+    ? new ResizeObserver(() => document.documentElement.style.setProperty('--plate-h', `${this.plate?.offsetHeight ?? 0}px`))
+    : null;
+  private plateLook = 0;
   /** What the screen's talk card is for, so the zone can close it when the hero walks off. */
   cardFor = '';
   onLeave: (() => void) | null = null;
@@ -49,7 +65,7 @@ export class WorldHud {
     const s = small();
     this.root.className = 'world-hud';
     this.root.style.cssText =
-      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 182 : 150}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
+      `position:fixed;left:${s ? 6 : 12}px;top:calc(max(${s ? 182 : 150}px, ${PLATE_TOP + 6}px + var(--plate-h, 0px)) + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
       `padding:${s ? '4px 8px 5px' : '5px 11px 6px'};border-radius:10px;background:rgba(8,6,10,0.82);border:1px solid #6a5a3a;box-shadow:0 2px 10px #000a;` +
       `max-width:${s ? '62vw' : '270px'};box-sizing:border-box;pointer-events:none;user-select:none;font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;`;
     this.titleEl.style.cssText = `font:700 ${s ? 13 : 15}px ui-serif,Georgia,serif;letter-spacing:1px;color:#ffd27a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
@@ -88,6 +104,12 @@ export class WorldHud {
 
   show(on: boolean) {
     this.root.style.display = on ? 'flex' : 'none';
+    if (on && !room) {
+      room = document.createElement('style');
+      room.textContent = 'body.world-hud-on .hero-plate > div > div:last-child:empty{display:none !important}';
+      document.head.append(room);
+    }
+    document.body.classList.toggle('world-hud-on', on);
     if (!on) { this.banner.style.display = 'none'; this.arrow.style.display = 'none'; this.flood.style.display = 'none'; this.closeCard(); this.clearCards(); this.result.style.display = 'none'; this.clearMarks(); }
   }
 
@@ -206,6 +228,15 @@ export class WorldHud {
 
   /** Once a frame. */
   update(dt: number) {
+    if (this.plateWatch && (this.plateLook -= dt) <= 0) {
+      this.plateLook = 1;
+      const p = document.querySelector<HTMLElement>('.hero-plate');
+      if (p !== this.plate) {
+        if (this.plate) this.plateWatch.unobserve(this.plate);
+        this.plate = p;
+        if (p) this.plateWatch.observe(p);
+      }
+    }
     if (this.bannerLeft <= 0) return;
     this.bannerLeft -= dt;
     if (this.bannerLeft <= 0.5) this.banner.style.opacity = '0';
@@ -429,6 +460,9 @@ export class WorldHud {
   }
 
   dispose() {
+    this.plateWatch?.disconnect();
+    document.documentElement.style.removeProperty('--plate-h');
+    document.body.classList.remove('world-hud-on');
     this.show(false);
     for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl, this.hideBar]) e.remove();
   }

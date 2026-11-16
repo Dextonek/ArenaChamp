@@ -23,19 +23,24 @@ export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant',
  * standing, divided by the unit's scale, plus 0.15. Looked at in the floors (round 2): the Hollow Oak's crown still touched its bar and the
  * Raider Chief carries his glaive up through his, so those two stand higher.
  */
+/**
+ * Where the shooters' bolts leave (`shotY`, the model review round 2, "Where shots leave"): the shooting hand at the release, measured
+ * in the game (the second shot of a woken pack, `hand_r`/`hand_l` at the shot) and divided by the unit's scale: the net caster's and
+ * the slinger's throwing hand 1.75 m at x1.3, the bowman's crossbow 1.8 m at x1.2, the thorn sprite's casting hand 1.28 m at x1.55.
+ */
 export const FOE_MODELS: Record<string, FoeModel> = {
   // the Sea
   docker: { id: 'sea_docker', height: 1.6, strike: 'claw', barY: 1.75 },
-  netter: { id: 'sea_netter', height: 1.6, shot: 'throw', barY: 1.75 },
+  netter: { id: 'sea_netter', height: 1.6, shot: 'throw', barY: 1.75, shotY: 1.35 },
   mate: { id: 'sea_mate', height: 1.85, strike: 'heavy', barY: 2.0 },
   barnacle: { id: 'sea_mate', height: 1.85, strike: 'heavy', tint: [0xa8c090, 0.35], barY: 2.0 },
   // the Wood
   giant: { id: 'wood_giant', height: 2.0, strike: 'heavy', barY: 2.15 },
-  sprite: { id: 'wood_sprite', height: 1.55, shot: 'spell', hold: 'torch', barY: 1.7 },
+  sprite: { id: 'wood_sprite', height: 1.55, shot: 'spell', hold: 'torch', barY: 1.7, shotY: 0.83 },
   oak: { id: 'wood_oak', height: 3.0, strike: 'heavy', barY: 3.62 },
   // the Sands
   raider: { id: 'sands_raider', height: 1.65, strike: 'blade', barY: 1.8 },
-  slinger: { id: 'sands_slinger', height: 1.65, shot: 'throw', barY: 1.75 },
+  slinger: { id: 'sands_slinger', height: 1.65, shot: 'throw', barY: 1.75, shotY: 1.35 },
   chief: { id: 'sands_chief', height: 1.9, strike: 'heavy', barY: 2.2 },
   mother: { id: 'sands_chief', height: 3.1, strike: 'heavy', tint: [0xe8c890, 0.4], barY: 3.4 },
   // the Deep
@@ -46,8 +51,8 @@ export const FOE_MODELS: Record<string, FoeModel> = {
   'footman-r': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x8c1e22, barY: 2.1 },
   'footman-b': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x1e3c8c, barY: 2.1 },
   ashen: { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x5a5a62, tint: [0xb4b4bc, 0.45], barY: 2.1 },
-  'bowman-r': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x8c1e22, barY: 2.05 },
-  'bowman-b': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x1e3c8c, barY: 2.05 },
+  'bowman-r': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x8c1e22, barY: 2.05, shotY: 1.5 },
+  'bowman-b': { id: 'war_bowman', height: 1.9, shot: 'aim', livery: 0x1e3c8c, barY: 2.05, shotY: 1.5 },
   'knight-r': { id: 'war_knight', height: 2.3, strike: 'thrust', livery: 0x8c1e22, barY: 2.75 },
   'knight-b': { id: 'war_knight', height: 2.3, strike: 'thrust', livery: 0x1e3c8c, barY: 2.75 },
   bearer: { id: 'war_knight', height: 2.1, strike: 'heavy', livery: 0x1c1822, barY: 2.55 },

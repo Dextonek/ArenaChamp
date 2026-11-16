@@ -3,6 +3,7 @@ import { RING } from '../../arenas/common';
 import type { GameApi } from '../../runtime';
 import { TOUCH } from '../../touch';
 import type { FloorDef, Spot } from './def';
+import { PLATE_TOP } from './hud';
 import type { WorldOthers } from './others';
 import type { Zone } from './world';
 
@@ -138,12 +139,14 @@ export class WorldMap {
     this.big.addEventListener('pointerdown', (e) => e.stopPropagation());
 
     // The boxes under the minimap step down while it shows: the Climb's own (hud.ts), the hero's bar in a boss fight (desktop)
-    // and the hero's plate (a phone).
+    // and the hero's plate (a phone). The Climb's panel stays 6 px under the plate when the plate is taller than the room above it (a
+    // hero with a resource bar): `--plate-h` is the plate's height, kept by hud.ts (0 on a desktop, which has no plate), and the panel's
+    // own top does the same without the minimap (hud.ts).
     const r = miniRoom();
     this.room.textContent =
       `body.world-map-on .duel-hud[data-corner="left"]{top:calc(${86 + r}px + env(safe-area-inset-top, 0px)) !important}` +
       `body.world-map-on .hero-plate{top:calc(${78 + r}px + env(safe-area-inset-top, 0px)) !important}` +
-      `body.world-map-on .world-hud{top:calc(${(small() ? 182 : 150) + r}px + env(safe-area-inset-top, 0px)) !important}`;
+      `body.world-map-on .world-hud{top:calc(max(${small() ? 182 : 150}px, ${PLATE_TOP + 6}px + var(--plate-h, 0px)) + ${r}px + env(safe-area-inset-top, 0px)) !important}`;
     document.head.append(this.room);
     document.body.append(this.mini, this.big);
     addEventListener('keydown', this.onKey, true);

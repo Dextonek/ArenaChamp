@@ -203,6 +203,9 @@ export const ashLook: BodyLook = (s, p) => {
   for (const [sg, n, leg] of [[1, 'L', legL], [-1, 'R', legR]] as const) {
     p.turn('leg' + n, leg, 0, 0);
     p.move('leg' + n, sg * 0.4 * flop, legY, 0);
+    // His legs are rigid and hang from the torso: when he crouches (every cast, the kneel, the fall) they went down with it, up to a metre
+    // and more under the floor. Each is lifted just enough to stand on the floor, so it pushes up into the body (model review round 3).
+    p.keepAbove('leg' + n);
   }
 
   // Plates fall away by phase, and all of them when he falls; they spread open while he kneels.
