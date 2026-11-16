@@ -15,6 +15,57 @@ them". This page is the second of the two agents: chapters IV (the Deep) and V (
 - **Read**: every name and line of the floor against the lore (docs/lore/LORE.md and docs/lore/codex/, the Climb's chapters and The Long Noon).
 - **Frames**: a rough frame time at the camp and in the busiest fight (the machine is shared with other agents: only clear outliers count).
 
+## Fixed after (2026-11-16): the War's armies off the standards' stone feet
+
+Floor 41's fault (round 2 of the model review: its places and its armies' homes in the middle of a standard's 0.9 m stone foot) was
+in the War's generator, so floors 42 to 50 had it too. On each of them the two ridges and the works (the three standards the main
+quest takes) stood their stand and the homes of both armies' packs there (a-r, a-b, c-r, c-b, e-r, e-b) at the standard's middle:
+**9 spots a floor, 81 in all, each 0.9 m inside the cover.** Nothing else on these floors was in or on cover: every person, cache,
+waystone, lore stone, door, patrol point and quest spot is more than 1 m clear (measured against every piece of cover with the new
+`node pipeline/tools/climb-spots-probe.mjs 42-50`; floor 41 had none since its own fix).
+
+- **The fix, as on floor 41**: in the generator (`makeWarFloor`, `src/tower/world/gen/war.ts`) each of the three stands and the
+  two armies' homes there are 2.4 m from the standard's middle (1.5 m clear of the foot), on its outer side, between the standard and
+  the shields or catapults behind it. Set after the dressing, and everything else is still laid out from the sites' middles, so the
+  random draw does not change.
+- **Re-baked from the same seeds** (`node pipeline/tools/gen-floors.ts 42-50`; 42000 to 50000, the first seed each, as before): in
+  each `floors/gen/war-NN.ts` only those 9 points moved (18 lines, x and z only). The standards, the quest's "take the standard" steps,
+  roads, waystones, people and everything else are where they were. The unchanged generator re-bakes the old files exactly (checked
+  first). The hub's pack table re-written (`node pipeline/tools/climb-packs.mjs`; only the lines of 42 to 50 changed).
+- **At home, before**: both armies' six soldiers stand pressed round the foot (the nearest 1.57 m from the standard's middle, at the
+  foot's edge, the knights in the standard's pole). **After**: they stand between the standard and the shields or catapults, 1.4 to
+  4.6 m from its middle; one or two of the six rest at the foot's edge, as on floor 41 after its fix (measured the same: 1.4 to 4.6 m).
+- **Played through** by the route bot as Lyra, every floor cleared: no error in the page, no step left, nothing unreachable on paper
+  (`_worldCheck`), at most 6 units near one spot. Four stars on 42, 43, 44, 46, 48, 50. On 45 a first run fell once on the
+  way, a second run did not (the bot's runs differ). On 47 and 49 every fall was a lost duel in the gate's own room (the gatekeeper
+  at CPU level 3; the floor's soldiers play no part there), so the "no fall" star was missed. 980 to 1163 s of game time.
+- **The fights**: the perf prints on desktop, before and after on this worktree's own server (port 5187): world-5 (floor 41,
+  not changed) the same fight, 216f3d58, before and after. gen-43 and gen-48 another fight (ff324ac2 -> 37ea4135,
+  738e5fe2 -> 6fa7fa09), as expected: those scenes set the hero down beside each pack at its home, and the homes moved. The times
+  were taken with other agents' jobs running (world-5, unchanged, went 14.9 -> 26.2 ms), so they show no difference either way.
+
+Top row before, bottom row after; the three standards of each floor across (the game's camera direction, closer, the HUD hidden;
+both armies switched on for the picture and asleep at home; in play neither is out before a banner is taken, and then only the
+other army's is):
+
+![Floor 42](pics/fixed-after-f42.jpg)
+
+![Floor 43](pics/fixed-after-f43.jpg)
+
+![Floor 44](pics/fixed-after-f44.jpg)
+
+![Floor 45](pics/fixed-after-f45.jpg)
+
+![Floor 46](pics/fixed-after-f46.jpg)
+
+![Floor 47](pics/fixed-after-f47.jpg)
+
+![Floor 48](pics/fixed-after-f48.jpg)
+
+![Floor 49](pics/fixed-after-f49.jpg)
+
+![Floor 50](pics/fixed-after-f50.jpg)
+
 ## The follow-up round (2026-11-16)
 
 Eight items from the list, made after the round was merged (the list's own entries are below, under "Done in the follow-up round").
