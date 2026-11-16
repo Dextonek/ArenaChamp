@@ -5,9 +5,17 @@
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - `t3/climb-stage3-doors-together` (from 5a2b7de3): open world stage 3, doors and bosses together.
 - `t3/hero-touches-underwear-portraits` (from 81d4e8cd): the sixteen touches, the underwear cover, the portraits (the one Blender agent).
-- `t3/vectorcraft-hero-spell-icons` (from b9f173c4): spell icons for all 40 heroes.
+- **Done and merged, not live (2026-11-16): spell icons by VectorCraft for all 40 heroes** (163, version B; merge dd9ec68b).
+  Overview `docs/icons/index.html` (every hero's four at 64 and 32 px beside today's), `docs/icons/all-32.png`. Lazy loaded
+  (`src/icons/vc.ts`, two lines in `src/heroes.ts`; SVGs `public/icons/spells/`), the canvas icons stay as the fallback; the page's
+  start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
+  W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
+  cartoon (redraw as engraved gold?). Not tried on Safari.
 - The hero framework, steps 1 and 2 only (the audit and design `docs/pipeline/hero-framework.md`, all 40 fight prints on today's
   code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
+- The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
+  floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
+  for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
