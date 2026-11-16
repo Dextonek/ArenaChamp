@@ -28,6 +28,10 @@ Kilnborn of the far halls, who kept their old colour because the fire never reac
 - **The Crystal-Seller** (odd floors) sells cut light, one shard at a time.
 - **The Firefly-Seller** (even floors) sells living light in jars on a yoke, the only light in the Deep that is not a crystal.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Ore-Carrier**, a Kilnborn of the far halls with an ore basket on his back and a pick, carries the seam's ore to carts that
+  no longer leave. At his belt hangs a small crystal, too dim to see by: the last one he cut before the lights went out.
+
 ## Its rulers and enemies
 
 The **Prism Mother** rules the thirty-first floor, beams turning in the dark; above her the Hollow Queen, the Lamp Warden, the Glass

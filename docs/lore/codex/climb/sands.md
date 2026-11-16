@@ -27,6 +27,10 @@ All of them Dune folk, who say the storm caught them:
 - **The Silk-Merchant** (odd floors), the last caravan's master, sells its silks and wants it brought home.
 - **The Glass-Seller** (even floors) sells lightning glass from the Flats, the glass a storm leaves where it strikes the sand.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Water-Carrier**, a Dune woman with a water jar on her head, walks between the last well that has water and the camp. She
+  has not spilt a drop in the storm, she says, in all the years it has blown.
+
 ## Its rulers and enemies
 
 The **Scarab Colossus**, a giantess in the beetle's shell, rules the twenty-first floor from under the sand, and burrows; above her her son the Scarab King, then the Dune

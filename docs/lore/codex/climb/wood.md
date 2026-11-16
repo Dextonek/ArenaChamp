@@ -27,6 +27,10 @@ All of them Wood folk, and none of them sworn to the Moot, so none of them horne
 - **The Amber-Seller** (odd floors) sells the Wood's amber, some of it with things inside that are still alive.
 - **The Charm-Pedlar** (even floors) carries the Briarkin's charms on a frame over his head, and wears them against the Briarkin.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Woodcutter**, a Wood man who never swore, so no horns, carries a bundle of sticks and his axe. He cuts only what has
+  fallen: in this Wood a standing tree may walk off with the axe still in it.
+
 ## Its rulers and enemies
 
 The **Elder Root** rules the eleventh floor; above it the Moss Warden, the Thorn Mother, the Antler King, the Hollow Elder, the Briar
