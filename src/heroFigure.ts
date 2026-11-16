@@ -1280,7 +1280,10 @@ export class HeroFigure {
     this.flashV = Math.max(0, this.flashV - dt * 3.2);
     r.setFlash(this.flashV, this.flashTint);
     if (!r.loaded) return;
-    if (this.dying >= 0) return this.poseDeath(r);
+    if (this.dying >= 0) {
+      r.plantFeet(dt, false);
+      return this.poseDeath(r);
+    }
     if (state.held) {
       // Frozen solid: the last pose stays.
       if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
@@ -1375,9 +1378,11 @@ export class HeroFigure {
     if (this.liftW > 0.01) over('Jump_Loop', this.clock, true, this.liftW, this.liftW);
     r.pose(layers);
     // the hands out of a robe or a coat, but where a blow, a cast or a knock-up sends them
-    r.clearArms((1 - this.attackW) * (1 - casting) * (1 - this.liftW));
-    // a staff, scepter, lyre or lantern stays upright through a blow or a cast, leaning toward the target
-    if (this.realStyle.hold === 'torch') r.uprightHeld(Math.max(this.attackW, casting) * (1 - this.liftW));
+    r.clearArms((1 - this.attackW) * (1 - casting) * (1 - this.liftW), dt);
+    // a staff, scepter, lyre or lantern stays upright through a blow or a cast
+    if (this.realStyle.hold === 'torch' && !this.realStyle.keep) r.uprightHeld(Math.max(this.attackW, casting) * (1 - this.liftW), dt);
+    // the soles on the floor through a stride
+    r.plantFeet(dt, true);
   }
 
   /** Falls over (a defeated hero) over `t` 0..1: the knees give, the chest folds, then it tips forward. */

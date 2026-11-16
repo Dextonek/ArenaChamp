@@ -60,13 +60,18 @@ const LEGS: Record<string, number> = {
 export interface RealStyle {
   attack?: 'blade' | 'heavy' | 'fist' | 'claw' | 'throw' | 'chop' | 'spell';
   hold?: 'torch' | 'lantern' | 'shield';
+  /**
+   * What the left hand holds turns in a blow or a cast as the clip has it, not kept upright (`RealHero.uprightHeld`): a fan
+   * or a hand mirror, whose face is what shows, held out flat to the target (the model review, 2026-11-16).
+   */
+  keep?: boolean;
 }
 export const REAL_STYLE: Record<string, RealStyle> = {
   // a staff, scepter, spear, wand, lyre, mirror, brush or lantern upright in the left hand
   Vesper: { hold: 'torch' }, Isolde: { hold: 'torch' }, Kaia: { hold: 'torch' }, Sefu: { hold: 'torch' }, Fenna: { hold: 'torch' },
   Mortis: { hold: 'torch' }, Cantor: { hold: 'torch' }, Opaline: { hold: 'torch' }, Shiori: { hold: 'torch' }, Tempo: { hold: 'torch' },
-  Silvane: { hold: 'torch' }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch', attack: 'spell' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
-  'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' }, Anka: { hold: 'torch' },
+  Silvane: { hold: 'torch', keep: true }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch', attack: 'spell' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
+  'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' }, Anka: { hold: 'torch', keep: true },
   Auriel: { hold: 'shield' },
   // how they strike
   Vitriol: { attack: 'throw' }, Pip: { attack: 'throw' }, Sirix: { attack: 'claw' }, Mabel: { attack: 'claw' }, Hank: { attack: 'chop' },
@@ -135,6 +140,13 @@ const FORWARD = new THREE.Vector3(0, 0, 1);
  * the hero), in steps of `HELD_STEP`, until its foot and the lower half of its shaft are outside the body's outline.
  */
 const HELD_LEAN = 0.6, HELD_BACK = -0.45, HELD_STEP = 0.06;
+/**
+ * How fast the arms' push-out and the held item's lean follow what they should be (1/s): an arm swings out quickly and
+ * back slowly, so it does not flap in and out with every stride.
+ */
+const EASE_OUT = 10, EASE_BACK = 3, EASE_LEAN = 8;
+/** How far a rolling boot's toe or heel may dip under the floor in a step (model units), as the pack's own figure's does. */
+const SOLE_DIP = 0.025;
 const VEIL_DARK = new THREE.Color('#150a28');
 const FADE_MOST = 0.9;
 
@@ -162,6 +174,15 @@ export class RealHero {
   private heldAxis: THREE.Vector3 | null = null;
   /** How far it reaches below the hand along that axis (model units). */
   private heldBelow = 0;
+  /** The lean it is held at now, and the share of a blow or cast it had last frame (`uprightHeld`). */
+  private leanNow = 0;
+  private heldW = 0;
+  /** How far each arm is swung out now (`clearArms`). */
+  private armNow = [0, 0];
+  /** The loaded model, the lift that stands it on the floor at rest, and points of each sole on their bones (`plantFeet`). */
+  private model: THREE.Object3D | null = null;
+  private baseLift = 0;
+  private soles: { bone: THREE.Object3D; p: THREE.Vector3 }[] = [];
   private armS = new THREE.Vector3();
   private armE = new THREE.Vector3();
   private armH = new THREE.Vector3();
@@ -276,6 +297,9 @@ export class RealHero {
       each(feet, (p) => { low = Math.min(low, p.y); });
     }
     if (Number.isFinite(low)) scene.position.y += Math.min(0.15, Math.max(-0.15, -low));
+    this.model = scene;
+    this.baseLift = scene.position.y;
+    this.measureSoles(feet);
     // the outline, in the root's own frame (model units), with the model on the floor
     const pts: number[] = [];
     let y0 = Infinity, y1 = -Infinity;
@@ -299,6 +323,58 @@ export class RealHero {
       shape.r[c] = Math.max(shape.r[c], Math.hypot(x, z));
     }
     this.body = shape;
+  }
+
+  /**
+   * Points of each sole, on the foot or ball bone that carries them, for `plantFeet`: in the idle, the lowest fifth of each
+   * foot's vertices, 24 of them spread from heel to toe, and the toe and the heel themselves.
+   */
+  private measureSoles(feet: [THREE.SkinnedMesh, number[]][]) {
+    this.pose([{ clip: 'Idle_Loop', t: 0, loop: true, legs: 1, torso: 1, armR: 1, armL: 1 }]);
+    this.root.updateMatrixWorld(true);
+    for (const side of ['l', 'r']) {
+      const pts: { bone: THREE.Object3D; w: THREE.Vector3; y: number; z: number }[] = [];
+      for (const [m, ids] of feet) {
+        m.skeleton.update();
+        const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight;
+        for (const i of ids) {
+          let d = 0;
+          for (let j = 1; j < 4; j++) if (sw.getComponent(i, j) > sw.getComponent(i, d)) d = j;
+          const bone = m.skeleton.bones[si.getComponent(i, d)];
+          if (!bone.name.endsWith(`_${side}`)) continue;
+          const w = m.applyBoneTransform(i, new THREE.Vector3().fromBufferAttribute(m.geometry.attributes.position, i)).applyMatrix4(m.matrixWorld);
+          const r = this.root.worldToLocal(w.clone());
+          pts.push({ bone, w, y: r.y, z: r.z });
+        }
+      }
+      if (!pts.length) continue;
+      const low = [...pts].sort((a, b) => a.y - b.y).slice(0, Math.max(8, Math.ceil(pts.length / 5))).sort((a, b) => a.z - b.z);
+      const pick = new Set([pts.reduce((a, b) => (b.z > a.z ? b : a)), pts.reduce((a, b) => (b.z < a.z ? b : a))]);
+      for (let k = 0; k < 24; k++) pick.add(low[Math.floor((k * (low.length - 1)) / 23)]);
+      for (const q of pick) this.soles.push({ bone: q.bone, p: q.bone.worldToLocal(q.w.clone()) });
+    }
+  }
+
+  /**
+   * Keeps the soles on the floor while the hero moves (the model review, 2026-11-16): the lift at load stands each model
+   * on the floor at rest, but in a stride a big boot rolls its toe or heel under it, up to 10 cm on the heavy heroes
+   * (Professor Puff, Brannoc, Mabel), where the pack's own figure dips 2 or 3. When the lowest sole point is further under
+   * than `SOLE_DIP` the model is raised by the difference, at once, and eases back down; `on` false (the fall) lets it
+   * settle to its rest lift. Call after the pose and its corrections.
+   */
+  plantFeet(dt: number, on: boolean) {
+    const m = this.model;
+    if (!m || !this.soles.length) return;
+    let want = this.baseLift;
+    if (on) {
+      this.root.updateMatrixWorld(true);
+      let low = Infinity;
+      for (const { bone, p } of this.soles) low = Math.min(low, this.armP.copy(p).applyMatrix4(bone.matrixWorld).y);
+      const under = (this.root.getWorldPosition(this.armH).y - low) / (this.root.scale.y || 1);
+      want = Math.max(this.baseLift, m.position.y + under - SOLE_DIP);
+    }
+    const now = m.position.y;
+    m.position.y = want > now ? want : now + (want - now) * (1 - Math.exp(-dt * EASE_BACK));
   }
 
   /**
@@ -359,8 +435,9 @@ export class RealHero {
    * (the share of the blow or cast). A long staff held at its middle leans less (or back), so its foot stays out of the
    * robe and the legs.
    */
-  uprightHeld(weight: number) {
-    const hand = this.heldHand, ax = this.heldAxis;
+  uprightHeld(weight: number, dt: number) {
+    const hand = this.heldHand, ax = this.heldAxis, was = this.heldW;
+    this.heldW = weight;
     if (!hand || !ax || weight <= 0.01) return;
     this.root.updateMatrixWorld(true);
     const rootQ = this.root.getWorldQuaternion(this.qa);
@@ -378,10 +455,14 @@ export class RealHero {
       }
       return true;
     };
-    for (let lean = HELD_LEAN; ; lean -= HELD_STEP) {
+    let lean = HELD_LEAN;
+    for (; ; lean -= HELD_STEP) {
       want.set(0, Math.cos(lean), Math.sin(lean));
       if (lean <= HELD_BACK || clear()) break;
     }
+    // eased, so the lean does not jump a step as the hand moves (it starts where it should at a blow's or cast's start)
+    this.leanNow = was <= 0.01 ? lean : this.leanNow + (lean - this.leanNow) * (1 - Math.exp(-dt * EASE_LEAN));
+    want.set(0, Math.cos(this.leanNow), Math.sin(this.leanNow));
     const turn = this.qc.setFromUnitVectors(now, want);
     turn.slerp(this.qb.identity(), 1 - Math.min(1, weight));
     turn.premultiply(rootQ).multiply(rootQ.invert());
@@ -402,10 +483,9 @@ export class RealHero {
    * angle that clears it, times `weight` (the caller gives none during a blow, a cast or a knock-up: there the hands go
    * where the clip sends them). Call after `pose`.
    */
-  clearArms(weight: number) {
-    this.armsOut[0] = this.armsOut[1] = 0;
+  clearArms(weight: number, dt: number) {
     const b = this.body;
-    if (!b || weight <= 0.01) return;
+    if (!b) return;
     this.root.updateMatrixWorld(true);
     const S = this.armS, E = this.armE, H = this.armH, P = this.armP, D = this.armD;
     for (let n = 0; n < this.arms.length; n++) {
@@ -424,11 +504,17 @@ export class RealHero {
         }
         return true;
       };
-      if (clear(0)) continue;
-      let a = 0.03;
-      while (a < ARM_MOST && !clear(a)) a += 0.03;
-      a = Math.min(a, ARM_MOST) * weight;
+      let a = 0;
+      if (weight > 0.01 && !clear(0)) {
+        a = 0.03;
+        while (a < ARM_MOST && !clear(a)) a += 0.03;
+        a = Math.min(a, ARM_MOST) * weight;
+      }
+      // eased: out quickly, back slowly, so an arm does not flap in and out with every stride
+      const was = this.armNow[n];
+      a = this.armNow[n] = was + (a - was) * (1 - Math.exp(-dt * (a > was ? EASE_OUT : EASE_BACK)));
       this.armsOut[n] = a;
+      if (a < 0.002) continue;
       // the turn about the root's forward axis at the shoulder, as a turn of the upper arm in its parent's frame
       const rootQ = this.root.getWorldQuaternion(this.qa);
       const turn = this.qb.setFromAxisAngle(FORWARD, a * out);
