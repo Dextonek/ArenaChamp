@@ -14,7 +14,8 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
   W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
   cartoon (redraw as engraved gold?). Not tried on Safari.
-- **Done on `t3/hero-framework-audit-prints`, not merged (2026-11-16): the hero framework, steps 1 and 2.** The design
+- **Done and merged (2026-11-16): the hero framework, steps 1 and 2.** **Step 3 now running: Anka moved as the sample; it stops for
+  the user's look before the other 39.** The design
   `docs/pipeline/hero-framework.md`, its page `docs/pipeline/hero-framework/index.html`. Two fight prints per hero, all 40 repeat:
   `python pipeline/tools/hero-prints.py check` and `check --foe Brannoc` (references `docs/perf/data/hero-prints*.json`). Not proven
   by the prints: Sefu E, Tempo E, Mr. Ledger E and R, Pip R (never cast in them). Waiting on the user: the design's yes, and the
@@ -33,6 +34,7 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   timing checks (shop: a late `lobby` null after a leave; shop: timeout on `raid_gate`; doors: timeout on `door_end`); the stage 3
   branch had 364 passing. Re-run `npm run test:server` when the machine is quiet; if one keeps failing, fix it (the shop's leave
   should wait for its `lobby` null instead of a 100 ms pause).
+- Stray: `C:\c` (261 MB of misplaced scratch copies, an agent's wrong path) could not be removed (safety check); the user may delete it.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
