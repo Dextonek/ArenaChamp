@@ -114,6 +114,8 @@ if (!phone) {
   const door = def.doors.find((d) => d.piece === 'ruler');
   if (door) {
     z.setPacks(false);
+    // the frame check's fight may have left the hero near dead: the ruler's fight starts at the run's health
+    g.run.hp = 1;
     g.enterDoor(door);
     const t0 = performance.now();
     let i = 0;
@@ -121,7 +123,7 @@ if (!phone) {
       api.step(1 / 60); g.tick(1 / 60);
       if (++i % 4 === 0) await new Promise((ok) => setTimeout(ok, 16));
       const fig = api.duel?.figure;
-      if (g.piece === 'ruler' && fig?.loaded && i > 480) break;
+      if (g.piece === 'ruler' && fig?.loaded && i > 300) break;
     }
     // a boss between the camera and the hero fades (duel.ts `hidesHero`): the hero steps to its south side for the picture
     const fp0 = api.duel?.foe?.group?.position;

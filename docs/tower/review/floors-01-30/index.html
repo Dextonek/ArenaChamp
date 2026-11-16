@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>26 floors checked</b> · <b>7 fixed</b> · <b>7 for you</b></div>
+<div class="sum"><b>27 floors checked</b> · <b>7 fixed</b> · <b>7 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -61,6 +61,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f24">24</a>
 <a class="" href="#f25">25</a>
 <a class="" href="#f26">26</a>
+<a class="" href="#f27">27</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -473,6 +474,20 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f26/ruler-close.jpg"><img loading="lazy" src="f26/ruler-close.jpg" alt="The Mirage Lord"></a><figcaption>The Mirage Lord</figcaption></figure>
 <figure><a href="f26/pack-d.jpg"><img loading="lazy" src="f26/pack-d.jpg" alt="The scarab dig&#x27;s pack"></a><figcaption>The scarab dig&#x27;s pack</figcaption></figure>
 <figure><a href="f26/overview.jpg"><img loading="lazy" src="f26/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f27"><h3>Floor 27: The Dry Wells</h3><p>Plays clean: cleared, no console error, every spot reachable; the caravan, the rival (Mum), the trial, the Sand Tyrant (the Red Jackal&#x27;s model, tinted) and the gate (Nyx; second try) all played.</p>
+<p><span class="tag ok">ok</span><b>The shut lair holds.</b> Checked because a picture run seemed to start the ruler early (it was the run&#x27;s own door, at the end): from five spots outside, on floors 2, 12, 22 and 27, a hero walking at the shut lair never starts its fight; the door only opens to the quest (scenery.ts `ready`). On floors 2, 22 and 27 the hero can walk round the end of the shut wall and stand on the door&#x27;s spot; nothing happens there.</p>
+<p><span class="tag ok">ok</span><b>The Sand Tyrant hits hard early.</b> A hero who stands still in his hall falls in about 7 s (the bot, fighting, won with nearly all its health): a boss, not a fault.</p>
+<p><span class="tag ok">ok</span><b>Props.</b> A mesa past the north edge on its own high ground, the lair wall&#x27;s gold edge into the dune, crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34030 m²; 58 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 3 float, 4 gap, 21 buried, 2 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 2126 game s, every checkpoint reached; 59 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Sand Tyrant (Every grain obeys), model models/tower/sands_jackal_v4.glb, loaded yes after 1644 ms of real time</li><li>Frame check at the busiest spot (-57, 25), 6 units awake: median 3.5, 4.1, 3.6 ms, p95 5.4, 6.2, 6 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f27/ruler-close.jpg"><img loading="lazy" src="f27/ruler-close.jpg" alt="The Sand Tyrant"></a><figcaption>The Sand Tyrant</figcaption></figure>
+<figure><a href="f27/person-rival.jpg"><img loading="lazy" src="f27/person-rival.jpg" alt="Mum, the rival"></a><figcaption>Mum, the rival</figcaption></figure>
+<figure><a href="f27/map.jpg"><img loading="lazy" src="f27/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f27/overview.jpg"><img loading="lazy" src="f27/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>
