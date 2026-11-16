@@ -88,8 +88,9 @@ export class WorldMap {
     const s = miniSize();
     this.mini.className = 'world-minimap';
     this.mini.title = 'Map (M)';
+    // Over the people's marks (7) that walk under it as the camera moves, under the banner (9), the cards (10) and the big map (11).
     this.mini.style.cssText =
-      `position:fixed;left:${small() ? 6 : 12}px;top:calc(${small() ? 6 : 12}px + env(safe-area-inset-top, 0px));z-index:6;width:${s}px;height:${s}px;` +
+      `position:fixed;left:${small() ? 6 : 12}px;top:calc(${small() ? 6 : 12}px + env(safe-area-inset-top, 0px));z-index:8;width:${s}px;height:${s}px;` +
       'border-radius:50%;border:2px solid #8a7a52;box-shadow:0 2px 10px #000a;background:#0e0b0c;display:none;' +
       'cursor:pointer;pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;';
     this.miniCanvas.style.cssText = 'width:100%;height:100%;display:block;border-radius:50%;';
