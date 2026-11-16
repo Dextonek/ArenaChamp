@@ -3054,7 +3054,7 @@ export const WAR_50: GenFloor = {
    },
    "phases": [
     {
-     "name": "Ash and Ember wakes",
+     "name": "Ash and Ember wake",
      "at": 1,
      "moves": [
       "cleave",
@@ -3754,7 +3754,7 @@ export const WAR_50: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Two armies, and they never stop. Take a banner from the stands: its soldiers will march with you, and the other banner will hunt you. Then take the three standards, hold the mound, and break the siege line in the north. Ash and Ember waits behind it."
+     "Two armies, and they never stop. Take a banner from the stands: its soldiers will march with you, and the other banner will hunt you. Then take the three standards, hold the mound, and break the siege line in the north. Ash and Ember wait behind it."
     ],
     "quests": [
      "main",
@@ -3895,7 +3895,7 @@ export const WAR_50: GenFloor = {
      }
     ],
     "outro": [
-     "The siege line is broken. Ash and Ember is behind it. Take your time, then go in."
+     "The siege line is broken. Ash and Ember are behind it. Take your time, then go in."
     ],
     "reward": {
      "shards": 102,
@@ -4235,7 +4235,7 @@ export const WAR_50: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once Ash and Ember has fallen."
+    "locked": "The gate is sealed. Its warden answers only once Ash and Ember have fallen."
    },
    {
     "id": "rival",
