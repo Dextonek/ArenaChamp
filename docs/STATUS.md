@@ -23,9 +23,16 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
 - The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
   floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
-- The model review (the user: "look at all models we made and correct them: clipping, bad direction; make them fit the scenes"):
-  one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
-  for one Blender round later; page `docs/models/review/`). **Running too:** the heroes' review (the one Blender agent; page
+- **Done and merged, not live (2026-11-16): the model review of the Climb, the bosses and the arenas** (58 models; page
+  `docs/models/review/index.html`). Fixed in code: the War bowman levels his crossbow; the Pale One's and the rulers' gowns no longer
+  sink at a blow; the five staff rulers plant the staff instead of driving it 2 m into the floor (`climbFigure` in `src/heroFigure.ts`,
+  Climb models only); enemies backing off or circling step the way they go; 16 enemy looks' health bars above the crown (set from
+  measurements, not looked at). Blender list (`docs/models/review/blender-list.md`): Tide Judge glaive and Harbour cannons passed to
+  the heroes' review (the one Blender agent); the cream that blooms white on seven people in the Sands' and War's light waits on the
+  user (15 % darker, `#cdbf9c`?). The Turncloak's placement on floors 42-43 passed to the floors 31-50 review. For the engine: every
+  enemy's shot leaves at 1.1 m (`src/effects/projectile.ts`), the bowman's crossbow is at 1.7 m. Not checked: the Heart of Noon, the
+  rulers' flinch, kneel and fall, the older arenas' backdrops.
+  **Running too:** the heroes' review (the one Blender agent; page
   `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
 - **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
   (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
