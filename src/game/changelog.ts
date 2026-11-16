@@ -44,6 +44,11 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Tower',
+        title: 'Robes that no longer glow, and Frost’s ice spires',
+        text: 'On the Climb, the cream and white robes of the Sands’ and the War’s people are a shade darker, so they no longer glow white in their floors’ bright light. In Frostfall Lake, the ice shard lying at each spire’s foot is smaller, so a hero beside the spire no longer stands in it.',
+      },
+      {
+        tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
       },

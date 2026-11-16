@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blender round</title>
+<style>
+:root { --bg:#15141a; --fg:#e8e2d4; --dim:#a59f92; --gold:#d2ae55; --card:#1f1d25; --ok:#8fd6a0; --warn:#f0b860; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+main { max-width:980px; margin:0 auto; padding:16px; }
+h1 { color:var(--gold); font-size:1.6em; margin:0.4em 0; }
+h2 { color:var(--gold); border-top:1px solid #333; padding-top:0.8em; margin-top:1.6em; }
+h3 { color:#e8c87a; margin-bottom:0.2em; }
+a { color:#9fd0ff; }
+code { background:#2a2733; padding:0 4px; border-radius:3px; font-size:0.88em; word-break:break-word; }
+pre { background:#2a2733; padding:8px; border-radius:6px; overflow-x:auto; font-size:0.82em; }
+img { max-width:100%; height:auto; display:block; margin:8px 0; border-radius:6px; }
+.tw { overflow-x:auto; }
+table { border-collapse:collapse; font-size:0.85em; margin:8px 0; }
+td, th { border:1px solid #3a3644; padding:4px 6px; vertical-align:top; text-align:left; }
+th { background:var(--card); }
+.ok { color:var(--ok); } .warn { color:var(--warn); }
+.cap { color:var(--dim); font-size:0.88em; margin-top:-4px; }
+li { margin:0.3em 0; }
+</style></head><body><main>
+<h1>The Blender round (2026-11-16)</h1>
+<p>Three jobs from the parent's list: plain workers to walk the Climb's floors, the cream and white robes that glowed in the Sands' and
+the War's light, and three notes on the older arenas from the model review's round 2.</p>
+
+<h2>In short</h2>
+<ul>
+<li><b>Six walkers built</b>: two Coast-folk for the Sea (a dockhand, a fishwife) and one plain worker for each other chapter. Same skeleton
+as the Climb's people, about their size and triangles, plainer than the named people (no gold, no crowns; only the Deep's has a small light).
+Not in the game yet: the life code's model table picks them (the table below says which goes where).</li>
+<li><b>Robes 15 % darker</b> on eight people; they no longer glow white in their floors' light.</li>
+<li><b>Arenas:</b> Frost's low ice shards were real and are fixed; the Temple's lintels are a deliberate ruin and stay; the Glade's tree
+crowns are real, and the fix is one line in the arena code for the parent (tried here, not committed).</li>
+<li><b>No fight changed</b>: the four speed prints (Temple duel, Sands floor, Frost duel, Glade duel) are the same before and after.</li>
+</ul>
+
+<h2 id="walkers">1. Walkers for the Climb's life</h2>
+<p>Built the way the Climb's people are built (<code>blender/tower/build.py</code>, <code>folk.py</code>, one module per figure), on the
+same 65-bone skeleton: bone names and order the same as every person's, bind matrices within the people's own spread (body
+proportions). The walkers play the pack's walking clip with both arms (<code>walkers.ts</code>), so their hands are empty: everything
+they carry rides on the back or the head.</p>
+<div class="tw"><table>
+<tr><th>Chapter</th><th>Model (<code>public/models/tower/</code>)</th><th>Who</th><th>People</th><th>Size</th><th>Triangles</th><th>Materials</th></tr>
+<tr><td>Sea</td><td><code>sea_dockhand_v4.glb</code></td><td>The Dockhand: crate on a porter's frame</td><td>Coast folk</td><td>461 KB</td><td>23,173</td><td>11</td></tr>
+<tr><td>Sea</td><td><code>sea_fishwife_v4.glb</code></td><td>The Fishwife: creel with the catch</td><td>Coast folk</td><td>530 KB</td><td>26,432</td><td>12</td></tr>
+<tr><td>Wood</td><td><code>wood_cutter_v4.glb</code></td><td>The Woodcutter: bundle of sticks, axe</td><td>Wood folk, unsworn (no horns)</td><td>464 KB</td><td>23,359</td><td>10</td></tr>
+<tr><td>Sands</td><td><code>sands_water_v4.glb</code></td><td>The Water-Carrier: jar on the head</td><td>Dune folk</td><td>478 KB</td><td>24,656</td><td>9</td></tr>
+<tr><td>Deep</td><td><code>deep_miner_v4.glb</code></td><td>The Ore-Carrier: ore pannier, pick, a dim shard at the belt</td><td>Kilnborn of the far halls (old colour)</td><td>486 KB</td><td>24,890</td><td>11</td></tr>
+<tr><td>War</td><td><code>war_gleaner_v4.glb</code></td><td>The Gleaner: sack of gathered arrows, crimson and azure</td><td>Harrowmark's last people</td><td>505 KB</td><td>24,508</td><td>11</td></tr>
+</table></div>
+<p class="cap">The Climb's people for comparison: 455 to 545 KB, 23,600 to 29,530 triangles, 9 to 13 materials.</p>
+<p><b>For the parent (the model table):</b> Sea floors 1-10: <code>sea_dockhand</code> and <code>sea_fishwife</code> (in turn, in place of the
+trader stand-in); Wood 11-20: <code>wood_cutter</code>; Sands 21-30: <code>sands_water</code>; Deep 31-40: <code>deep_miner</code>; War 41-50:
+<code>war_gleaner</code>. Each as <code>models/tower/&lt;id&gt;_v4.glb</code>. No registry line is needed (they are not floor people;
+<code>folk.ts</code> is untouched).</p>
+<p>Lore: Coast folk have sea-tanned skin, salt-bleached hair and the blue tide lines on their forearms, and read nothing like the Drowned
+docker (warm skin, pale hair, light clothes, no hook). The Woodcutter is unsworn, so he has no horns. The Water-Carrier wears sand
+linen darker than the new robe cream (which no longer glows), though she was not looked at in the Sands' own light. The Ore-Carrier keeps the old colour of the far halls and his
+beard is braided long, as Kilnborn wear it when they do not work the fire. The Gleaner wears an undyed armband that marks her as on
+neither side.</p>
+
+<h3>Line-ups: Sefu, the walker(s) walking, three of the chapter's people, Kaia</h3>
+<img src="walk-sea-front.jpg" alt="Sea line-up from the front" loading="lazy">
+<img src="walk-sea-game.jpg" alt="Sea line-up from the game camera" loading="lazy">
+<img src="walk-wood-front.jpg" alt="Wood line-up" loading="lazy">
+<img src="walk-sands-front.jpg" alt="Sands line-up" loading="lazy">
+<img src="walk-deep-front.jpg" alt="Deep line-up" loading="lazy">
+<img src="walk-war-front.jpg" alt="War line-up" loading="lazy">
+<p class="cap">From the game's camera: <a href="walk-wood-game.jpg">Wood</a>, <a href="walk-sands-game.jpg">Sands</a>,
+<a href="walk-deep-game.jpg">Deep</a>, <a href="walk-war-game.jpg">War</a>.</p>
+<h3>Each walking: four moments of the stride from the game's camera, then front, side, back and the face</h3>
+<img src="sea-dockhand-walk.jpg" alt="Dockhand walking" loading="lazy">
+<img src="sea-fishwife-walk.jpg" alt="Fishwife walking" loading="lazy">
+<img src="wood-cutter-walk.jpg" alt="Woodcutter walking" loading="lazy">
+<img src="sands-water-walk.jpg" alt="Water-Carrier walking" loading="lazy">
+<img src="deep-miner-walk.jpg" alt="Ore-Carrier walking" loading="lazy">
+<img src="war-gleaner-walk.jpg" alt="Gleaner walking" loading="lazy">
+<p class="cap">Skirts follow the legs through the stride, and nothing comes through the loads.</p>
+
+<h3>Work clips in the pack (listed, not added)</h3>
+<p>The animation file every player downloads holds 34 clips (1,231 KB). Clips that would suit people at work:
+<code>Fixing_Kneeling</code> (5.2 s, kneeling at a task), <code>Farm_Harvest</code>, <code>Farm_PlantSeed</code>, <code>Farm_Watering</code>,
+<code>Push_Loop</code>, <code>PickUp_Table</code>, <code>Interact</code>, <code>Idle_Talking_Loop</code>, <code>Idle_FoldArms_Loop</code>,
+<code>Idle_Rail_Loop</code>, and <code>Walk_Carry_Loop</code> (a box held in front with both hands). Six of them together add 366 KB (+30 %),
+which is not small, and nothing can play them until the life code asks for them, so the file is unchanged. <code>Walk_Carry_Loop</code> also
+does not suit these six, whose loads ride on the back. To add some later (the first line rebuilds today's file byte for byte; append
+names to the two lists):</p>
+<pre>node pipeline/tools/strip-anim.mjs public/models/anim/ual.glb pipeline/assets/ual/UAL1_Standard.glb Idle_Loop,Walk_Loop,Jog_Fwd_Loop,Sprint_Loop,Sword_Idle,Sword_Attack,Punch_Jab,Punch_Cross,Spell_Simple_Enter,Spell_Simple_Idle_Loop,Spell_Simple_Shoot,Spell_Simple_Exit,Hit_Chest,Hit_Head,Death01,Jump_Loop,Jump_Land,Roll,Idle_Torch_Loop,Fixing_Kneeling pipeline/assets/ual/UAL2_Standard.glb Sword_Regular_A,Sword_Regular_A_Rec,Sword_Regular_B,Sword_Regular_B_Rec,Sword_Regular_C,Sword_Dash,Melee_Hook,Melee_Hook_Rec,OverhandThrow,Hit_Knockback,TreeChopping_Loop,Idle_Shield_Loop,Idle_Lantern_Loop,Zombie_Idle_Loop,Zombie_Scratch,Farm_Harvest</pre>
+<p class="cap">Then check the heroes are unchanged: <code>python pipeline/tools/hero-prints.py check Anka,Kaia,Sefu --port 5192</code>.</p>
+
+<h2 id="robes">2. The robes that glowed</h2>
+<p>About 15 % darker cloth, the same step on every channel (cream to <code>#cdbf9c</code> as decided; the whites a warm off-white of the
+same step). Only the colour changed: skeleton and bind matrices identical to the committed models, triangles and materials the same.
+(An unchanged rebuild of these eight comes out 3 to 6 KB smaller than the committed files, the skin picture encoded again; the same
+here.)</p>
+<div class="tw"><table>
+<tr><th>Person</th><th>Cloth</th><th>Before</th><th>After</th></tr>
+<tr><td>Star-Reader, Storm-Counter, Silk-Merchant, Glass-Seller, Beacon-Keeper (Sands); Camp-Mother (War)</td><td>cream</td><td><code>#e2d6b8</code></td><td><code>#cdbf9c</code></td></tr>
+<tr><td>The Herald (War)</td><td>cream</td><td><code>#e2d8c0</code></td><td><code>#cdc1a3</code></td></tr>
+<tr><td>The White Sister (War)</td><td>white habit</td><td><code>#e6e2d8</code></td><td><code>#d1cab7</code></td></tr>
+<tr><td>The White Sister (War)</td><td>linen</td><td><code>#d8d2c2</code></td><td><code>#c4bca5</code></td></tr>
+</table></div>
+<h3>In their floors, close (each pair: before, after)</h3>
+<img src="robes-close-pairs.jpg" alt="Sands and War people close up, before and after" loading="lazy">
+<p class="cap">Floors 21, 22 and 41. Before, the Storm-Counter, the Silk-Merchant and the Camp-Mother blew out to white; after, their folds,
+stripes and trims show. Heroes in the same shots are unchanged.</p>
+<img src="robes-war42-pairs.jpg" alt="White Sister and Herald, floor 42, before and after" loading="lazy">
+<p class="cap">Floor 42: the White Sister (still white, the truce's white, but no longer glowing) and the Herald (her skirt no longer
+blooms); then the game's camera.</p>
+<p>From the game's camera: <a href="robes-before-game.jpg">before</a>, <a href="robes-after-game.jpg">after</a>. In every pair looked at
+(floors 21, 22, 41 and 42) the darker step was enough, so none went further.</p>
+
+<h2 id="arenas">3. The arenas</h2>
+<p>Measured with the way <code>pipeline/tools/arena-fit.js</code> measures (a hero's centre is kept 0.5 m off a cover's capsule, so a mesh
+more than about 0.5 m past it is where a hero stands), on every vertex of the arena as the game builds it. <code>arena-fit.js</code>
+itself reads only the heroes'-style arenas, so this was a copy of its measure in a scratch script for the three older ones (they are
+placed by the arena code). Then the player's camera in a real duel (Sefu against Kaia), on a computer's screen and on a phone's.</p>
+
+<h3 class="ok">Frost: the low ice pieces were real; fixed</h3>
+<p>The piece was the toppled ice shard lying at each of the four spires' feet: 1.3 m long, 0.6 m high, reaching 1.18 to 1.20 m past the
+spire's cover (0.7 m past where a hero is kept). From the player's camera at the nearest zoom, Sefu's foot stood in it. Now 0.45 of
+its length, tucked against its rock: the spires' low pieces reach at most 0.58 m past cover, and that is the upright crystals at
+shoulder height, as built. The collision shapes did not change.</p>
+<img src="frost-before-after.jpg" alt="Frost spires before (top) and after (bottom)" loading="lazy">
+<p class="cap">Top: before; bottom: after. Beside the middle spire and the wing spire at zoom 0.55 and 1, then low at their feet.</p>
+<p>Measured, top-down: <a href="fit-frost-before.jpg">before</a>, <a href="fit-frost-after.jpg">after</a> (red: cover; dashed: the hero's
+0.5 m; orange and red: mesh below 2.2 m more than 0.3 and 0.6 m off cover).</p>
+<div class="tw"><table>
+<tr><th>Frost cover</th><th>Reaches past it, before</th><th>After</th></tr>
+<tr><td>Two middle spires</td><td>1.18 m (at 0.6 m high)</td><td>0.58 m (at 2.2 m: the upright crystals)</td></tr>
+<tr><td>Two wing spires</td><td>1.20 m (at 0.55 m high)</td><td>0.48 m (at 2.2 m)</td></tr>
+<tr><td>Boulder, four drifts</td><td>0.52, 0.67-0.68 m</td><td>the same (not changed)</td></tr>
+</table></div>
+<p><b>How:</b> the older arenas' builds need sculpt helpers (<code>dao_blender</code>) that are not on this computer, so a full rebuild
+was not possible. <code>blender/arenas/frost_shard_fix.py</code> opens <code>frost_props.glb</code>, finds the shard in the two spire props
+and shrinks it toward its root, and writes the file with the build's own export settings (a second run leaves it alone); <code>frost_props.py</code>
+is changed to build the shard the same size, but could not be run here to prove it. Checked: the same 15 objects, names, materials and triangles; the exporter split 1 to 6 vertices more per object.
+306 KB (was 305).</p>
+<p><b>Also measured, left as built: the drifts.</b> At each drift's end a dark rock (0.6 m high at most) reaches 0.67-0.68 m past the
+drift's thin capsule, about 0.18 m inside where a hero is kept. From the player's camera at the nearest zoom a hero stands against the
+rock, touching it, not in it; the drifts are drawn about twice as deep as their capsules by design (<code>frost_props.py</code>), and
+round 2 did not flag them. If wanted later, the cover's capsule (not the model) is the part to widen. The measure also found two small
+things 4.5 m from any cover at (±0.5, 0): transparent sprite planes (the arena's drifting snow), not props.</p>
+<img src="frost-drifts.jpg" alt="Frost drifts and the sprites at (0.5, 0) from the player's camera" loading="lazy">
+<p class="cap">The hero at a long drift's windward foot, at a short drift's end, beside the sprites; then low views of each.</p>
+
+<h3 class="warn">The Temple: the two lintels are a deliberate ruin; left as they are</h3>
+<p>From the rim (a view no player has) each grand gate's lintel, with its sun disc, reaches past its one whole pylon. That is how the gate
+is built: "two pylons, one whole, the other snapped off at about 9.5 m; the lintel broken short of the snapped pylon"
+(<code>temple_backdrop.py</code>), 34 m out beyond the ring. From the player's camera at the widest zoom, at every edge, it reads as a
+slab beyond the ring and nothing looks wrong. All the Temple's ground pieces sit inside their cover (0.4 m at most).</p>
+<img src="temple-edges-rim.jpg" alt="Temple: the hero at four edges at both zooms, and the rim views" loading="lazy">
+<p class="cap">Rows: the player's camera at the widest zoom (1.7) at the four edges; at the nearest (0.55); the rim looking out (the lintels
+are in "out north" and "out south").</p>
+
+<h3 class="warn">The Glade: the tree crowns are real; the fix is one line for the parent</h3>
+<p>At the widest zoom with the hero at the west edge, one tree's crown (at about (−17, 17), 7.5 to 17.8 m up) filled a quarter of the
+screen, on a phone too; at the east edge two or three crowns filled the upper right. The trees come from the arena code: tall trees may
+stand anywhere beyond |x| 13, on the idea that the camera stays on the z axis, but the player's camera follows the hero out to x ±11,
+18 m to the south and 25 m up. There is no rule that fades things near the camera. Making every crown smaller would change the whole
+wood (and that build cannot run here either), so the smallest change is to keep tall trees off the camera's side of the ring. In
+<code>src/arenas/glade.ts</code>, in the tree loop after <code>if (Math.hypot(x - 16, z - 27) &lt; 9) continue;</code>:</p>
+<pre>      if (z > RING.z + 2 &amp;&amp; Math.abs(x) &lt; 26 &amp;&amp; Math.hypot(x - RING.x, z - RING.z) &lt; 31) continue;</pre>
+<p>Tried in this worktree and reverted (the file is not this round's to commit): the tree loop still looks for 21 trees and finds
+them further out (not counted one by one); the west crown is gone; the east one is pushed into the corner; the wood still closes in.
+The line changes the arena's dice for everything placed after the trees, so the small mushrooms inside the ring and the other seeded
+dressing land in other places. The Glade duel's fight print stays the same (85a1182f).</p>
+<img src="glade-before-after.jpg" alt="Glade at the widest zoom, before and with the line" loading="lazy">
+<p class="cap">A computer's screen, the hero at the north, east, south and west edges at zoom 1.7. Top: today; bottom: with the line.</p>
+<img src="glade-phone-before-after.jpg" alt="Glade on a phone, before and with the line" loading="lazy">
+<p class="cap">The same on a phone's screen (844 × 390).</p>
+
+<h2 id="prints">No fight changed</h2>
+<div class="tw"><table>
+<tr><th>Scene (<code>perf.py scenes</code>, desktop)</th><th>Before</th><th>After</th></tr>
+<tr><td>duel-temple</td><td>90b1abaa</td><td class="ok">90b1abaa</td></tr>
+<tr><td>world-3 (the Sands floor, the robes)</td><td>45b46573</td><td class="ok">45b46573</td></tr>
+<tr><td>arena-frost</td><td>20543026</td><td class="ok">20543026</td></tr>
+<tr><td>arena-glade</td><td>85a1182f</td><td class="ok">85a1182f (and with the Glade line tried)</td></tr>
+</table></div>
+<p class="cap">Frame times are not compared: other agents were using the machine (the after runs were 1.2 to 2 times slower everywhere,
+the same fights). One world-3 run came out another fight because a file was saved while it played and its page reloaded; run again
+untouched it matched.</p>
+
+<h2>Waiting, and not live</h2>
+<ol>
+<li>The parent: put the six walkers in the life code's model table (the list in section 1).</li>
+<li>The parent: the one line in <code>src/arenas/glade.ts</code> (section 3), if wanted.</li>
+<li>The lore agent: the six walkers' names (the Dockhand, the Fishwife, the Woodcutter, the Water-Carrier, the Ore-Carrier, the Gleaner)
+and the Gleaner's trade (she gleans spent arrows from the furrows and sells them back to both banners) are new and not in the codex.</li>
+<li>Not live: everything here (the robes, Frost's shards, the walkers' models). One News entry is written (the robes and Frost).</li>
+</ol>
+</main></body></html>
