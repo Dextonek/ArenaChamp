@@ -2,9 +2,10 @@
 
 ## Now (2026-11-16, evening): the user's decisions on the open list ("u decide for those"), and the agents working on them
 
-**State at the end of 2026-11-16: no agent running; everything below is merged on `feat/particle-editor`, NOT pushed, NOT live.**
+**PUSHED AND LIVE 2026-11-16 (evening; the user: "push and deploy"): `main` = f1467f49, Cloudflare version 09afdcab.** Everything
+below is live, PROTOCOL 19; the News release "The Climb alive and fought together, ..." set live.
 All 80 hero fight prints match their references, `SMOKE_SLOW=2 npm run test:server` passes, tsc and build pass. Waiting on the
-user: a look at the day's pages, and "push and deploy" (`git push origin feat/particle-editor:main`, then `npm run cf:deploy`).
+user: a look at the day's pages.
 Open small items: the Rust re-grade of Mr. Ledger and Barry Cloudsley; a quiet re-measure of the Climb life's frame cost (the command
 in the life entry); about 15 heroes still time some rules on the computer's clock; empty folders under `.t3/worktrees` the app holds.
 
