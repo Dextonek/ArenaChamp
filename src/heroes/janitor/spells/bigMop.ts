@@ -7,6 +7,7 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { wipeGround } from '../../../traits/ground';
 import { MOP_ANGLE, MOP_DAMAGE, MOP_REACH, MOP_WIND, STRIP_LENGTH, WET_LIFE, addWet } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Big Mop (janitor kit v5, Q: a QUICK swipe, `self` mode; label 'big mop'). Gus draws the mop back over the 0.3 s wind-up (it squeaks:
@@ -208,7 +209,7 @@ export class BigMop implements Effect {
       ctx.hit(e, { damage: this.settings.damage, knock: 2, from: ctx.from, color: JANITOR_CSS.water });
     }
     // The strip: wet for 6 s from now, and the enemy's rods, flowers and ink along it are wiped (both screens do the same).
-    const now = performance.now();
+    const now = fightNow();
     addWet(ctx.caster, {
       kind: 'strip', x: this.from.x, z: this.from.z, yaw: this.yaw, length: STRIP_LENGTH, r: 0, bornAt: now, until: now + WET_LIFE * 1000,
     });

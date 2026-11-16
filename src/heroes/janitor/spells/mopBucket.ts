@@ -10,6 +10,7 @@ import { bankPath } from '../../../obstacles';
 import {
   BUCKET_DAMAGE, BUCKET_RADIUS, BUCKET_RANGE, BUCKET_SPEED, BUCKET_WIND, SPLASH_R, WET_LIFE, addWet,
 } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Mop Bucket (janitor kit v5, E: a thrown wheeled bucket). Gus swings the bucket up from his side over the 0.3 s wind-up (water
@@ -253,7 +254,7 @@ export class MopBucket implements Effect {
     this.words.show('CLANG', this.v1, 0.7, 1.1);
     // The wet floor: 2.5 m round, 6 s from now (both screens write it, each where it saw the bucket stop).
     if (ctx) {
-      const now = performance.now();
+      const now = fightNow();
       addWet(ctx.caster, { kind: 'splash', x, z, yaw: 0, length: 0, r: SPLASH_R, bornAt: now, until: now + WET_LIFE * 1000 });
     }
   }

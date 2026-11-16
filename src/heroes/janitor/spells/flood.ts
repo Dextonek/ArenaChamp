@@ -5,6 +5,7 @@ import { Bubbles, Drops, JANITOR, JANITOR_CSS, Ripples, Words } from '../parts';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { FLOOD_LIFE, FLOOD_RADIUS, FLOOD_WARN, addWet } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Flood (janitor kit v5, R: the whole floor wet, `self` mode, label 'flood'). Gus pulls the plug of a pipe somewhere: for a second
@@ -143,7 +144,7 @@ export class Flood implements Effect {
     if (!this.flooded && t >= FLOOD_T) {
       this.flooded = true;
       if (ctx) {
-        const now = performance.now();
+        const now = fightNow();
         addWet(ctx.caster, { kind: 'flood', x: C.x, z: C.z, yaw: 0, length: 0, r: FLOOD_RADIUS, bornAt: now, until: now + FLOOD_LIFE * 1000 });
       }
       this.ripples.fire(C.x, C.z, 0.5, FLOOD_RADIUS, 0.55, 0.9, JANITOR.foam, true);
