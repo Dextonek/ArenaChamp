@@ -3411,7 +3411,7 @@ export const WOOD_18: GenFloor = {
      "open": 9
     }
    },
-   "line": "Cut the roots that feed it; it stands open when none is left"
+   "line": "Cut the roots that feed him; he stands open when none is left"
   },
   "gate": {
    "hero": "Brannoc",

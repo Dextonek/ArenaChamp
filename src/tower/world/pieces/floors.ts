@@ -80,7 +80,7 @@ export const PIECES: PiecesDef[] = [
         { name: 'It calls the storm', at: 0.3, opener: 'storm', moves: ['burrow', 'cleave', 'lunge', 'marks'], timed: { move: 'storm', first: 22, every: 24, most: 99 }, gap: [1.2, 1.9] },
       ],
       surge: { safe: { shell: 4.4 }, burn: 0.05, name: 'The storm', look: 'storm' },
-      line: 'It goes under the sand and comes up where you stood',
+      line: 'She goes under the sand and comes up where you stood',
     },
     gate: { hero: 'Sefu', arena: 'canyon', level: 3, twist: { kind: 'hazard', name: 'A storm crosses' } },
     trial: { kind: 'hold', height: 6 },

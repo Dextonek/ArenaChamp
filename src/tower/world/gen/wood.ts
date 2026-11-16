@@ -512,7 +512,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       { name: 'The wood walks', at: 0.33, moves: ['thorns', 'walls', 'quake', 'rake', extra[0]], gap: [1.3, 2] },
     ],
     sentries: { look: 'root', spots: [[60, 8.4], [180, 8.8], [300, 8.4]], hp: 100, again: 34, fall: { stagger: 30 }, guards: { open: 9 } },
-    line: crown ? 'A Raid boss, alone: two of them, fire and ash; keep moving' : 'Cut the roots that feed it; it stands open when none is left',
+    line: crown ? 'A Raid boss, alone: two of them, fire and ash; keep moving' : `Cut the roots that feed ${rulerObj}; ${({ him: 'he', her: 'she', them: 'they' } as Record<string, string>)[rulerObj] ?? 'it'} ${rulerObj === 'them' ? 'stand' : 'stands'} open when none is left`,
   };
   const twists = ['swift', 'giant', 'warded'] as const;
   const pieces: PiecesDef = {

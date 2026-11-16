@@ -458,7 +458,7 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       { name: 'It calls the storm', at: 0.3, opener: 'storm', moves: ['burrow', 'cleave', 'lunge', 'marks', extra[0]], timed: { move: 'storm', first: 22, every: 24, most: 99 }, gap: [1.2, 1.9] },
     ],
     surge: { safe: { shell: 4.4 }, burn: 0.05, name: 'The storm', look: 'storm' },
-    line: crown ? 'A Raid boss, alone: stand still on its beat, run between' : 'It goes under the sand and comes up where you stood',
+    line: crown ? 'A Raid boss, alone: stand still on its beat, run between' : `${rulerName === 'The Brass Sphinx' ? 'She' : 'He'} goes under the sand and comes up where you stood`,
   };
   const twists = ['giant', 'swift', 'warded'] as const;
   const pieces: PiecesDef = {
