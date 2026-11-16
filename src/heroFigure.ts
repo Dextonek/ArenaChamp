@@ -1359,7 +1359,7 @@ export class HeroFigure {
 
     // a cast
     const cn = this.castNow;
-    let casting = 0;
+    let casting = 0, pushing = 0;
     if (cn) {
       cn.t += dt;
       const castW = cn.t < cn.dur ? 1 : 1 - (cn.t - cn.dur) / 0.3;
@@ -1371,6 +1371,7 @@ export class HeroFigure {
         const t = loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
         const w = castW * smooth(0, 0.1, cn.t);
         casting = w;
+        if (clip.startsWith('Spell_')) pushing = w;
         over(clip, t, loop, w, w * (1 - this.gait) * info.legs);
       }
     }
@@ -1379,8 +1380,10 @@ export class HeroFigure {
     r.pose(layers);
     // the hands out of a robe or a coat, but where a blow, a cast or a knock-up sends them
     r.clearArms((1 - this.attackW) * (1 - casting) * (1 - this.liftW), dt);
-    // a staff, scepter, lyre or lantern stays upright through a blow or a cast
-    if (this.realStyle.hold === 'torch' && !this.realStyle.keep) r.uprightHeld(Math.max(this.attackW, casting) * (1 - this.liftW), dt);
+    // a staff, scepter, lyre or lantern stays upright through the pack's push and raise (a ranged attack, most casts); a dash,
+    // a slam or a swing carries it as its clip does
+    const push = m && this.realAttackClip(m.melee) === 'Spell_Simple_Shoot' ? this.attackW : 0;
+    if (this.realStyle.hold === 'torch' && !this.realStyle.keep) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
     // the soles on the floor through a stride
     r.plantFeet(dt, true);
   }

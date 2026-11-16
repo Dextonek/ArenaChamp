@@ -144,7 +144,7 @@ const HELD_LEAN = 0.6, HELD_BACK = -0.45, HELD_STEP = 0.06;
  * How fast the arms' push-out and the held item's lean follow what they should be (1/s): an arm swings out quickly and
  * back slowly, so it does not flap in and out with every stride.
  */
-const EASE_OUT = 10, EASE_BACK = 3, EASE_LEAN = 8;
+const EASE_OUT = 10, EASE_BACK = 3, EASE_LEAN = 24;
 /** How far a rolling boot's toe or heel may dip under the floor in a step (model units), as the pack's own figure's does. */
 const SOLE_DIP = 0.025;
 const VEIL_DARK = new THREE.Color('#150a28');
