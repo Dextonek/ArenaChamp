@@ -46,6 +46,7 @@ second each (25 s). More scenes by name only (`MORE` in perf.py): `arena-<id>` (
 down beside one pack after another; the five handmade floors, which since the Climb became 50 floors are floors 1, 11, 21, 31 and 41:
 the names stayed, and so did the fights' prints). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
 and a row in `SCENES`.
+A scene may also return `every` (frames between two samples of its print; 60 when left out).
 
 Five profiles: `desktop` (1920 x 1080), `phone` (844 x 390 points at 3 pixels a point, touch: drawn at 1688 x 780), and
 `desktop-4x`, `phone-4x`, `phone-6x` with Chrome's processor throttle. The graphics card is the computer's own; every
@@ -106,6 +107,17 @@ writes the scene's state each frame (`fine()` in the scene, else its print), whi
 
 `perf-diff.py` compares the pictures the runs end with. The same frame of the same fight differs by the film grain alone
 (about 1 of 255 on average, no pixel far apart). A change that claims to leave the picture alone must give that.
+
+### The heroes' fight prints
+
+`python pipeline/tools/hero-prints.py take|check|show [Name,...]` plays one fixed duel per hero (the scene `hero` in
+perf-page.js: the hero against Isolde in the Harbour, Isolde against Brannoc, both at the CPU's balance level, 3,600 frames,
+dice 7) and keeps its print in `docs/perf/data/hero-prints.json`. Its print is finer than the duel's: every half second
+both heroes' health to a tenth, places to a hundredth of a metre, the four cooldowns of each (so every cast shows), the
+units alive on each side. The scene refuses to run when the foe is not the one asked for or when a spell of either side
+was not built before the fight. It is the proof that moving a hero into the hero framework changes nothing
+(docs/pipeline/hero-framework.md, "The fight prints"): `take` before, `check` after. About 25 s a hero, five browsers at
+once, its own dev server on port 5191.
 
 ## Before and after
 

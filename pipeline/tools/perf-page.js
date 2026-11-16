@@ -342,6 +342,33 @@
     },
   };
 
+  /**
+   * A hero's fight print (pipeline/tools/hero-prints.py, docs/pipeline/hero-framework.md "The fight prints"): the duel scene, one
+   * hero against a fixed opponent on a fixed arena, both at the CPU's balance level, and a finer print than the duel's: every half
+   * second both heroes' health (to a tenth), places (to a hundredth of a metre), the four cooldowns of each (to a tenth of a second,
+   * so every cast shows), the units alive on each side and the round. Two runs of the same code must give the same print; a hero
+   * moved into its new folder must give the print it gave before.
+   */
+  scenes.hero = async (o) => {
+    const a = api(), d = a.duel, s = await scenes.duel(o);
+    // The fight must be the one asked for: the duel never puts a hero against itself (it draws another by lot), and every spell
+    // either side can cast must have been built in the setup (`warmUp`), not at its first cast, which would roll the fight's dice.
+    if (d.opponentKit?.name !== o.foe) throw new Error(`the foe is ${d.opponentKit?.name}, not ${o.foe}`);
+    const labels = new Set();
+    for (const kit of [a.heroMode.currentKit, d.opponentKit]) for (const k of [kit, kit.base, kit.alt]) for (const sp of k?.spells ?? []) labels.add(sp.label);
+    const unbuilt = [...labels].filter((l) => !a.slots.get(l)?.effect);
+    if (unbuilt.length) throw new Error(`not built before the fight: ${unbuilt.join(', ')}`);
+    const r1 = (v) => Math.round(v * 10) / 10, r2 = (v) => Math.round(v * 100) / 100;
+    const units = (side) => { try { return a.arena.summons.alive(side).length; } catch { return -1; } };
+    return {
+      ...s,
+      every: 30,
+      print: () => [r1(d.playerHp), r1(a.arena.hpOf(d.foe)), r2(a.arena.caster.group.position.x), r2(a.arena.caster.group.position.z),
+        r2(d.foe.group.position.x), r2(d.foe.group.position.z), (a.heroMode.cooldowns ?? []).map(r1), (d.cooldowns ?? []).map(r1),
+        units('hero'), units('opponent'), d.result ? 1 : 0],
+    };
+  };
+
   // --- the graphics card's own timer, for each step of drawing a frame ---------------------------------------------------
   // Even frames time the composer's passes, odd frames the shadow map alone (one timer at a time is all a card gives):
   // "scene" is the render pass less the shadows. The answers come back a few frames later.
@@ -529,7 +556,8 @@
           lastHeap = h;
           if (i % 10 === 0) { calls.push(info.render.calls); tris.push(info.render.triangles); glDraws.push(draws); }
           if (i % 30 === 0) { parts.push(particles()); heap.push(h); programsAt.push(info.programs?.length ?? 0); }
-          if (i % 60 === 59) print.push(scene.print());
+          // the print every second (a scene may ask for it more often: `every`, in frames)
+          if (i % (scene.every ?? 60) === (scene.every ?? 60) - 1) print.push(scene.print());
           // The page must breathe: model loads, timers and the tool's own time limit all need the event loop.
           timer?.next();
           flips?.frame();
