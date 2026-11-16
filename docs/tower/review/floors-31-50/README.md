@@ -15,6 +15,38 @@ them". This page is the second of the two agents: chapters IV (the Deep) and V (
 - **Read**: every name and line of the floor against the lore (docs/lore/LORE.md and docs/lore/codex/, the Climb's chapters and The Long Noon).
 - **Frames**: a rough frame time at the camp and in the busiest fight (the machine is shared with other agents: only clear outliers count).
 
+## The follow-up round (2026-11-16)
+
+Eight items from the list, made after the round was merged (the list's own entries are below, under "Done in the follow-up round").
+All chapters where the item is shared; the War's words in chapter V only.
+
+- **People's marks under the HUD** (`src/tower/world/hud.ts`: the marks' layer 7 -> 5). They now pass under the floor's panel, the spell
+  bar and the minimap, and stay over the world. A tap still lands on the mark itself, the hero walks over and the person's card opens
+  (desktop and phone, floors 1, 34 and 41; a card already open, the law's or a trader's on the way, holds it, as before).
+- **The set piece's title box under the hero's panel** (`src/tower/world/pieces/hud.ts`: 160 px down on a desktop, 172 px on a touch
+  screen, under a phone's portrait and F key). Checked in a ruler, a gate and a trial on floors 1, 11, 21, 31 and 41, and the crowns of
+  10 and 40, on both.
+- **The trial rooms show the Climb's own floor** (I, XI, XXI, XXXI, XLI...): the room is still built and fought at the weekly height it
+  was tuned at; only the number written on its floor changed (`label` in `src/tower/week.ts`, `src/tower/floors.ts`,
+  `src/arenas/tower.ts`, `pieces/duels.ts`; a rival's duel room too).
+- **A rival who is the hero you play is the next hero on the roster** (`src/tower/world/rival.ts`, used by `game.ts` and
+  `pieces/index.ts`): its figure, its name in every line of the floor, its door, its duel and the boon it gives. Ids, places, packs
+  and doors stay as they are. Floor 32 as Lyra: Vitriol waits in "Vitriol's gallery", says "I am Vitriol", fights on his own model;
+  the route bot cleared the floor with four stars, the duel won. As Bram the floor is as it was (Lyra). A race rival swaps the same
+  way (floor 31 as Tempo: Silvane runs).
+- **The War's words** (chapter V; the baked floors and the generator, whose random draw is kept so a rebake stays the same): the Iron
+  Marshal is "The crimson's iron hand"; the last phases are "The last charge" (42, 47), "The walls come down" (43), "Under no banner"
+  (49); the Camp-Mother says her own "A cook feeds both armies, and both pay" on 43, 45, 47 and 49 (`folk.ts`).
+- **A lost trial says "No life lost: the door stays open for one more try"** (was "Nothing lost", while health is not kept;
+  `game.ts`).
+
+![Desktop: ruler, gate and trial on floors 1, 11, 21, 31, 41, and the crowns of 10 and 40](pics/fu-pieces-desktop.jpg)
+![Phone: the same, the title box under the portrait and F](pics/fu-pieces-phone.jpg)
+![Phone: the marks under the floor's panel](pics/fu-phone-marks-under-panel.jpg)
+![Phone: a tap on the keeper's mark opens the card](pics/fu-phone-mark-tap.jpg)
+![Floor 32 as Lyra: Vitriol is the rival](pics/fu-f32-rival-as-lyra.jpg)
+![His duel, on his own model](pics/fu-f32-duel-as-lyra.jpg)
+
 ## The round in short
 
 **20 floors checked, 31 to 50.** Every floor cleared by the route bot with no errors in the page; every spot of every floor
