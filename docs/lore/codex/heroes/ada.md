@@ -43,8 +43,8 @@ notebook, and came back up two days later with three slivers of glass in her poc
 ## People and appearance
 
 Kilnborn of the great lift, born after the Fall: twenty-six, slim and quick, with a bobbed head of red hair, goggles pushed up on a leather cap, a copper coat, and a
-backpack of brass gears that hum. Today her skin is pale. In the [revamp plan](../revamp.md) she gets a touch: the ash-grey skin she was born with, and faint ember
-seams at the knuckles from her years at Brannoc's forge.
+backpack of brass gears that hum. Her skin is the ash-grey she was born with, her eyes pale amber, and faint
+ember seams cross her knuckles from her years at Brannoc's forge (Touched on 2026-11-16 by the [revamp plan](../revamp.md): she was pale before).
 
 ## Voice
 

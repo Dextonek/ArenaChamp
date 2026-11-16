@@ -40,8 +40,8 @@ re-demolished the same gallery of the old Deep four times out of principle.
 ## People and appearance
 
 Kilnborn of the masons' halls, and Noon-touched: eighteen at the Fall, he looks thirty-eight. Broad and calm, with a square-jawed face under iron-grey hair, carved
-limestone pauldrons, a leather apron with the amber rune of his mark glowing on its bib, a rune-cut stone maul; and Gerald. Today his skin is pale. In the
-[revamp plan](../revamp.md) he gets a touch: the ash-grey skin and pale amber eyes of his people; Gerald is unchanged.
+limestone pauldrons, a leather apron with the amber rune of his mark glowing on its bib, a rune-cut stone maul; and Gerald. His skin is the ash-grey of his people, his eyes pale
+amber (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before); Gerald is unchanged.
 
 ## Voice
 
