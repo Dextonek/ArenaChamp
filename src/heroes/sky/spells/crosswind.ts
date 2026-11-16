@@ -5,6 +5,7 @@ import { GustRibbon, Leaves, SKY, SKY_CSS, SpeedLines, WindCrescent, WindWraith 
 import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Crosswind (sky kit, Q: a cone, then a dash on the recast). Cast: wind gathers on his sword arm (0.25 s, a spiral and a
@@ -100,7 +101,7 @@ export class Crosswind implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    const now = performance.now();
+    const now = fightNow();
     const prev = lastCast.get(ctx.caster);
     const auto = !!prev && !prev.dash && now - prev.at < RECAST_CLOCK;
     const m = this.settings.mode;
