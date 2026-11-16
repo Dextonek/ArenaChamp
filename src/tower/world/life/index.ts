@@ -12,6 +12,7 @@ import type { SeaLook } from '../zone';
 import { lifeTier, mulberry, quiet, type Life, type LifeEnv } from './core';
 import { seaLife } from './sea';
 import { woodLife } from './wood';
+import { sandsLife } from './sands';
 
 /** The look a floor is drawn from (its places, paths, cover...): the generator's, or the chapter's handmade first floor's. */
 export function lifeLook(n: number): ChapterLook | null {
@@ -66,7 +67,7 @@ const CHAPTERS: (ChapterLife | null)[] = [
     return seaLife(env, { def: inp.c.def, look: inp.look as unknown as SeaLook, scenes, marks, land, danger: inp.danger, tide: inp.law }, hero);
   },
   woodLife,
-  null,
+  sandsLife,
   null,
   null,
 ];

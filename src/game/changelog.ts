@@ -90,7 +90,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'The Climb comes alive, chapter by chapter',
-        text: 'The Wood has its own life now: wood pigeons burst from the trees as you pass under, hinds, foxes and hares graze at the glades’ edges and bolt when you come, smoke rises through the burners’ thatch, blankets air on lines, butterflies cross the glades and woodcutters walk the trails. On the Sea, dockhands and fishwives now walk between the places, and the houses past the shore smoke from their chimneys.',
+        text: 'The Wood has its own life now: wood pigeons burst from the trees as you pass under, hinds, foxes and hares graze at the glades’ edges and bolt when you come, smoke rises through the burners’ thatch, blankets air on lines, butterflies cross the glades and woodcutters walk the trails. In the Sands kites sit on the palms and walls and lift off when you or the storm come, the lost caravan’s camels stand tethered at the caravanserai and the oasis and turn their heads to watch you, lizards dart from the rocks, dyed cloths dry on lines and water-carriers walk the roads. On the Sea, dockhands and fishwives now walk between the places, and the houses past the shore smoke from their chimneys.',
       },
       {
         tag: 'Heroes',

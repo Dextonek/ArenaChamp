@@ -851,6 +851,8 @@ export function beastGeometry(o: {
   s: number; shoulder: number; len: number; girth: number; neck: number; head: number; leg?: number;
   colors: { body: number; under?: number; leg: number; head?: number; tail?: number; ear?: number };
   ears?: 'long' | 'point' | 'round'; tail?: 'stub' | 'brush' | 'long'; low?: boolean;
+  /** A hump on the back (its height as a share of the girth), and a saddle cloth over it (a colour). */
+  hump?: number; saddle?: number;
 }) {
   const parts: THREE.BufferGeometry[] = [];
   const s = o.s, c = o.colors, sh = o.shoulder * s, L = o.len * s, G = o.girth * s, legR = (o.leg ?? 0.045) * s;
@@ -863,6 +865,17 @@ export function beastGeometry(o: {
   const bodyY = sh - G * 0.35;
   parts.push(tag(painted(new THREE.SphereGeometry(1, 10, 7).scale(G * 0.5, G * 0.55, L * 0.5).translate(0, bodyY, 0), c.body), 0, 0, 0, 0));
   if (c.under) parts.push(tag(painted(new THREE.SphereGeometry(1, 8, 5).scale(G * 0.38, G * 0.3, L * 0.4).translate(0, bodyY - G * 0.3, 0.02 * L), c.under), 0, 0, 0, 0));
+  if (o.hump) {
+    parts.push(tag(painted(new THREE.SphereGeometry(1, 9, 6).scale(G * 0.33, G * o.hump, L * 0.24).translate(0, bodyY + G * 0.42, -L * 0.04), c.body), 0, 0, 0, 0));
+    if (o.saddle) {
+      // a cloth over the hump, hanging down both flanks, a gold edge
+      parts.push(tag(painted(new THREE.BoxGeometry(G * 0.72, 0.05 * s, L * 0.36).translate(0, bodyY + G * 0.42 + G * o.hump * 0.55, -L * 0.04), o.saddle), 0, 0, 0, 0));
+      for (const side of [-1, 1]) {
+        parts.push(tag(painted(new THREE.BoxGeometry(0.03 * s, G * 0.55, L * 0.34).translate(side * G * 0.47, bodyY + G * 0.12, -L * 0.04), o.saddle), 0, 0, 0, 0));
+        parts.push(tag(painted(new THREE.BoxGeometry(0.035 * s, 0.035 * s, L * 0.35).translate(side * G * 0.48, bodyY - G * 0.15, -L * 0.04), PAL.gold), 0, 0, 0, 0));
+      }
+    }
+  }
   // the neck and head, pivoting at the neck's foot (graze: the head down to the ground)
   const ny = bodyY + G * 0.15, nz = L * 0.4, nl = o.neck * s, hl = o.head * s;
   const up = o.low ? 0.35 : 0.85; // the neck's rise (0 level, about 1.2 upright)
@@ -1179,3 +1192,4 @@ export function roomOf(look: { paths?: [number, number][][]; pieces: { o: { ax: 
     packs: def.packs.map((p) => ({ x: p.at.x, z: p.at.z, r: p.named ? 4 : 8 })),
   });
 }
+
