@@ -1,6 +1,32 @@
 # Status
 
-## RESUMED (2026-11-16, the user: "yes continue"; and "you can make more agents, not just 3": the limit is now 6)
+## Now (2026-11-16, evening): the user's decisions on the open list ("u decide for those"), and the agents working on them
+
+**Decided by the parent (the user: "you decide"):**
+1. The Climb's life: yes for chapters II-V the same way as the Sea; plain Coast-folk workers (and one plain worker per chapter) built
+   in Blender for the walkers; the amount as it is; phones keep the lighter set; no sound for now (a new system for the whole game).
+2. The other 39 heroes move into the hero framework, about 8 a batch, every batch with all 80 fight prints the same.
+3. The hero bugs (framework design section 8) are fixed AFTER the move (so the move's prints stay a clean proof), as the tooltips
+   say, each fixed hero then checked in the simulator.
+4. The gates: the lore changes, not the floors (Opaline and Oblivion hold their chapter's first gate; the others are champions the
+   Tower drew to its gates).
+5. The cream and white robes that bloom in the Sands' and War's light: about 15 % darker cloth.
+6. A won ruler: the hero stays in front of the door (as the code's comment meant, as the party fight does).
+7. Cantor's spell icons: the pink notes redrawn as engraved gold.
+8. The upright staffs in casts: kept.
+9. The lore follows the accepted models: the Pearl Tyrant a woman, the beast-rulers described as drawn; the named mothers (the Dune
+   Mother, Mother Kelp, Grandmother Thorn) "her" everywhere.
+10. Ruler looks fixed: fallen rulers no longer through the floor, Ash's legs above it in casts, the Heart's crown rays clear of it,
+   the Crow King's staff upright in his kneel.
+11. Arenas fixed: the Glade's tree crowns out of the corner at the widest zoom, Frost's low ice and the Temple's two lintels (if real).
+
+**Merged today, not live** (each with its entry below): stage 3 of the open world (PROTOCOL 19), spell icons for all 40, the sixteen
+hero touches and 20 portraits, the hero framework's design and fight prints, Anka moved (a fifth smaller start), the model reviews
+(Climb, bosses, arenas; the 40 heroes; round 2), the Climb review of all 50 floors and its follow-up, the Sea's life
+(`src/tower/world/life/`; `?life=0` off, `?life=lite` the phone set). Server tests pass on the merged code with the machine quiet.
+Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C:\x`, `C:\x2` (empty).
+
+## Today's entries (2026-11-16)
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - Open world stage 3: done and merged (the entry below).
