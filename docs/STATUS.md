@@ -26,6 +26,20 @@ hero touches and 20 portraits, the hero framework's design and fight prints, Ank
 (`src/tower/world/life/`; `?life=0` off, `?life=lite` the phone set). Server tests pass on the merged code with the machine quiet.
 Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C:\x`, `C:\x2` (empty).
 
+**Running (six agents, the limit; one Blender agent):**
+- Climb small fixes (floor 1's ruler named the Drowned Admiral, the phone badge box, floor 41's spots off the stone drums, enemy shots
+  leaving from the hand: visual only).
+- Climb life, chapters II-V (`src/tower/world/life/`, one chapter at a time, page `docs/tower/life/`).
+- Blender round (the one Blender agent): plain workers for the walkers (two Coast-folk, one per other chapter), the darker robes, the
+  arena fixes (Frost, Temple, Glade); page `docs/models/blender-round/`.
+- Hero framework step 4: the other 39 heroes moved in batches of about 8, each with all 80 prints the same; then step 5 (the
+  new-hero command, the workbench page) if time allows. The one writer of the four shared engine files.
+- Ruler and boss looks (fallen rulers, Ash's legs, the Heart's crown, the Crow King's staff; Ash and the lava); page
+  `docs/models/review/round3/`.
+- Lore and Climb words (the gates, the rulers as drawn, the mothers "her"), a won ruler stays at the door, Cantor's icons in gold; page
+  `docs/lore/changes-2026-11-16.html`.
+**Queued:** the hero bugs (design section 8), after the 39 are moved. Wire the Blender round's workers into the life's walkers table.
+
 ## Today's entries (2026-11-16)
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
