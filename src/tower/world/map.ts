@@ -308,14 +308,22 @@ export class WorldMap {
       for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr); }
       g.closePath(); g.fillStyle = fill; g.fill(); g.lineWidth = Math.max(1, r * 0.22); g.strokeStyle = '#3a2a10'; g.stroke();
     };
+    // A name that would lie over one already written steps a line away (a door's up, a place's down), so two that stand close
+    // (the gate beside the camp, a chapel beside the signal fire) both read.
+    const written: [number, number, number, number][] = [];
     const label = (p: { x: number; y: number }, text: string, color: string, dy: number) => {
       g.font = `700 ${Math.round(11 * dpr)}px ui-sans-serif,system-ui`;
       g.textAlign = 'center';
+      const w = g.measureText(text).width / 2 + 2 * dpr, h = 12 * dpr;
+      let y = p.y + dy;
+      const over = (yy: number) => written.some(([x0, y0, x1, y1]) => p.x - w < x1 && p.x + w > x0 && yy - h + 2 * dpr < y1 && yy + 3 * dpr > y0);
+      for (let i = 0; i < 4 && over(y); i++) y += dy < 0 ? -h : h;
+      written.push([p.x - w, y - h + 2 * dpr, p.x + w, y + 3 * dpr]);
       g.lineWidth = 3 * dpr;
       g.strokeStyle = 'rgba(0,0,0,0.85)';
-      g.strokeText(text, p.x, p.y + dy);
+      g.strokeText(text, p.x, y);
       g.fillStyle = color;
-      g.fillText(text, p.x, p.y + dy);
+      g.fillText(text, p.x, y);
     };
 
     // Waystones and doors.

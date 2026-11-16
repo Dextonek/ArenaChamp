@@ -33,10 +33,14 @@ closeCards();
 settle(0.4);
 await shot('camp');
 // 2. the map (M; on a phone, a tap on the minimap)
+// the minimap shows once the zone's first frames are drawn (map.ts `setZone`): wait for it (at most 10 s)
+for (let i = 0; i < 100 && !g.map?.shown; i++) { settle(0.1); await new Promise((ok) => setTimeout(ok, 100)); }
+out.minimapShown = !!g.map?.shown;
 dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', key: 'm', bubbles: true }));
 settle(0.2);
+out.mapOpened = !!g.map?.isOpen;
 await shot('map');
-dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', key: 'm', bubbles: true }));
+if (g.map?.isOpen) g.map.toggle(false);
 settle(0.2);
 // 3. every person, standing in front of them, the card open
 z.setPacks(false);

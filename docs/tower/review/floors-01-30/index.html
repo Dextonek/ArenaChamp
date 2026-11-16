@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 01 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>1 floors checked</b> · <b>1 fixed</b> · <b>3 for you</b></div>
+<div class="sum"><b>2 floors checked</b> · <b>2 fixed</b> · <b>3 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?.</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>The Codex&#x27;s tide: 78 s, the game&#x27;s: 80 s.</b> The Codex page The Sea says the tide comes every seventy-eight seconds; the floor&#x27;s law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game&#x27;s copy (lore-codex.py); left because the Codex is the lore writer&#x27;s.</li>
@@ -23,9 +23,11 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </ul>
 <h2>Fixed</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
+<li><a href="#f02">Floor 2</a>: <b>Names on the M map lay over each other (every floor).</b> Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door&#x27;s up, a place&#x27;s down). Only the map&#x27;s drawing changed (src/tower/world/map.ts).</li>
 </ul>
 <h2>Floors</h2><div class="toc">
 <a class="f l" href="#f01">1</a>
+<a class="f" href="#f02">2</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); two lore names left for you.</p>
@@ -63,6 +65,31 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f01/overview.jpg"><img loading="lazy" src="f01/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 <figure class="ph"><a href="f01/phone-camp.jpg"><img loading="lazy" src="f01/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
 <figure class="ph"><a href="f01/phone-fight.jpg"><img loading="lazy" src="f01/phone-fight.jpg" alt="Phone: a fight"></a><figcaption>Phone: a fight</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f02"><h3>Floor 2: The Salt Docks</h3><p>Clean: the route bot cleared it with all four stars and no fall, the rival (Hank), the trial, the ruler (the Drowned Admiral, own model) and the gate (Vesper) all played; no console error. The M map&#x27;s names stood on each other: fixed for every floor.</p>
+<p><span class="tag fixed">fixed</span><b>Names on the M map lay over each other (every floor).</b> Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door&#x27;s up, a place&#x27;s down). Only the map&#x27;s drawing changed (src/tower/world/map.ts).</p>
+<div class="pics">
+<figure><a href="f02/fix-map-before-crop.jpg"><img loading="lazy" src="f02/fix-map-before-crop.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure><a href="f02/fix-map-after-crop.jpg"><img loading="lazy" src="f02/fix-map-after-crop.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> “Float”: pines on the hills past the edge, boats on the sea, and the slats of a jetty 9 cm over the sand; “gap”: houses on the hillside (they stand on their stone plinths, as set right in the props pass) and pines on the cliff top; one stone 22 cm under the sand. Looked at from low: nothing in the air.</p>
+<div class="pics">
+<figure><a href="f02/probe-house.jpg"><img loading="lazy" src="f02/probe-house.jpg" alt="A house on the slope the probe flagged: on its plinth"></a><figcaption>A house on the slope the probe flagged: on its plinth</figcaption></figure>
+</div>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34918 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 25 float, 54 gap, 1 buried, 0 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1729 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Drowned Admiral (Fleet, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes after 5095 ms of real time</li><li>Frame check at the busiest spot (14, -54), 5 units awake: median 10.7, 11.3, 11 ms, p95 17.5, 17.2, 14.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f02/camp.jpg"><img loading="lazy" src="f02/camp.jpg" alt="The camp"></a><figcaption>The camp</figcaption></figure>
+<figure><a href="f02/person-keeper.jpg"><img loading="lazy" src="f02/person-keeper.jpg" alt="The Bell-Warden&#x27;s card"></a><figcaption>The Bell-Warden&#x27;s card</figcaption></figure>
+<figure><a href="f02/person-rival.jpg"><img loading="lazy" src="f02/person-rival.jpg" alt="Hank, the rival, before his arch"></a><figcaption>Hank, the rival, before his arch</figcaption></figure>
+<figure><a href="f02/route-rival-1.jpg"><img loading="lazy" src="f02/route-rival-1.jpg" alt="The duel with Hank"></a><figcaption>The duel with Hank</figcaption></figure>
+<figure><a href="f02/pack-d.jpg"><img loading="lazy" src="f02/pack-d.jpg" alt="The broken galley&#x27;s pack and the Mate"></a><figcaption>The broken galley&#x27;s pack and the Mate</figcaption></figure>
+<figure><a href="f02/ruler.jpg"><img loading="lazy" src="f02/ruler.jpg" alt="The Drowned Admiral&#x27;s fight"></a><figcaption>The Drowned Admiral&#x27;s fight</figcaption></figure>
+<figure><a href="f02/overview.jpg"><img loading="lazy" src="f02/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f02/phone-person-keeper.jpg"><img loading="lazy" src="f02/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+<figure class="ph"><a href="f02/phone-map.jpg"><img loading="lazy" src="f02/phone-map.jpg" alt="Phone: the map (names apart)"></a><figcaption>Phone: the map (names apart)</figcaption></figure>
 </div>
 </section>
 </main></body></html>

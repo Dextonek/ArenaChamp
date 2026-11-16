@@ -1,0 +1,909 @@
+{
+ "floor": 2,
+ "part": "climb-review-route",
+ "wallSeconds": 105.6,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 2,
+  "route": {
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1728.6,
+   "hp": 0.71,
+   "lives": 3,
+   "shards": 625,
+   "falls": 0,
+   "restarts": 0,
+   "kills": 23,
+   "stars": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "checkpoints": [
+    {
+     "step": "main: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "main.1: fell",
+     "status": "done",
+     "t": 76.67,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 20
+    },
+    {
+     "step": "main.2: light",
+     "status": "done",
+     "t": 205.17,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 120
+    },
+    {
+     "step": "main.3: fell",
+     "status": "done",
+     "t": 230.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 160
+    },
+    {
+     "step": "main.4: carry",
+     "status": "done",
+     "t": 297.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 160
+    },
+    {
+     "step": "main: handed in",
+     "status": "done",
+     "t": 302.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 244
+    },
+    {
+     "step": "bounty1: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "bounty1.1: fell-named",
+     "status": "done",
+     "t": 344.17,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 286
+    },
+    {
+     "step": "bounty1: handed in",
+     "status": "done",
+     "t": 368.67,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 328
+    },
+    {
+     "step": "bounty2: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "bounty2.1: fell-named",
+     "status": "done",
+     "t": 98.17,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 57
+    },
+    {
+     "step": "bounty2: handed in",
+     "status": "done",
+     "t": 129.67,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 94
+    },
+    {
+     "step": "g1: taken",
+     "status": "done",
+     "t": 4.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "g1.1: reach",
+     "status": "done",
+     "t": 430.67,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 328
+    },
+    {
+     "step": "g1.2: hold",
+     "status": "done",
+     "t": 506.67,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 367
+    },
+    {
+     "step": "g1: handed in",
+     "status": "done",
+     "t": 593.17,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 404
+    },
+    {
+     "step": "g2: taken",
+     "status": "done",
+     "t": 4.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "g2.1: lead",
+     "status": "done",
+     "t": 925.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 379
+    },
+    {
+     "step": "g2: handed in",
+     "status": "done",
+     "t": 927.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 426
+    },
+    {
+     "step": "g3: taken",
+     "status": "done",
+     "t": 45.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "g3.1: carry",
+     "status": "done",
+     "t": 1071.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 426
+    },
+    {
+     "step": "g3: handed in",
+     "status": "done",
+     "t": 1141.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 468
+    },
+    {
+     "step": "duel with the rival",
+     "status": "done",
+     "t": 1566.7,
+     "hp": 0.72,
+     "lives": 3,
+     "shards": 605
+    },
+    {
+     "step": "waystone w1",
+     "status": "done",
+     "t": 56.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "waystone w2",
+     "status": "done",
+     "t": 45.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "waystone w3",
+     "status": "done",
+     "t": 500.67,
+     "hp": 0.65,
+     "lives": 3,
+     "shards": 367
+    },
+    {
+     "step": "waystone w4",
+     "status": "done",
+     "t": 175.17,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 94
+    },
+    {
+     "step": "waystone w5",
+     "status": "done",
+     "t": 271.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 160
+    },
+    {
+     "step": "waystone w6",
+     "status": "done",
+     "t": 1171.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 468
+    },
+    {
+     "step": "cache c1",
+     "status": "done",
+     "t": 1241.68,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 494
+    },
+    {
+     "step": "cache c2",
+     "status": "done",
+     "t": 1302.68,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 526
+    },
+    {
+     "step": "cache c3",
+     "status": "done",
+     "t": 1361.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 547
+    },
+    {
+     "step": "cache c4",
+     "status": "done",
+     "t": 1368.68,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 579
+    },
+    {
+     "step": "cache c5",
+     "status": "done",
+     "t": 191.67,
+     "hp": 0.98,
+     "lives": 3,
+     "shards": 120
+    },
+    {
+     "step": "cache c6",
+     "status": "done",
+     "t": 1458.68,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 600
+    },
+    {
+     "step": "lore stone read",
+     "status": "done",
+     "t": 1463.18,
+     "hp": 0.57,
+     "lives": 3,
+     "shards": 605
+    },
+    {
+     "step": "door lair opened",
+     "status": "done",
+     "t": 297.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 160
+    },
+    {
+     "step": "piece ruler won",
+     "status": "done",
+     "t": 725.18,
+     "hp": 0.11,
+     "lives": 3,
+     "shards": 444
+    },
+    {
+     "step": "piece trial won",
+     "status": "done",
+     "t": 1681.68,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 625
+    },
+    {
+     "step": "piece gate won",
+     "status": "done",
+     "t": 1728.6,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 625
+    },
+    {
+     "step": "piece rival won",
+     "status": "done",
+     "t": 1566.7,
+     "hp": 0.72,
+     "lives": 3,
+     "shards": 605
+    },
+    {
+     "step": "floor cleared",
+     "status": "done",
+     "t": 1728.6,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 625
+    }
+   ],
+   "notDone": [],
+   "errors": [],
+   "gateTries": 1,
+   "rulerTries": 1,
+   "pieceFalls": [],
+   "frames": 103704,
+   "whyLog": [
+    "390.67s tide: waiting on dry ground",
+    "410.17s g1.0: reach",
+    "430.67s g1.1: hold",
+    "463.67s waystone w3",
+    "464.17s g1.1: hold",
+    "467.17s tide: waiting on dry ground",
+    "489.17s g1.1: hold",
+    "494.67s waystone w3",
+    "500.67s g1.1: hold",
+    "506.67s hand in g1",
+    "546.17s tide: waiting on dry ground",
+    "568.17s hand in g1",
+    "592.67s did hand-in:g1",
+    "593.17s lead g2: to Marl",
+    "625.17s tide: to dry ground",
+    "626.17s tide: waiting on dry ground",
+    "726.18s heal",
+    "770.18s did heal,boon",
+    "770.68s lead g2: to Marl",
+    "783.18s tide: waiting on dry ground",
+    "805.18s lead g2: to Marl",
+    "817.18s lead g2: ahead",
+    "821.18s lead g2: to Marl",
+    "832.18s lead g2: ahead",
+    "844.18s lead g2: to Marl",
+    "844.68s lead g2: ahead",
+    "848.68s lead g2: to Marl",
+    "849.18s lead g2: ahead",
+    "852.18s lead g2: to Marl",
+    "852.68s lead g2: ahead",
+    "855.68s lead g2: to Marl",
+    "856.18s lead g2: ahead",
+    "859.18s lead g2: to Marl",
+    "859.68s lead g2: ahead",
+    "862.18s tide: waiting on dry ground",
+    "884.18s lead g2: to Marl",
+    "905.18s lead g2: ahead",
+    "925.18s hand in g2",
+    "926.68s did hand-in:g2",
+    "927.18s g3.0: carry",
+    "941.18s tide: waiting on dry ground",
+    "963.18s g3.0: carry",
+    "1020.18s tide: waiting on dry ground",
+    "1042.18s g3.0: carry",
+    "1071.18s hand in g3",
+    "1099.18s tide: waiting on dry ground",
+    "1121.18s hand in g3",
+    "1140.68s did hand-in:g3",
+    "1141.18s waystone w6",
+    "1171.18s cache c1",
+    "1178.18s tide: waiting on dry ground",
+    "1200.18s cache c1",
+    "1241.68s cache c2",
+    "1257.18s tide: waiting on dry ground",
+    "1279.18s cache c2",
+    "1302.68s cache c3",
+    "1336.18s tide: waiting on dry ground",
+    "1358.18s cache c3",
+    "1361.18s cache c4",
+    "1368.68s cache c6",
+    "1415.18s tide: waiting on dry ground",
+    "1437.18s cache c6",
+    "1458.68s lore stone",
+    "1463.18s door: rival",
+    "1494.18s tide: waiting on dry ground",
+    "1516.18s door: rival",
+    "1566.7s door: trial",
+    "1573.2s tide: waiting on dry ground",
+    "1595.2s door: trial",
+    "1681.68s door: gate"
+   ],
+   "whyAll": null,
+   "gameLog": [
+    "door lair at 644s",
+    "piece ruler won hp 0.11 81s",
+    "door rival at 1537s",
+    "piece rival won hp 0.38 29s",
+    "door trial at 1636s",
+    "piece trial won hp 0.71 45s",
+    "door gate at 1709s",
+    "piece gate won hp 0.71 19s"
+   ],
+   "last": {
+    "clock": 1728.6,
+    "hero": {
+     "x": -17.58,
+     "z": 112.11,
+     "hp": 368,
+     "max": 520
+    },
+    "lives": 3,
+    "shards": 625,
+    "falls": 0,
+    "kills": 23,
+    "quests": [
+     "main: handed in",
+     "bounty1: handed in",
+     "bounty2: handed in",
+     "g1: handed in",
+     "g2: handed in",
+     "g3: handed in"
+    ],
+    "rival": "won",
+    "won": [
+     "ruler",
+     "rival",
+     "trial",
+     "gate"
+    ],
+    "caches": [
+     "c5",
+     "c1",
+     "c2",
+     "c3",
+     "c4",
+     "c6"
+    ],
+    "waystones": [
+     "w2",
+     "w1",
+     "w4",
+     "w5",
+     "w3",
+     "w6"
+    ],
+    "opened": [
+     "lair"
+    ],
+    "boons": [
+     [
+      "tw-brink",
+      1
+     ],
+     [
+      "tw-mirror",
+      1
+     ],
+     [
+      "tw-sun",
+      1
+     ],
+     [
+      "tw-wind",
+      1
+     ],
+     [
+      "tw-crown",
+      1
+     ],
+     [
+      "tw-feather",
+      1
+     ],
+     [
+      "tw-rest",
+      1
+     ],
+     [
+      "tw-echo",
+      1
+     ]
+    ],
+    "over": false,
+    "finished": true,
+    "piece": null,
+    "law": {
+     "text": "The tide comes in 10 s",
+     "active": false,
+     "warn": false
+    },
+    "packs": [
+     {
+      "id": "a",
+      "state": "cleared",
+      "left": 0,
+      "total": 4
+     },
+     {
+      "id": "d",
+      "state": "cleared",
+      "left": 0,
+      "total": 3
+     },
+     {
+      "id": "b",
+      "state": "cleared",
+      "left": 0,
+      "total": 5
+     },
+     {
+      "id": "f",
+      "state": "cleared",
+      "left": 0,
+      "total": 3
+     },
+     {
+      "id": "named1",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     },
+     {
+      "id": "named2",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     }
+    ],
+    "liveUnits": 0,
+    "log": [],
+    "gameLog": [
+     "door lair at 644s",
+     "piece ruler won hp 0.11 81s",
+     "door rival at 1537s",
+     "piece rival won hp 0.38 29s",
+     "door trial at 1636s",
+     "piece trial won hp 0.71 45s",
+     "door gate at 1709s",
+     "piece gate won hp 0.71 19s"
+    ]
+   },
+   "wallSeconds": 96,
+   "boons": [
+    [
+     "tw-brink",
+     1
+    ],
+    [
+     "tw-mirror",
+     1
+    ],
+    [
+     "tw-sun",
+     1
+    ],
+    [
+     "tw-wind",
+     1
+    ],
+    [
+     "tw-crown",
+     1
+    ],
+    [
+     "tw-feather",
+     1
+    ],
+    [
+     "tw-rest",
+     1
+    ],
+    [
+     "tw-echo",
+     1
+    ]
+   ]
+  },
+  "whyAll": [
+   "0.67s take main",
+   "1.67s did take:main,take:bounty1,take:bounty2",
+   "2.17s take g1",
+   "4.17s did take:g1,take:g2",
+   "4.67s take g3",
+   "44.67s did take:g3",
+   "45.17s waystone w2",
+   "45.67s main.0: fell",
+   "52.17s waystone w1",
+   "56.67s main.0: fell",
+   "72.17s tide: waiting on dry ground",
+   "94.17s main.1: light",
+   "98.17s hand in bounty2",
+   "129.17s did hand-in:bounty2",
+   "129.67s main.1: light",
+   "151.17s tide: waiting on dry ground",
+   "173.17s waystone w4",
+   "175.17s main.1: light",
+   "188.17s cache c5",
+   "191.67s main.1: light",
+   "205.17s main.2: fell",
+   "230.17s tide: waiting on dry ground",
+   "252.17s main.3: carry",
+   "267.17s waystone w5",
+   "271.17s main.3: carry",
+   "297.67s hand in main",
+   "302.17s did hand-in:main",
+   "302.67s bounty1.0: fell-named",
+   "309.17s tide: waiting on dry ground",
+   "331.17s bounty1.0: fell-named",
+   "344.17s hand in bounty1",
+   "368.17s did hand-in:bounty1",
+   "368.67s g1.0: reach",
+   "388.17s tide: waiting on dry ground",
+   "388.67s tide: to dry ground",
+   "389.17s tide: waiting on dry ground",
+   "389.67s tide: to dry ground",
+   "390.67s tide: waiting on dry ground",
+   "410.17s g1.0: reach",
+   "430.67s g1.1: hold",
+   "463.67s waystone w3",
+   "464.17s g1.1: hold",
+   "467.17s tide: waiting on dry ground",
+   "489.17s g1.1: hold",
+   "494.67s waystone w3",
+   "500.67s g1.1: hold",
+   "506.67s hand in g1",
+   "546.17s tide: waiting on dry ground",
+   "568.17s hand in g1",
+   "592.67s did hand-in:g1",
+   "593.17s lead g2: to Marl",
+   "625.17s tide: to dry ground",
+   "626.17s tide: waiting on dry ground",
+   "726.18s heal",
+   "770.18s did heal,boon",
+   "770.68s lead g2: to Marl",
+   "783.18s tide: waiting on dry ground",
+   "805.18s lead g2: to Marl",
+   "817.18s lead g2: ahead",
+   "821.18s lead g2: to Marl",
+   "832.18s lead g2: ahead",
+   "844.18s lead g2: to Marl",
+   "844.68s lead g2: ahead",
+   "848.68s lead g2: to Marl",
+   "849.18s lead g2: ahead",
+   "852.18s lead g2: to Marl",
+   "852.68s lead g2: ahead",
+   "855.68s lead g2: to Marl",
+   "856.18s lead g2: ahead",
+   "859.18s lead g2: to Marl",
+   "859.68s lead g2: ahead",
+   "862.18s tide: waiting on dry ground",
+   "884.18s lead g2: to Marl",
+   "905.18s lead g2: ahead",
+   "925.18s hand in g2",
+   "926.68s did hand-in:g2",
+   "927.18s g3.0: carry",
+   "941.18s tide: waiting on dry ground",
+   "963.18s g3.0: carry",
+   "1020.18s tide: waiting on dry ground",
+   "1042.18s g3.0: carry",
+   "1071.18s hand in g3",
+   "1099.18s tide: waiting on dry ground",
+   "1121.18s hand in g3",
+   "1140.68s did hand-in:g3",
+   "1141.18s waystone w6",
+   "1171.18s cache c1",
+   "1178.18s tide: waiting on dry ground",
+   "1200.18s cache c1",
+   "1241.68s cache c2",
+   "1257.18s tide: waiting on dry ground",
+   "1279.18s cache c2",
+   "1302.68s cache c3",
+   "1336.18s tide: waiting on dry ground",
+   "1358.18s cache c3",
+   "1361.18s cache c4",
+   "1368.68s cache c6",
+   "1415.18s tide: waiting on dry ground",
+   "1437.18s cache c6",
+   "1458.68s lore stone",
+   "1463.18s door: rival",
+   "1494.18s tide: waiting on dry ground",
+   "1516.18s door: rival",
+   "1566.7s door: trial",
+   "1573.2s tide: waiting on dry ground",
+   "1595.2s door: trial",
+   "1681.68s door: gate"
+  ],
+  "pieceNotes": [
+   {
+    "piece": "ruler",
+    "at": 240,
+    "clock": 644,
+    "opponent": "The Drowned Admiral",
+    "title": "Fleet, cannon and tide",
+    "model": "models/tower/sea_admiral_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "ruler",
+    "at": 900,
+    "clock": 644,
+    "opponent": "The Drowned Admiral",
+    "title": "Fleet, cannon and tide",
+    "model": "models/tower/sea_admiral_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "rival",
+    "at": 240,
+    "clock": 1537,
+    "opponent": "Echo of Hank",
+    "title": "warded",
+    "model": "models/heroes/timber_v4.glb",
+    "loaded": true,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 119
+     },
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 119
+     }
+    ]
+   },
+   {
+    "piece": "rival",
+    "at": 900,
+    "clock": 1537,
+    "opponent": "Echo of Hank",
+    "title": "warded",
+    "model": "models/heroes/timber_v4.glb",
+    "loaded": true,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "trial",
+    "at": 240,
+    "clock": 1636,
+    "opponent": "The storm",
+    "title": "",
+    "model": null,
+    "loaded": true,
+    "real": false,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "trial",
+    "at": 900,
+    "clock": 1636,
+    "opponent": "The storm",
+    "title": "",
+    "model": null,
+    "loaded": true,
+    "real": false,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "gate",
+    "at": 240,
+    "clock": 1709,
+    "opponent": "Vesper",
+    "title": "the Crimson Countess",
+    "model": "models/heroes/blood_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "gate",
+    "at": 900,
+    "clock": 1709,
+    "opponent": "Vesper",
+    "title": "the Crimson Countess",
+    "model": "models/heroes/blood_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   }
+  ],
+  "packsEnd": [
+   {
+    "id": "a",
+    "state": "cleared",
+    "left": 0,
+    "total": 4
+   },
+   {
+    "id": "d",
+    "state": "cleared",
+    "left": 0,
+    "total": 3
+   },
+   {
+    "id": "b",
+    "state": "cleared",
+    "left": 0,
+    "total": 5
+   },
+   {
+    "id": "f",
+    "state": "cleared",
+    "left": 0,
+    "total": 3
+   },
+   {
+    "id": "named1",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   },
+   {
+    "id": "named2",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   }
+  ],
+  "grabs": [
+   "route-pack-a",
+   "route-pack-named2",
+   "route-pack-d",
+   "route-pack-named1",
+   "route-pack-hold-g1-0",
+   "route-pack-f",
+   "route-pack-hold-g1-1",
+   "route-ruler-0",
+   "route-ruler-1",
+   "route-pack-b",
+   "route-rival-0",
+   "route-rival-1",
+   "route-trial-0",
+   "route-trial-1",
+   "route-gate-0",
+   "route-gate-1"
+  ]
+ }
+}
