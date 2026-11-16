@@ -4,7 +4,10 @@
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - `t3/climb-stage3-doors-together` (from 5a2b7de3): open world stage 3, doors and bosses together.
-- `t3/hero-touches-underwear-portraits` (from 81d4e8cd): the sixteen touches, the underwear cover, the portraits (the one Blender agent).
+- **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
+  `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
+  only Big Yoko showed the painted underwear, and the build now covers it on every hero; 20 portraits redrawn. Worth the user's eye:
+  marks show only close up; Anka a little lighter; Wick's braids read as beads close up.
 - **Done and merged, not live (2026-11-16): spell icons by VectorCraft for all 40 heroes** (163, version B; merge dd9ec68b).
   Overview `docs/icons/index.html` (every hero's four at 64 and 32 px beside today's), `docs/icons/all-32.png`. Lazy loaded
   (`src/icons/vc.ts`, two lines in `src/heroes.ts`; SVGs `public/icons/spells/`), the canvas icons stay as the fallback; the page's
@@ -18,8 +21,8 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
 - The model review (the user: "look at all models we made and correct them: clipping, bad direction; make them fit the scenes"):
   one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
-  for one Blender round later; page `docs/models/review/`). **Queued:** the heroes' review, once the touches job is merged (it holds
-  Blender and the hero files); a Blender round for the listed rebuilds after that.
+  for one Blender round later; page `docs/models/review/`). **Running too:** the heroes' review (the one Blender agent; page
+  `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
 - **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
   life, more to see), starting with one chapter shown to the user first; it starts when the stage 3 job is merged (a slot frees).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
