@@ -18,7 +18,7 @@ import folk as K
 def build():
     R = Real("war_herald", sex="f", height=1.04, width=0.95, depth=0.96, skin="#c49478")
     z = R.z
-    R.mat("cream", "#e2d8c0", rough=0.75, double=True)
+    R.mat("cream", "#cdc1a3", rough=0.75, double=True)
     R.mat("crimson", "#7a1a24", rough=0.62, double=True)
     R.mat("azure", "#24427e", rough=0.62, double=True)
     R.mat("dark", "#1d1b21", rough=0.6, double=True)

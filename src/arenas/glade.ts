@@ -400,6 +400,8 @@ export const gladeArena: ArenaDef = {
       const [x, z] = polar(rad, rnd() * 6.28);
       if (Math.hypot(x - RING.x, z - RING.z) <= 26 && Math.abs(x) <= 13) continue;
       if (Math.hypot(x - 16, z - 27) < 9) continue;
+      // keep the near crowns out of the screen's lower corners at the widest zoom (docs/models/blender-round/)
+      if (z > RING.z + 2 && Math.abs(x) < 26 && Math.hypot(x - RING.x, z - RING.z) < 31) continue;
       if (trees.some(([tx, tz]) => Math.hypot(tx - x, tz - z) < 5.5)) continue;
       trees.push([x, z]);
       const k = trees.length % 4;

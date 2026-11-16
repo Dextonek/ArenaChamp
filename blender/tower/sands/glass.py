@@ -19,7 +19,7 @@ def build():
     z = R.z
     R.mat("turq", "#1f7a76", rough=0.62, double=True)
     R.mat("veil", "#8ccac4", rough=0.6, double=True)
-    R.mat("cream", "#e2d6b8", rough=0.8, double=True)
+    R.mat("cream", "#cdbf9c", rough=0.8, double=True)
     R.mat("saffron", "#a8701e", rough=0.62, double=True)
     R.mat("sand", "#c8a46a", rough=0.75, double=True)
     R.mat("leather", "#5a3a22", rough=0.6, double=True)
