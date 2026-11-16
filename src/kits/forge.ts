@@ -58,7 +58,18 @@ export const forgeKit: HeroKit = {
   foil: F.ash,
   portrait(g, s) {
     ground(g, s);
-    // A broad iron helm, an ash beard, and the forge glowing in his chest.
+    // A broad iron helm, an ash beard, and the forge glowing in his chest. Revamped 2026-11-15 (Kilnborn): ash-grey skin and
+    // amber eyes in the helm's opening, ember seams climbing from the forge.
+    g.fillStyle = '#6c6866';
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.47, s * 0.15, s * 0.12, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#ffc878';
+    for (const x of [0.43, 0.57]) {
+      g.beginPath();
+      g.ellipse(s * x, s * 0.455, s * 0.022, s * 0.012, 0, 0, Math.PI * 2);
+      g.fill();
+    }
     g.fillStyle = F.iron;
     g.beginPath();
     g.moveTo(s * 0.26, s * 0.52);
@@ -84,10 +95,21 @@ export const forgeKit: HeroKit = {
     g.lineTo(s * 0.4, s * 0.7);
     g.closePath();
     g.fill();
+    g.fillStyle = '#6c6866';
+    g.fillRect(s * 0.34, s * 0.78, s * 0.32, s * 0.22);
     g.fillStyle = F.iron;
     g.fillRect(s * 0.1, s * 0.82, s * 0.24, s * 0.18);
     g.fillRect(s * 0.66, s * 0.82, s * 0.24, s * 0.18);
     glow(g, s * 0.5, s * 0.88, s * 0.1);
+    g.strokeStyle = '#ff8a3c';
+    g.lineWidth = s * 0.012;
+    g.lineJoin = 'round';
+    for (const pts of [[[0.47, 0.84], [0.44, 0.81], [0.45, 0.78]], [[0.53, 0.84], [0.57, 0.81], [0.55, 0.78]], [[0.36, 0.86], [0.33, 0.9], [0.28, 0.88]], [[0.64, 0.86], [0.68, 0.9], [0.73, 0.88]]]) {
+      g.beginPath();
+      g.moveTo(s * pts[0][0], s * pts[0][1]);
+      for (const [x, y] of pts.slice(1)) g.lineTo(s * x, s * y);
+      g.stroke();
+    }
   },
   spells: [
     {

@@ -205,6 +205,19 @@ export const yarnKit: HeroKit = {
     g.fillStyle = S.gold; g.beginPath(); g.arc(s * 0.84, s * 0.2, s * 0.018, 0, Math.PI * 2); g.fill();
     g.strokeStyle = S.hoodEdge; g.lineWidth = s * 0.04;
     g.beginPath(); g.ellipse(s * 0.5, s * 0.42, s * 0.18, s * 0.23, 0, 0, Math.PI * 2); g.stroke();
+    // Revamped 2026-11-15 (Briarkin of the Spindle court): long pointed ears out through the hood's rolled edge.
+    for (const sx of [-1, 1]) {
+      g.fillStyle = '#d9b49a';
+      g.strokeStyle = S.dark;
+      g.lineWidth = s * 0.01;
+      g.beginPath();
+      g.moveTo(s * (0.5 + sx * 0.15), s * 0.4);
+      g.quadraticCurveTo(s * (0.5 + sx * 0.3), s * 0.3, s * (0.5 + sx * 0.4), s * 0.2);
+      g.quadraticCurveTo(s * (0.5 + sx * 0.28), s * 0.38, s * (0.5 + sx * 0.16), s * 0.47);
+      g.closePath();
+      g.stroke();
+      g.fill();
+    }
     // A kind old face, silver hair at the brow, calm eyes, a small smile.
     g.fillStyle = '#e0bfa4';
     g.beginPath(); g.ellipse(s * 0.5, s * 0.42, s * 0.155, s * 0.2, 0, 0, Math.PI * 2); g.fill();
@@ -213,11 +226,11 @@ export const yarnKit: HeroKit = {
     g.fillStyle = '#d9a58e';
     for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(s * (0.5 + sx * 0.1), s * 0.5, s * 0.03, s * 0.02, 0, 0, Math.PI * 2); g.fill(); }
     for (const sx of [-1, 1]) {
-      g.fillStyle = '#fff8f0';
+      // eyes of one colour, silver from lid to lid
+      g.fillStyle = '#c9d2dc';
       g.beginPath(); g.ellipse(s * (0.5 + sx * 0.07), s * 0.4, s * 0.034, s * 0.042, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#8a3a6a';
-      g.beginPath(); g.ellipse(s * (0.5 + sx * 0.07), s * 0.406, s * 0.022, s * 0.03, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = S.dark; g.beginPath(); g.arc(s * (0.5 + sx * 0.07), s * 0.408, s * 0.011, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#eef3f8';
+      g.beginPath(); g.ellipse(s * (0.5 + sx * 0.07 - 0.01), s * 0.388, s * 0.009, s * 0.011, 0, 0, Math.PI * 2); g.fill();
       g.strokeStyle = S.silver; g.lineWidth = s * 0.012;
       g.beginPath(); g.moveTo(s * (0.5 + sx * 0.035), s * 0.355); g.quadraticCurveTo(s * (0.5 + sx * 0.07), s * 0.335, s * (0.5 + sx * 0.105), s * 0.35); g.stroke();
     }
