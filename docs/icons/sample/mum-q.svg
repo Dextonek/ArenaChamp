@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="radial-gradient-1" cx="24" cy="20" r="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2640"/>
+      <stop offset="1" stop-color="#0c0c12"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="25" cy="22" r="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2640"/>
+      <stop offset="0.55" stop-color="#17151f"/>
+      <stop offset="1" stop-color="#0c0c12"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient-1" x1="7.103" y1="2.329" x2="56.897" y2="61.671" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f4dc94"/>
+      <stop offset="0.3" stop-color="#c9a24a"/>
+      <stop offset="0.75" stop-color="#5a3f14"/>
+      <stop offset="1" stop-color="#5a3f14"/>
+    </linearGradient>
+  </defs>
+  <title>mum icon</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <rect x="0" y="0" width="64" height="64" fill="url(#radial-gradient-1)"/>
+    <polygon points="43.098,5.207 58.793,20.902 58.793,43.098 43.098,58.793 20.902,58.793 5.207,43.098 5.207,20.902 20.902,5.207" fill="url(#radial-gradient-2)" stroke="url(#linear-gradient-1)" stroke-width="1.4" stroke-miterlimit="10"/>
+    <polygon points="42.486,6.686 57.314,21.514 57.314,42.486 42.486,57.314 21.514,57.314 6.686,42.486 6.686,21.514 21.514,6.686" fill="none" stroke="#0c0c12" stroke-width="1.2" stroke-miterlimit="10" opacity="0.7"/>
+    <line x1="9" y1="50.5" x2="50" y2="50.5" fill="none" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="9" y1="50.5" x2="50" y2="50.5" fill="none" stroke="#b8b4f4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3.6 2.8"/>
+    <polyline points="45.5,46.5 51,50.5 45.5,54.5" fill="none" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="45.5,46.5 51,50.5 45.5,54.5" fill="none" stroke="#b8b4f4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="20.5" y1="19.5" x2="11.5" y2="19.5" fill="none" stroke="#0c0c12" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="20.5" y1="19.5" x2="11.5" y2="19.5" fill="none" stroke="#f7f7f2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="21" y1="27" x2="7" y2="27" fill="none" stroke="#0c0c12" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="21" y1="27" x2="7" y2="27" fill="none" stroke="#f7f7f2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="20.5" y1="34.5" x2="11.5" y2="34.5" fill="none" stroke="#0c0c12" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="20.5" y1="34.5" x2="11.5" y2="34.5" fill="none" stroke="#f7f7f2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="39" cy="27" r="13.5" fill="#b8b4f4" opacity="0.26"/>
+    <circle cx="39" cy="27" r="13.5" fill="none" stroke="#0c0c12" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+    <path d="M25.5 27 C25.5 19.544 31.544 13.5 39 13.5 C46.456 13.5 52.5 19.544 52.5 27 C52.5 34.456 46.456 40.5 39 40.5 C31.544 40.5 25.5 34.456 25.5 27 Z" fill="none" stroke="#f7f7f2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4.6 3.3"/>
+    <path d="M30.5 26 C31.105 22.136 34.136 19.105 38 18.5" fill="none" stroke="#f7f7f2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+    <ellipse cx="39" cy="50.5" rx="9" ry="2.2" fill="#0c0c12" opacity="0.6"/>
+  </g>
+</svg>

@@ -13,6 +13,9 @@ well-known names from other games, books, films and shows (`FRANCHISE` in `pipel
 holds the names of the big franchises a player is likely to know. The coined words below were also looked up by hand where noted. Every name here is a
 first pick, for the user to change.
 
+**Confirmed by the user (2026-11-16):** the Story book's names: the Aumbry, Senmere, Iselm, Linnet, the Market of Noon, the Dawnless,
+The Long Noon.
+
 ## New in the codex
 
 | Name | What it is | Where |

@@ -69,6 +69,25 @@ in small details.
 | Ink (foil: rice paper `#efe6d2`) | `#ffffff` | `#c8d4ff` | `#3a5ae8` | `#ff4a2a` | `#0b0a0e` |
 | Chrono (foil: ivory dial `#f4ecd8`) | `#ffffff` | `#f4ffd0` | `#d4ff5a` | `#ff4a4a` | `#0c100a` |
 | Phoenix (Anka; foil: pale ash `#eadcc4`, ember red `#c23a22`, gold `#e0a935`) | `#fff6d8` | `#ffc24a` | `#ff7b3a` | `#2fb8a8` | `#1a0806` |
+| Dusk / chalk (Mum; foil: ivory mask `#c4bca6`, hood `#201b2a`, gold `#d2ae55`) | `#f7f7f2` | `#b8b4f4` | `#5c4a8c` | `#d23a3a` | `#0c0c12` |
+| Stone / rune (Bram; foil: stone `#9a958c`, stone dark `#5b5853`) | `#f6efdc` | `#ffd890` | `#c9b48a` | `#ff9a2a` | `#1c1a18` |
+| Fold / bell (Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`) | `#f6f1df` | `#ffe9a8` | `#ffc462` | `#7fbf5a` | `#14110f` |
+| Ring / shrine (Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`) | `#fff8ea` | `#ffc9a0` | `#e63a3a` | `#d2ac5a` | `#1e1412` |
+| Arbiter (Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`) | `#ffffff` | `#ece6d2` | `#b8bec8` | `#e6b800` | `#141414` |
+| Temple water (Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`) | `#f2f6f8` | `#c4e4f2` | `#74c0ea` | `#ffd23a` | `#0f1a24` |
+| Aether (Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`) | `#ffffff` | `#ffd2e3` | `#ff8fb8` | `#8fd8ff` | `#2a1424` |
+| Deep / lantern (Mabel; foil: soil `#a98258`, dirt `#6b4e33`, claw horn `#e8e0cc`) | `#fff6d6` | `#ffcf5a` | `#ffb040` | `#6fd0c8` | `#120b06` |
+| Feast / ember (Madame Cleaver; foil: steel `#c4ccd4`, char `#2c2724`, soup `#e8794a`) | `#fff3e0` | `#ffb03a` | `#d84a3a` | `#7fbf4a` | `#1e1a18` |
+| Changeling (Pim and Pom; Pom's turns it round: body `#6ac8ff`, accent `#ffb04a`; foil: bark `#6e4a2a`, leaf `#7fbf4a`) | `#fff6e0` | `#ffd24a` | `#ffb04a` | `#6ac8ff` | `#1a1424` |
+| Spindle / rose (Grandma Ironknit; foil: wine `#7a2a4c`, spool `#ff5a8a`, cat grey `#9a9aa6`) | `#fff0f6` | `#ff9cc4` | `#e86a9a` | `#c8c6d8` | `#1e0c18` |
+| Lynx (Sir Whiskers; foil: plate `#3c4458`, steel `#c4ced8`, clay `#b5653a`) | `#fff6e0` | `#ffc060` | `#e8a13a` | `#c8423a` | `#2a1608` |
+| Tithe / seal (Mr. Ledger; foil: vellum `#efe4c0`, oxblood `#7a2230`) | `#fff4e0` | `#e6d9ae` | `#c8302a` | `#ff7a4a` | `#161214` |
+| Augury (Barry Cloudsley; foil: storm `#4a5870`, deep `#2f5ea8`) | `#ffffff` | `#e4edf8` | `#6ac8ff` | `#f4e65a` | `#16233b` |
+| Wingfoot (Pip; foil: paper `#eee3c4`, parcel brown `#b98a52`, night blue `#3a6ac8`, seal red `#d9463a`) | `#fff6dc` | `#ffe8a0` | `#ffd24a` | `#8fb0ee` | `#141c30` |
+| Moss / rune (Hank; foil: wood `#b5763a`, bark `#6a4426`, pine `#3f6b3a`, steel `#cfd5d8`) | `#f4ffe0` | `#c8f08a` | `#7fbf55` | `#e8b868` | `#1c120b` |
+| Illusion (The Great Zambini; foil: card `#efe8d8`, deep violet `#2a1248`) | `#ffffff` | `#e8c8ff` | `#b05aff` | `#d8404a` | `#120a1e` |
+| Threshold (Wick; foil: brass `#b08a4a`, door wood `#5a3321`) | `#fffbe8` | `#ffe6a8` | `#ffcf7a` | `#c8423a` | `#1a0d0a` |
+| Mirror (Silvane; foil: silver `#c6cedb`, glass shade `#8fa8cc`, deep glass `#5a4a98`) | `#ffffff` | `#f4f9ff` | `#cfe6ff` | `#d9b8ff` | `#121a2e` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

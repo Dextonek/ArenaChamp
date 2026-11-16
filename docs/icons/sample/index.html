@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spell icon sample</title>
+<style>
+  :root { --bg: #0e0c12; --panel: #17141d; --line: #2c2735; --ink: #ece6da; --muted: #a39cab; --gold: #c9a24a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  main { max-width: 1060px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font: 700 26px/1.2 Georgia, serif; margin: 0 0 6px; color: #f4dc94; }
+  h2 { font: 700 20px/1.3 Georgia, serif; margin: 34px 0 10px; color: #f4dc94; border-top: 1px solid var(--line); padding-top: 20px; }
+  h3 { margin: 18px 0 8px; font-size: 16px; }
+  p, li { color: var(--ink); }
+  .muted { color: var(--muted); }
+  .note { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .row { display: grid; grid-template-columns: 190px 1fr 1fr; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .row .name b { display: block; font-size: 15px; }
+  .row .name span { color: var(--muted); font-size: 13px; }
+  .key { display: inline-block; min-width: 20px; padding: 0 5px; margin-right: 6px; border-radius: 4px; border: 1px solid var(--gold); color: #ffd27a; font: 800 12px/18px ui-sans-serif; text-align: center; }
+  .set { background: #08070b; border-radius: 10px; padding: 10px; display: flex; gap: 12px; align-items: flex-end; }
+  .set .lab { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .06em; }
+  .slot { display: block; border-radius: 9px; border: 2px solid #4a3a2a; overflow: hidden; background: #000; }
+  .slot img { display: block; width: 100%; height: 100%; }
+  .s64 { width: 64px; height: 64px; } .s48 { width: 48px; height: 48px; border-radius: 7px; } .s32 { width: 32px; height: 32px; border-radius: 5px; border-width: 1px; }
+  .mum .slot { border-color: #4a4458; }
+  .colhead { display: grid; grid-template-columns: 190px 1fr 1fr; gap: 14px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .pal { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .pal span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .pal i { width: 22px; height: 22px; border-radius: 5px; border: 1px solid #0006; display: inline-block; }
+  img.wide { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pair figure { margin: 0; } figcaption { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .phones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  code { background: #221e29; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  @media (max-width: 720px) {
+    .row, .colhead { grid-template-columns: 1fr; }
+    .colhead { display: none; }
+    .set::before { content: attr(data-l); font-size: 11px; color: var(--muted); writing-mode: vertical-rl; transform: rotate(180deg); }
+    .pair { grid-template-columns: 1fr; }
+    .phones { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+<h1>Spell icons drawn with VectorCraft: a sample</h1>
+<div class="note"><b>Since then (2026-11-16):</b> you chose this style, version B, for all 40 heroes. All of them are drawn and in the game (no flag needed any more). See <a href="../index.html" style="color:#f4dc94">the overview of all 40</a>; this page is kept as the sample it was.</div>
+<p class="muted">2026-11-15 · two heroes, four spells each · <b>nothing in the game has changed</b>. The new icons only show with
+<code>?icons=vc</code> in the URL, on this branch.</p>
+
+<div class="note"><b>The questions for you:</b> (1) do you want all 40 heroes' icons in this style? (2) <b>A or B</b>: the picture
+inside the octagon frame (A), or 118% so its big shapes break over the frame's edge (B, see "At 32 px" below)? Things you could also change: the
+octagon itself, the gold edge.</div>
+
+<h2>The two heroes</h2>
+<p><b>Anka the Firebird</b>, the newest hero, as you asked. <b>Mum the Silent One</b> is the older hero whose icons read worst at small
+size. I drew all 40 heroes' current icons at 32 px. Mum's four were all the same: a round white mitt, white dots and thin dashed lines on grey,
+with almost no colour. At 32 px they can't be told apart, and the mitt reads as a cartoon glove. Bram and Bo were close behind (grey on grey).</p>
+<p class="muted">Mum has no row in the art bible's palette (section 2). I used a <b>proposed "Dusk / chalk" row</b> built from her kit's own
+colours (<code>src/kits/mime.ts</code>) and her lore: a porcelain glove, a violet ribbon cuff with a gold edge, a red harlequin diamond. I have not
+edited the art bible; say yes and I'll add the row.</p>
+<div class="pal">
+  <span><i style="background:#fff6d8"></i>Anka core</span><span><i style="background:#ffc24a"></i>hot</span><span><i style="background:#ff7b3a"></i>body</span>
+  <span><i style="background:#2fb8a8"></i>accent (feather eye)</span><span><i style="background:#1a0806"></i>dark</span><span><i style="background:#c23a22"></i>ember red</span>
+</div>
+<div class="pal">
+  <span><i style="background:#f7f7f2"></i>Mum chalk</span><span><i style="background:#b8b4f4"></i>lilac</span><span><i style="background:#5c4a8c"></i>ribbon violet</span>
+  <span><i style="background:#d23a3a"></i>accent (scarf red)</span><span><i style="background:#0c0c12"></i>ink</span><span><i style="background:#c4bca6"></i>ivory</span>
+  <span class="muted">(proposed)</span>
+</div>
+
+<h2>One family: the rules</h2>
+<ul>
+  <li><b>One frame:</b> the hero's dark ground and an octagon medallion with a thin gold edge. The octagon fits inside the desktop slot
+    (a rounded square) and inside the phone slot (a circle), so nothing is cut off on either.</li>
+  <li><b>One light:</b> from the upper left. Shapes are lit there and the main ones cast a soft shadow down and to the right. (Two exceptions:
+    the fan's folds glow from the pivot out, fire hottest at the edge, and the flight streak fades along its path.)</li>
+  <li><b>One outline:</b> every main shape has the same dark outline (1.25 px at 32 px); small parts a little thinner. Gold lines are thinner
+    still: they are detail, not what the icon says.</li>
+  <li><b>A quiet lower-left corner:</b> the spell bar puts the key letter there (see the bar pictures: it hides the end of Mum Q's floor arrow).
+    A full set would keep that corner empty.</li>
+  <li><b>Colour:</b> each hero's palette row, gold only on edges and small details (the frame edge, the feather quill, the fan's guard sticks, the cuff's trim).</li>
+  <li><b>One sign per hero in every spell:</b> Anka's ember ring and eyed feather; Mum's dashed chalk for what can't be seen, and her glove.</li>
+</ul>
+
+<h2>Side by side</h2>
+<p class="muted">Both columns are drawn the way the game draws them: a 128 px source scaled down by the browser to 64, 48 and 32 px.</p>
+<div class="colhead"><div>Spell</div><div>Today (the kit's canvas code)</div><div>VectorCraft</div></div>
+<div id="rows"></div>
+
+<h3>At 32 px, enlarged three times: A and B</h3>
+<p class="muted">The icons brought down to 32 px, then shown three times larger so the pixels show. <b>A</b> is the picture inside the frame
+(the one above and in the bar), <b>B</b> the same picture at 118%, over the frame's edge. The grey column checks that each icon still reads without
+colour.</p>
+<img class="wide" src="zoom32.png" alt="Old and new icons at 32 px, enlarged">
+
+<h2>In the real spell bar</h2>
+<p class="muted">The game's own hero HUD (the same code as in <code>/game</code>), in a CPU duel started from the tool page, with
+<code>?icons=vc</code> (new, variant A) and without (today). Desktop 1280 wide; phone 375 wide, where the slots are round.</p>
+<figure><img class="wide" src="bar/anka-desktop-vc.jpg" alt=""><figcaption>Anka, new</figcaption></figure>
+<figure style="margin-top:10px"><img class="wide" src="bar/anka-desktop-old.jpg" alt=""><figcaption>Anka, today</figcaption></figure>
+<figure style="margin-top:10px"><img class="wide" src="bar/mum-desktop-vc.jpg" alt=""><figcaption>Mum, new</figcaption></figure>
+<figure style="margin-top:10px"><img class="wide" src="bar/mum-desktop-old.jpg" alt=""><figcaption>Mum, today</figcaption></figure>
+<div class="phones" style="margin-top:12px">
+  <figure><img class="wide" src="bar/anka-phone-vc.jpg" alt=""><figcaption>Anka, phone, new</figcaption></figure>
+  <figure><img class="wide" src="bar/anka-phone-old.jpg" alt=""><figcaption>Anka, phone, today</figcaption></figure>
+  <figure><img class="wide" src="bar/mum-phone-vc.jpg" alt=""><figcaption>Mum, phone, new</figcaption></figure>
+  <figure><img class="wide" src="bar/mum-phone-old.jpg" alt=""><figcaption>Mum, phone, today</figcaption></figure>
+</div>
+
+<h2>What I see</h2>
+<ul>
+  <li><b>Mum:</b> a clear step up. Each spell now has its own shape (a ball in flight, a hand on a pane, a rope and loop, a box), and the four
+    differ at 32 px, also in grey.</li>
+  <li><b>Anka:</b> closer. Her icons today are already rich and readable. The new ones are cleaner and match the others, but in A the frame takes
+    some room, so the picture is a little smaller. B wins that room back; I'd pick B.</li>
+  <li>The old icons fill the whole square edge to edge; the new ones look like a set. That is the trade.</li>
+</ul>
+
+<h2>File sizes</h2>
+<table>
+  <tr><th>Icon</th><th class="n">SVG</th><th class="n">SVG gzipped</th><th class="n">PNG 128 px</th></tr>
+  <tr><td>Anka Q</td><td class="n">10.2 KB</td><td class="n">2.7 KB</td><td class="n">11.7 KB</td></tr>
+  <tr><td>Anka W</td><td class="n">10.9 KB</td><td class="n">2.2 KB</td><td class="n">13.2 KB</td></tr>
+  <tr><td>Anka E</td><td class="n">6.5 KB</td><td class="n">2.0 KB</td><td class="n">11.4 KB</td></tr>
+  <tr><td>Anka R</td><td class="n">17.7 KB</td><td class="n">3.9 KB</td><td class="n">14.9 KB</td></tr>
+  <tr><td>Mum Q</td><td class="n">3.8 KB</td><td class="n">0.9 KB</td><td class="n">12.0 KB</td></tr>
+  <tr><td>Mum W</td><td class="n">7.5 KB</td><td class="n">2.1 KB</td><td class="n">12.2 KB</td></tr>
+  <tr><td>Mum E</td><td class="n">8.8 KB</td><td class="n">2.3 KB</td><td class="n">12.1 KB</td></tr>
+  <tr><td>Mum R</td><td class="n">9.1 KB</td><td class="n">2.3 KB</td><td class="n">12.5 KB</td></tr>
+  <tr><th>All 8</th><th class="n">74.5 KB</th><th class="n">18.4 KB</th><th class="n">100 KB</th></tr>
+</table>
+<p class="muted">Variant B is 2-11% bigger. For 160 spell icons that is about 1.5 MB of SVG, about 370 KB as sent (Cloudflare compresses it).</p>
+
+<h3>How I'd load them in the game</h3>
+<ul>
+  <li><b>One SVG file per icon, fetched when a hero's slots are built</b>, about 2-4 KB each as sent. That is what the sample does
+    (<code>src/icons/vc.ts</code>) and what the bar pictures show working: the file loads as an image and <code>icon(g, size)</code> draws it into the
+    slot's canvas, so the code around the icons does not change. Only the heroes on screen are fetched, and the kit's canvas drawing can stay as
+    the fallback while a file loads.</li>
+  <li>If four requests per hero ever matter: one strip per hero (the four icons side by side, 512 x 128), each slot drawing its quarter.
+    Before joining SVGs into one file their gradient names must be made unique: VectorCraft names them <code>linear-gradient-1</code>,
+    <code>-2</code>… in every file, so in a shared file one icon would take another's colours. A few lines in the join step.</li>
+</ul>
+
+<h2>Notes on VectorCraft</h2>
+<ul>
+  <li><b>How long</b> (my clock, not counting your review): learning the tool's commands took about 13 minutes. The frame and the first
+    icon took about 6 minutes; the other seven, with four redraws (Anka's fan and landing, Mum's Q twice), about 11 minutes. So <b>about
+    1.5 to 2 minutes an icon</b> once a hero's own shapes exist, and a few minutes more for each new hero's shapes (Anka's feather, Mum's glove).
+    VectorCraft itself makes each icon in under 2 seconds (up to 15 s when the computer is busy).</li>
+  <li><b>Good:</b> it runs with no window from a list of commands, so every icon can be made again exactly
+    (<code>pipeline/icons/vectorcraft/&lt;hero&gt;/&lt;slot&gt;.json</code>). The commands are those of a full vector editor: Pathfinder joins and cuts (the glove
+    is joined from 7 rounded shapes; the feather's notches are cut out), rotate-copy around a point (the fan's folds), mirror-copy (the
+    firebird's wings and tail), dashed lines, gradients that can fade out. The SVG it writes is clean and small, and its PNG matches it.</li>
+  <li><b>Bad:</b> it has no AI drawing: every shape is placed by coordinates I chose, so the drawing is only as good as the code that makes the
+    points. Tapered strokes (width profiles) come out in the SVG as a jagged outline of 70 points with 15 repeated ones, so I drew tapers myself.
+    "Stroke outside" comes out as an SVG mask (more bytes, and clashing names in a shared file), so I used a copy underneath instead.
+    New shapes take the last paint used, so every shape must be painted explicitly. Referring to a copy's id inside a list needs
+    <code>$N.ids.0</code>, which the help does not say. Nothing crashed.</li>
+  <li><b>All 40 heroes (about 160 spell icons, 200 with passives):</b> the frame, the rules and the export are done. What is left is each hero's
+    own shapes (a feather, a glove, a hammer…) and four pictures, about 10 to 15 minutes of my time a hero, so <b>about 7 to 10 hours</b> for
+    the 38 left, in batches of 8. What takes longer is your eye: one review round per batch, and from this sample about one icon in three
+    needs a redraw after a look (Mum's Q read as a magnifying glass twice before it read as a ball). Plan about 5 batches, each ending in a
+    page like this one for your yes. The passives have no icon in the spell bar today (a letter in a badge); they could get one the same way.</li>
+</ul>
+
+<p class="muted" style="margin-top:30px">Files: the generator <code>pipeline/icons/vectorcraft/make.py</code> (the rules and each icon's drawing), the command files
+<code>pipeline/icons/vectorcraft/anka/</code> and <code>mum/</code>, today's icons <code>old-icons.js</code>, the bar pictures <code>bar-shots.py</code>, the 32 px sheet
+<code>zoom-sheet.py</code>.</p>
+</main>
+<script>
+const SPELLS = [
+  ['anka', 'Q', 'Ember Quill', 'A feather (10 m): 54 damage. Where it lands it stays as an ember, her nest.'],
+  ['anka', 'W', 'Fan the Flames', 'Every ember flares in a ring of fire (2.2 m): 54 damage, then burns out.'],
+  ['anka', 'E', 'Ember Flight', 'She flies to her ember nearest the aimed spot and lands in a burst: 40 damage.'],
+  ['anka', 'R', 'Firebird', 'Wings of fire, then she crosses 12 m as a great firebird: 120 damage in a 3 m lane.'],
+  ['mum', 'Q', 'Invisible Ball', 'A ball nobody can see (9 m): 72 damage. Only a chalk line on the floor shows it.'],
+  ['mum', 'W', 'Wall', 'An unseen wall 4 m long for 5 s, solid for both. One hit breaks it. Three charges.'],
+  ['mum', 'E', 'Rope Trick', 'She mimes a rope to you (7 m): 55 damage and you are pulled 3 m toward her.'],
+  ['mum', 'R', 'Boxed In', 'Four unseen walls close round your spot for 3 s; you must break one to get out.'],
+];
+const set = (src, label) => {
+  const d = document.createElement('div');
+  d.className = 'set';
+  d.dataset.l = label;
+  for (const s of [64, 48, 32]) {
+    const w = document.createElement('div');
+    w.innerHTML = `<div class="lab">${s}</div><span class="slot s${s}"><img src="${src}" alt=""></span>`;
+    d.append(w);
+  }
+  return d;
+};
+const rows = document.getElementById('rows');
+let last = '';
+for (const [hero, key, name, line] of SPELLS) {
+  if (hero !== last) {
+    const h = document.createElement('h3');
+    h.textContent = hero === 'anka' ? 'Anka, the Firebird' : 'Mum, the Silent One';
+    rows.append(h);
+    last = hero;
+  }
+  const r = document.createElement('div');
+  r.className = `row ${hero}`;
+  const n = document.createElement('div');
+  n.className = 'name';
+  n.innerHTML = `<b><span class="key">${key}</span>${name}</b><span>${line}</span>`;
+  r.append(n, set(`old/${hero}-${key.toLowerCase()}.png`, 'today'), set(`${hero}-${key.toLowerCase()}.svg`, 'VectorCraft'));
+  rows.append(r);
+}
+</script>
+</body>
+</html>

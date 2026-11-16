@@ -1,0 +1,1193 @@
+{
+ "kits": [
+  {
+   "stem": "vesper",
+   "name": "Vesper",
+   "title": "the Crimson Countess",
+   "accent": "#ff3b4e",
+   "foil": "#e9dcc6",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Lancet",
+     "blurb": "Costs the Price. A blood needle (7 m): 30 damage, and it stays in for 3 s. From 0.6 s on, cast again to rip it out: 22 more, half the needle's price back, and Lancet is ready again at once. The Rip costs nothing but raises the Price. Only while she sees them within 8 m; a needle left in is lost."
+    },
+    {
+     "key": "W",
+     "name": "Mist Waltz",
+     "blurb": "Costs the Price, no cooldown. She flows 5 m as mist. Her next two basic attacks within 3 s reach 1.5 m farther and deal +18."
+    },
+    {
+     "key": "E",
+     "name": "Hemocurse",
+     "blurb": "Costs the Price, no cooldown. A curse (7 m): 25 damage, for 3 s. Each spell the enemy casts costs them 15 HP, and if she is Hungry she heals 20. It breaks at 8 m or without sight."
+    },
+    {
+     "key": "R",
+     "name": "Sanguine Feast",
+     "blurb": "Costs twice the Price, once in 11 s. She roots herself and drinks (8 m) for 1.6 s: pulses of 15, 15, then 20 plus 15% of their missing HP, and 45 HP back. A stun or silence, cover, or 9 m of distance ends it."
+    }
+   ]
+  },
+  {
+   "stem": "brannoc",
+   "name": "Brannoc",
+   "title": "the Ashen Smith",
+   "accent": "#ff5a12",
+   "foil": "#cfc6b8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Chain Hammer",
+     "blurb": "No cooldown, +40 Heat. Hurls a hammer on a chain 9 m down the aim: 19 damage cold, 39 white-hot, drags the first enemy it touches 4 m to him and slows them 1 s."
+    },
+    {
+     "key": "W",
+     "name": "Forge Roar",
+     "blurb": "No cooldown, +30 Heat. For 3 s: +30% armour, and his next basic attack is a slam: +30 damage and a 0.5 s knock-up."
+    },
+    {
+     "key": "E",
+     "name": "Red-Hot Rivet",
+     "blurb": "No cooldown, +30 Heat. Flicks a rivet at an enemy in sight (6 m), which burns on for 2 s: 20 damage in all cold, 43 white-hot."
+    },
+    {
+     "key": "R",
+     "name": "Quench",
+     "blurb": "Spends all his Heat. He plants himself, a 3 m ring shows for 0.6 s, then it bursts for 30 plus 0.5 per point of Heat (80 at white heat) and throws them back. From white heat it also stuns 0.75 s. The only way out of white heat. Once in 11 s."
+    }
+   ]
+  },
+  {
+   "stem": "isolde",
+   "name": "Isolde",
+   "title": "the Winter Warden",
+   "accent": "#4fb4e8",
+   "foil": "#e8f4fa",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Icicle",
+     "blurb": "Throws a piercing icicle (11 m): 42 and 2 Chill. It sticks in the floor where it ends for 2 s; recast to shatter it: 26 and 1 Chill within 2 m."
+    },
+    {
+     "key": "W",
+     "name": "Hoarfrost",
+     "blurb": "Frost bites the enemy (8 m, needs sight): 36 and 2 Chill."
+    },
+    {
+     "key": "E",
+     "name": "Rime Armour",
+     "blurb": "For 3 s: +40% armour, and every basic attack that hits her gives the attacker 2 Chill."
+    },
+    {
+     "key": "R",
+     "name": "Winter's Shatter",
+     "blurb": "Ultimate. Her fist closes on the enemy (9 m, needs sight). 0.8 s later the Chill shatters: 50 plus 30 per Chill (200 at 5), and the Chill is spent. It fizzles if sight is lost."
+    }
+   ]
+  },
+  {
+   "stem": "lyra",
+   "name": "Lyra",
+   "title": "the Star Archer",
+   "accent": "#ffe08a",
+   "foil": "#e8e0c8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Starfall Arrow",
+     "blurb": "Hold to draw for up to 1 s: the range grows from 9 to 14 m and the damage from 29 to 58. At full draw the arrow pierces, and a full-draw hit takes 3 s off Pinning Arrow."
+    },
+    {
+     "key": "W",
+     "name": "Twin Stars",
+     "blurb": "For 5 s her basic attacks loose two arrows, the second at half damage, and she moves 20% faster."
+    },
+    {
+     "key": "E",
+     "name": "Pinning Arrow",
+     "blurb": "An arrow (9 m, 0.3 s wind-up): 35. Within 1.5 m of a wall or pillar the enemy is pinned (rooted 1.5 s); anywhere else they are 40% slower for 1.5 s."
+    },
+    {
+     "key": "R",
+     "name": "Meteor Mark",
+     "blurb": "Ultimate. A star locks onto the enemy (14 m) and follows for 1.5 s, then fixes on their spot; 0.9 s later a meteor strikes it (1.8 m): 120 plus 25% of what she dealt meanwhile."
+    }
+   ]
+  },
+  {
+   "stem": "vitriol",
+   "name": "Vitriol",
+   "title": "the Plague Alchemist",
+   "accent": "#4fbf2a",
+   "foil": "#dcefe6",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Toxin Dart",
+     "blurb": "A fast glass dart (9 m): 20, then 25 more over 3 s. Leaves green toxin on the enemy for 4 s. Reaches 6 m in about half a second: step off the line."
+    },
+    {
+     "key": "W",
+     "name": "Fire Vial",
+     "blurb": "A vial of fire that cannot miss (7 m, needs sight): 18, then 25 more over 2 s. Leaves orange fire on the enemy for 4 s."
+    },
+    {
+     "key": "E",
+     "name": "Acid Splash",
+     "blurb": "A 4 m cone of violet acid in front of her: 40 and a shove back. Leaves violet acid on the enemy for 4 s. Her answer to being rushed."
+    },
+    {
+     "key": "R",
+     "name": "Homunculus",
+     "blurb": "Ultimate. A little walking bomb (120 HP, 4 m/s) climbs out at her feet with all three reagents in its belly and walks at the enemy. It bursts on the enemy for 55 and sets off every reaction at once. Shoot it down or outrun it."
+    }
+   ]
+  },
+  {
+   "stem": "kaia",
+   "name": "Kaia",
+   "title": "the Tempest Caller",
+   "accent": "#4aa8ff",
+   "foil": "#c8d4de",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Sky Strike",
+     "blurb": "A strike falls on an enemy in sight (7 m) 0.35 s later: 60, and a rod stands 1.5 m in front of them, toward her. Rods within 5 m of them arc for 18."
+    },
+    {
+     "key": "W",
+     "name": "Thunder Rod",
+     "blurb": "A great rod at a spot (9 m) for 3 s. From 1.2 s, each second: enemies within 3.5 m take 24 and are slowed. Cast again from 1.2 s to fire it once for 50 and end it."
+    },
+    {
+     "key": "E",
+     "name": "Polarity",
+     "blurb": "Magnetises an enemy in sight (8 m): 20, then after 1 s they are yanked 3 m toward her nearest rod (her, with none). Ending within 1 m of the rod: stunned 0.6 s."
+    },
+    {
+     "key": "R",
+     "name": "Supercell",
+     "blurb": "A storm over her for 6 s. Every 0.8 s, if the enemy is within 7 m of her or 3 m of a rod, a bolt marks their spot (1.2 m) and falls 0.6 s later: 32. Rods arc as normal."
+    }
+   ]
+  },
+  {
+   "stem": "sefu",
+   "name": "Sefu",
+   "title": "the Dune Sovereign",
+   "accent": "#c8913f",
+   "foil": "#e8d8b4",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Cobra Spit",
+     "blurb": "A cobra rears and spits venom 9 m down the aim: 62 damage and blinded 1.2 s on the first enemy it touches. Half the cooldown back when it hits a Judged enemy. Step off the line to dodge it."
+    },
+    {
+     "key": "W",
+     "name": "Shepherd's Crook",
+     "blurb": "He hooks the crook round an enemy 6 m away (he must see them) and drags them 3 m toward him: 35 damage and slowed 0.5 s. The enemy is Judged for 3 s."
+    },
+    {
+     "key": "E",
+     "name": "Scarab Stride",
+     "blurb": "He skitters 6 m down the aim as a stream of scarabs in 0.5 s, the line shown as he starts. Running through an enemy bites: 30 now, then 30 poison over 2 s. He can still be hit."
+    },
+    {
+     "key": "R",
+     "name": "Sarcophagus",
+     "blurb": "A gold sarcophagus rises at the enemy 9 m away (he must see them). 0.7 s later, if they are still inside its 1.6 m circle, it shuts: sealed 1.2 s, unable to act and unable to be hit. It opens in scarabs: 110 damage and Judged. Step out and it shuts on nothing."
+    }
+   ]
+  },
+  {
+   "stem": "nyx",
+   "name": "Nyx",
+   "title": "the Umbral Stalker",
+   "accent": "#c88cff",
+   "foil": "#cfcad8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Umbral Cut",
+     "blurb": "Click an enemy within 2.5 m. After 0.35 s a dagger strike lands on where it stands (within 3.2 m): 58, 93 from behind (its back 120 degrees)."
+    },
+    {
+     "key": "W",
+     "name": "Smoke Veil",
+     "blurb": "A 3 m cloud of dark smoke at her feet for 3 s. Inside it she counts as faded even mid-fight, and an enemy inside is blinded."
+    },
+    {
+     "key": "E",
+     "name": "Shadow Double",
+     "blurb": "She darts 4 m, through cover if it is in the way. A shadow copy (40 HP, 2.5 s, 15 per 0.9 s) stays where she stood and walks at the enemy."
+    },
+    {
+     "key": "R",
+     "name": "Nightfall",
+     "blurb": "For 5 s the arena darkens. She moves 25% faster and deals 20% more, and fades again 0.8 s after each hit she lands. When it ends she is slowed for 1 s."
+    }
+   ]
+  },
+  {
+   "stem": "fenna",
+   "name": "Fenna",
+   "title": "the Grove Warden",
+   "accent": "#4caf50",
+   "foil": "#e8dcc0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Seed Shot",
+     "blurb": "A seed flies 9 m (0.25 s wind-up): 64 damage. A flower grows where it stops, on the enemy or at the end of its flight."
+    },
+    {
+     "key": "W",
+     "name": "Strangle Vine",
+     "blurb": "Vines (7 m, needs sight) coil round one enemy: 40 damage and rooted 1.0 s, or 1.4 s within 3 m of a flower."
+    },
+    {
+     "key": "E",
+     "name": "Pollen Glide",
+     "blurb": "She glides 6 m on a gust of pollen, and a flower grows where she lands. No heal of its own."
+    },
+    {
+     "key": "R",
+     "name": "World Tree",
+     "blurb": "A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 4 HP a second each instead of 3. Recast: Uproot, a 3 m burst of thorns after 0.6 s: 60."
+    }
+   ]
+  },
+  {
+   "stem": "auriel",
+   "name": "Auriel",
+   "title": "the Dawn Paladin",
+   "accent": "#f2b83c",
+   "foil": "#efe6d2",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "First Light",
+     "blurb": "A wave of light in a 6 m cone: 40. Hitting the enemy gives her a 14 shield for 3 s, but not while Dawnward or Sunrise holds. When that shield ends it bursts for 8 in 3 m."
+    },
+    {
+     "key": "W",
+     "name": "Dawnward",
+     "blurb": "A 45 shield for 3 s. While it holds, her basic attacks reach 3 m farther. Press again to pop it now. When it ends it bursts for 27 in 3 m. It cannot be cast while Sunrise holds."
+    },
+    {
+     "key": "E",
+     "name": "Oathbrand",
+     "blurb": "A beam falls on the enemy (7 m) 0.5 s later if she still has sight: 44, and branded for 2.5 s. A burst that catches a branded enemy also stuns them 0.8 s."
+    },
+    {
+     "key": "R",
+     "name": "Sunrise",
+     "blurb": "A 130 shield for 5 s, and she floats. Press again to pop it. When it breaks, runs out or is popped, a 5 m ring appears fixed at her spot, closes for 1.6 s and bursts for 80. It does not follow her."
+    }
+   ]
+  },
+  {
+   "stem": "marin",
+   "name": "Marin",
+   "title": "the Tide Dancer",
+   "accent": "#1f9fd6",
+   "foil": "#eaf8fb",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Wave Disc",
+     "blurb": "Throws a spinning disc of water 9 m down the aim (0.3 s wind-up, fast): 52 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her."
+    },
+    {
+     "key": "W",
+     "name": "Coral Spire",
+     "blurb": "A coral pillar rises at a spot (8 m) after 0.9 s and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 44: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar."
+    },
+    {
+     "key": "E",
+     "name": "Mist Form",
+     "blurb": "She turns to water and flows up to 6 m to the aim, through the enemy if it is in the way: untouchable for the 0.25 s of the run. She reforms at the end spot in a splash (40 damage within 3 m) and the tide flips."
+    },
+    {
+     "key": "R",
+     "name": "Moon's Pull",
+     "blurb": "Ultimate. She roots herself under a moon for 3 s (a stun, silence or knock-up ends it). The tide is held at Low and her pulls are doubled; an enemy within 12 m she can see is dragged toward her at 2.4 m/s for 24 damage a second, and a 110 tide crash lands if it is within 2.5 m when the moon sets."
+    }
+   ]
+  },
+  {
+   "stem": "zephyr",
+   "name": "Zephyr",
+   "title": "the Wind Blade",
+   "accent": "#7fe6c8",
+   "foil": "#eef3f6",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Crosswind",
+     "blurb": "A 3 m cross-cut of wind in front of him: 34 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (23 damage), a dash that gives a Gust."
+    },
+    {
+     "key": "W",
+     "name": "Skyward",
+     "blurb": "He leaps into the air, untouchable for 0.6 s, and comes down on a spot within 5 m: 34 damage within 1.4 m and a 0.5 s knock-up. The landing circle shows from take-off. A dash: it gives a Gust and resets his basic attack when he lands."
+    },
+    {
+     "key": "E",
+     "name": "Feather Step",
+     "blurb": "A quick 4 m step in any direction. Two charges (one back every 7 s), shown as pips round him. A dash: it gives a Gust and resets his basic attack."
+    },
+    {
+     "key": "R",
+     "name": "Sky Rend",
+     "blurb": "Ultimate. Click an enemy within 7 m: he marks them and stands for 0.8 s. If he still sees them within 9 m, he vanishes and cuts from every side: 3 cuts plus 2 per Gust he spends (9 at most), 22 damage each, untouchable while they run. He ends behind them and cannot cast for 0.6 s. If the wind-up fails (cover, or too far) it fizzles and he is free."
+    }
+   ]
+  },
+  {
+   "stem": "mortis",
+   "name": "Mortis",
+   "title": "the Ossuary Lord",
+   "accent": "#3fd8b8",
+   "foil": "#ece4d0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Bone Fan",
+     "blurb": "Flicks three thin bone shards in a fan, 18 degrees apart (31 each, 8 m). Every bone pile within 3 m of him throws one more (six at most), and the fan widens. Stand between two shards past 5 m."
+    },
+    {
+     "key": "W",
+     "name": "Raise Dead",
+     "blurb": "A skeleton claws out of the ground at the spot, and one more for every bone pile within 4 m of it (three more at most)."
+    },
+    {
+     "key": "E",
+     "name": "Bone Armour",
+     "blurb": "A cage of ribs closes round him: a shield of 30, plus 30 per living skeleton (120 at most), for 4 s. When it breaks, or at 3.5 s, its shards fly at the enemy for 38. Recast (from 0.3 s, within 4 s): Shatter it now and the shards fly at once."
+    },
+    {
+     "key": "R",
+     "name": "Grave Grasp",
+     "blurb": "Ultimate. Click the enemy (needs line of sight): a hand rises where it stood, a 1.6 m ring shown for 0.7 s. If it is still inside, the hand drags it 4 m toward him (55 damage), roots it for 1 s, and two skeletons claw out beside it (28 damage more). If it stepped out, the hand closes on nothing."
+    }
+   ]
+  },
+  {
+   "stem": "ada",
+   "name": "Ada",
+   "title": "the Artificer",
+   "accent": "#d9773a",
+   "foil": "#d8dde2",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Homing Drone",
+     "blurb": "Click an enemy within 8 m. A drone flies out and always hits: 45. It tags them for 3 s, and her turrets deal 30% more to a tagged enemy. Needs sight."
+    },
+    {
+     "key": "W",
+     "name": "Deploy Turret",
+     "blurb": "Two charges, one back every 10 s. A turret at a spot within 8 m for 8 s: 80 HP, 9 damage every 1.4 s, range 8. Within 5 m of her it shoots 30% faster and glows."
+    },
+    {
+     "key": "E",
+     "name": "Grapple",
+     "blurb": "A hook (9 m, 0.25 s wind-up). On an enemy: 30 and slowed 1 s, she stays put. On a wall, pillar or her own turret she reels herself to it. It cannot pull the enemy."
+    },
+    {
+     "key": "R",
+     "name": "Siege Mode",
+     "blurb": "She braces for 6 s, rooted, +20% armour. Turrets within 8 m of her fire twice as fast, and she fires heavy rounds (23 every 0.8 s) at an enemy within 9 m she can see. A stun, silence or knock-up ends it. Recast: pack up."
+    }
+   ]
+  },
+  {
+   "stem": "sirix",
+   "name": "Sirix",
+   "title": "the Swarm Warden",
+   "accent": "#f0b020",
+   "foil": "#f6e6b0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Barbed Stinger",
+     "blurb": "A stinger flies 8 m: 42, and the barb stays on them for 3 s. Cast it again within 3 s to leap onto the barbed enemy: 25, and with 2 wasps spent it poisons them for 30 over 3 s."
+    },
+    {
+     "key": "W",
+     "name": "Hive Shell",
+     "blurb": "Chitin plates close round him: 40% less damage for 3 s. Each hit he takes spends a wasp, which stings the attacker for 15."
+    },
+    {
+     "key": "E",
+     "name": "Swarm Cloud",
+     "blurb": "All his wasps fly to a spot 9 m away and hang there for 3 s as a cloud: from 1 s, 7 damage per wasp each second to everyone inside, and blinded. They come back when it ends."
+    },
+    {
+     "key": "R",
+     "name": "Swarm Surge",
+     "blurb": "Ultimate. He looses every wasp down a 10 m column, 4 m wide: 18 per wasp, shoves 4 m and blinds 1 s. The swarm does not come back: he is a plain fighter afterwards."
+    }
+   ]
+  },
+  {
+   "stem": "cantor",
+   "name": "Cantor",
+   "title": "the Last Verse",
+   "accent": "#e04aa8",
+   "foil": "#f2e6d0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Resounding Chord",
+     "blurb": "No cooldown. A chord in a 5 m cone: 22, and 9% more for each step of Crescendo. On the beat it adds a step; cast at 5 it hits for 32, silences 0.5 s and the Crescendo starts again. Off the beat: 6 damage and the Crescendo is gone."
+    },
+    {
+     "key": "W",
+     "name": "Siren Song",
+     "blurb": "No cooldown. Spends the Crescendo: a note flies at the enemy (8 m, 10 m/s) and charms them 0.25 s for each step (1.25 s at 5): they walk toward him and cannot act. Off the beat it charms nobody. Cover breaks the note: step behind a pillar as it flies. An enemy that cannot be charmed (a raid boss) is struck instead: 36 for each step."
+    },
+    {
+     "key": "E",
+     "name": "Rising Chorus",
+     "blurb": "No cooldown. Spends the Crescendo: a shield of 15 for each step (75 at 5) for 3 s, and +25% speed for 1.5 s. Off the beat it gives nothing."
+    },
+    {
+     "key": "R",
+     "name": "Duet",
+     "blurb": "A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 18 (more with the Crescendo), and his clean spells inside it also silence 0.5 s. On the beat it adds a step. Cannot be cast while the enemy is charmed. Once in 11 s."
+    }
+   ]
+  },
+  {
+   "stem": "opaline",
+   "name": "Opaline",
+   "title": "the Lightbreaker",
+   "accent": "#b8b0ff",
+   "foil": "#f0f4ff",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Ricochet Light",
+     "blurb": "A bolt of light (12 m) that bounces off up to two walls, pillars or crystals: 64 damage, +25% for each bounce. A hit after bouncing takes 1 s per bounce off this spell."
+    },
+    {
+     "key": "W",
+     "name": "Crystal",
+     "blurb": "A crystal rises at a spot (8 m) for 6 s, or until 80 damage breaks it. It blocks walking, sight and bolts for both of you, and her bolts bounce off it."
+    },
+    {
+     "key": "E",
+     "name": "Blinding Flare",
+     "blurb": "A flash of light (3 m) round her: enemies in it are blinded for 1.5 s and pushed 2 m away."
+    },
+    {
+     "key": "R",
+     "name": "Shatterlight",
+     "blurb": "Click an enemy (10 m, in sight). Six shards ring the spot they stand on and, after 1.2 s, each fires inward through it: 36 damage each, and each bounces once off a wall. Step out of the ring to dodge."
+    }
+   ]
+  },
+  {
+   "stem": "oblivion",
+   "name": "Oblivion",
+   "title": "the Unmaker",
+   "accent": "#ff2a55",
+   "foil": "#d8d4e0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Gravity Slam",
+     "blurb": "He slams the ground: 60 within 3 m, and enemies there are dragged 1.5 m toward him."
+    },
+    {
+     "key": "W",
+     "name": "Null Zone",
+     "blurb": "A 3 m sphere of void stays where he cast it for 3 s. Enemies inside cannot cast, and bolts that enter it vanish."
+    },
+    {
+     "key": "E",
+     "name": "Phase Step",
+     "blurb": "He marks a spot within 4 m, then steps through the void to it 0.25 s later. His next basic attack within 3 s rips for +40 and weakens the enemy 20% for 2 s."
+    },
+    {
+     "key": "R",
+     "name": "Black Hole",
+     "blurb": "A black hole crawls 8 m down his aim for 4 s, pulling enemies within 5 m. Touching its core deals 105 and stuns 1 s, once. Recast: it collapses at once for 85 within 3 m, after a 0.5 s warning."
+    }
+   ]
+  },
+  {
+   "stem": "shiori",
+   "name": "Shiori",
+   "title": "the Last Brush",
+   "accent": "#3a5ae8",
+   "foil": "#efe6d2",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Ink Lash",
+     "blurb": "A lash of ink (9 m): 66, and a stroke along its path that stays 5 s. Standing on ink slows and Stains. Where strokes cross, a point bursts for 40."
+    },
+    {
+     "key": "W",
+     "name": "Seal of Binding",
+     "blurb": "Stamps a 2 m seal (8 m), armed after 0.5 s, for 6 s. An enemy who steps in is rooted 1 s and Stained. Once armed it counts as a stroke for crossings."
+    },
+    {
+     "key": "E",
+     "name": "Flowing Script",
+     "blurb": "Glides 6 m and paints a stroke along her path. Do not follow her down the line."
+    },
+    {
+     "key": "R",
+     "name": "The Last Character",
+     "blurb": "Ultimate. Writes one great character (9 m, 4 m wide) in 1.0 s: 40 and rooted 1 s inside it. Every stroke of hers under the enemy erupts for 50, 3 at most, and vanishes."
+    }
+   ]
+  },
+  {
+   "stem": "tempo",
+   "name": "Tempo",
+   "title": "the Unwound Hour",
+   "accent": "#d4ff5a",
+   "foil": "#f4ecd8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Tick",
+     "blurb": "A spinning clock hand (9 m, 50). A direct hit takes 1 s off Tick. Echo: the same line again 1.5 s later, from where he stood, for 20."
+    },
+    {
+     "key": "W",
+     "name": "Slow Time",
+     "blurb": "Time thickens in a 3.5 m circle (9 m): after 1.2 s enemies inside take 30 and are slowed 2 s. He moves 30% faster inside for 3 s. Echo 1.5 s later: 12 and the slow again."
+    },
+    {
+     "key": "E",
+     "name": "Time Skip",
+     "blurb": "He vanishes for 0.6 s (untouchable) and returns on the marker 6 m away with a pulse of 35. Echo 1.5 s later at the same spot: 14."
+    },
+    {
+     "key": "R",
+     "name": "Stolen Hour",
+     "blurb": "A clock face forms over an enemy (8 m); after 0.8 s, if he still sees them: 70 and slowed 2 s, and for 4 s his echoes hit at 80% and he moves 30% faster. Echo: 28."
+    }
+   ]
+  },
+  {
+   "stem": "silvane",
+   "name": "Silvane",
+   "title": "the Mirror Duchess",
+   "accent": "#cfe6ff",
+   "foil": "#d9b8ff",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Hand Mirror",
+     "blurb": "A spinning hand mirror (10 m): 64 damage, +25% for each of up to three bounces. A mirror that lands after a bounce lies 2.5 s: walk within 1 m to catch it, and Hand Mirror is ready again."
+    },
+    {
+     "key": "W",
+     "name": "Vanity Stand",
+     "blurb": "A standing mirror at a spot (8 m) for 6 s, or until 60 damage breaks it. It blocks walking, sight and bolts, and her mirrors bounce off it. Whoever breaks it has Bad Luck: 15% less damage for 7 s."
+    },
+    {
+     "key": "E",
+     "name": "Through the Glass",
+     "blurb": "Step into her Stand and out of the far side, up to 9 m in all. With no Stand, a 3 m step toward the aim."
+    },
+    {
+     "key": "R",
+     "name": "Hall of Mirrors",
+     "blurb": "She spins and throws eight mirrors outward in a ring (12 m): 60 damage each, bouncing twice. Stand in a gap. Up to four that land can be caught: each cuts 2 s off this spell."
+    }
+   ]
+  },
+  {
+   "stem": "bram",
+   "name": "Bram",
+   "title": "the Stonewright",
+   "accent": "#c9b48a",
+   "foil": "#6d6a66",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Raise Gerald",
+     "blurb": "Marks a spot (9 m): 0.7 s later Gerald bursts up there, 76 damage and a 0.5 s knock-up to anyone within 1.5 m. He is a real pillar with 220 HP. A new Gerald crumbles the old one."
+    },
+    {
+     "key": "W",
+     "name": "The Shove",
+     "blurb": "Needs Gerald within 3 m. He slides 8 m along your aim at 8 m/s: 70 damage to the first enemy he touches, who is carried along. Stopped by a wall with them: stunned 0.9 s."
+    },
+    {
+     "key": "E",
+     "name": "A Good Lean",
+     "blurb": "Needs Gerald within 8 m. Dash to him and stop 1.5 m short, with a shield of 60 for 2 s. He did not ask for the hug."
+    },
+    {
+     "key": "R",
+     "name": "Gerald, No!",
+     "blurb": "Needs Gerald. He topples along your aim: a 10 m shadow for 1.0 s, then 150 damage to anyone in it. He breaks into rubble that slows for 3 s, and you have no pillar left."
+    }
+   ]
+  },
+  {
+   "stem": "hank",
+   "name": "Hank",
+   "title": "the Moss Hewer",
+   "accent": "#b5763a",
+   "foil": "#3f6b3a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Axe Swing",
+     "blurb": "A quick 3 m swing in front of him: 60. Any tree of his that the swing touches falls away from him along a strip 8 m long and 1.6 m wide, shown for 0.6 s: 30, 60 or 110 by its size. A stump stays."
+    },
+    {
+     "key": "W",
+     "name": "Fast Growth",
+     "blurb": "Grows a tree at a spot up to 6 m away. After 0.7 s anything within 1.5 m of it takes 50 and is knocked up 0.5 s. A sapling has 30 HP and blocks nothing; young at 1.2 s (120 HP, real cover); full at 2.5 s. Two charges."
+    },
+    {
+     "key": "E",
+     "name": "Caber Toss",
+     "blurb": "Rips up the nearest tree within 3 m and hurls it 9 m end over end: 30, 60 or 90 by its size, and a knock-back. With no tree he throws his axe for 30, and Q is gone until he walks to where it landed."
+    },
+    {
+     "key": "R",
+     "name": "TIMBER!",
+     "blurb": "Five trees grow in a row along the aim, 2 m apart: real cover. Recast within 4 s: he swings and they fall like dominoes along the row, 90 on whoever lies in the way (3 hits at most). Without it they fall harmlessly after 8 s."
+    }
+   ]
+  },
+  {
+   "stem": "professor-puff",
+   "name": "Professor Puff",
+   "title": "the Aeronaut",
+   "accent": "#ff8fb8",
+   "foil": "#fff1a8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Air Hose",
+     "blurb": "A jet of air (8 m, 22 m/s, 0.3 s wind-up): 60 damage, 3 Air and a 1 m push. Each Air pushes it 8% farther."
+    },
+    {
+     "key": "W",
+     "name": "Helium Bomb",
+     "blurb": "A balloon floats to a spot (9 m) and pops after 1.0 s: 50 damage and 3 Air to everyone within 2.5 m."
+    },
+    {
+     "key": "E",
+     "name": "Hot Air",
+     "blurb": "He inflates and floats 6 m away from the spot you aim at. Anyone within 2.5 m of where he left is pushed 3 m."
+    },
+    {
+     "key": "R",
+     "name": "Pop!",
+     "blurb": "A pin flies at you (9 m, 0.6 s, it needs sight when it lands): 60 damage plus 20 per Air, and all your Air goes out in a 3 m shove."
+    }
+   ]
+  },
+  {
+   "stem": "sir-whiskers",
+   "name": "Sir Whiskers",
+   "title": "the Lynx Duelist",
+   "accent": "#e8a13a",
+   "foil": "#f4e6c8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Scratch",
+     "blurb": "A 2.5 m claw in front of him: 64 damage. His next attack within 2 s is ready at once."
+    },
+    {
+     "key": "W",
+     "name": "Knock It Over",
+     "blurb": "With cover within 4 m of him, a pot falls on the spot at 9 m after 0.7 s (1.5 m): 60 damage and a 0.5 s stun. In the open it does nothing."
+    },
+    {
+     "key": "E",
+     "name": "Cat Leap",
+     "blurb": "Spends the life he is on: leaps 7 m onto you for 60 damage, then cannot cast for 0.4 s. Not on his last life."
+    },
+    {
+     "key": "R",
+     "name": "Land on My Feet",
+     "blurb": "For 4 s, the next life he would lose is not lost: he lands on his feet and leaps 3 m away. His attacks are 30% faster until then."
+    }
+   ]
+  },
+  {
+   "stem": "mr-ledger",
+   "name": "Mr. Ledger",
+   "title": "the Tithe-Keeper",
+   "accent": "#d9c27a",
+   "foil": "#3f4a3a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Invoice",
+     "blurb": "A paper flies (9 m): 72 damage that goes on the target's tab instead of hurting now. The tab comes due 3 s after the last charge, at +40%."
+    },
+    {
+     "key": "W",
+     "name": "Late Fee",
+     "blurb": "At a spot (9 m), after 1 s: a notice lands on a 2.5 m circle. 62 damage on the tab, and slowed 1.5 s."
+    },
+    {
+     "key": "E",
+     "name": "Call It In",
+     "blurb": "The ledger is slammed shut: the tab on the enemy comes due now, without the interest. Needs no target, and a tab to call."
+    },
+    {
+     "key": "R",
+     "name": "Foreclosure",
+     "blurb": "A huge stamp falls at a spot (9 m) in 0.8 s. Seen in the 2.2 m circle, the target pays their whole tab now at +60%, and takes 20% more from him for 3 s. Cover saves them."
+    }
+   ]
+  },
+  {
+   "stem": "big-yoko",
+   "name": "Big Yoko",
+   "title": "the Mountain",
+   "accent": "#e63a3a",
+   "foil": "#f4ead0",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Palm Strike",
+     "blurb": "An open palm slaps the way he faces (2.8 m, 0.4 s): 54 damage, and you are shoved 3 m. A shove that takes you out of his ring is a ring-out."
+    },
+    {
+     "key": "W",
+     "name": "Stomp",
+     "blurb": "He stomps a new ring at his feet (0.5 s): 50 damage and slowed 1 s within 3 m. The ring is 5 m in radius and stands 8 s: a push that takes you out of it is a ring-out."
+    },
+    {
+     "key": "E",
+     "name": "Charge",
+     "blurb": "He runs 6 m down the aim (0.4 s wind-up, strip shown): the first enemy on it takes 40 and is carried along ahead of him. If that carries you out of his ring, it is a ring-out."
+    },
+    {
+     "key": "R",
+     "name": "Salt Throw",
+     "blurb": "He throws a fistful of salt: a 6 m cone after 0.6 s blinds you for 1.5 s. His ring gets 2 m smaller for the rest of its life, and he is 30% faster for 4 s."
+    }
+   ]
+  },
+  {
+   "stem": "mum",
+   "name": "Mum",
+   "title": "the Silent One",
+   "accent": "#f7f7f2",
+   "foil": "#20202a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Invisible Ball",
+     "blurb": "She throws a ball you cannot see (9 m, 22 m/s, 0.3 s wind-up): 72 damage. Only a chalk line on the floor shows where it goes. It passes her own walls."
+    },
+    {
+     "key": "W",
+     "name": "Wall",
+     "blurb": "Three charges, one back every 3 s. An invisible wall 4 m long at a spot (9 m), solid for both of you for 5 s, with only faint chalk on the floor. One hit of any size breaks it. Three at most."
+    },
+    {
+     "key": "E",
+     "name": "Rope Trick",
+     "blurb": "She mimes a rope to you (7 m, 0.5 s, needs sight when it lands): 55 damage and you are pulled 3 m toward her. Cover breaks it."
+    },
+    {
+     "key": "R",
+     "name": "Boxed In",
+     "blurb": "Four walls close round your spot (9 m, sight) after 0.8 s: 3 m wide, standing 3 s. She can shoot in; you cannot get out until you break one. Each takes one hit."
+    }
+   ]
+  },
+  {
+   "stem": "referee-whistler",
+   "name": "Referee Whistler",
+   "title": "the Arbiter",
+   "accent": "#f2f2f2",
+   "foil": "#1a1a1a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Whistle Blast",
+     "blurb": "A ring of sound (8 m, 0.3 s wind-up): 78 damage. Sidestep it."
+    },
+    {
+     "key": "W",
+     "name": "No Running",
+     "blurb": "A rule for the enemy in sight within 7 m: no dashes, blinks or leaps for 3 s. Break it and you get a yellow card."
+    },
+    {
+     "key": "E",
+     "name": "No Casting",
+     "blurb": "A rule for the enemy in sight within 7 m: no spells, only basic attacks, for 2 s. Cast anyway and the spell goes off, with a yellow card."
+    },
+    {
+     "key": "R",
+     "name": "Show the Card",
+     "blurb": "He points at a spot (9 m, 0.6 s): a yellow card to whoever he still sees there, and HANDS OFF for 3 s: hit him and you get another. Two yellows are a red: 90 damage and silenced 1.5 s."
+    }
+   ]
+  },
+  {
+   "stem": "madame-cleaver",
+   "name": "Madame Cleaver",
+   "title": "the Feastmistress",
+   "accent": "#f2efe6",
+   "foil": "#d84a3a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Thrown Cleaver",
+     "blurb": "She throws her cleaver (9 m): 66 damage. It sticks in the floor where it stops, and a dish plops out there."
+    },
+    {
+     "key": "W",
+     "name": "Hot Soup",
+     "blurb": "A huge pot drops at a spot (8 m) and tips over after 1 s: 56 damage and a 1.5 s slow within 2.5 m, and a dish in the middle."
+    },
+    {
+     "key": "E",
+     "name": "Burnt Offering",
+     "blurb": "She lobs a burnt dish to a spot (8 m). Black and smoking: whoever walks over it eats 60 damage and a 0.8 s stun. On her it does nothing."
+    },
+    {
+     "key": "R",
+     "name": "Dinner Is Served",
+     "blurb": "An 8 m table rises in front of her for 5 s: real cover, 150 HP, with three dishes on it. Whoever stands at it for 1 s eats them: +25% damage for 5 s, and for her 50 HP."
+    }
+   ]
+  },
+  {
+   "stem": "pip",
+   "name": "Pip",
+   "title": "the Wingfoot",
+   "accent": "#ffd24a",
+   "foil": "#3a6ac8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Express Letter",
+     "blurb": "A letter flicked at the aim (8 m): 58 damage, +15 for each Charge he holds. He keeps them."
+    },
+    {
+     "key": "W",
+     "name": "Fragile",
+     "blurb": "A parcel thrown at a spot (9 m). After 1 s it bursts, 2.5 m wide: 72 damage and a 1 s slow. Walk out of the ring."
+    },
+    {
+     "key": "E",
+     "name": "Shortcut",
+     "blurb": "A sprint of up to 6 m. With a Charge he spends one and Shortcut is ready again almost at once."
+    },
+    {
+     "key": "R",
+     "name": "Final Delivery",
+     "blurb": "Spends all his Charges. A parcel with your name hunts you for 1.5 s (5 m/s), then bursts: 80, +40 per Charge, within 2 m. Touch cover first and you sign for it: it goes back."
+    }
+   ]
+  },
+  {
+   "stem": "gus",
+   "name": "Gus",
+   "title": "the Temple Keeper",
+   "accent": "#ffd23a",
+   "foil": "#3a6a8a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Big Mop",
+     "blurb": "A mop swipe in front of him (3.5 m, 0.3 s): 60 damage, and a strip of wet floor 6 m long. It wipes your rods, flowers and ink along the strip."
+    },
+    {
+     "key": "W",
+     "name": "Wet Floor Sign",
+     "blurb": "A folding sign at a spot (8 m) for 6 s, a real obstacle with 40 health. A hero who slides into it takes 40 and is stunned 0.6 s. Two charges, one back every 8 s."
+    },
+    {
+     "key": "E",
+     "name": "Mop Bucket",
+     "blurb": "He throws the wheeled bucket (8 m, 0.3 s wind-up): 55 damage, and the floor 2.5 m round where it stops is wet."
+    },
+    {
+     "key": "R",
+     "name": "Flood",
+     "blurb": "After a 1 s warning the whole floor within 7 m of him is wet for 5 s. He surfs on it: +35% speed. Stand near cover, which stops a slide, or walk straight lines."
+    }
+   ]
+  },
+  {
+   "stem": "mabel",
+   "name": "Mabel",
+   "title": "the Deepdelver",
+   "accent": "#8a6a4a",
+   "foil": "#ffcf5a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Claw",
+     "blurb": "A swipe of her digging claws, 2.5 m in front of her: 68 damage."
+    },
+    {
+     "key": "W",
+     "name": "Dig",
+     "blurb": "A hole at a spot (6 m), opening after 0.7 s, 1.5 m in radius. It stays 8 s, three at most. Whoever walks in falls: rooted 0.8 s, then slowed. She walks across her own."
+    },
+    {
+     "key": "E",
+     "name": "Mole Run",
+     "blurb": "She dives (0.3 s) and tunnels up to 7.2 m in 1.2 s, 40% faster than she walks, a mound on the surface showing where. Nothing can hit her and she cannot cast. She pops up: 60 and a 0.5 s knock-up within 1.5 m."
+    },
+    {
+     "key": "R",
+     "name": "Sinkhole",
+     "blurb": "The ground drops under the enemy: a pit 4 m in radius at their spot (9 m, sight needed), 1.3 s warning. Whoever is inside takes 115 and is rooted 1 s."
+    }
+   ]
+  },
+  {
+   "stem": "grandma-ironknit",
+   "name": "Grandma Ironknit",
+   "title": "the Weaver",
+   "accent": "#e86a9a",
+   "foil": "#c8c0a8",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Knitting Needle",
+     "blurb": "A needle as long as a sword (9 m, 22 m/s, 0.3 s wind-up): 62 damage. Step off its line."
+    },
+    {
+     "key": "W",
+     "name": "Cast On",
+     "blurb": "Two charges, one back every 6 s. She ties a line of yarn from her to the nearest cover the way you aim (9 m), or 9 m out into nothing. Three at most. Walk across one and you are stuck 0.4 s, then slowed 1 s. One hit cuts it."
+    },
+    {
+     "key": "E",
+     "name": "Sweater",
+     "blurb": "She throws a sweater on you (7 m, 0.5 s, needs sight when it lands): slowed 2 s, then it shrinks: 50 damage. Reach cover first."
+    },
+    {
+     "key": "R",
+     "name": "Mr. Biscuit",
+     "blurb": "A big grey cat springs out of a ball of wool at her feet: 200 HP, 6 s, 4.5 m/s. He runs at you and sits on you: 25 damage a second and a slow. Shoot him, or lead him off: he stops to play with a cut line."
+    }
+   ]
+  },
+  {
+   "stem": "barry-cloudsley",
+   "name": "Barry Cloudsley",
+   "title": "the Sky Augur",
+   "accent": "#6ac8ff",
+   "foil": "#f4e65a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Cold Front",
+     "blurb": "A gust (9 m): 64 damage. In Rain it slows for 1.5 s. In Wind it knocks the target back further."
+    },
+    {
+     "key": "W",
+     "name": "Lightning Risk",
+     "blurb": "A cloud marks a spot (9 m): after 0.8 s lightning strikes it, 64 damage within 1.5 m."
+    },
+    {
+     "key": "E",
+     "name": "Forecast Update",
+     "blurb": "The forecast changes now, to the other weather. It costs a Cold Front cooldown of 6 s. Cannot be cast in the last 0.6 s before a change."
+    },
+    {
+     "key": "R",
+     "name": "Severe Warning",
+     "blurb": "A tornado at a spot (9 m): after a 1 s warning it walks at the enemy at 2.5 m/s for 4 s, 25 damage a second within 2 m. Walk away: you are faster."
+    }
+   ]
+  },
+  {
+   "stem": "bo",
+   "name": "Bo",
+   "title": "the Ramherd",
+   "accent": "#f0ead6",
+   "foil": "#7a5a3a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Crook Whack",
+     "blurb": "He shakes his crook, then whacks a 4 m cone: 58 damage, and a sheep at the feet of whoever he hits. Stay out of 4 m."
+    },
+    {
+     "key": "W",
+     "name": "Spare Sheep",
+     "blurb": "Three sheep land at a spot (8 m) for 6 s: 30 HP each. They walk to whoever is nearest, him or you, and each touch adds Wool. Six units a side at most."
+    },
+    {
+     "key": "E",
+     "name": "Shear",
+     "blurb": "Needs a sheep within 6 m: he shears it, it runs on naked and fast, and he throws the wool (8 m): 50 damage and 3 Wool."
+    },
+    {
+     "key": "R",
+     "name": "Stampede",
+     "blurb": "Eight sheep run down a 12 m line, 4 m wide, after 0.8 s: 30 each, three hits at most, and each hit adds Wool. Step out of the line."
+    }
+   ]
+  },
+  {
+   "stem": "the-great-zambini",
+   "name": "The Great Zambini",
+   "title": "the Illusionist",
+   "accent": "#b05aff",
+   "foil": "#ffe08a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Card Spray",
+     "blurb": "Three playing cards in a 24 degree fan (8 m): 26 damage each. Close up they are a wall; past 5 m stand in a gap."
+    },
+    {
+     "key": "W",
+     "name": "Sawn in Half",
+     "blurb": "A saw blade slides at you (8 m, 18 m/s): 60 damage and slowed 1.5 s."
+    },
+    {
+     "key": "E",
+     "name": "The Hat Trick",
+     "blurb": "Three hats shuffle at his feet for 1.5 s and he vanishes under one. Hit the right hat and he pops out stunned 1 s; a wrong one gives confetti. At 1.5 s he appears at his hat. An area spell hits all three."
+    },
+    {
+     "key": "R",
+     "name": "The Grand Finale",
+     "blurb": "He vanishes. Three hats ring the enemy (radius 3 m) for 1.2 s, then swords fly from all three toward the centre: 30 each, stopped by walls. He steps out of one. Step out of the ring."
+    }
+   ]
+  },
+  {
+   "stem": "wick",
+   "name": "Wick",
+   "title": "the Doorwarden",
+   "accent": "#b08a4a",
+   "foil": "#6a2a2a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Key Toss",
+     "blurb": "A brass key (9 m): 78 damage. It flies into a door and out of its pair, going the same way, and through all four doors of the Grand Lobby."
+    },
+    {
+     "key": "W",
+     "name": "Door",
+     "blurb": "Two charges (4 s each). A door at a spot (9 m) for 10 s, 40 HP, two at a time with the same number. Anyone who walks into one leaves by the other, and so does a bolt, whoever shot it."
+    },
+    {
+     "key": "E",
+     "name": "Slam",
+     "blurb": "Both doors slam: 70 damage and a 0.5 s stun on an enemy within 1.5 m of either door, after 0.7 s."
+    },
+    {
+     "key": "R",
+     "name": "Grand Lobby",
+     "blurb": "Four tall doors ring the enemy (3 m, 9 m, in sight) for 4 s. Walking into one sets you down at the far side of the ring, and his Q flies through them all. The gaps are 2 m."
+    }
+   ]
+  },
+  {
+   "stem": "pim",
+   "name": "Pim and Pom",
+   "title": "the Changeling Twins",
+   "accent": "#ffb04a",
+   "foil": "#6ac8ff",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Bonk",
+     "blurb": "A wooden sword swings across a 3 m cone in front of him: 72 damage. Stay out of 3 m."
+    },
+    {
+     "key": "W",
+     "name": "Charge",
+     "blurb": "He lowers his head and runs 5 m toward the aim after a short wind-up: 56 damage to whoever is in the lane when he arrives."
+    },
+    {
+     "key": "E",
+     "name": "Shield Up",
+     "blurb": "A little toy shield: 50 shield for 2 s. Wait it out, or take the space."
+    },
+    {
+     "key": "R",
+     "name": "Tag Out",
+     "blurb": "Swap twins: a 0.5 s hold while the other pops out of the backpack. The one who comes in has the next spell ready 2 s sooner. The twin who rests heals 6 HP a second."
+    }
+   ]
+  },
+  {
+   "stem": "pom",
+   "name": "Pim and Pom",
+   "title": "the Changeling Twins",
+   "accent": "#6ac8ff",
+   "foil": "#ffb04a",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Pebble",
+     "blurb": "A pebble from the slingshot (9 m, quick): 66 damage. Sidestep it."
+    },
+    {
+     "key": "W",
+     "name": "Snare",
+     "blurb": "A net drops on a spot (7 m, 1 s warning, 2 m round): 30 damage and a 1 s root. Leave the circle."
+    },
+    {
+     "key": "E",
+     "name": "Backflip",
+     "blurb": "A hop 4 m toward the aim. She leaves a party popper where she stood: after a moment it goes off for 40."
+    },
+    {
+     "key": "R",
+     "name": "Tag Out",
+     "blurb": "Swap twins: a 0.5 s hold while the other pops out of the backpack. The one who comes in has the next spell ready 2 s sooner. The twin who rests heals 6 HP a second."
+    }
+   ]
+  },
+  {
+   "stem": "anka",
+   "name": "Anka",
+   "title": "the Firebird",
+   "accent": "#ff7b3a",
+   "foil": "#eadcc4",
+   "spells": [
+    {
+     "key": "Q",
+     "name": "Ember Quill",
+     "blurb": "A feather (10 m): 54 damage. Where it ends, in the enemy or in the floor, it stays as an ember and becomes her nest."
+    },
+    {
+     "key": "W",
+     "name": "Fan the Flames",
+     "blurb": "Every ember flares after 0.8 s in a ring of 2.2 m: 54 damage, once. The embers burn out."
+    },
+    {
+     "key": "E",
+     "name": "Ember Flight",
+     "blurb": "She flies to her ember nearest the aimed spot (12 m) and lands in a burst of 1.8 m: 40 damage. The ember is spent. Needs an ember."
+    },
+    {
+     "key": "R",
+     "name": "Firebird",
+     "blurb": "She spreads wings of fire for 1 s, then crosses 12 m as a great firebird: 120 damage to everyone in the 3 m lane. An ember is left where she took off."
+    }
+   ]
+  }
+ ]
+}

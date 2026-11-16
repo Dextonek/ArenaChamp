@@ -23,7 +23,8 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   deploy" covers that one deploy only. After new work, list what is not live and ask.
 - **Credentials:** never type or repeat passwords in chat. Local test logins come from the git-ignored
   `server/data/test-accounts.local.json`; let the page fetch it in JS. No test accounts on the live server.
-- **Agents:** at most 3 subagents at once, counting ones that subagents start themselves. Blender (MCP): one agent at a
+- **Agents:** up to 6 subagents at once, counting ones that subagents start themselves (the user lifted the old limit of 3 on
+  2026-11-16: "you can make more agents, not just 3"). Blender (MCP): one agent at a
   time. One writer at a time on the shared engine files (`src/heroMode.ts`, `src/arena.ts`, `src/duel.ts`,
   `src/main.ts`).
 - **Loops:** every wait or poll ends by itself within 10 minutes. Never kill processes by name. "stop", "sstop" or
