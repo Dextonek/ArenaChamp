@@ -41,6 +41,8 @@ The three agents below were restarted in their own threads from their saved comm
   the user then: a deploy drops live connections).
 - **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
   built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
+- **Running (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
+  `docs/tower/openworld/stage3/`): friends go through a door together, the boss runs the Raid's way (one brain, revives, hand-over).
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
   words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
   Senmere, by the vault-keeper Iselm (now the Sun Warden) to keep his dying daughter at her hour, collects worlds; it took the sun's
