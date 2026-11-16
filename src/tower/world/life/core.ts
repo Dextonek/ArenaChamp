@@ -850,7 +850,7 @@ export class Room {
 export function beastGeometry(o: {
   s: number; shoulder: number; len: number; girth: number; neck: number; head: number; leg?: number;
   colors: { body: number; under?: number; leg: number; head?: number; tail?: number; ear?: number };
-  ears?: 'long' | 'point' | 'round'; tail?: 'stub' | 'brush' | 'long'; low?: boolean;
+  ears?: 'long' | 'point' | 'round'; tail?: 'stub' | 'brush' | 'long' | 'hang'; low?: boolean;
   /** A hump on the back (its height as a share of the girth), and a saddle cloth over it (a colour). */
   hump?: number; saddle?: number;
 }) {
@@ -897,6 +897,8 @@ export function beastGeometry(o: {
   if (o.tail) {
     const t = o.tail === 'brush'
       ? new THREE.SphereGeometry(1, 7, 5).scale(G * 0.16, G * 0.16, L * 0.38).rotateX(0.5).translate(0, bodyY - G * 0.05, -L * 0.72)
+      : o.tail === 'hang'
+        ? new THREE.ConeGeometry(G * 0.16, L * 0.6, 6).rotateX(Math.PI - 0.35).translate(0, bodyY - L * 0.18, -L * 0.6)
       : o.tail === 'long'
         ? new THREE.ConeGeometry(G * 0.12, L * 0.9, 5).rotateX(-Math.PI / 2 + 0.15).translate(0, bodyY - G * 0.15, -L * 0.85)
         : new THREE.ConeGeometry(G * 0.1, L * 0.18, 5).rotateX(-Math.PI / 2 - 0.6).translate(0, bodyY + G * 0.2, -L * 0.52);

@@ -14,6 +14,7 @@ import { seaLife } from './sea';
 import { woodLife } from './wood';
 import { sandsLife } from './sands';
 import { deepLife } from './deep';
+import { warLife } from './war';
 
 /** The look a floor is drawn from (its places, paths, cover...): the generator's, or the chapter's handmade first floor's. */
 export function lifeLook(n: number): ChapterLook | null {
@@ -54,7 +55,7 @@ function marksOf(root: THREE.Object3D | null) {
 }
 
 type ChapterLife = (env: LifeEnv, inp: LifeIn, hero: THREE.Vector3) => Life;
-/** One a chapter, in order: the Sea, the Wood, the Sands, the Deep, the War. A chapter without one has no life yet. */
+/** One a chapter, in order: the Sea, the Wood, the Sands, the Deep, the War. */
 const CHAPTERS: (ChapterLife | null)[] = [
   (env, inp, hero) => {
     // what the land put past the edge (its depth's props and its scenes, its houses and boats), read off the zone's drawing
@@ -70,7 +71,7 @@ const CHAPTERS: (ChapterLife | null)[] = [
   woodLife,
   sandsLife,
   deepLife,
-  null,
+  warLife,
 ];
 
 /** What the Sea's land drew (land.ts `landLife`): its houses with their chimneys' tops, its boats, its jetties (world). */

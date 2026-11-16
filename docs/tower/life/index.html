@@ -439,7 +439,75 @@ should be: it shows where there is light.</p>
     ways, and 8 to 19 more draws on a computer (the three walkers most of them), 6 on a phone. The Deep's life moves nothing on the
     processor but the bats and the walkers.</li>
 </ul>
-<!-- CHAPTERS -->
+<h2 class="ch" id="war">Chapter V: the War (floors 41 to 50)</h2>
+<p class="sub">The Field of Banners in the last days of the War: a grey evening after a day of battle, warm low sun through smoke. The
+zone already had crows wheeling far over the field, columns of smoke from the far camps, banners on the roads and the gate towers,
+and the rain; this adds what lives, and smoulders, near you.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Crows</b> on the stakes, the palisade, the fences, the walls' broken tops, the wagons, the shields and the field itself.
+    They lift off when you come near or a fight does, wheel, and come down again.</li>
+  <li><b>Ash</b> drifting down everywhere, and <b>smoke</b>: the burned farm still smouldering (dark), the braziers, the camp's
+    cooking fire.</li>
+  <li><b>Horses</b> of the wagon train, tethered at the wagons: they never bolt; they graze and turn their heads to watch you.</li>
+  <li><b>Cloth:</b> sheets and bandages drying on lines at the field hospital (the White Sister's), pennants in their army's colour
+    by the war drums. The standards' own cloth is the law's (it flies the colours), so nothing is added to them.</li>
+  <li><b>People walking</b> beside the roads (on a computer only): the War's gleaner.</li>
+</ul>
+<h3>Clip</h3>
+<div class="clips">
+  <figure class="after"><video src="war/wagons.mp4" poster="war/wagons.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 42, the wagons.</b> Walking in among the wagon train: the horses graze and look up, a crow flies over,
+    ash falls through the rain.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot. (The "Two banners" panel is the floor's own and shows in both.)</p>
+<h3>Floor 42, the Mud Fields: the field hospital</h3>
+<div class="pair">
+  <figure><img src="war/f42-v-before.jpg" alt="Floor 42, the Mud Fields: the field hospital, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f42-v-after.jpg" alt="Floor 42, the Mud Fields: the field hospital, after: sheets and bandages drying on a line (top)" loading="lazy"><figcaption><b>After:</b> sheets and bandages drying on a line (top)</figcaption></figure>
+</div>
+<h3>Floor 42: the wagons</h3>
+<div class="pair">
+  <figure><img src="war/f42-d-before.jpg" alt="Floor 42: the wagons, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f42-d-after.jpg" alt="Floor 42: the wagons, after: three wagon horses tethered, grazing" loading="lazy"><figcaption><b>After:</b> three wagon horses tethered, grazing</figcaption></figure>
+</div>
+<h3>Floor 42: the burned farm</h3>
+<div class="pair">
+  <figure><img src="war/f42-h-before.jpg" alt="Floor 42: the burned farm, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f42-h-after.jpg" alt="Floor 42: the burned farm, after: a crow over it, ash in the air" loading="lazy"><figcaption><b>After:</b> a crow over it, ash in the air</figcaption></figure>
+</div>
+<h3>Floor 45: the field hospital</h3>
+<div class="pair">
+  <figure><img src="war/f45-v-before.jpg" alt="Floor 45: the field hospital, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f45-v-after.jpg" alt="Floor 45: the field hospital, after: a line of bandages (right)" loading="lazy"><figcaption><b>After:</b> a line of bandages (right)</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the crows, one horse a wagon train, less ash, no walkers; the smoke and cloth stay.</p>
+<div class="pair">
+  <figure class="after"><img src="war/f42-camp-phone.jpg" alt="Floor 42 camp at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 42, the camp</figcaption></figure>
+  <figure class="after"><img src="war/f42-d-phone.jpg" alt="Floor 42 wagons at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 42, the wagons</figcaption></figure>
+</div>
+<h3>The War's fights, and a fix in the War's rain</h3>
+<p>Here the check first failed: with the life on, the speed tool's fight on floors 41 and 45 came out a different fight, and not even
+the same one twice. Laying one fight over the other die by die found it: <b>the War's rain</b> (a picture only) picked where each
+raindrop starts with the fight's own dice, so when a drop landed a frame earlier or later the fight's dice moved. Anything that
+changed the setup by a hair (here the life's extra objects) shifted the drops, and with them the whole fight. The rain now has dice
+of its own (one change in <code>src/tower/world/warZone.ts</code>; it looks the same). Since then the War's fight is the same with the
+life on or off, every run. Its print changed with it, so the War floors' saved prints are older than this code.</p>
+<h3>What it costs</h3>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 41</td><td>23.3</td><td>27.2</td><td>310 → 316</td><td>yes (<code>5267e5db</code>), after the rain's fix</td></tr>
+  <tr><td>Computer, floor 45</td><td>21.1</td><td>27.2</td><td>339 → 346</td><td>yes (<code>18d15a15</code>, four runs), after the rain's fix</td></tr>
+  <tr><td>Phone (slowed four times)</td><td colspan="4">not measured: the timing lock was busy with another agent's run until the wait ran out</td></tr>
+</table>
+<ul>
+  <li>Under load again (these scenes ran near 13 ms on a quiet computer). Timed on its own, the War's life takes 0.06 to 0.07 ms of
+    the processor a frame. 6 or 7 more draws: the walkers did not come within sight in these scenes, so the walkers' share (as in the
+    other chapters, most of the cost) is not in these two rows.</li>
+</ul>
+
 <h2 class="ch" id="all">For every chapter</h2>
 <h3>The walkers</h3>
 <p>The plain workers made for the walkers in Blender now walk every chapter that has its life: on the Sea a dockhand and a fishwife in

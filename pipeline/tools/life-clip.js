@@ -17,8 +17,9 @@ for (let i = 0; i < 300 && !api.heroMode.figureLoaded; i++) { _world.step(0.05);
 for (const b of document.querySelectorAll('button')) if (/^(Begin|Go|Start|OK|Close|Continue|Onward)$/i.test(b.textContent.trim()) && b.offsetParent) b.click();
 try { g.zone.hud.closeCard(); } catch (e) { /* none */ }
 g.zone.setPacks(false);
+// (the life comes into the scene a moment after the floor starts: index.ts)
 let lifeGroup = null;
-api.duel.group.parent?.traverse((o) => { if (o.name === 'life') lifeGroup = o; });
+for (let i = 0; i < 60 && !lifeGroup; i++) { _world.step(0.05); await new Promise((ok) => setTimeout(ok, 50)); api.duel.group.parent?.traverse((o) => { if (o.name === 'life') lifeGroup = o; }); }
 const where = lifeGroup?.userData.where ?? {};
 const spot = (s) => {
   if (Array.isArray(s)) return { x: s[0], z: s[1] };

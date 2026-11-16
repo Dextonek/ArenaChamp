@@ -24,8 +24,9 @@ const look = g.floor;
 const out = { floor: P.floor, counts: globalThis.__lifeCounts ?? null, shots: [] };
 const tick = () => new Promise((ok) => requestAnimationFrame(() => ok()));
 // what the life left for the tools
+// (the life comes into the scene a moment after the floor starts: index.ts)
 let lifeGroup = null;
-api.duel.group.parent?.traverse((o) => { if (o.name === 'life') lifeGroup = o; });
+for (let i = 0; i < 60 && !lifeGroup; i++) { _world.step(0.05); await new Promise((ok) => setTimeout(ok, 50)); api.duel.group.parent?.traverse((o) => { if (o.name === 'life') lifeGroup = o; }); }
 out.where = lifeGroup?.userData.where ?? null;
 for (const s of P.spots) {
   let x, z, name;
@@ -48,6 +49,8 @@ for (const s of P.spots) {
   if (P.zoom) { api.heroMode.setZoom(P.zoom); api.heroMode.snapCameraNow(); }
   // (a walker's model loads late, between frames: real time for it)
   for (let i = 0; i < 10; i++) { _world.step((P.step ?? 4) / 10); await new Promise((ok) => setTimeout(ok, 120)); }
+  // a card that came up meanwhile (a law's choice, a greeting): closed, so the picture is the floor
+  try { g.zone.hud.closeCard(); } catch (e) { /* none */ }
   api.render();
   await tick();
   api.render();

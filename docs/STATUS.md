@@ -55,14 +55,21 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
-- **In progress (2026-11-16): the Climb's life, chapters II to V** (branch `t3/tower-chapters-life`, one commit a chapter; page
-  `docs/tower/life/index.html`). Done: **the Wood** (`src/tower/world/life/wood.ts`: wood pigeons in the crowns, hinds/foxes/hares
-  that bolt, smoke through the burners' thatch, airing lines, butterflies, dragonflies and rings at the spring, woodcutters walking),
-  fights the same life on/off (floors 11, 12, 15), the six Blender walkers wired (`WALKER_MODELS` in `life/walkers.ts`), the Sea's
-  land chimneys smoke (`landLife` in `land.ts`). Done: **the Sands** (`life/sands.ts`: kites that leave when the storm comes, tethered
-  camels, lizards, dyed cloths on lines, pennants, smoke, rings at the oasis, water-carriers; fights the same, floors 21 and 25). Done:
-  **the Deep** (`life/deep.ts`: moths at the lights, spores, drips that ring the pools, a pale fish, bats, stove smoke, miners; no
-  light of its own, nothing dark standing still; fights the same, floors 31 and 35). Next: the War (draft written). Not live.
+- **Done, not merged, not live (2026-11-16): the Climb's life, chapters II to V** (branch `t3/tower-chapters-life`, one commit a
+  chapter; page `docs/tower/life/index.html`, a section a chapter). The Wood (`life/wood.ts`: wood pigeons in the crowns, hinds/foxes/
+  hares that bolt, smoke through the burners' thatch, airing lines, butterflies, dragonflies and rings at the spring); the Sands
+  (`sands.ts`: kites that leave when the storm comes, tethered camels, lizards, dyed cloths, pennants, smoke, oasis rings); the Deep
+  (`deep.ts`: moths at the lights, spores, drips that ring the pools, a pale fish, bats, stove smoke; no light of its own, nothing dark
+  standing still); the War (`war.ts`: crows, ash, the burned farm's smoke, tethered wagon horses, bandages drying, drum pennants). The
+  six Blender walkers wired (`WALKER_MODELS`, one line a chapter); the Sea's land chimneys smoke (`landLife` in `land.ts`). Fights the
+  same life on/off on two floors a chapter (prints on the page). **One change outside the life:** the War's rain (`warZone.ts` `Rain`)
+  rolled the fight's dice for its drops, so any change to a War floor's setup moved its fight; it has dice of its own now (looks the
+  same), and the War floors' fight prints changed with it (life off: floor 41 `5267e5db`, floor 45 `18d15a15`). Not measured well:
+  frame times (the computer was loaded all afternoon; the life's own update is 0.06 to 0.27 ms a frame, timed alone): the quiet
+  re-measure is `python pipeline/tools/heavy.py run -- python pipeline/tools/perf.py scenes --label life-quiet --scenes
+  world-2,gen-15,gen-25,gen-35,gen-45 --profiles desktop,phone-4x --port 5203` twice, once with `--set "{\"globals\":{\"__noLife\":true}}"`
+  and a second label, then `python pipeline/tools/perf-show.py <off> <on>`. Left out on purpose: blowing sand and dust devils (unreadable
+  from the game's camera), heat shimmer (a new full-screen pass), moving the land's sails (they are merged into its ground).
 - **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
   and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
   spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the
