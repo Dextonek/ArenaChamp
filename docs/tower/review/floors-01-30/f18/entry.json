@@ -1,0 +1,14 @@
+{
+ "floor": 18,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Cantor), the trial, the Grey Oak (in the Antler King's model: a dead oak in the Codex, see floor 7's item) and the gate (Brannoc) all played.",
+ "found": [
+  {"kind": "ok", "title": "Packs and props", "text": "Every pack fought and cleared; the probe's hits are the Wood's trees, spore motes and the hills past the edge."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Grey Oak"],
+  ["pack-d.jpg", "The old stones and the Stag-Crowned"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

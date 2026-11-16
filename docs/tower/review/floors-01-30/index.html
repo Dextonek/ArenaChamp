@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>17 floors checked</b> · <b>5 fixed</b> · <b>5 for you</b></div>
+<div class="sum"><b>18 floors checked</b> · <b>5 fixed</b> · <b>5 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -48,6 +48,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f15">15</a>
 <a class="" href="#f16">16</a>
 <a class="l" href="#f17">17</a>
+<a class="" href="#f18">18</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -337,6 +338,18 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f17/ruler-close.jpg"><img loading="lazy" src="f17/ruler-close.jpg" alt="The Lantern Root"></a><figcaption>The Lantern Root</figcaption></figure>
 <figure><a href="f17/busy.jpg"><img loading="lazy" src="f17/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
 <figure><a href="f17/overview.jpg"><img loading="lazy" src="f17/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f18"><h3>Floor 18: Greyoak Deep</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Cantor), the trial, the Grey Oak (in the Antler King&#x27;s model: a dead oak in the Codex, see floor 7&#x27;s item) and the gate (Brannoc) all played.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> Every pack fought and cleared; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31882 m², 31881 m²; 59 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 68 float, 133 gap, 4 buried, 3164 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1579 game s, every checkpoint reached; 25 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Grey Oak (Bark like a shield), model models/tower/wood_antler_v4.glb, loaded yes after 4448 ms of real time</li><li>Frame check at the busiest spot (-94, 42), 4 units awake: median 10.2, 8.9, 8.1 ms, p95 13.8, 11.6, 10.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f18/ruler-close.jpg"><img loading="lazy" src="f18/ruler-close.jpg" alt="The Grey Oak"></a><figcaption>The Grey Oak</figcaption></figure>
+<figure><a href="f18/pack-d.jpg"><img loading="lazy" src="f18/pack-d.jpg" alt="The old stones and the Stag-Crowned"></a><figcaption>The old stones and the Stag-Crowned</figcaption></figure>
+<figure><a href="f18/map.jpg"><img loading="lazy" src="f18/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f18/overview.jpg"><img loading="lazy" src="f18/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>
