@@ -1,17 +1,21 @@
 """Madame Cleaver, the Feastmistress (support): a war cook, big and proud. A crimson leather jerkin over a mail shirt
 with a mail collar, sleeves and hauberk skirt, a long dark leather apron front and back with a gold border, a wide
 belt, a bandolier of small knives, dark leather bracers and boots, a crimson headwrap over auburn hair with a braid.
-The great cleaver in the right hand, its edge a glowing ember, and a small iron cauldron on gold chains at her back."""
+The great cleaver in the right hand, its edge a glowing ember, and a small iron cauldron on gold chains at her back.
+Dune folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): deep brown skin, kohl to the temples, henna on the backs of the hands."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real import parts_c as P
+from real.parts_d import kohl, henna
 
 
 def build():
-    R = Real("chef", sex="f", height=1.02, width=1.14, depth=1.2, head=0.94, skin="#d6a284")
+    R = Real("chef", sex="f", height=1.02, width=1.14, depth=1.2, head=0.94, skin="#7a4c30")
+    kohl(R)
+    henna(R)
     z = R.z
     R.mat("crimson", "#7c2230", rough=0.72, double=True)
     R.mat("mail", "#646872", rough=0.5, metal=0.6, double=True)

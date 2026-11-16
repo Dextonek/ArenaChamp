@@ -1,17 +1,20 @@
 """Shiori, the Last Brush (mage): a slim woman in a rice-paper robe with bell sleeves, its hem washed in black ink, a
 crossed indigo collar, a wide indigo sash with a vermilion cord and a seal tassel, long black hair tied down her back
 with a brush-shaped hairpin in the bun, paper talismans floating at her shoulders, and a calligraphy brush taller than
-she is in the left hand, bristles down, wet and black. The vermilion seals are the one glow."""
+she is in the left hand, bristles down, wet and black. The vermilion seals are the one glow.
+A Northerner (docs/lore/codex/revamp.md, the touches, 2026-11-16): the star lines of her birth hour inked on the backs of her hands."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real.parts_b import back_y, bell_sleeves, box, ellipse, flats, hair_key, legs_under, on_back, on_front, on_ring, plate, skirt_band, skirt_rings, staff_back
+from real.parts_d import hand_lines
 
 
 def build():
     R = Real("ink", sex="f", height=0.98, width=0.94, depth=0.94, skin="#f4e3d3")
+    hand_lines(R, color="#100c14", width=0.004, alpha=1.0, seed=4)
     z = R.z
     R.mat("paper", "#efe6d2", rough=0.8, double=True)
     R.mat("ink", "#0b0a0e", rough=0.4, double=True)

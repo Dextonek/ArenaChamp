@@ -1,17 +1,21 @@
 """Silvane, the Mirror Duchess (marksman): tall and calm. A floor-length gown in dark violet with a silver-violet front
 panel, gold edges and a gold hem, a silver-violet bodice with puffed shoulders, dark opera gloves, sleek violet hair in
 one smooth fall down her back, a standing collar of eight silver mirror shards with violet glass inlays fanned behind
-her head, and the hand mirror held up in the left hand, its pale blue glass on both faces the one glowing piece."""
+her head, and the hand mirror held up in the left hand, its pale blue glass on both faces the one glowing piece.
+Gloaming folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): silver eyeshine, her skin cooled to blue-grey, dark lips."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real.parts_b import FINGERS, back_y, disc, edge_line, flats, hair_key, legs_under, plate, shard, skirt_band, skirt_rings
+from real.parts_d import lips
 
 
 def build():
-    R = Real("mirror", sex="f", height=1.07, width=0.97, depth=0.97, skin="#f1e2e4")
+    R = Real("mirror", sex="f", height=1.07, width=0.97, depth=0.97, skin="#c4c7d5")
+    lips(R, "#3c2238", 0.85)
+    R.eye_look(color="#eef2ff", emit="#c8d4ff", strength=0.5)
     z = R.z
     R.mat("gown", "#2a1a48", rough=0.55, double=True)
     R.mat("silver", "#c6cedb", rough=0.2, metal=0.9)

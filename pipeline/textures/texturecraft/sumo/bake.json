@@ -1,0 +1,15 @@
+{"open": "carrier.glb", "steps": [
+ {"id": "textureSet.resolution", "params": {"ts": 1, "resolution": 1024}},
+ {"id": "textureSet.resolution", "params": {"ts": 2, "resolution": 1024}},
+ {"id": "bake.settings", "params": {"ts": 2, "resolution": 1024, "antialiasing": 4, "dilation": 8,
+   "ao": {"rays": 128, "maxDistance": 0.03, "spread": 180, "distribution": "cosine", "selfOcclusion": "always"},
+   "maps": ["ambientOcclusion", "curvature", "normal", "worldNormal", "position", "id", "thickness"],
+   "patch": {"maps": {"curvature": {"parameters": {"mesh": {"self_intersection": "SameMeshName"}}}}}}},
+ {"id": "bake.run", "params": {"ts": 2}},
+ {"id": "bake.settings", "params": {"ts": 1, "resolution": 1024, "antialiasing": 4, "dilation": 8, "maps": ["normal"]}},
+ {"id": "bake.run", "params": {"ts": 1}},
+ {"id": "resource.import", "params": {"path": "underwear_id.png"}},
+ {"id": "resource.import", "params": {"path": "skin_base.png"}},
+ {"id": "textureSet.meshMap.set", "params": {"ts": 1, "map": "id", "image": "underwear_id.png"}},
+ {"id": "file.exportTextures", "params": {"dir": "maps", "preset": "Mesh maps", "ts": 2, "format": "png"}}
+], "save": "baked.tcraft"}

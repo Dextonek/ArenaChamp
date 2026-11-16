@@ -2,7 +2,8 @@
 with gold-edged lapels over a plum waistcoat with gold buttons and an ivory shirt front, a stiff collar closed with a
 gold brooch, dark plum gloves with gold cuffs, slick black hair and a small pointed goatee. A tall black top hat with
 a deep violet band and a gold buckle, a cape that falls in soft folds from a gold-rimmed standing collar (black
-outside, deep violet inside), and in the LEFT hand a black wand with gold ends and a glowing gold star (hold: torch)."""
+outside, deep violet inside), and in the LEFT hand a black wand with gold ends and a glowing gold star (hold: torch).
+Briarkin (docs/lore/codex/revamp.md, the touches, 2026-11-16): pointed ears under the hat, violet eyes of one colour."""
 import math
 
 from mathutils import Vector
@@ -13,6 +14,7 @@ from real import parts_c as P
 
 def build():
     R = Real("magic", sex="m", height=1.08, width=0.88, depth=0.86, head=0.94, skin="#d2a88a")
+    R.eye_look(color="#8a52d6", emit="#6a2ec0", strength=0.3, solid=True)
     z = R.z
     R.mat("coat", "#241f33", rough=0.62, double=True)
     R.mat("violet", "#5a2a84", rough=0.55, double=True)
@@ -110,4 +112,14 @@ def build():
     P.star(f, "star", t, d, up, 0.095, 0.04, thick=0.022, points=5)
     P.star(f, "star", t, d, X, 0.095, 0.04, thick=0.022, points=5)
     f.ellipsoid("star", t, P.rr(R, 0.03), seg=(10, 8))
+
+    # Briarkin: long pointed ears under the hat's brim, swept back (the twins' and Grandma Ironknit's kind, shorter)
+    from real.parts_c import head as head_of
+    R.mat("ear", "#c99a7e", rough=0.62)
+    He = head_of(R)
+    g = R.piece("Head")
+    for s in (1, -1):
+        e = Vector((He.ear.x * s * 0.94, He.ear.y, He.ear.z))
+        g.tube("ear", [e + Vector((-0.012 * s, -0.004, -0.014)), e + Vector((0.016 * s, 0.014, 0.008)), e + Vector((0.034 * s, 0.042, 0.03)),
+                       e + Vector((0.05 * s, 0.072, 0.05))], [0.017, 0.024, 0.015, 0.003], seg=8, squash=((1, 0, 0), 0.4))
     return R

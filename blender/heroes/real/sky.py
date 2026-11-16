@@ -1,7 +1,9 @@
 """Zephyr, the Wind Blade (melee assassin): lean and quick. White hair swept back like wind, a dark cloth mask over the
 lower face, a short teal coat with gold edges over dark under-clothes, a leather belt, sword strap and bracers, shins
 wrapped in pale cloth, low boots, a very long jade scarf wound round his neck with two tails streaming behind him (they
-follow the chest), and a long curved blade in the RIGHT hand with a glowing mint edge."""
+follow the chest), and a long curved blade in the RIGHT hand with a glowing mint edge.
+Coast folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): sea-tanned skin, sea-glass in his left ear, tide lines; the bracers
+cover only the wrist half, so the lines show."""
 import math
 
 from mathutils import Vector
@@ -9,10 +11,12 @@ from mathutils import Vector
 from realkit import PI, Real
 from real import parts_a as P
 from real.parts_a import V
+from real.parts_d import tide_lines
 
 
 def build():
-    R = Real("sky", sex="m", height=0.99, width=0.84, depth=0.84, skin="#e8c8ac")
+    R = Real("sky", sex="m", height=0.99, width=0.84, depth=0.84, skin="#bf8a62")
+    tide_lines(R, t0=0.12, t1=0.46, count=6)
     z = R.z
     R.mat("dark", "#1a2a2a", rough=0.7)
     R.mat("coat", "#1c8a78", rough=0.6, double=True)
@@ -30,8 +34,9 @@ def build():
     R.fitted("Coat", ["spine", "clavicle"], "coat", offset=0.009)
     R.fitted("Sleeves", ["upperarm"], "coat", offset=0.011, keep_skin=True, where=lambda p: abs(p.x) < el - 0.09)
     P.arm_band(R, "gold", 0.6, offset=0.013, thick=0.006)
-    R.fitted("Bracers", ["lowerarm"], "leather", offset=0.008)
-    R.cuffs("gold", at=(0.08, 0.94), offset=0.012, thick=0.006)
+    R.fitted("Bracers", ["lowerarm"], "leather", offset=0.008,
+             where=lambda p: abs(p.x) > abs(R.bone("lowerarm_l").lerp(R.bone("hand_l"), 0.52).x))
+    R.cuffs("gold", at=(0.52, 0.94), offset=0.012, thick=0.006)
     R.boots("leather", top=z["ankle"] + 0.1, cuff="gold")
     lo, hi = z["ankle"] + 0.11, z["knee"] - 0.05
     R.fitted("Wraps", ["calf"], "wrap", offset=0.008, below=hi, above=lo)
@@ -85,4 +90,13 @@ def build():
     f.ellipsoid("gold", o + d * 0.06, (0.045, 0.014, 0.03), seg=(12, 8))
     P.blade(f, "edge", o + d * 0.06, o + d * 0.98 - out * 0.1, 0.033, up, thick=0.05, belly=0.55, root=0.8, bend=out * 0.085, n=12)
     P.blade(f, "steel", o + d * 0.06 - out * 0.004, o + d * 0.955 - out * 0.1, 0.026, up, thick=0.2, belly=0.55, root=0.8, bend=out * 0.08, n=12)
+
+    # sea-glass in his left ear, on a small gold ring (the Coast folk's)
+    from real.parts_d import on_skin
+    R.mat("seaglass", "#86e0c8", rough=0.12, metal=0.1, emit="#3fb8a0", strength=0.2)
+    eye_c, _ = R.eye_box()
+    g = R.piece("Head")
+    p, nrm = on_skin(R, Vector((0.3, 0.012, eye_c.z - 0.03)), Vector((-1, 0, 0)), out=0.004)
+    g.torus("gold", p + Vector((0, 0, -0.008)), 0.006, 0.0018, normal=(0, 1, 0), seg=(10, 4))
+    g.ellipsoid("seaglass", p + Vector((0.002, 0, -0.024)), (0.0065, 0.006, 0.011), seg=(8, 6))
     return R

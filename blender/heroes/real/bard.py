@@ -1,17 +1,20 @@
 """Cantor, the Last Verse (support): a slim man in a long plum coat with rose lapels and cuffs over a cream shirt, dark
 breeches and tall boots, loose dark hair under a wide plum hat with a long rose feather, a parchment scarf printed with
 notes, one end down his chest and one over his shoulder, and a great golden lyre held up in the left hand, its strings
-the one glowing thing."""
+the one glowing thing.
+Aubade folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): golden-brown skin, the dawn line, gold thread in his hair."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real.parts_b import edge_line, flats, lapels, legs_under, on_back, on_front, open_front, path, skirt_rings
+from real.parts_d import dawn_line
 
 
 def build():
-    R = Real("bard", sex="m", height=1.0, width=0.88, depth=0.86, skin="#e9c6aa")
+    R = Real("bard", sex="m", height=1.0, width=0.88, depth=0.86, skin="#b98a5c")
+    dawn_line(R)
     z = R.z
     R.mat("plum", "#4a1a40", rough=0.6, double=True)
     R.mat("rose", "#b23a7c", rough=0.55, double=True)
@@ -97,4 +100,21 @@ def build():
         f.ellipsoid("gold", o + d * 0.66 + up * 0.205 * s, (0.02, 0.02, 0.02), seg=(8, 6))
     for k in range(-3, 4):
         f.tube("string", [box + d * 0.07 + up * 0.022 * k, o + d * 0.66 + up * 0.042 * k], 0.0045, seg=4)
+
+    # gold thread in his hair: the long hair bound at the nape with gold thread wound round it, two loose strands of it
+    from real.parts_d import back_of_head
+    # and wound round the two locks that fall beside his face
+    eye_c, _ = R.eye_box()
+    for s in (1, -1):
+        lock = Vector((0.083 * s, eye_c.y + 0.045, eye_c.z - 0.075))
+        for k in range(3):
+            R.piece("Head").torus("gold", lock + Vector((0, 0, -0.011 * k)), 0.016, 0.0022, normal=(0, 0, 1), seg=(14, 4))
+    nape = back_of_head(R, 0.0, z["neck"] + 0.045, out=0.035)
+    if nape is not None:
+        g = R.piece("Head")
+        for k in range(5):
+            g.torus("gold", nape + Vector((0, 0.004, -0.012 * k)), 0.026 - 0.0012 * k, 0.0026, normal=(0, 0.25, 1), seg=(16, 4))
+        for s in (1, -1):
+            R.piece("spine_03").tube("gold", [nape + Vector((0.01 * s, 0.006, -0.05)), nape + Vector((0.02 * s, 0.016, -0.12)),
+                                             nape + Vector((0.026 * s, 0.02, -0.17))], 0.0016, seg=4)
     return flats(R)

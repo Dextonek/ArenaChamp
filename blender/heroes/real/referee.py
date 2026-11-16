@@ -1,7 +1,8 @@
 """Referee Whistler, the Arbiter (controller): an arena judge, short and stern. Dark lacquered armour with gold edges,
 small pauldrons, dark greaves with gold knee guards, a black and ivory striped tabard hanging front and back, a black
 helm with a gold brow band and a red crest. A silver horn on a gold chain across the chest, and red and gold sigil
-tablets at the belt, two in front and a larger one behind, their sigils glowing."""
+tablets at the belt, two in front and a larger one behind, their sigils glowing.
+Kilnborn (docs/lore/codex/revamp.md, the touches, 2026-11-16): ash-grey skin under the helm, pale amber eyes."""
 import math
 
 from mathutils import Vector
@@ -11,7 +12,8 @@ from real import parts_c as P
 
 
 def build():
-    R = Real("referee", sex="m", height=0.86, width=0.96, depth=1.0, head=1.1, skin="#d6a884")
+    R = Real("referee", sex="m", height=0.86, width=0.96, depth=1.0, head=1.1, skin="#7c7570")
+    R.eye_look(color="#ffd08a", emit="#ff9a3a", strength=0.2)
     z = R.z
     R.mat("armor", "#2a2630", rough=0.32, metal=0.6)
     R.mat("cloth", "#1d1a22", rough=0.8, double=True)
