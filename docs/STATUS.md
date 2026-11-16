@@ -54,6 +54,11 @@ New: `pipeline/tools/heavy.py` (one timing run at a time across worktrees), `SMO
 shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's own config): the `rea` MCP server in `~/.claude.json`
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
+**Running now (2026-11-16, late):** the Climb life II-V; the hero bugs (design section 8 and 11, one commit per item, each changed
+hero through the simulator; page `docs/pipeline/hero-framework/bugs.html`); a blocks trial (2-3 heroes' spells onto the blocks, the
+cost per spell and a recommendation; page `docs/pipeline/hero-framework/blocks-trial.html`). Then: step 5 (the new-hero command, the
+workbench, `new-hero.md`).
+
 ## Today's entries (2026-11-16)
 - **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
   41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
