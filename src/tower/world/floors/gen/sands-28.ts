@@ -2839,7 +2839,7 @@ export const SANDS_28: GenFloor = {
   "hard": 1.36,
   "ruler": {
    "name": "The Red Jackal",
-   "title": "It runs the wadi",
+   "title": "He runs the wadi",
    "stand": "Cantor",
    "tint": "#a0603a",
    "scale": 2.41,

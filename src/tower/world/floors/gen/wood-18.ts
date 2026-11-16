@@ -3992,7 +3992,7 @@ export const WOOD_18: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and the Grey Oak waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and the Grey Oak waits at its heart, far to the north. Free the wisps, cut the roots that feed him, and his door opens."
     ],
     "quests": [
      "main",
@@ -4071,7 +4071,7 @@ export const WOOD_18: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Grey Oak, and its door opens."
+     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Grey Oak, and his door opens."
     ],
     "steps": [
      {

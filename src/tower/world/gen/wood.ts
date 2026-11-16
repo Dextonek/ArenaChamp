@@ -30,7 +30,7 @@ const HANDMADE_GATES = ['Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'];
 
 const FLOOR_NAMES = ['The Mossway', 'Hollowmere', 'The Thornfold', 'The Antler Glades', 'Lanternroot', 'The Whispering Stand', 'Greyoak Deep', 'The Briar Gate'];
 const BLURBS = ['A road of moss the wood keeps moving.', 'A mere in a hollow that the trees lean over.', 'Thorns folded round a wood that fold again.', 'Glades where the stags wear crowns.', 'Roots that glow like lanterns underfoot.', 'A stand of trees that talk when the wind stops.', 'Old grey oaks and the dark between them.', 'A wall of briars with one gate, and it moves.'];
-const RULERS: [string, string][] = [['The Moss Warden', 'Green over everything'], ['The Thorn Mother', 'She grows the walls'], ['The Antler King', 'Crowned in branches'], ['The Hollow Elder', 'Older than the paths'], ['The Briar Witch', 'Every thorn a word'], ['The Lantern Root', 'It drinks the light'], ['The Grey Oak', 'Bark like a shield'], ['The Mire Heart', 'It beats under the moss']];
+const RULERS: [string, string][] = [['The Moss Warden', 'Green over everything'], ['The Thorn Mother', 'She grows the walls'], ['The Antler King', 'Crowned in branches'], ['The Hollow Elder', 'Older than the paths'], ['The Briar Witch', 'Every thorn a word'], ['The Lantern Root', 'He drinks the light'], ['The Grey Oak', 'Bark like a shield'], ['The Mire Heart', 'Her heart beats under the moss']];
 const TINTS = ['#4f8a3a', '#5a7a3a', '#3f7a4a', '#6a8a3a', '#4a6a2f', '#5f8f4a', '#3a6a3f', '#6a7a3a'];
 const NAMED = ['The Bark Widow', 'Old Rootfoot', 'The Pale Stag', 'Mossjaw', 'The Lantern Thief', 'Grandmother Thorn', 'The Hollow Hunter', 'Briarback', 'The Grey Walker', 'Ashbark', 'The Wet Antler'];
 const NPCS = ['Rowan', 'Hazel', 'Bram the younger', 'Ivy', 'Alder', 'Linden', 'Sorrel', 'Fern'];
@@ -488,8 +488,9 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // Floor 20 is the chapter's crown: behind the lair are Ash and Ember, a Raid boss, alone (pieces/core.ts `crownFight`).
   const crown = n === 20 ? ('ash' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['Ash and Ember', 'The fire at the wood’s end'] : RULERS[(n - 12) % RULERS.length];
-  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them” (a tree or a bog stays “it”).
-  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
+  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them”; since the lore follows the drawn
+  // rulers (2026-11-16), the Hollow Elder, the Lantern Root and the Grey Oak are men and the Mire Heart a woman (a name not listed stays “it”).
+  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'The Hollow Elder': ['him', 'his'], 'The Lantern Root': ['him', 'his'], 'The Grey Oak': ['him', 'his'], 'The Mire Heart': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
   const extra: [string, MoveSpec] = pick([
     ['fan', { use: 'fan', share: 0.05 }],
     ['briars', { use: 'stones', name: 'Falling Briars', share: 0.07, count: 4, radius: 1.5, cooldown: 8 }],

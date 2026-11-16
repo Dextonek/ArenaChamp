@@ -2808,7 +2808,7 @@ export const SEA_07: GenFloor = {
   "hard": 1.07,
   "ruler": {
    "name": "The Bell Below",
-   "title": "It rings the sea in",
+   "title": "He rings the sea in",
    "stand": "Marin",
    "tint": "#3f8f8a",
    "scale": 2.49,

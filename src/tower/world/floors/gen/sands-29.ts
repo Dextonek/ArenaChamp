@@ -2835,7 +2835,7 @@ export const SANDS_29: GenFloor = {
   "hard": 1.38,
   "ruler": {
    "name": "The Sun-Eater",
-   "title": "It swallowed noon once",
+   "title": "He swallowed noon once",
    "stand": "Vesper",
    "tint": "#c89858",
    "scale": 2.48,

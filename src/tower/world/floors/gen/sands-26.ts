@@ -2759,7 +2759,7 @@ export const SANDS_26: GenFloor = {
   "hard": 1.33,
   "ruler": {
    "name": "The Mirage Lord",
-   "title": "Never where it stands",
+   "title": "Never where he stands",
    "stand": "Cantor",
    "tint": "#d0a060",
    "scale": 2.66,
