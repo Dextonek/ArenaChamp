@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { G, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.42, height: 2.55 },
   shop: { kind: 'support', shelf: 1 },
   icons: 'fenna',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Fenna | the Grove Warden"',
-    model: 'blender/heroes/real/grove.py',
-    design: 'pipeline/designs/kit-grove.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Fenna | the Grove Warden"',
+  model: 'blender/heroes/real/grove.py',
+  design: 'pipeline/designs/kit-grove.md',
+};

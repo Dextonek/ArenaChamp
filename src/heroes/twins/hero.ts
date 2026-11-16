@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { S, pimIcons, pimPortrait, pomIcons, pomPortrait, tagIcon } from './icons';
 import {
   BONK_DAMAGE, BONK_REACH, CHARGE_DAMAGE, CHARGE_RANGE, FLIP_DAMAGE, FLIP_DISTANCE, PEBBLE_DAMAGE, PEBBLE_RANGE, SHIELD_AMOUNT, SHIELD_SECONDS,
@@ -88,11 +88,13 @@ const card: HeroCard = {
   shop: { kind: 'fighter', shelf: 3 },
   // each half its own icons: Pim's, then Pom's
   icons: ['pim', 'pom'],
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Pim and Pom | the Changeling Twins"',
-    model: 'blender/heroes/real/pim.py and pom.py',
-    design: 'pipeline/designs/kit-twins.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Pim and Pom | the Changeling Twins"',
+  model: 'blender/heroes/real/pim.py and pom.py',
+  design: 'pipeline/designs/kit-twins.md',
+};

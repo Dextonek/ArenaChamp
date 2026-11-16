@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { L, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.42, height: 2.4 },
   shop: { kind: 'controller', shelf: 2 },
   icons: 'mr-ledger',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Mr. Ledger | the Tithe-Keeper"',
-    model: 'blender/heroes/real/ledger.py',
-    design: 'pipeline/designs/kit-ledger.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Mr. Ledger | the Tithe-Keeper"',
+  model: 'blender/heroes/real/ledger.py',
+  design: 'pipeline/designs/kit-ledger.md',
+};

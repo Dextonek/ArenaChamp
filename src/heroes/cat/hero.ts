@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { icons, portrait } from './icons';
 
 /**
@@ -46,11 +46,13 @@ const card: HeroCard = {
   body: { radius: 0.49, height: 2.33 },
   shop: { kind: 'assassin', shelf: 2 },
   icons: 'sir-whiskers',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Sir Whiskers | the Lynx Duelist"',
-    model: 'blender/heroes/real/cat.py',
-    design: 'pipeline/designs/kit-cat.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Sir Whiskers | the Lynx Duelist"',
+  model: 'blender/heroes/real/cat.py',
+  design: 'pipeline/designs/kit-cat.md',
+};

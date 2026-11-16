@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { F, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.4, height: 2.84 },
   shop: { kind: 'controller', shelf: 0 },
   icons: 'isolde',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Isolde | the Winter Warden"',
-    model: 'blender/heroes/real/frost.py',
-    design: 'pipeline/designs/kit-frost.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Isolde | the Winter Warden"',
+  model: 'blender/heroes/real/frost.py',
+  design: 'pipeline/designs/kit-frost.md',
+};

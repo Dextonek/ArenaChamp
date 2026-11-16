@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { S, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.44, height: 2.33 },
   shop: { kind: 'controller', shelf: 2 },
   icons: 'referee-whistler',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Referee Whistler | the Arbiter"',
-    model: 'blender/heroes/real/referee.py',
-    design: 'pipeline/designs/kit-referee.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Referee Whistler | the Arbiter"',
+  model: 'blender/heroes/real/referee.py',
+  design: 'pipeline/designs/kit-referee.md',
+};

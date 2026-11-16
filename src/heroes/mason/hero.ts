@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { M, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.59, height: 2.7 },
   shop: { kind: 'fighter', shelf: 0 },
   icons: 'bram',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Bram | the Stonewright"',
-    model: 'blender/heroes/real/mason.py',
-    design: 'pipeline/designs/kit-mason.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Bram | the Stonewright"',
+  model: 'blender/heroes/real/mason.py',
+  design: 'pipeline/designs/kit-mason.md',
+};

@@ -177,36 +177,36 @@
  "src/heroes/forge/hero.ts": {
   "from": "src/kits/forge.ts",
   "was": "0120adf881fd3dd4",
-  "now": "7dbcfccdb41c769c"
+  "now": "75b74904d09d528a"
  },
  "src/heroes/frost/hero.ts": {
   "from": "src/kits/frost.ts",
   "was": "ab65d85e798f5326",
-  "now": "e05bf711f2753899"
+  "now": "de5d44b9b8b38d05"
  },
  "src/heroes/storm/hero.ts": {
   "from": "src/kits/storm.ts",
   "was": "4eb6fc6c30dc3ba6",
-  "now": "132f725f881da220"
+  "now": "c30a7e1ac0324c14"
  },
  "src/heroes/dawn/hero.ts": {
   "from": "src/kits/dawn.ts",
   "was": "a2b7d862737e6440",
-  "now": "8171a80132d983fd"
+  "now": "3698e2295d9e1b43"
  },
  "src/heroes/hive/hero.ts": {
   "from": "src/kits/hive.ts",
   "was": "0c9b83c2bc4eb188",
-  "now": "1dc6ddb9f6a9425f"
+  "now": "bd45ea0de4a2205a"
  },
  "src/heroes/ledger/hero.ts": {
   "from": "src/kits/ledger.ts",
   "was": "f7673b8143950def",
-  "now": "cec468a42820725a"
+  "now": "3454d3150cff864b"
  },
  "src/heroes/weather/hero.ts": {
   "from": "src/kits/weather.ts",
   "was": "5eb428764c39ec47",
-  "now": "94c798f8d67d7a8c"
+  "now": "6871c6bf90cbea07"
  }
 }

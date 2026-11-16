@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { K, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.61, height: 2.69 },
   shop: { kind: 'fighter', shelf: 1 },
   icons: 'hank',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Hank | the Moss Hewer"',
-    model: 'blender/heroes/real/timber.py',
-    design: 'pipeline/designs/kit-timber.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Hank | the Moss Hewer"',
+  model: 'blender/heroes/real/timber.py',
+  design: 'pipeline/designs/kit-timber.md',
+};

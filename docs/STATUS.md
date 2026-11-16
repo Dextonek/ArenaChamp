@@ -55,6 +55,19 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done, on branch `t3/move-heroes-to-framework` (not merged, not live) (2026-11-16): hero framework step 4, all 40 heroes in
+  folders** (page `docs/pipeline/hero-framework/progress.html`; design section 11). The other 39 moved in five batches (the last the
+  seven Rust-ported heroes, after `guard.py` learned the folders and `--moved`), every batch with all 80 fight prints the same, the
+  roster as the game sees it identical (kits, tooltips, icon pixels, bodies, passives, spells), the never-cast spells' self test
+  identical. Nothing names a hero by hand any more (`heroes.ts`, `traits/index.ts`, the game's spell list come from the folders);
+  Pim and Pom's card holds both halves and two icon stems; the cards' pointers sit beside them (out of the page's start).
+  After the last batch: sim Sefu 44.3/47.4, Mum 41.7/39.6, Kaia 33.1/33.1 (mine/main, ±7); online Sefu v Mum agrees as on main;
+  perf prints the same 12 fights as main; Rust guard the same 19 lines as main (the 19th is the merged shot heights); start +6 KB
+  (0.1 %); `SMOKE_SLOW=2 npm run test:server` 364 pass. **Not done: the spells onto the blocks** (only Anka's four are; next, a
+  spell at a time with its hero's prints; the ported heroes' spells wait for a Rust re-grade) and step 5 (the new-hero command, the
+  workbench, `new-hero.md`). New tools: `pipeline/tools/hero-roster.py` (the roster snapshot), `hero-gate5/online_pair.py` (any two
+  heroes online), `hero-move-page.py` (the page).
+
 - **Done and merged (2026-11-16): the lore and the Climb's words** (branch 8b7a6ecf; page `docs/lore/changes-2026-11-16.html`): the
   gates (Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate; the others are champions the Tower drew), the rulers
   described as drawn (the Pearl Tyrant a woman, the Bell Below's ringer, the Scarab Colossus a giantess in the shell, ...), the six

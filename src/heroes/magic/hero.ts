@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { M, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.45, height: 2.51 },
   shop: { kind: 'assassin', shelf: 3 },
   icons: 'the-great-zambini',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "The Great Zambini | the Illusionist"',
-    model: 'blender/heroes/real/magic.py',
-    design: 'pipeline/designs/kit-magic.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "The Great Zambini | the Illusionist"',
+  model: 'blender/heroes/real/magic.py',
+  design: 'pipeline/designs/kit-magic.md',
+};

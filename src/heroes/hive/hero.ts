@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { H, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.44, height: 2.31 },
   shop: { kind: 'fighter', shelf: 0 },
   icons: 'sirix',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Sirix | the Swarm Warden"',
-    model: 'blender/heroes/real/hive.py',
-    design: 'pipeline/designs/kit-hive.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Sirix | the Swarm Warden"',
+  model: 'blender/heroes/real/hive.py',
+  design: 'pipeline/designs/kit-hive.md',
+};

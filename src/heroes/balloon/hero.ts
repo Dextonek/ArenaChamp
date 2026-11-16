@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { S, icons, portrait } from './icons';
 
 /**
@@ -44,11 +44,13 @@ const card: HeroCard = {
   body: { radius: 0.54, height: 2.43 },
   shop: { kind: 'caster', shelf: 1 },
   icons: 'professor-puff',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Professor Puff | the Aeronaut"',
-    model: 'blender/heroes/real/balloon.py',
-    design: 'pipeline/designs/kit-balloon.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Professor Puff | the Aeronaut"',
+  model: 'blender/heroes/real/balloon.py',
+  design: 'pipeline/designs/kit-balloon.md',
+};

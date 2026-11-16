@@ -1,4 +1,4 @@
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { COLOURS, icons, portrait } from './icons';
 import {
   BIRD_DAMAGE, BIRD_LENGTH, BIRD_WIDTH, BIRD_WIND, FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, FLIGHT_DAMAGE, FLIGHT_RADIUS, FLIGHT_RANGE,
@@ -48,11 +48,13 @@ const anka: HeroCard = {
   body: { radius: 0.4, height: 2.4 },
   shop: { kind: 'caster', shelf: 3 },
   icons: 'anka',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Anka | the Firebird"',
-    model: 'blender/heroes/real/phoenix.py',
-    design: 'pipeline/designs/kit-phoenix.md',
-  },
 };
 
 export default anka;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Anka | the Firebird"',
+  model: 'blender/heroes/real/phoenix.py',
+  design: 'pipeline/designs/kit-phoenix.md',
+};

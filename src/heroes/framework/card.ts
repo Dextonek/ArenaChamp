@@ -24,6 +24,10 @@ export interface HeroCard {
    * (Pim and Pom) names one stem a half: the kit's, then its `alt`'s.
    */
   icons: string | [string, string];
-  /** Where the rest of the hero lives: its lore entry, its model's build, its design. */
-  pointers: { lore: string; model: string; design: string };
 }
+
+/**
+ * Where the rest of a hero lives: its lore entry, its model's build, its design. Exported beside the card
+ * (`export const pointers`), not on it: the game imports only the card, so this text stays out of the page's start.
+ */
+export interface HeroPointers { lore: string; model: string; design: string }

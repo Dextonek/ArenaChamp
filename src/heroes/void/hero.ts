@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { V, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.63, height: 2.62 },
   shop: { kind: 'vanguard', shelf: 0 },
   icons: 'oblivion',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Oblivion | the Unmaker"',
-    model: 'blender/heroes/real/void.py',
-    design: 'pipeline/designs/kit-void.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Oblivion | the Unmaker"',
+  model: 'blender/heroes/real/void.py',
+  design: 'pipeline/designs/kit-void.md',
+};

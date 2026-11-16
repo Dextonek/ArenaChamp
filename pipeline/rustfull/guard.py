@@ -129,7 +129,7 @@ def main():
             old, new = pair.split("=")
             entry = {"from": old, "was": git_digest(old), "now": digest(new)}
             # moved twice (or an import changed, then moved): judged by where it came from first
-            first = moved.pop(old, None) if old != new else None
+            first = moved.pop(old, None)
             if first and first["now"] == entry["was"]:
                 entry["from"], entry["was"] = first["from"], first["was"]
             moved[new] = entry

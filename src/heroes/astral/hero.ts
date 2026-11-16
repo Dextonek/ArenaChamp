@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { A, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.38, height: 2.38 },
   shop: { kind: 'caster', shelf: 0 },
   icons: 'lyra',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Lyra | the Star Archer"',
-    model: 'blender/heroes/real/astral.py',
-    design: 'pipeline/designs/kit-astral.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Lyra | the Star Archer"',
+  model: 'blender/heroes/real/astral.py',
+  design: 'pipeline/designs/kit-astral.md',
+};

@@ -1,5 +1,5 @@
 import type { HeroKit } from '../../heroes';
-import type { HeroCard } from '../framework/card';
+import type { HeroCard, HeroPointers } from '../framework/card';
 import { B, icons, portrait } from './icons';
 
 /**
@@ -45,11 +45,13 @@ const card: HeroCard = {
   body: { radius: 0.41, height: 2.35 },
   shop: { kind: 'vanguard', shelf: 2 },
   icons: 'vesper',
-  pointers: {
-    lore: 'docs/lore/LORE.md, the entry "Vesper | the Crimson Countess"',
-    model: 'blender/heroes/real/blood.py',
-    design: 'pipeline/designs/kit-blood.md',
-  },
 };
 
 export default card;
+
+/** Where the rest of the hero lives (for people and tools; the game does not load it). */
+export const pointers: HeroPointers = {
+  lore: 'docs/lore/LORE.md, the entry "Vesper | the Crimson Countess"',
+  model: 'blender/heroes/real/blood.py',
+  design: 'pipeline/designs/kit-blood.md',
+};
