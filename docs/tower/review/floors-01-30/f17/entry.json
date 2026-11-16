@@ -1,0 +1,14 @@
+{
+ "floor": 17,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Lyra), the trial, the Lantern Root (in the Antler King's model) and the gate (Bram; second try) all played.",
+ "found": [
+  {"kind": "list", "title": "Meeting yourself as the rival", "text": "The bot played Lyra, and floor 17's rival is Lyra: “Another climber. I am Lyra.” Any hero meets this on the floor whose rival (or gatekeeper) is that same hero. The fight is a mirror duel and works. If it should read better: the rival's line could say so when the hero is the same (people.ts builds the card), or the floor could pick another rival for that hero (a design call).", "pics": [["person-rival.jpg", "Lyra meets Lyra"]]},
+  {"kind": "ok", "title": "The Lantern Root's figure", "text": "The Codex's Lantern Root is a root with an amber lantern; it is drawn with the Antler King's stag-crowned figure (RULER_OF). Listed with the other rulers whose Codex form is not a person (floor 7's item)."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Lantern Root"],
+  ["busy.jpg", "The busiest spot (the frame check)"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

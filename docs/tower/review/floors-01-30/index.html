@@ -15,12 +15,13 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>16 floors checked</b> · <b>5 fixed</b> · <b>4 for you</b></div>
+<div class="sum"><b>17 floors checked</b> · <b>5 fixed</b> · <b>5 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
 <li><a href="#f06">Floor 6</a>: <b>The Pearl Tyrant is a man in the Codex, a crowned woman on the floor.</b> The Codex (climb/rulers.md): “A pearl merchant ... He drowned holding the strongbox.” Floor 6 draws him with the Gull Queen&#x27;s model (sea_queen, pieces/rulerModels.ts RULER_OF[6]), a crowned woman in a gown. Either the Codex says “she”, or floor 6 takes the Admiral&#x27;s or the Judge&#x27;s model (one number in RULER_OF; the three Sea models would then not be three floors each).</li>
-<li><a href="#f07">Floor 7</a>: <b>The Bell Below is a bell in the Codex, a judge on the floor.</b> The Codex: “The harbour&#x27;s old bell ... It rings underwater, and something answers.” Floor 7 draws it with the Tide Judge&#x27;s model (a robed figure), as RULER_OF puts the Judge on floors 5, 7 and 8 (floor 8&#x27;s Lantern Leviathan, “a great fish”, too). The ruler models&#x27; names and floors were left to you when the models were made; this is one more reason to look: the Codex could say the bell&#x27;s ringer is what climbers fight, or these two floors get rulers of their own.</li>
+<li><a href="#f07">Floor 7</a>: <b>Rulers that are not people in the Codex wear a person&#x27;s figure.</b> The Codex: the Bell Below is “the harbour&#x27;s old bell ... It rings underwater”; floor 7 draws it with the Tide Judge&#x27;s model (a robed figure). The same on floor 8 (the Lantern Leviathan, “a great fish”, in the Judge&#x27;s figure) and floor 17 (the Lantern Root, a root with an amber lantern, in the Antler King&#x27;s stag figure). The ruler models&#x27; floors were left to you when they were made; either the Codex says these rulers are people (the bell&#x27;s ringer, the Leviathan&#x27;s keeper...), or these floors get rulers of their own (Blender, one at a time).</li>
+<li><a href="#f17">Floor 17</a>: <b>Meeting yourself as the rival.</b> The bot played Lyra, and floor 17&#x27;s rival is Lyra: “Another climber. I am Lyra.” Any hero meets this on the floor whose rival (or gatekeeper) is that same hero. The fight is a mirror duel and works. If it should read better: the rival&#x27;s line could say so when the hero is the same (people.ts builds the card), or the floor could pick another rival for that hero (a design call).</li>
 </ul>
 <h2>Fixed</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
@@ -46,6 +47,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f14">14</a>
 <a class="" href="#f15">15</a>
 <a class="" href="#f16">16</a>
+<a class="l" href="#f17">17</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -179,7 +181,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </div>
 </section>
 <section class="floor" id="f07"><h3>Floor 7: Kelp Hollow</h3><p>Plays clean: cleared, no console error, every spot reachable; the rival (Silvane), the trial (a horde), the ruler (the Bell Below; the bot lost the first try and won the second, as a person may) and the gate (Kaia) all played.</p>
-<p><span class="tag list">list</span><b>The Bell Below is a bell in the Codex, a judge on the floor.</b> The Codex: “The harbour&#x27;s old bell ... It rings underwater, and something answers.” Floor 7 draws it with the Tide Judge&#x27;s model (a robed figure), as RULER_OF puts the Judge on floors 5, 7 and 8 (floor 8&#x27;s Lantern Leviathan, “a great fish”, too). The ruler models&#x27; names and floors were left to you when the models were made; this is one more reason to look: the Codex could say the bell&#x27;s ringer is what climbers fight, or these two floors get rulers of their own.</p>
+<p><span class="tag list">list</span><b>Rulers that are not people in the Codex wear a person&#x27;s figure.</b> The Codex: the Bell Below is “the harbour&#x27;s old bell ... It rings underwater”; floor 7 draws it with the Tide Judge&#x27;s model (a robed figure). The same on floor 8 (the Lantern Leviathan, “a great fish”, in the Judge&#x27;s figure) and floor 17 (the Lantern Root, a root with an amber lantern, in the Antler King&#x27;s stag figure). The ruler models&#x27; floors were left to you when they were made; either the Codex says these rulers are people (the bell&#x27;s ringer, the Leviathan&#x27;s keeper...), or these floors get rulers of their own (Blender, one at a time).</p>
 <div class="pics">
 <figure><a href="f07/ruler-close.jpg"><img loading="lazy" src="f07/ruler-close.jpg" alt="The Bell Below as drawn"></a><figcaption>The Bell Below as drawn</figcaption></figure>
 </div>
@@ -320,6 +322,21 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f16/person-rival.jpg"><img loading="lazy" src="f16/person-rival.jpg" alt="Pip, the rival"></a><figcaption>Pip, the rival</figcaption></figure>
 <figure><a href="f16/route-gate-1.jpg"><img loading="lazy" src="f16/route-gate-1.jpg" alt="The gate: Hank"></a><figcaption>The gate: Hank</figcaption></figure>
 <figure><a href="f16/overview.jpg"><img loading="lazy" src="f16/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f17"><h3>Floor 17: The Whispering Stand</h3><p>Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Lyra), the trial, the Lantern Root (in the Antler King&#x27;s model) and the gate (Bram; second try) all played.</p>
+<p><span class="tag list">list</span><b>Meeting yourself as the rival.</b> The bot played Lyra, and floor 17&#x27;s rival is Lyra: “Another climber. I am Lyra.” Any hero meets this on the floor whose rival (or gatekeeper) is that same hero. The fight is a mirror duel and works. If it should read better: the rival&#x27;s line could say so when the hero is the same (people.ts builds the card), or the floor could pick another rival for that hero (a design call).</p>
+<div class="pics">
+<figure><a href="f17/person-rival.jpg"><img loading="lazy" src="f17/person-rival.jpg" alt="Lyra meets Lyra"></a><figcaption>Lyra meets Lyra</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The Lantern Root&#x27;s figure.</b> The Codex&#x27;s Lantern Root is a root with an amber lantern; it is drawn with the Antler King&#x27;s stag-crowned figure (RULER_OF). Listed with the other rulers whose Codex form is not a person (floor 7&#x27;s item).</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31926 m², 31926 m²; 56 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 72 float, 99 gap, 7 buried, 3125 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1539 game s, every checkpoint reached; 25 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Lantern Root (It drinks the light), model models/tower/wood_antler_v4.glb, loaded yes after 6948 ms of real time</li><li>Frame check at the busiest spot (23, -72), 4 units awake: median 11.6, 10, 9.9 ms, p95 21.9, 15.7, 13.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f17/ruler-close.jpg"><img loading="lazy" src="f17/ruler-close.jpg" alt="The Lantern Root"></a><figcaption>The Lantern Root</figcaption></figure>
+<figure><a href="f17/busy.jpg"><img loading="lazy" src="f17/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
+<figure><a href="f17/overview.jpg"><img loading="lazy" src="f17/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>
