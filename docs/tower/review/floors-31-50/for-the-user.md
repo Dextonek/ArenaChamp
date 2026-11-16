@@ -29,3 +29,8 @@ Bigger things, things in files another agent is working in, and matters of taste
 - **White-robed people read as white shapes in the War** (the White Sister, the Herald, the Camp-Mother): under the War's sun and bloom
   their robes go to pure white from the game's camera. Already so in the accepted line-up. A fix is a darker cloth in their models
   (Blender, one agent at a time) or a tint in code for the War's folk. Picture: floor 42.
+- **The War rulers' last phase names** are picked at random from "Alone on a horse of smoke" (the Last Marshal's end in the codex),
+  "The last charge" and "Under no banner" (`src/tower/world/gen/war.ts`, line 527): the Siege Lord (43) and the Grey Captain (49) ride a
+  horse of smoke, the crimson's Iron Marshal (42) and Black Herald (47) fight "under no banner". What I would do, in the baked floors
+  (`floors/gen/war-4x.ts`, one line each) and the generator: 42 and 47 "The last charge"; 43 "The walls come down"; 49 "Under no
+  banner" (he deserted); keep 44, 45, 46 and 48.
