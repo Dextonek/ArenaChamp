@@ -7,6 +7,7 @@ import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { PALM_DAMAGE, PALM_PUSH, PALM_PUSH_TIME, PALM_REACH, PALM_WIDTH, PALM_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Palm Strike (sumo kit, Q: a slap you can feel). No aim of its own: it goes the way he faces. A 2.8 m by 2 m strip shows in front
@@ -161,7 +162,7 @@ export class PalmStrike implements Effect {
         if (this.caught.length) {
           this.pushing = true;
           // A shove of his is under way: a body carried out of his ring inside this window is a ring-out.
-          bookOf(ctx.caster).pushUntil = performance.now() + (PALM_PUSH_TIME + 0.2) * 1000;
+          bookOf(ctx.caster).pushUntil = fightNow() + (PALM_PUSH_TIME + 0.2) * 1000;
         }
       }
     }

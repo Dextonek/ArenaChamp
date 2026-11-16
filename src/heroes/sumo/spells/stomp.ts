@@ -6,6 +6,7 @@ import { insideTelegraph, type TelegraphShape } from '../../../effects/telegraph
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { RING_RADIUS, STOMP_DAMAGE, STOMP_RADIUS, STOMP_SLOW, STOMP_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Stomp (sumo kit, W: the ring). A 3 m circle shows round him from the cast (the telegraph). Over the 0.5 s wind-up he settles his
@@ -133,7 +134,7 @@ export class Stomp implements Effect {
           ctx.hit(e, { damage: this.settings.damage, knock: 0, color: SUMO_CSS.core, from: c.clone(), status: { kind: 'slow', seconds: this.settings.slow } });
         }
         // The dohyo: one ring at a time, centred where he stood.
-        bookOf(ctx.caster).ring = { x: c.x, z: c.z, bornAt: performance.now(), radius: RING_RADIUS };
+        bookOf(ctx.caster).ring = { x: c.x, z: c.z, bornAt: fightNow(), radius: RING_RADIUS };
       }
     }
     if (f.hit && !f.close && t >= CLOSE_T) {

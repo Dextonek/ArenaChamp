@@ -1,5 +1,6 @@
 import type { GroundMark, Trait } from '../../traits/types';
 import { dohyoLook } from './parts';
+import { fightNow } from '../../fightClock';
 
 /** Dohyo (passive): the ring's radius, how long it stands, how much Salt Throw takes off it, and the least it can shrink to (m, s). */
 export const RING_RADIUS = 5;
@@ -45,13 +46,13 @@ export const SALT_BLIND = 1.5;
 export const SALT_HASTE = 0.3;
 export const SALT_HASTE_SECONDS = 4;
 
-/** The ring on the floor: where, when it was stomped (`performance.now()` ms), its radius now. */
+/** The ring on the floor: where, when it was stomped (`fightNow()` ms), its radius now. */
 export interface Dohyo { x: number; z: number; bornAt: number; radius: number }
 
 /**
  * What Big Yoko leaves behind, per figure (the effects play on both screens, so they and the trait share it here).
  * `ring`: the one ring (Stomp writes it when it lands, Salt Throw shrinks it, on both screens). `pushUntil`: a shove of his
- * (Palm Strike, Charge) is carrying the enemy until then (`performance.now()` ms): only inside it can a ring-out happen.
+ * (Palm Strike, Charge) is carrying the enemy until then (`fightNow()` ms): only inside it can a ring-out happen.
  * `ringOutAt`: when the last ring-out was decided, for the word over the enemy. `clock`: the trait's round clock, to notice a new round.
  */
 export interface SumoBook { ring: Dohyo | null; pushUntil: number; ringOutAt: number; clock: number }
@@ -70,13 +71,13 @@ function sync(b: SumoBook, clock: number) {
 }
 
 /** The ring as a rule while it stands, else null. */
-export function liveRing(b: SumoBook | undefined, now = performance.now()): Dohyo | null {
+export function liveRing(b: SumoBook | undefined, now = fightNow()): Dohyo | null {
   const r = b?.ring;
   return r && now >= r.bornAt && now < r.bornAt + RING_LIFE * 1000 ? r : null;
 }
 
 /** Salt Throw: the ring (if up) loses 2 m of radius for the rest of its life, never below `RING_MIN`. */
-export function shrinkRing(b: SumoBook, now = performance.now()) {
+export function shrinkRing(b: SumoBook, now = fightNow()) {
   const r = liveRing(b, now);
   if (r) r.radius = Math.max(RING_MIN, r.radius - RING_SHRINK);
 }
@@ -99,7 +100,7 @@ const CALM = ['hm.', 'good.', 'breathe.', 'ah.'];
  * his own client with `noteOwner('ringout')` so the word over the enemy (`enemyLabel`, read on both screens) shows there too.
  */
 export const sumoTrait: Trait = {
-  meter: { name: 'RING', max: RING_LIFE, value: (t) => { const r = liveRing(sumoBooks.get(t.self())); return r ? Math.ceil((r.bornAt + RING_LIFE * 1000 - performance.now()) / 1000) : 0; } },
+  meter: { name: 'RING', max: RING_LIFE, value: (t) => { const r = liveRing(sumoBooks.get(t.self())); return r ? Math.ceil((r.bornAt + RING_LIFE * 1000 - fightNow()) / 1000) : 0; } },
   passive: {
     name: 'Dohyo',
     blurb: 'His Stomp stamps a straw-rope ring on the floor, 5 m in radius, for 8 s. A push of his that carries you from inside it to outside is a ring-out: +80 damage and stunned 0.5 s. Salt Throw shrinks it by 2 m.',
@@ -144,7 +145,7 @@ export const sumoTrait: Trait = {
     sync(b, t.time);
     const r = b.ring;
     if (!r) return [];
-    const now = performance.now();
+    const now = fightNow();
     if (now < r.bornAt || now >= r.bornAt + (RING_LIFE + RING_FADE) * 1000) return [];
     const m: GroundMark = { x: r.x, z: r.z, kind: kindOf(r.radius), age: (now - r.bornAt) / 1000, life: RING_LIFE + RING_FADE };
     return [m];
@@ -153,7 +154,7 @@ export const sumoTrait: Trait = {
 
   enemyLabel(t) {
     const b = sumoBooks.get(t.self());
-    return b && b.ringOutAt > 0 && performance.now() - b.ringOutAt < WORD_SECONDS * 1000 ? { text: 'RING OUT', color: '#e63a3a' } : null;
+    return b && b.ringOutAt > 0 && fightNow() - b.ringOutAt < WORD_SECONDS * 1000 ? { text: 'RING OUT', color: '#e63a3a' } : null;
   },
 
   afterCast(t, slot) {
@@ -176,7 +177,7 @@ export const sumoTrait: Trait = {
     const b = sumoBooks.get(t.self()), e = t.enemy();
     if (!b) return;
     sync(b, t.time);
-    const now = performance.now(), ring = liveRing(b, now);
+    const now = fightNow(), ring = liveRing(b, now);
     if (!ring || !e) { t.mem.wasIn = 0; return; }
     const p = e.group.position;
     const inside = Math.hypot(p.x - ring.x, p.z - ring.z) <= ring.radius ? 1 : 0;
@@ -190,12 +191,12 @@ export const sumoTrait: Trait = {
   },
 
   peerNote(t, name) {
-    if (name === 'ringout') bookOf(t.self()).ringOutAt = performance.now();
+    if (name === 'ringout') bookOf(t.self()).ringOutAt = fightNow();
   },
 
   badge(t) {
     const r = liveRing(sumoBooks.get(t.self()));
-    return r ? String(Math.ceil((r.bornAt + RING_LIFE * 1000 - performance.now()) / 1000)) : '';
+    return r ? String(Math.ceil((r.bornAt + RING_LIFE * 1000 - fightNow()) / 1000)) : '';
   },
 };
 
