@@ -28,7 +28,7 @@ living wood, that put out leaves in spring and blossom in early summer and drop 
 She walks ahead of the Wood. Where a grove is about to walk over a village, she asks it to go round. Where a stand of pines has walked into a
 river and is drowning, she leads it out. Where the Wood's walking has torn up a field, she plants flowers, because a flower grows faster than a
 tree and holds the soil until the trees come back. She draws strength from standing among the things she has planted, and in the Ring she plants
-flowers wherever she fights. She holds the gate of the Climb's Wood, where the forest is still in its first year of walking, and roots rise as
+flowers wherever she fights. She holds the first gate of the Climb's Wood, where the forest is still in its first year of walking, and roots rise as
 cover where she stands.
 
 She argues with [Hank](hank.md), the Moot's woodcutter, about every tree he fells. He says a tree that walks into a village must be cut; she says it

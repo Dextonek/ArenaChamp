@@ -37,9 +37,9 @@ are shard mites, which come in swarms; crystal golems, slow and armoured; and lu
 
 ## The gate and the crown
 
-[Opaline](../heroes/opaline.md), the Lightbreaker, holds the chapter's gate: she breaks light out of crystal, and in the Tower she is
+[Opaline](../heroes/opaline.md), the Lightbreaker, holds the chapter's first gate: she breaks light out of crystal, and in the Tower she is
 the only one who can make the far halls bright; the roof gives way where she fights. At the fortieth floor, the crown, **the Sun
-Warden** waits again: the second time a climber meets him, and he remembers the first.
+Warden** waits again: the second time a climber meets him, and he remembers the first. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

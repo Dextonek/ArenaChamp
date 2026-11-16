@@ -32,7 +32,7 @@ are records, the way a clock keeps the time. The Noonsworn say they are the sun'
 
 ## The five chapters
 
-| Chapter | Floors | The realm, as the Tower holds it | Keeper | Gatekeeper | Crown |
+| Chapter | Floors | The realm, as the Tower holds it | Keeper | First gate | Crown |
 |---|---|---|---|---|---|
 | [The Sea](sea.md) | 1 to 10 | The Drowned Harbour on the morning the water came | The Bell-Warden | [Marin](../heroes/marin.md) | The Sun Warden |
 | [The Wood](wood.md) | 11 to 20 | The Walking Wood in its first year of walking | The Moss-Abbess | [Fenna](../heroes/fenna.md) | Ash and Ember |
@@ -52,9 +52,12 @@ Heart of Noon, its heart. The crowns are the sun's own, and the Raid's bosses.
   years.
 - **The traders** take turns floor by floor, and will take obols, which nobody in the Tower should know about.
 - **The rival**, a hero of the Ring who climbed ahead and wants the right to go higher, waits on some floors for a duel.
-- **The gatekeeper**, a hero of the chapter's realm, holds the gate up at the end of the chapter's first floor: not the hero
-  themselves, but the Tower's echo of them, kept from a duel in the Ring. Four of them are
-  heroes of that realm. At the War it is Oblivion, because that endless war is the one thing on the Dial it has truly unmade.
+- **The gatekeepers.** A hero of the chapter's realm holds the gate up at the end of the chapter's first floor: not the hero
+  themselves, but the Tower's echo of them, kept from a duel in the Ring. Four of the five first gates are held by heroes of that
+  realm; at the War it is Oblivion, because that endless war is the one thing on the Dial it has truly unmade. The gates of the
+  floors above are held by champions the Tower drew to its gates: echoes of whoever has fought in the Ring, of any realm, set
+  where the Tower wants a keeper. A climber of the Sands may find a gate held by a Gloaming knight or a Coast dancer; the Tower
+  collects, and does not sort.
 - **The ruler** of each floor, the worst thing its realm had ([rulers](rulers.md)), and its enemies ([bestiary](bestiary.md)).
 
 ## Above the fiftieth floor

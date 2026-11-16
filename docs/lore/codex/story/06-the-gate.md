@@ -71,17 +71,15 @@ not come out.
 
 ## The Climb grows
 
-The Tower showed its collection one room at a time, as climbers proved they could reach it.
+The Tower showed its collection one room at a time, as climbers proved they could reach it. At each chapter's first gate it set the echo of a champion of that realm; at the gates above, the echoes of whichever champions it had kept from the Ring, of any realm, drawn to its gates as it draws everything.
 
 **The Sea**, floors 1 to 10, was Sallowmouth on the morning the water came, the shipyard and the drowned chapel and the lighthouse and the
 point of rock the gulls would not leave, ruled by the worst of that morning: the Drowned Admiral in the wreck of his flagship, who had ordered
-every ship to stay at anchor and went down with all of them; the Salt King, Mother of Wrecks, the Tide Judge, the Pearl Tyrant; the harbour's
-old cracked bell, which rings underwater; the Lantern Leviathan and the Gull Queen. At its tenth floor stood the Sun Warden himself, or the
+every ship to stay at anchor and went down with all of them; the Salt King, Mother of Wrecks, the Tide Judge, the Pearl Tyrant; the ringer of the harbour's old cracked bell, who wears it and rings it underwater; the Lantern Leviathan and the Gull Queen. At its tenth floor stood the Sun Warden himself, or the
 Tower's keeping of him, as he was at the moment it took the sun, gold and white with his great dial striking, who met each climber as if they
 were late, and fought them.
 
-**The Wood**, floors 11 to 20, opened in year 92. Its gate was held by the Tower's echo of [Fenna](../heroes/fenna.md), and at its heart stood
-the Elder Root, a trunk too wide to see round, drinking from a root of the Tower's own: Fenna went in, and knew it for the oak she had planted at
+**The Wood**, floors 11 to 20, opened in year 92. Its gate was held by the Tower's echo of [Fenna](../heroes/fenna.md), and at its heart stood the Elder Root, an oak in an old man's shape, drinking from a root of the Tower's own: Fenna went in, and knew it for the oak she had planted at
 twelve, and it knew her. [Hank](../heroes/hank.md) cut a piece of the root where it went up into the Tower's wall, and it bled sap that glowed,
 and the cut on his hand has not healed. Its rulers were the Moss Warden, the Thorn Mother, the Antler King, the Hollow Elder, the Briar Witch, the
 Lantern Root, the Grey Oak and the Mire Heart, and at its crown burned Ash and Ember, the sun's two last sparks, as the Tower kept them at the

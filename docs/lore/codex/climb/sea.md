@@ -37,9 +37,9 @@ Barnacle, Saltjaw, Rustfin, Mother Kelp, Captain Gull, the Pale Diver, the Brine
 
 ## The gate and the crown
 
-[Marin](../heroes/marin.md), the Tide Dancer, holds the chapter's gate: she danced the water out of the sea temple on that very
+[Marin](../heroes/marin.md), the Tide Dancer, holds the chapter's first gate: she danced the water out of the sea temple on that very
 morning, and in the Tower she is still the one who decides when the tide goes out. At the tenth floor, the crown, **the Sun Warden**
-waits: the keeper of the sun's post at the Tower's top, who did not come down.
+waits: the keeper of the sun's post at the Tower's top, who did not come down. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

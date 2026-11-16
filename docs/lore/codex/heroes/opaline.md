@@ -41,7 +41,7 @@ go, and Silvane said no. They have not spoken since. They have fought in the Rin
 
 The Deep's light has changed her. She has broken more crystal than anyone alive, and the crystal has gone into her: there are facets now along her
 cheekbones and the backs of her hands, clear amethyst, which she cannot cut out, and which glow faintly in the dark. She is slowly becoming glass.
-She holds the gate of the Climb's Deep, where the halls are lightless, because she is the only champion who can make them bright.
+She holds the first gate of the Climb's Deep, where the halls are lightless, because she is the only champion who can make them bright.
 
 ## People and appearance
 

@@ -36,9 +36,9 @@ crimson and the azure, the ashen soldiers, and the Ash Captain ([bestiary](besti
 
 ## The gate and the crown
 
-[Oblivion](../heroes/oblivion.md), the Unmaker, holds the chapter's gate, because this endless war is the one thing on the Dial it has
+[Oblivion](../heroes/oblivion.md), the Unmaker, holds the chapter's first gate, because this endless war is the one thing on the Dial it has
 truly unmade: nothing it touches can end. At the fiftieth floor, the crown, **Ash and Ember** burn again, the last sparks of the sun,
-at the top of the Climb; and above them, the Noon Seat.
+at the top of the Climb; and above them, the Noon Seat. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

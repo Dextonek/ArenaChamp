@@ -19,7 +19,7 @@ the Tower.
 
 The Moot has as few ranks as it can manage.
 - **The Speakers**, one from each village and each Briarkin court, who meet under the oldest tree in the Antler Glades.
-- **The Grove Warden**, who keeps the Wood from trampling the Dial and holds its gate: [Fenna](../heroes/fenna.md).
+- **The Grove Warden**, who keeps the Wood from trampling the Dial and holds its first gate in the Climb: [Fenna](../heroes/fenna.md).
 - **The Huntmaster**, who leads the Hunt of the Moot: [Arden](../heroes/arden.md).
 - **The Sworn**, every Wood folk who has sworn the Moot's oath and grown horns.
 - **The Courts**, the Briarkin, who sit in the Moot when they feel like it: [Sirix](../heroes/sirix.md) for the Hive, [Vela](../heroes/vela.md)

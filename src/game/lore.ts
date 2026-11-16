@@ -624,7 +624,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The Moot under the Antler Glades",
   "age": "Looks 35. She was 15 when the Wood began to walk (Noon-touched).",
   "line": "\"Stand still. Let something grow.\"",
-  "legend": "The Walking Wood began walking on the day of the Fall, as if it had felt the sun go and set off to find it, and Fenna has kept it from trampling the Dial ever since. She is the Grove Warden of the Moot: a cloak of layered leaves, a pale bark collar, branches like antlers round her head, and a living staff that blooms in her hand. Wherever she fights she plants flowers, and she draws strength from standing among them. She holds the gate of the Wood. She argues with Hank about every tree he fells, and has never once won the argument, or lost it. Vitriol's fumes killed a whole garden of hers, and she has not forgotten.",
+  "legend": "The Walking Wood began walking on the day of the Fall, as if it had felt the sun go and set off to find it, and Fenna has kept it from trampling the Dial ever since. She is the Grove Warden of the Moot: a cloak of layered leaves, a pale bark collar, branches like antlers round her head, and a living staff that blooms in her hand. Wherever she fights she plants flowers, and she draws strength from standing among them. She holds the Wood's first gate. She argues with Hank about every tree he fells, and has never once won the argument, or lost it. Vitriol's fumes killed a whole garden of hers, and she has not forgotten.",
   "ties": [
    {
     "other": "Hank",
@@ -759,7 +759,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The sea temple of the Drowned Harbour",
   "age": "Looks 32. She was a girl of 12 dancing in the temple when the sea came in (Noon-touched).",
   "line": "\"The sea comes in. The sea goes out. You don't.\"",
-  "legend": "When the sun fell, its heat lifted the sea, and the sea came in over the Drowned Harbour and stayed. Marin was a dancer of the harbour's sea temple then, a barefoot girl in sea-glass, and she danced the water back out of the temple with ribbons of tide. She has danced the tide ever since. It turns every few seconds in her hands: high, it pushes; low, it pulls. She holds the gate of the Sea, keeps the harbour lights with the Windward, and lets Gus keep her temple floor wet. Under her tide lies the Gaol of Oaths, and Kessa blames her for every flood.",
+  "legend": "When the sun fell, its heat lifted the sea, and the sea came in over the Drowned Harbour and stayed. Marin was a dancer of the harbour's sea temple then, a barefoot girl in sea-glass, and she danced the water back out of the temple with ribbons of tide. She has danced the tide ever since. It turns every few seconds in her hands: high, it pushes; low, it pulls. She holds the Sea's first gate, keeps the harbour lights with the Windward, and lets Gus keep her temple floor wet. Under her tide lies the Gaol of Oaths, and Kessa blames her for every flood.",
   "ties": [
    {
     "other": "Gus",
@@ -1015,7 +1015,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "Tamerit, on the Dune Throne",
   "age": "Looks 44. He was 24 when the sun fell, and took the throne the year after (Noon-touched).",
   "line": "\"Kneel, or be judged standing.\"",
-  "legend": "The kings of the Sands always called the sun their father, and when it fell, the Sands said it fell there, into the dunes, which are still warm. Sefu took the Dune Throne the year after, from his sister Asenet, and declared himself the sun's heir: if a sun is to hang over the Tower again, he says, it should be his. He wears layered linen, a gold collar and a striped gold headdress, and carries a sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged enemy cannot run far. He holds the gate of the Sands and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.",
+  "legend": "The kings of the Sands always called the sun their father, and when it fell, the Sands said it fell there, into the dunes, which are still warm. Sefu took the Dune Throne the year after, from his sister Asenet, and declared himself the sun's heir: if a sun is to hang over the Tower again, he says, it should be his. He wears layered linen, a gold collar and a striped gold headdress, and carries a sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged enemy cannot run far. He holds the first gate of the Sands and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.",
   "ties": [
    {
     "other": "Auriel",
@@ -1176,7 +1176,7 @@ export const LORE: Record<string, LoreHero> = {
   "from": "The Tear in the sky above the Tower",
   "age": "Not born. It came through the Tear on the day of the Fall, a hundred years ago.",
   "line": "\"There was something here. Was there?\"",
-  "legend": "When the sun fell it tore the sky above the Tower, and something came through the Tear that the Dial has no word for. The Hourkeepers call it the Unmaker. It wears the shape of a towering knight in black plate cracked with glowing pink rifts, with a horned helm, one burning slit for an eye, and a greatsword of void. While it stands still it pulls in whatever is near, and what it pulls in does not always come back. It wants no throne: it wants the Dial unmade, hour by hour, door by door. It holds the gate of the War, where the Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.",
+  "legend": "When the sun fell it tore the sky above the Tower, and something came through the Tear that the Dial has no word for. The Hourkeepers call it the Unmaker. It wears the shape of a towering knight in black plate cracked with glowing pink rifts, with a horned helm, one burning slit for an eye, and a greatsword of void. While it stands still it pulls in whatever is near, and what it pulls in does not always come back. It wants no throne: it wants the Dial unmade, hour by hour, door by door. It holds the War's first gate, where the Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.",
   "ties": [
    {
     "other": "Wick",

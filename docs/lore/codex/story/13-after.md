@@ -92,11 +92,9 @@ once. The Bell-Warden stopped ringing. [Gus](../heroes/gus.md) swept the temple 
 
 The living came out of the gate for weeks.
 
-From the Sea came the Bell-Warden and the Net-Father and Tam the net-mender, a third of Sallowmouth, to a coast where their grandchildren were old; and
-[Campana](../heroes/campana.md)'s old cracked bell, the Bell Below, which she carried home to Aubade and hung beside the new one. From the Wood came the
-Moss-Abbess, both of her, the young one walking out arm in arm with the old one, and the Moot speaker of year 90, and the Elder Root: the oak Fenna had
-planted at twelve walked out of the Tower's gate on its own roots and stood in the crater, where the Walking Wood had stopped at the edge of Morwen's salt,
-and put its roots down, and the Wood round it stopped walking and stood still, for the first time since the Fall, round the Ring, as a forest. The cut on
+From the Sea came the Bell-Warden and the Net-Father and Tam the net-mender, a third of Sallowmouth, to a coast where their grandchildren were old; and the Bell Below, the old bell's ringer, who walked out with [Campana](../heroes/campana.md)'s cracked bell in his arms and gave it to her, and she carried it home to Aubade and hung it beside the new one. From the Wood came the
+Moss-Abbess, both of her, the young one walking out arm in arm with the old one, and the Moot speaker of year 90, and the Elder Root: the oak Fenna had planted at twelve walked out of the Tower's gate on its own roots, in the old man's shape the Tower had given it, and stood in the crater, where the Walking Wood had stopped at the edge of Morwen's salt,
+and put its roots down, and was a tree again, and the Wood round it stopped walking and stood still, for the first time since the Fall, round the Ring, as a forest. The cut on
 [Hank](../heroes/hank.md)'s hand healed in a day. [Fenna](../heroes/fenna.md) planted a flower at the oak's foot.
 
 From the Sands came the caravan towns of the Storm Canyon and a star-reader who climbed the first hill she found and saw, for the first time in her life,

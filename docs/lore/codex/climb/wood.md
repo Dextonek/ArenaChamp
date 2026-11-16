@@ -12,8 +12,7 @@ tags: [lore, codex, climb]
 
 The eleventh floor opens in a forest that is moving. The Walking Wood, as it was in the first year after the Fall, when it had only
 just pulled up its roots: groves shift in the night, paths close behind you, and the ground tilts as the trees lean east. Wisps,
-pale blue lights, drift through the trees, bound to the forest. At the Wood's heart stands the **Elder Root**, a trunk too wide to
-see round, roots that arch, a glowing core, and three roots that feed it. The chapter's floors are the same forest in other moods:
+pale blue lights, drift through the trees, bound to the forest. At the Wood's heart stands the **Elder Root**, the oak the Tower keeps in an old man's shape, crowned with its roots, its roots arching from his hem, a glowing core in his staff, and three roots that feed it. The chapter's floors are the same forest in other moods:
 the old oak, the mossy spring, the standing stones, the charcoal clearing, the bark den, the stag glade, the giants' glade, the
 wayside shrine, the thicket.
 
@@ -37,9 +36,9 @@ Mossjaw, Old Rootfoot, Grandmother Thorn, the Pale Stag, the Bark Widow and the 
 
 ## The gate and the crown
 
-[Fenna](../heroes/fenna.md), the Grove Warden, holds the chapter's gate: in the Tower as outside, she is the one who keeps the Wood
+[Fenna](../heroes/fenna.md), the Grove Warden, holds the chapter's first gate: in the Tower as outside, she is the one who keeps the Wood
 from trampling what it walks over, and roots rise as cover where she stands. At the twentieth floor, the crown, **Ash and Ember** burn:
-the fallen sun's two last embers, and the Wood is afraid of them.
+the fallen sun's two last embers, and the Wood is afraid of them. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 
