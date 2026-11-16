@@ -1,0 +1,118 @@
+{
+ "floor": 1,
+ "part": "climb-review-shots",
+ "wallSeconds": 32.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 1,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-gus",
+   "person-anka",
+   "person-villager",
+   "person-zephyr",
+   "person-pip",
+   "pack-market",
+   "pack-wreck",
+   "pack-caves",
+   "pack-f",
+   "pack-barnacle",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "probe-float-0": "-13.3,-181.4 y10.25 depth out71n w5.03 h6.48 m0.66 p6 #304837",
+  "probe-float-1": "24.3,174.9 y4.97 depth out71s w5.11 h3.86 m1.01 p3 #4b663b #576f40 #304837",
+  "probe-float-2": "30.2,174.9 y5.45 depth out73s w5.38 h4.04 m1.52 p1 #304837",
+  "probe-float-3": "-163.7,-50.1 y5.23 depth out71n w4.72 h6.37 m1.21 p3 #304837",
+  "probe-gap-4": "-55.8,-94.4 y9.36 depth edge w4.57 h3.87 m9.03 sunk-0.3 #304837",
+  "probe-gap-5": "-29.3,-106.9 y9.36 depth edge w4.27 h3.62 m8.96 sunk-0.95 #304837",
+  "probe-gap-6": "-73.5,-80.2 y8.02 depth edge w5.22 h3.92 m7.71 sunk-2.07 #304837",
+  "frames": {
+   "at": [
+    -71,
+    -67
+   ],
+   "units": 5,
+   "runs": [
+    {
+     "med": 11.4,
+     "p95": 18,
+     "worst": 63.4
+    },
+    {
+     "med": 10.8,
+     "p95": 17.6,
+     "worst": 50
+    },
+    {
+     "med": 10.4,
+     "p95": 14.7,
+     "worst": 55.4
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Drowned Captain",
+   "title": "Anchor, cannon and tide",
+   "model": "models/tower/sea_admiral_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 2419,
+   "frames": 301
+  },
+  "status": {
+   "clock": 44.28,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty: not taken",
+    "bounty2: not taken",
+    "anka-net: not taken",
+    "anka-tam: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 44s"
+   ]
+  }
+ }
+}

@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Climb Review 01-30</title><style>
+:root{--bg:#f6f1e7;--fg:#2a241c;--mut:#6b5f4f;--card:#fffaf0;--line:#e2d6bf;--gold:#a5781d;--ok:#2f7a45;--fix:#1f5e9e;--list:#a1402c}
+@media (prefers-color-scheme: dark){:root:not([data-theme=light]){--bg:#17140f;--fg:#ede4d3;--mut:#a8997f;--card:#211c15;--line:#3a3124;--gold:#d8ae55;--ok:#6cc38a;--fix:#7fb4ea;--list:#ec8a73}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,'Times New Roman',serif}
+main{max-width:980px;margin:0 auto;padding:16px}h1{font-size:1.6em;margin:.4em 0}h2{font-size:1.25em;margin:1.6em 0 .3em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+h3{font-size:1.05em;margin:.9em 0 .2em}.mut{color:var(--mut)}.toc{display:flex;flex-wrap:wrap;gap:6px;margin:.6em 0}.toc a{padding:4px 9px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--fg);background:var(--card);font-size:.9em}
+.toc a.f{border-color:var(--fix)}.toc a.l{border-color:var(--list)}
+section.floor{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0}
+.tag{display:inline-block;font:12px/1.6 system-ui,sans-serif;padding:0 7px;border-radius:9px;color:#fff;margin-right:6px}.tag.fixed{background:var(--fix)}.tag.list{background:var(--list)}.tag.ok{background:var(--ok)}
+ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
+.pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin:.5em 0}.pics figure{margin:0}.pics img{width:100%;border-radius:6px;border:1px solid var(--line);display:block}
+.pics figure.ph img{max-width:200px}figcaption{font-size:.85em;color:var(--mut)}details summary{cursor:pointer;color:var(--gold)}
+.sum{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+</style></head><body><main>
+<h1>The Climb, floor by floor: 01 to 30</h1>
+<p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
+<div class="sum"><b>1 floors checked</b> · <b>1 fixed</b> · <b>3 for you</b></div>
+<h2>For you to decide</h2><ul>
+<li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?.</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
+<li><a href="#f01">Floor 1</a>: <b>The Codex&#x27;s tide: 78 s, the game&#x27;s: 80 s.</b> The Codex page The Sea says the tide comes every seventy-eight seconds; the floor&#x27;s law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game&#x27;s copy (lore-codex.py); left because the Codex is the lore writer&#x27;s.</li>
+<li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
+</ul>
+<h2>Fixed</h2><ul>
+<li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
+</ul>
+<h2>Floors</h2><div class="toc">
+<a class="f l" href="#f01">1</a>
+</div>
+<h2>I. The Sea</h2>
+<section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); two lore names left for you.</p>
+<p><span class="tag fixed">fixed</span><b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</p>
+<div class="pics">
+<figure><a href="f01/fix-words-before.jpg"><img loading="lazy" src="f01/fix-words-before.jpg" alt="Before: the keeper&#x27;s quest card (phone)"></a><figcaption>Before: the keeper&#x27;s quest card (phone)</figcaption></figure>
+<figure><a href="f01/fix-words-after.jpg"><img loading="lazy" src="f01/fix-words-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag list">list</span><b>The ruler&#x27;s name: Captain or Admiral?.</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</p>
+<div class="pics">
+<figure><a href="f01/ruler.jpg"><img loading="lazy" src="f01/ruler.jpg" alt="Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”"></a><figcaption>Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”</figcaption></figure>
+</div>
+<p><span class="tag list">list</span><b>The Codex&#x27;s tide: 78 s, the game&#x27;s: 80 s.</b> The Codex page The Sea says the tide comes every seventy-eight seconds; the floor&#x27;s law says (and does) every 80 s for 15. A one-word fix in docs/lore/codex/climb/sea.md and the game&#x27;s copy (lore-codex.py); left because the Codex is the lore writer&#x27;s.</p>
+<p><span class="tag list">list</span><b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</p>
+<div class="pics">
+<figure class="ph"><a href="f01/phone-map.jpg"><img loading="lazy" src="f01/phone-map.jpg" alt="The M map on a phone"></a><figcaption>The M map on a phone</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> 14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.</p>
+<div class="pics">
+<figure><a href="f01/probe-float-1.jpg"><img loading="lazy" src="f01/probe-float-1.jpg" alt="“Float”: pines and oaks past the edge, on their hill"></a><figcaption>“Float”: pines and oaks past the edge, on their hill</figcaption></figure>
+<figure><a href="f01/probe-gap-4.jpg"><img loading="lazy" src="f01/probe-gap-4.jpg" alt="“Gap”: a pine on the cliff top"></a><figcaption>“Gap”: a pine on the cliff top</figcaption></figure>
+</div>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34968 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 14 float, 56 gap, 0 buried, 0 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1604 game s, every checkpoint reached; 23 kills, 2 falls, stars 1101; ruler tries 1, gate tries 3; page errors 0</li><li>Ruler: The Drowned Captain (Anchor, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes after 2419 ms of real time</li><li>Frame check at the busiest spot (-71, -67), 5 units awake: median 11.4, 10.8, 10.4 ms, p95 18, 17.6, 14.7 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md); buying at the trader (the card and prices shown; the bot&#x27;s heals use it)</p>
+</details>
+<div class="pics">
+<figure><a href="f01/start.jpg"><img loading="lazy" src="f01/start.jpg" alt="The floor as it opens (the minimap comes a moment later, once the zone has drawn)"></a><figcaption>The floor as it opens (the minimap comes a moment later, once the zone has drawn)</figcaption></figure>
+<figure><a href="f01/map.jpg"><img loading="lazy" src="f01/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f01/person-gus.jpg"><img loading="lazy" src="f01/person-gus.jpg" alt="The Bell-Warden&#x27;s card"></a><figcaption>The Bell-Warden&#x27;s card</figcaption></figure>
+<figure><a href="f01/person-villager.jpg"><img loading="lazy" src="f01/person-villager.jpg" alt="The Lamp-Bearer out in the old village"></a><figcaption>The Lamp-Bearer out in the old village</figcaption></figure>
+<figure><a href="f01/route-pack-caves.jpg"><img loading="lazy" src="f01/route-pack-caves.jpg" alt="The route bot fighting the caves&#x27; pack"></a><figcaption>The route bot fighting the caves&#x27; pack</figcaption></figure>
+<figure><a href="f01/pack-market.jpg"><img loading="lazy" src="f01/pack-market.jpg" alt="The fish market&#x27;s pack at home"></a><figcaption>The fish market&#x27;s pack at home</figcaption></figure>
+<figure><a href="f01/route-gate-5.jpg"><img loading="lazy" src="f01/route-gate-5.jpg" alt="The gate: Marin"></a><figcaption>The gate: Marin</figcaption></figure>
+<figure><a href="f01/door-lair.jpg"><img loading="lazy" src="f01/door-lair.jpg" alt="The lair&#x27;s chain, shut"></a><figcaption>The lair&#x27;s chain, shut</figcaption></figure>
+<figure><a href="f01/overview.jpg"><img loading="lazy" src="f01/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f01/phone-camp.jpg"><img loading="lazy" src="f01/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
+<figure class="ph"><a href="f01/phone-fight.jpg"><img loading="lazy" src="f01/phone-fight.jpg" alt="Phone: a fight"></a><figcaption>Phone: a fight</figcaption></figure>
+</div>
+</section>
+</main></body></html>

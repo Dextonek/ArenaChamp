@@ -3444,14 +3444,14 @@ export const HARBOUR: GenFloor = {
     "steps": [
      {
       "verb": "fell",
-      "text": "Clear the oyster market",
+      "text": "Clear the fish market",
       "packs": [
        "market"
       ]
      },
      {
       "verb": "light",
-      "text": "Light the lighthouse and the signal fire",
+      "text": "Light the lighthouse and the beacon",
       "things": [
        {
         "id": "light1",
@@ -3719,7 +3719,7 @@ export const HARBOUR: GenFloor = {
   "waystones": [
    {
     "id": "w1",
-    "name": "The oyster market stone",
+    "name": "The fish market stone",
     "at": {
      "x": -44,
      "z": 25.71

@@ -31,6 +31,11 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
   const QUEST: Record<string, string> = { bounty1: 'bounty', g1: 'anka-net', g2: 'anka-tam' };
   const PERSON: Record<string, string> = { keeper: 'gus', giver: 'anka', trader: 'pip', rival: 'zephyr' };
   const names: Record<string, string> = { a: 'The fish market', b: 'The caves', c: 'The lighthouse', d: 'The wreck', e: 'The beacon' };
+  // The generator's own words name its places too (a quest step's text, a waystone): they follow the new names (the review of
+  // 2026-11-16 found "Clear the oyster market" and "The oyster market stone" on a floor whose market is the fish market).
+  const renamed = Object.entries(f.places).filter(([k, p]) => names[k] && p.name !== names[k]).flatMap(([k, p]) => [[p.name, names[k]], [p.name.replace(/^The /, 'the '), names[k].replace(/^The /, 'the ')]]);
+  const reword = (t: string) => renamed.reduce((s, [a, b]) => s.split(a).join(b), t);
+  f.waystones = f.waystones.map((w) => ({ ...w, name: reword(w.name) }));
   f.places = Object.fromEntries(Object.entries(f.places).map(([k, p]) => {
     const id = PLACE[k] ?? k;
     return [id, { ...p, id, name: names[k] ?? p.name }];
@@ -39,7 +44,8 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
   f.packs = f.packs.map((p) => ({ ...p, id: PACK[p.id] ?? p.id, ...(p.id === 'named1' && p.named ? { named: { ...p.named, name: 'Old Barnacle' } } : {}) }));
   f.enemies.named1 = { ...f.enemies.named1, name: 'Old Barnacle', blurb: 'Walks the harbour and strikes hard.' };
   f.enemies.mate = { ...f.enemies.mate, blurb: 'Guards the wreck.' };
-  const renameStep = (s: Step): Step => {
+  const renameStep = (s0: Step): Step => {
+    const s = 'text' in s0 && typeof s0.text === 'string' ? { ...s0, text: reword(s0.text) } : s0;
     if (s.verb === 'fell') return { ...s, packs: s.packs.map((id) => PACK[id] ?? id) };
     if (s.verb === 'fell-named') return { ...s, pack: PACK[s.pack] ?? s.pack, text: s.pack === 'named1' ? 'Fell Old Barnacle' : s.text };
     if (s.verb === 'lead') return { ...s, name: 'Tam', text: 'Lead Tam from the caves to the camp' };
