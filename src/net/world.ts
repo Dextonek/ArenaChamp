@@ -64,11 +64,11 @@ export interface PackSink {
 
 /** What the hub says of doors (stage 3): a held door, go alone, a fight of the party, a door busy on the floor, a fight's end. */
 export interface DoorSink {
-  gather(m: Extract<ServerMsg, { t: 'door_gather' }>): void;
-  solo(door: string): void;
-  start(m: Extract<ServerMsg, { t: 'door_start' }>): void;
-  busy(m: Extract<ServerMsg, { t: 'door_busy' }>): void;
-  end(m: Extract<ServerMsg, { t: 'door_end' }>): void;
+  doorGather(m: Extract<ServerMsg, { t: 'door_gather' }>): void;
+  doorSolo(door: string): void;
+  doorStart(m: Extract<ServerMsg, { t: 'door_start' }>): void;
+  doorBusy(m: Extract<ServerMsg, { t: 'door_busy' }>): void;
+  doorEnd(m: Extract<ServerMsg, { t: 'door_end' }>): void;
 }
 
 /** Who draws the others: what the hub says, as it comes. */
@@ -168,11 +168,11 @@ export class WorldLink implements WorldPresence {
     net.on('pack_hurt', (m) => { if (this.here) this.packs?.hurt(m); });
     net.on('pack_cleared', (m) => { if (this.here) this.packs?.cleared(m.pack); });
     net.on('pack_respawn', (m) => { if (this.here) this.packs?.respawn(m.pack); });
-    net.on('door_gather', (m) => { if (this.here) this.doors?.gather(m); });
-    net.on('door_solo', (m) => { if (this.joined) this.doors?.solo(m.door); });
-    net.on('door_start', (m) => { if (this.joined) this.doors?.start(m); });
-    net.on('door_busy', (m) => { if (this.here) this.doors?.busy(m); });
-    net.on('door_end', (m) => { if (this.joined) this.doors?.end(m); });
+    net.on('door_gather', (m) => { if (this.here) this.doors?.doorGather(m); });
+    net.on('door_solo', (m) => { if (this.joined) this.doors?.doorSolo(m.door); });
+    net.on('door_start', (m) => { if (this.joined) this.doors?.doorStart(m); });
+    net.on('door_busy', (m) => { if (this.here) this.doors?.doorBusy(m); });
+    net.on('door_end', (m) => { if (this.joined) this.doors?.doorEnd(m); });
   }
 
   /** On the floor: joined, and not behind a door. */
