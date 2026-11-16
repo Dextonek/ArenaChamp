@@ -1,85 +1,41 @@
 import * as THREE from 'three';
-import { boltWidth } from '../../../effects/projectile';
-import { Emitter } from '../../../emitter';
 import { smoothstep } from '../../../effects/common';
 import { ShockRefraction, StarBurst } from '../../../effects/parts';
-import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, nestLook } from '../parts';
-import { frameCast, type CastContext } from '../../../effects/targeting';
-import type { Effect, EffectModule } from '../../../effects/types';
-import type { Obstacle } from '../../../obstacles';
+import type { Look } from '../../framework/blocks';
+import { spell, type Cast } from '../../framework/spell';
+import anka from '../hero';
 import { QUILL_DAMAGE, QUILL_RADIUS, QUILL_RANGE, QUILL_SPEED, QUILL_WIND, STAMP_R } from '../numbers';
+import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, nestLook } from '../parts';
 import { castNo, emberLive, layEmber } from '../trait';
 
 /**
- * Ember Quill (phoenix kit, Q: 10 m line skillshot, `ctx.projectile`). Anka flicks her fan (0.3 s wind-up) and a feather
- * flies down the aim at 22 m/s (radius 0.3): it reaches 6 m at 0.57 s, so a sidestep after the flick is enough. The first
- * enemy it touches takes 54. Where the quill stops (in the enemy it hit, at the end of its flight, or at a wall) it stays in
- * the floor as an EMBER and becomes her nest: the trait's (`layEmber` in src/heroes/phoenix/trait.ts, drawn there on both screens).
- * Network duels: the dealer's screen has no bolt (bolts fly on the victim's screen, where the hit is decided), so there the
- * quill's stop is worked out along the aim (the first enemy or wall in the way, else 10 m), as Fenna's Seed Shot does, and
- * the feather is flown along the aim to that spot.
+ * Ember Quill (Anka's Q: a 10 m line skillshot). She flicks her fan (0.3 s wind-up) and a feather flies down the aim at 22 m/s
+ * (radius 0.3): it reaches 6 m at 0.57 s, so a sidestep after the flick is enough. The first enemy it touches takes 54. Where
+ * the quill stops (in the enemy it hit, at the end of its flight, or at a wall) it stays in the floor as an EMBER and becomes
+ * her nest: the passive's (`layEmber` in ../trait.ts, drawn there on both screens). Online a bolt flies on both screens; the
+ * screen that decides the hit tells her client where the quill really ended (the passive's `lay` note).
  *
  * The look. The flick: a fan of seven feathers opens at her left hand, cocked back, and snaps forward at the release with a
  * small gold glint. The quill: one long feather with its eye, flying point first, four feathers of flame and a short
  * streak of flame behind it, shedding sparks of flame feathers. The landing: it swings upright and plants in the floor in a
- * small burst of feather sparks, a gold flash on the floor and a ring of force. The ember it leaves is the trait's.
+ * small burst of feather sparks, a gold flash on the floor and a ring of force. The ember it leaves is the passive's.
  * Timeline: wind-up 0-0.3, flight to 0.75, the landing burst gone 0.5 s after it lands, clean by 1.3 s.
- * Without a trait (the VFX tool) the effect shows its own feather in the floor for 2 s (and lasts that much longer).
+ * Without a passive (the VFX tool) the effect shows its own feather in the floor for 2 s (and lasts that much longer).
  */
-export interface EmberQuillSettings {
-  damage: number;
-  loop: boolean;
+interface Quill {
+  /** This cast's number among hers (`castNo`): the ember it lays carries it, so both screens keep the embers in one order. */
+  seq: number;
 }
 
-export const defaultEmberQuill = (): EmberQuillSettings => ({ damage: QUILL_DAMAGE, loop: false });
-
-const WIND_T = QUILL_WIND;
-const REACH = QUILL_RANGE;
-const SPEED = QUILL_SPEED;
-const RADIUS = QUILL_RADIUS;
-const FLIGHT_END = WIND_T + REACH / SPEED;
-const BODY = 0.5; // an enemy's body radius against a bolt
-const DURATION = 1.3;
-// The look only.
-const LOCAL_EMBER_S = 2; // how long the effect's own feather stands, where no trait draws the ember
+const LOCAL_EMBER_S = 2; // how long the effect's own feather stands, where no passive draws the ember
 const QUILL_LEN = 1.5;
 const FLY_Y = 1.0;
 const FAN = 7;
 const UP = new THREE.Vector3(0, 1, 0);
 const PLANTED = new THREE.Vector3(0.9, 1, 0.12); // how the ember's feather leans (the parts file's LEAN)
 
-/** Distance from (px, pz) to an obstacle's centre segment. */
-function obstacleDist(o: Obstacle, px: number, pz: number) {
-  const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;
-  const k = len2 > 0 ? Math.min(1, Math.max(0, ((px - o.ax) * dx + (pz - o.az) * dz) / len2)) : 0;
-  return Math.hypot(px - (o.ax + dx * k), pz - (o.az + dz * k));
-}
-
-export class EmberQuill implements Effect {
-  readonly group = new THREE.Group();
-  readonly settings: EmberQuillSettings;
-  readonly emitters: Emitter[] = [];
-  shake = 0;
-  playing = false;
-
-  /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
-  ctx: CastContext | null = null;
-  private time = 0;
-  private from = new THREE.Vector3(0, 0, 14);
-  private fwd = new THREE.Vector3(0, 0, -1);
-  private fired = false;
-  private bolt: ReturnType<NonNullable<CastContext['projectile']>> | null = null;
-  private hit = false;
-  private laid = false;
-  /** With no bolt on this screen: when the quill would stop, and where. */
-  private nominalAt = -1;
-  /** This cast's number among hers (`castNo`): the ember it lays carries it, so both screens keep the embers in one order. */
-  private seq = 0;
-  private nominal = new THREE.Vector3();
+class QuillLook implements Look<Quill> {
   private landAt = -1;
-
-  // The look.
-  private endT = DURATION;
   private left = new THREE.Vector3(1, 0, 0);
   private hand = new THREE.Vector3(0, 1.4, 14);
   private landPos = new THREE.Vector3();
@@ -96,59 +52,20 @@ export class EmberQuill implements Effect {
   private glint = new StarBurst({ points: 6, inner: 0.3, color: PHOENIX.hot, core: PHOENIX.core, additive: false });
   private pop = new StarBurst({ points: 9, inner: 0.3, color: PHOENIX.body, core: PHOENIX.hot, additive: false });
   private shock = new ShockRefraction({ facing: 'ground' });
-  /** The effect's own feather in the floor, where no trait draws the ember (the VFX tool). */
+  /** The effect's own feather in the floor, where no passive draws the ember (the VFX tool). */
   private local = nestLook(STAMP_R);
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
   private v3 = new THREE.Vector3();
 
-  constructor(settings: EmberQuillSettings = defaultEmberQuill()) {
-    this.settings = settings;
+  constructor(group: THREE.Group) {
     this.streak.frustumCulled = false;
     this.streak.renderOrder = 3;
-    this.group.add(this.flash, this.streak, this.plumes.mesh, this.flames.mesh, this.glint.mesh, this.pop.mesh, this.shock.mesh, this.local);
-    this.reset();
+    group.add(this.flash, this.streak, this.plumes.mesh, this.flames.mesh, this.glint.mesh, this.pop.mesh, this.shock.mesh, this.local);
   }
 
-  get duration() {
-    return this.endT;
-  }
-
-  get impactTime() {
-    return WIND_T;
-  }
-
-  /** Seconds after play() when the quill has flown its full reach (the telegraph's last moment). */
-  get flightEnd() {
-    return FLIGHT_END;
-  }
-
-  cast(ctx: CastContext) {
-    this.ctx = ctx;
-    this.seq = castNo(ctx.caster);
-    this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
-    this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
-    // The look: her left hand, where the fan is.
-    this.left.set(this.fwd.z, 0, -this.fwd.x);
-    this.hand.copy(this.from).addScaledVector(this.fwd, 0.45).addScaledVector(this.left, 0.3).setY(1.4);
-    this.quillBase.copy(this.hand);
-  }
-
-  play() {
-    this.reset();
-    this.playing = true;
-  }
-
-  private reset() {
-    this.time = 0;
-    this.shake = 0;
-    this.fired = false;
-    this.bolt = null;
-    this.hit = false;
-    this.laid = false;
-    this.nominalAt = -1;
+  reset() {
     this.landAt = -1;
-    this.endT = DURATION;
     this.shed = 0;
     this.localAt = -1;
     this.plumes.reset();
@@ -159,41 +76,34 @@ export class EmberQuill implements Effect {
     this.shock.set(this.landPos, 0, 0);
   }
 
-  /** How far along the aim the quill gets before an enemy's body or a wall stops it (no bolt on this screen). */
-  private nominalStop(ctx: CastContext) {
-    let best = REACH;
-    for (const e of ctx.targets) {
-      const dx = e.group.position.x - this.from.x, dz = e.group.position.z - this.from.z;
-      const along = dx * this.fwd.x + dz * this.fwd.z;
-      const perp = Math.abs(dx * this.fwd.z - dz * this.fwd.x);
-      if (along < 0 || perp > RADIUS + BODY) continue;
-      best = Math.min(best, Math.max(0, along - Math.sqrt(Math.max(0, (RADIUS + BODY) ** 2 - perp * perp))));
-    }
-    const walls = ctx.obstacles?.() ?? [];
-    for (let d = 0; d < best; d += 0.2) {
-      const px = this.from.x + this.fwd.x * d, pz = this.from.z + this.fwd.z * d;
-      if (walls.some((o) => obstacleDist(o, px, pz) <= o.r + RADIUS)) { best = Math.max(0, d - 0.2); break; }
-    }
-    return best;
+  /** Her left hand, where the fan is. */
+  cast(c: Cast<Quill>) {
+    this.left.set(c.dir.z, 0, -c.dir.x);
+    this.hand.copy(c.from).addScaledVector(c.dir, 0.45).addScaledVector(this.left, 0.3).setY(1.4);
+    this.quillBase.copy(this.hand);
   }
 
-  /** The quill stops at (x, z): the ember is laid (the trait's list, both screens). */
-  private land(x: number, z: number) {
-    if (this.laid) return;
-    this.laid = true;
-    // With its flight: her own screen learns the quill's true end from the screen that decides its hit.
-    if (this.ctx) layEmber(this.ctx.caster, x, z, this.seq, { fx: this.from.x, fz: this.from.z, dx: this.fwd.x, dz: this.fwd.z });
-    this.landAt = this.time;
-    // The look: a small burst of feather sparks where it plants.
+  tick(dt: number) {
+    this.plumes.update(dt);
+    this.flames.update(dt);
+  }
+
+  released(c: Cast<Quill>) {
+    c.shake = 0.06;
+  }
+
+  /** A small burst of feather sparks where it plants. */
+  stopped(c: Cast<Quill>, x: number, z: number) {
+    this.landAt = c.time;
     this.landPos.set(x, 0, z);
     this.flash.position.set(x, 0.04, z);
     this.flash.visible = true;
     this.flames.burst(this.v1.set(x, 0.35, z), 10, 3.4, 0.42, 0.45);
     this.plumes.burst(this.v1, 3, 2.6, 0.45, 0.5);
-    if (!this.ctx || !emberLive(this.ctx.caster)) {
-      // No trait draws the ember here (the VFX tool): the effect shows a feather of its own, and lasts that much longer.
-      this.localAt = this.time;
-      this.endT = Math.max(this.endT, this.time + LOCAL_EMBER_S + 0.05);
+    if (!c.ctx || !emberLive(c.ctx.caster)) {
+      // No passive draws the ember here (the VFX tool): the effect shows a feather of its own, and lasts that much longer.
+      this.localAt = c.time;
+      c.extend(c.time + LOCAL_EMBER_S + 0.05);
       this.local.position.set(x, 0, z);
     }
   }
@@ -202,16 +112,16 @@ export class EmberQuill implements Effect {
    * The flick of the fan: seven feathers open at her hand like a hand of cards held toward the aim (its face up, so it reads
    * from the camera wherever she aims), drawn back and raised as they open, then snapped forward and down at the release.
    */
-  private drawFan(t: number) {
-    if (t >= WIND_T + 0.14) return;
-    const open = t < WIND_T ? 1 - (1 - t / WIND_T) ** 3 : 1;
-    const snap = t < WIND_T ? 0 : smoothstep((t - WIND_T) / 0.07);
-    const gone = t < WIND_T ? 1 : 1 - smoothstep((t - WIND_T - 0.04) / 0.1);
+  private drawFan(c: Cast<Quill>, t: number) {
+    if (t >= QUILL_WIND + 0.14) return;
+    const open = t < QUILL_WIND ? 1 - (1 - t / QUILL_WIND) ** 3 : 1;
+    const snap = t < QUILL_WIND ? 0 : smoothstep((t - QUILL_WIND) / 0.07);
+    const gone = t < QUILL_WIND ? 1 : 1 - smoothstep((t - QUILL_WIND - 0.04) / 0.1);
     // how far the fan is raised above level, and where its pivot is: drawn back, then thrust forward
     const lift = 0.12 + 0.5 * open * (1 - snap);
-    const pivot = this.quillBase.copy(this.hand).addScaledVector(this.fwd, 0.45 * snap - 0.25 * open * (1 - snap));
-    const axis = this.v1.copy(this.fwd).multiplyScalar(Math.cos(lift)).addScaledVector(UP, Math.sin(lift));
-    const face = this.v2.copy(UP).multiplyScalar(Math.cos(lift)).addScaledVector(this.fwd, -Math.sin(lift));
+    const pivot = this.quillBase.copy(this.hand).addScaledVector(c.dir, 0.45 * snap - 0.25 * open * (1 - snap));
+    const axis = this.v1.copy(c.dir).multiplyScalar(Math.cos(lift)).addScaledVector(UP, Math.sin(lift));
+    const face = this.v2.copy(UP).multiplyScalar(Math.cos(lift)).addScaledVector(c.dir, -Math.sin(lift));
     const half = 0.95 * (0.15 + 0.85 * open);
     for (let i = 0; i < FAN; i++) {
       const th = (i / (FAN - 1) - 0.5) * 2 * half;
@@ -222,11 +132,11 @@ export class EmberQuill implements Effect {
   }
 
   /** The quill in flight with its tip near (x, z), flying along `dir`: one long feather, flames and a streak behind it, sparks shed. */
-  private drawQuill(x: number, z: number, dir: THREE.Vector3, dt: number, t: number) {
+  private drawQuill(c: Cast<Quill>, x: number, z: number, dir: THREE.Vector3, dt: number, t: number) {
     const d = this.v1.set(dir.x, 0, dir.z);
-    if (d.lengthSq() < 1e-8) d.copy(this.fwd);
+    if (d.lengthSq() < 1e-8) d.copy(c.dir);
     d.normalize();
-    const flown = Math.hypot(x - this.from.x, z - this.from.z);
+    const flown = Math.hypot(x - c.from.x, z - c.from.z);
     const len = Math.min(QUILL_LEN, 0.5 + flown);
     const base = this.quillBase.set(x, FLY_Y, z).addScaledVector(d, 0.25 - len);
     this.plumes.put(base, d, len, Math.sin(t * 38) * 0.14, 1.25);
@@ -252,67 +162,23 @@ export class EmberQuill implements Effect {
     }
   }
 
-  update(dt: number) {
-    for (const e of this.emitters) e.update(dt);
-    if (!this.playing) return;
-    this.plumes.update(dt);
-    this.flames.update(dt);
-    this.time += dt;
-    if (this.time >= this.endT) {
-      const loop = this.settings.loop;
-      this.playing = false;
-      this.shake = 0;
-      this.reset();
-      if (loop) this.play();
-      return;
-    }
-    const t = this.time;
-    const ctx = this.ctx;
+  frame(c: Cast<Quill>, t: number, dt: number) {
+    // The flick of the fan, and a small gold glint as the quill leaves it.
+    this.drawFan(c, t);
+    const g = StarBurst.pop(t - QUILL_WIND, 0, 0.05);
+    this.glint.set(this.v1.copy(this.hand).addScaledVector(c.dir, 0.5), 0.55 * g.scale + 1e-3, g.opacity, t * 5);
 
-    if (!this.fired && t >= WIND_T) {
-      this.fired = true;
-      this.shake = 0.06;
-      if (ctx?.projectile) {
-        this.bolt = ctx.projectile({
-          from: this.from.clone(), dir: this.fwd.clone(), speed: SPEED, range: REACH, radius: RADIUS,
-          hit: { damage: this.settings.damage, knock: 1, color: PHOENIX_CSS.body },
-        });
-        this.bolt.onHit((_target, at) => {
-          this.hit = true;
-          this.land(at.x, at.z);
-        });
-      } else if (ctx) {
-        const d = this.nominalStop(ctx);
-        this.nominal.copy(this.from).addScaledVector(this.fwd, d);
-        this.nominalAt = WIND_T + d / SPEED;
-      }
-    }
-    // A miss: the quill ended its flight (or struck a wall) with no hit; it stands a step short of where it died.
-    if (this.bolt && !this.bolt.alive && !this.hit && !this.laid) {
-      this.land(this.bolt.pos.x - this.fwd.x * 0.2, this.bolt.pos.z - this.fwd.z * 0.2);
-    }
-    if (this.nominalAt >= 0 && t >= this.nominalAt && !this.laid) this.land(this.nominal.x, this.nominal.z);
-
-    // The look from here on. The flick of the fan, and a small gold glint as the quill leaves it.
-    this.drawFan(t);
-    const g = StarBurst.pop(t - WIND_T, 0, 0.05);
-    this.glint.set(this.v1.copy(this.hand).addScaledVector(this.fwd, 0.5), 0.55 * g.scale + 1e-3, g.opacity, t * 5);
-
-    // The quill in flight: on the bolt, or, where no bolt flies on this screen, along the aim to where it will stop.
+    // The quill in flight, on the bolt.
     this.streak.visible = false;
-    if (this.bolt && this.bolt.alive) this.drawQuill(this.bolt.pos.x, this.bolt.pos.z, this.bolt.dir, dt, t);
-    else if (this.nominalAt >= 0 && !this.laid) {
-      const d = (t - WIND_T) * SPEED;
-      this.drawQuill(this.from.x + this.fwd.x * d, this.from.z + this.fwd.z * d, this.fwd, dt, t);
-    }
+    if (c.bolt && c.bolt.alive) this.drawQuill(c, c.bolt.pos.x, c.bolt.pos.z, c.bolt.dir, dt, t);
 
     if (this.landAt >= 0) {
       const a = t - this.landAt;
-      // it swings upright and plants (the ember that stays is the trait's)
+      // it swings upright and plants (the ember that stays is the passive's)
       if (a < 0.1) {
         const k = smoothstep(a / 0.1);
         this.v1.copy(this.quillBase).lerp(this.landPos, k);
-        this.v2.copy(this.fwd).lerp(PLANTED, k);
+        this.v2.copy(c.dir).lerp(PLANTED, k);
         this.plumes.put(this.v1, this.v2, QUILL_LEN + 0.3 * k, 0, 1.2);
       }
       (this.flash.material as THREE.MeshBasicMaterial).opacity = 0.6 * Math.exp(-a * 9);
@@ -322,8 +188,8 @@ export class EmberQuill implements Effect {
       this.pop.set(this.v1.set(this.landPos.x, 0.5, this.landPos.z), 0.9 * hp.scale + 1e-3, hp.opacity, 0.4);
       const sg = THREE.MathUtils.clamp(a / 0.3, 0, 1);
       this.shock.set(this.landPos, 0.3 + 1.3 * sg, 0.03 * (1 - sg) * (1 - sg));
-      this.shake = Math.max(this.shake * 0.9, 0.1 * Math.exp(-a * 14));
-    } else this.shake *= 0.9;
+      c.shake = Math.max(c.shake * 0.9, 0.1 * Math.exp(-a * 14));
+    } else c.shake *= 0.9;
 
     if (this.localAt >= 0) {
       const a = t - this.localAt, left = LOCAL_EMBER_S - a;
@@ -333,32 +199,29 @@ export class EmberQuill implements Effect {
   }
 }
 
-export const emberQuillModule: EffectModule = {
-  label: 'ember quill',
+export const emberQuillModule = spell<Quill>({
+  label: anka.kit.spells[0].label,
   category: 'hero: phoenix',
   // A skillshot: the aim point only gives the direction (the quill flies its 10 m wherever the cursor is).
-  targeting: { mode: 'ground', radius: RADIUS },
-  create: () => new EmberQuill(),
-  telegraphs(effect) {
-    const e = effect as EmberQuill;
-    const ctx = e.ctx;
-    if (!ctx) return [];
-    const from = ctx.sentFrom ?? ctx.from;
-    const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
-    // Shown from the flick, armed at the release, until the quill has flown; the bolt's hit is the dodge check.
-    return [{
-      shape: { kind: 'line', x1: from.x, z1: from.z, x2: from.x + d.x * REACH, z2: from.z + d.z * REACH, width: boltWidth(RADIUS) },
-      start: 0.02, impact: WIND_T, until: e.flightEnd,
-    }];
+  targeting: { mode: 'ground', radius: QUILL_RADIUS },
+  seconds: 1.3,
+  state: () => ({ seq: 0 }),
+  rules: {
+    windup: QUILL_WIND,
+    shape: { kind: 'bolt', speed: QUILL_SPEED, range: QUILL_RANGE, radius: QUILL_RADIUS },
+    hit: { damage: QUILL_DAMAGE, knock: 1, color: PHOENIX_CSS.body },
+    warn: 0.02,
+    on: {
+      cast: (c) => { c.state.seq = castNo(c.ctx!.caster); },
+      // Where it stops it stays as an ember, her nest; with its flight, so her own screen learns its true end from the screen
+      // that decides its hit.
+      stop: (c, x, z) => {
+        if (c.ctx) layEmber(c.ctx.caster, x, z, c.state.seq, { fx: c.from.x, fz: c.from.z, dx: c.dir.x, dz: c.dir.z });
+      },
+    },
   },
+  look: QuillLook,
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
-  frameCamera(camera, controls, effect) {
-    const e = effect as EmberQuill;
-    if (e.ctx) frameCast(camera, controls, e.ctx, 2);
-  },
-  buildGui(f, effect) {
-    const s = (effect as EmberQuill).settings;
-    f.add(s, 'loop');
-    f.add(s, 'damage', 1, 150, 1);
-  },
-};
+  frame: 2,
+  maxDamage: 150,
+});
