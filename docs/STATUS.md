@@ -59,6 +59,13 @@ hero through the simulator; page `docs/pipeline/hero-framework/bugs.html`); a bl
 cost per spell and a recommendation; page `docs/pipeline/hero-framework/blocks-trial.html`). Then: step 5 (the new-hero command, the
 workbench, `new-hero.md`).
 
+- **Done and merged (2026-11-16): the spell blocks trial** (page `docs/pipeline/hero-framework/blocks-trial.html`, design section 12):
+  Sefu, Professor Puff, Big Yoko, 8 of 12 spells on the blocks (-21 % lines; drawing code unchanged, four fifths of a spell), 4 stay
+  code; all 80 prints, the roster and the looks (`pipeline/tools/spell-look-compare.py`) the same. **Decided (the parent, from its
+  recommendation):** new heroes on the blocks; an old hero's fitting spells move when it is opened for a fix or rebalance; no mass
+  conversion (about 12-15 h for a fifth fewer lines). **Running:** step 5 (the new-hero command, the workbench, the one-hero check
+  command, `new-hero.md` rewritten); its hook in `src/main.ts` waits until the hero bugs agent is merged.
+
 ## Today's entries (2026-11-16)
 - **Done, on branch `t3/c4b07aea` (not merged, not live) (2026-11-16): the spell blocks trial** (page
   `docs/pipeline/hero-framework/blocks-trial.html`; design section 12). Twelve spells of Sefu, Professor Puff and Big Yoko tried on
