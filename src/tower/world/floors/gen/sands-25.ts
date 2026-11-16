@@ -3412,7 +3412,7 @@ export const SANDS_25: GenFloor = {
     "name": "The Red Rider",
     "giver": "keeper",
     "intro": [
-     "The Red Rider walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     "The Red Rider walks the middle of the wadi. Nobody crosses it twice. Fell him and the road is quieter."
     ],
     "steps": [
      {

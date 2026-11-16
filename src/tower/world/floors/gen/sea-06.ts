@@ -3579,7 +3579,7 @@ export const SEA_06: GenFloor = {
     "name": "Old Hobb’s Ghost",
     "giver": "keeper",
     "intro": [
-     "Old Hobb’s Ghost walks the middle of the harbour. Fell it and the sea quietens a little."
+     "Old Hobb’s Ghost walks the middle of the harbour. Fell him and the sea quietens a little."
     ],
     "steps": [
      {

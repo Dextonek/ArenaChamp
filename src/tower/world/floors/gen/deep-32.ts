@@ -3557,7 +3557,7 @@ export const DEEP_32: GenFloor = {
     "name": "The Hollow Foreman",
     "giver": "keeper",
     "intro": [
-     "The Hollow Foreman walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Hollow Foreman walks the middle of the Deep. He does not need light. Fell him and the dark is a little less."
     ],
     "steps": [
      {
@@ -3579,7 +3579,7 @@ export const DEEP_32: GenFloor = {
     "name": "Old Pick",
     "giver": "keeper",
     "intro": [
-     "Old Pick walks the west of the Deep. Nobody goes to the old bunks while it does."
+     "Old Pick walks the west of the Deep. Nobody goes to the old bunks while he does."
     ],
     "steps": [
      {

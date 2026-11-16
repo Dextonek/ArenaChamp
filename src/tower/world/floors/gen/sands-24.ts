@@ -3434,7 +3434,7 @@ export const SANDS_24: GenFloor = {
     "name": "The Dust Prince",
     "giver": "keeper",
     "intro": [
-     "The Dust Prince walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     "The Dust Prince walks the middle of the wadi. Nobody crosses it twice. Fell him and the road is quieter."
     ],
     "steps": [
      {

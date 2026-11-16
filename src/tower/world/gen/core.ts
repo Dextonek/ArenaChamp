@@ -30,13 +30,25 @@ export function shuffle<T>(xs: readonly T[], rnd: () => number): T[] {
 }
 
 /**
- * A named enemy's words (the parent's decision, 2026-11-16: the named mothers are "her" everywhere): the women among the
- * chapters' named enemies (a Mother, a Grandmother, a Widow, Bess, Annie, the Ore Bride) are "she" and "her"; every other named
- * enemy, beast, thing or ghost, stays "it".
+ * A named enemy's words (the parent's decisions, 2026-11-16: the named women are "her" everywhere, then the named men "he"): the women
+ * among the chapters' named enemies (a Mother, a Grandmother, a Widow, Bess, Annie, the Ore Bride) are "she" and "her"; the men, by
+ * their names (a Sir, a Captain, a Brother, a Jack, a Prince, the knights, riders, lancers and the rest in `MEN`), "he" and "him";
+ * every other named enemy, a beast, a thing, or a name that does not say (Saltjaw, the Pale Diver, the Black Standard), stays "it".
  */
 export const isShe = (name: string) => /\b(Mother|Grandmother|Widow|Bess|Annie|Bride)\b/.test(name);
-export const herIt = (name: string) => (isShe(name) ? 'her' : 'it');
-export const sheIt = (name: string, cap = false) => (isShe(name) ? (cap ? 'She' : 'she') : cap ? 'It' : 'it');
+const MEN = new Set([
+  'Captain Gull', 'Old Hobb’s Ghost',
+  'The Dust Prince', 'The Red Rider', 'The Hollow Rider', 'The Pale Nomad',
+  'The Hollow Foreman', 'Old Pick', 'Cinder Jack', 'Brother Flint', 'Captain Candle',
+  'The Turncoat', 'Sir Rust', 'The Hollow Captain', 'The Crow Knight', 'Old Ironside', 'The Weeping Lancer', 'The Last Sergeant', 'Sir Ashes',
+  'The Grey Rider', 'The Headless Herald', 'Sir Nobody', 'The Lost Colonel', 'The Pale Lancer',
+]);
+export const isHe = (name: string) => MEN.has(name);
+export const herIt = (name: string) => (isShe(name) ? 'her' : isHe(name) ? 'him' : 'it');
+export const sheIt = (name: string, cap = false) => {
+  const w = isShe(name) ? 'she' : isHe(name) ? 'he' : 'it';
+  return cap ? w[0].toUpperCase() + w.slice(1) : w;
+};
 
 export const r2 = (x: number) => Math.round(x * 100) / 100;
 export const r4 = (x: number) => Math.round(x * 10000) / 10000;

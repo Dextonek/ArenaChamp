@@ -3764,7 +3764,7 @@ export const DEEP_40: GenFloor = {
     "name": "Captain Candle",
     "giver": "keeper",
     "intro": [
-     "Captain Candle walks the west of the Deep. Nobody goes to the miners’ rest while it does."
+     "Captain Candle walks the west of the Deep. Nobody goes to the miners’ rest while he does."
     ],
     "steps": [
      {

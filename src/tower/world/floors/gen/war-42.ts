@@ -3828,7 +3828,7 @@ export const WAR_42: GenFloor = {
     "name": "The Turncoat",
     "giver": "keeper",
     "intro": [
-     "The Turncoat walks the middle of the field, under no banner. Fell it, and let the song close."
+     "The Turncoat walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {
@@ -3850,7 +3850,7 @@ export const WAR_42: GenFloor = {
     "name": "Sir Rust",
     "giver": "keeper",
     "intro": [
-     "Sir Rust walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "Sir Rust walks the west of the field, by the field hospital. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

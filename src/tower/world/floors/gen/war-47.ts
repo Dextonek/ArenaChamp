@@ -3878,7 +3878,7 @@ export const WAR_47: GenFloor = {
     "name": "The Headless Herald",
     "giver": "keeper",
     "intro": [
-     "The Headless Herald walks the middle of the field, under no banner. Fell it, and let the song close."
+     "The Headless Herald walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {

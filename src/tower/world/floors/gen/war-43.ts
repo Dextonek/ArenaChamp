@@ -3794,7 +3794,7 @@ export const WAR_43: GenFloor = {
     "name": "The Hollow Captain",
     "giver": "keeper",
     "intro": [
-     "The Hollow Captain walks the middle of the field, under no banner. Fell it, and let the song close."
+     "The Hollow Captain walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {
@@ -3816,7 +3816,7 @@ export const WAR_43: GenFloor = {
     "name": "The Crow Knight",
     "giver": "keeper",
     "intro": [
-     "The Crow Knight walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "The Crow Knight walks the west of the field, by the field hospital. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

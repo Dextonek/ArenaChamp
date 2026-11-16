@@ -3790,7 +3790,7 @@ export const WAR_44: GenFloor = {
     "name": "Old Ironside",
     "giver": "keeper",
     "intro": [
-     "Old Ironside walks the middle of the field, under no banner. Fell it, and let the song close."
+     "Old Ironside walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {
@@ -3812,7 +3812,7 @@ export const WAR_44: GenFloor = {
     "name": "The Weeping Lancer",
     "giver": "keeper",
     "intro": [
-     "The Weeping Lancer walks the west of the field, by the surgeons’ tents. The wounded will not be carried in while it does."
+     "The Weeping Lancer walks the west of the field, by the surgeons’ tents. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

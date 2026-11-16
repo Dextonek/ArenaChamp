@@ -3919,7 +3919,7 @@ export const WAR_49: GenFloor = {
     "name": "The Lost Colonel",
     "giver": "keeper",
     "intro": [
-     "The Lost Colonel walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "The Lost Colonel walks the west of the field, by the field hospital. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

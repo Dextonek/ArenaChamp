@@ -3534,7 +3534,7 @@ export const SANDS_28: GenFloor = {
     "name": "The Pale Nomad",
     "giver": "keeper",
     "intro": [
-     "The Pale Nomad rides the walls’ side. Nobody goes to the caravanserai while it does."
+     "The Pale Nomad rides the walls’ side. Nobody goes to the caravanserai while he does."
     ],
     "steps": [
      {

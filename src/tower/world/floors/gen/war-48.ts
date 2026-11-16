@@ -3911,7 +3911,7 @@ export const WAR_48: GenFloor = {
     "name": "Sir Nobody",
     "giver": "keeper",
     "intro": [
-     "Sir Nobody walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "Sir Nobody walks the west of the field, by the field hospital. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

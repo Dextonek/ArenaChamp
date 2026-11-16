@@ -3929,7 +3929,7 @@ export const WAR_50: GenFloor = {
     "name": "The Pale Lancer",
     "giver": "keeper",
     "intro": [
-     "The Pale Lancer walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "The Pale Lancer walks the west of the field, by the field hospital. The wounded will not be carried in while he does."
     ],
     "steps": [
      {
