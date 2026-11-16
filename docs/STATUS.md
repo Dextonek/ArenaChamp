@@ -55,6 +55,13 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
+  and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
+  spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the
+  hand (net caster, slinger, bowman, thorn sprite) and glide to 1.1 m, the hit unchanged (prints the same). Rust guard lists 19 lines
+  (the new one `projectile.ts`, drawing only). Passed to the lore agent: "The Captain's Key" -> the Admiral's, and the codex's note
+  that the ruler has two names.
+
 - **Done and merged (2026-11-16): ruler and boss looks** (page `docs/models/review/round3/index.html`): fallen rulers lie on the floor
   (0-3 cm, was up to 1.6 m under), Ash's feet on the floor in all his casts, the Heart's crown sways instead of turning (rays clear of
   the floor), the five staff rulers kneel with the staff up (kept for all five, by the parent). Ash on the lava: his charge stops
