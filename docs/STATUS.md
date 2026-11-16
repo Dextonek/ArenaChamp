@@ -23,8 +23,13 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
   for one Blender round later; page `docs/models/review/`). **Running too:** the heroes' review (the one Blender agent; page
   `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
-- **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
-  life, more to see), starting with one chapter shown to the user first; it starts when the stage 3 job is merged (a slot frees).
+- **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
+  (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
+  user's yes before the other four chapters.
+- **Server tests flaky under load (2026-11-16, after the stage 3 merge):** with six agents running, three runs failed three different
+  timing checks (shop: a late `lobby` null after a leave; shop: timeout on `raid_gate`; doors: timeout on `door_end`); the stage 3
+  branch had 364 passing. Re-run `npm run test:server` when the machine is quiet; if one keeps failing, fix it (the shop's leave
+  should wait for its `lobby` null instead of a 100 ms pause).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
