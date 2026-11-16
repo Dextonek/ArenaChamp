@@ -1,0 +1,14 @@
+{
+ "floor": 28,
+ "verdict": "Clean but for one word: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Auriel), the trial, the Red Jackal (own model) and the gate (Isolde) all played.",
+ "found": [
+  {"kind": "fixed", "title": "“The red tents is full of raiders”", "text": "As on the Sea's floor 4: the keeper's greeting put “is” after a plural place. The Sands' maker now says “are” for a name ending in s (gen/sands.ts; floors 22 to 30 re-baked, only floor 28's line changed).", "pics": [["fix-tents-before.jpg", "Before"], ["fix-tents-after.jpg", "After"]]},
+  {"kind": "ok", "title": "Props", "text": "Shrubs on the high rim (a few cm), crates on the rim's slope, red rocks a little sunk."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Red Jackal"],
+  ["pack-a.jpg", "The red tents' pack"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

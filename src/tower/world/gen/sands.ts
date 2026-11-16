@@ -472,7 +472,7 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
 
   // --- people, quests, doors, secrets ---------------------------------------------------------------------------------------
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Another climber. ${A.name} is full of raiders, the oasis is dry, and ${mid(rulerName)} waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes.`], quests: ['main', 'bounty1', 'bounty2'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Another climber. ${A.name} ${A.name.endsWith('s') ? 'are' : 'is'} full of raiders, the oasis is dry, and ${mid(rulerName)} waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes.`], quests: ['main', 'bounty1', 'bounty2'] },
     { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: [pick(['I count the storms. Every one, from behind a rock.', 'Sand is free here. Everything else I need help with.', 'The caravans will not move while the road is like this.'])], quests: ['g1', 'g2'] },
     { id: 'villager', hero: villagerHero, name: villagerHero, role: 'giver', at: villagerAt, face: facing(villagerAt), greet: [`You walked all the way to ${lower(Vl.name)}? Then you can light a fire for me.`], quests: ['g3'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: facing(rivalAt), greet: [], quests: [] },

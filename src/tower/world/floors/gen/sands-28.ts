@@ -3367,7 +3367,7 @@ export const SANDS_28: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The red tents is full of raiders, the oasis is dry, and the Red Jackal waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
+     "Another climber. The red tents are full of raiders, the oasis is dry, and the Red Jackal waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
     ],
     "quests": [
      "main",
