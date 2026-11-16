@@ -1,10 +1,9 @@
 import * as THREE from 'three';
-import { Emitter } from '../../../emitter';
 import { smoothstep } from '../../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../../effects/parts';
+import type { Look } from '../../framework/blocks';
+import { spell, type Cast } from '../../framework/spell';
 import { BALLOON, BALLOON_CSS, Balloons, Bubbles, PopWords, Scraps } from '../parts';
-import { frameCast, type CastContext } from '../../../effects/targeting';
-import type { Effect, EffectModule } from '../../../effects/types';
 import { BOMB_DAMAGE, BOMB_DELAY, BOMB_RADIUS } from '../trait';
 
 /**
@@ -13,35 +12,21 @@ import { BOMB_DAMAGE, BOMB_DELAY, BOMB_RADIUS } from '../trait';
  * bubbles drifting in the 2.5 m circle. It swells from 0.7 m to twice that over the next 0.6 s, wobbling faster and flashing white in the last
  * third. At 1.0 s it POPS: a spiky star, a refraction ring the size of the zone, 18 torn rubber scraps fluttering down, a ring of bubbles and
  * the floating word POP, one short impact frame. Whoever stands inside 2.5 m at that moment (each enemy's live position, not a list from the
- * cast) takes 40 and is pushed out from the spot; the trait puts 3 Air on each hit.
+ * cast) takes 50 and is pushed out from the spot; the trait puts 3 Air on each hit.
  *
+ * On the spell blocks (docs/pipeline/hero-framework.md): a circle at the aim with a fuse. The rules are the `rules` below; the look is
+ * the old file's drawing code, told the moments.
  * Telegraph: the real circle, 2.5 m, from the cast to the pop (1.0 s; its `impact` roots him until then). Clean by 2.2 s.
  * See pipeline/designs/kit-balloon.md.
  */
-export interface HeliumBombSettings {
-  damage: number;
-  loop: boolean;
-}
-
-export const defaultHeliumBomb = (): HeliumBombSettings => ({ damage: BOMB_DAMAGE, loop: false });
 
 // Timeline (seconds).
 const FLOAT_T = 0.4;
 const POP_T = BOMB_DELAY;
-const DURATION = 2.2;
 const HOVER_Y = 2.6;
 
-export class HeliumBomb implements Effect {
-  readonly group = new THREE.Group();
-  readonly settings: HeliumBombSettings;
-  readonly emitters: Emitter[] = [];
+class BombLook implements Look<null> {
   readonly screen = createScreenFx();
-  shake = 0;
-  playing = false;
-
-  /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
-  ctx: CastContext | null = null;
-  private time = 0;
   private popped = false;
   private idx = -1;
   private bubT = 0;
@@ -64,39 +49,22 @@ export class HeliumBomb implements Effect {
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
 
-  constructor(settings: HeliumBombSettings = defaultHeliumBomb()) {
-    this.settings = settings;
+  constructor(group: THREE.Group) {
     this.shadow.renderOrder = 1;
     this.screen.impactColor.set(BALLOON.hot);
     this.screen.tint.set(BALLOON.dark);
-    this.group.add(this.shadow, this.balloons.mesh, this.bubbles.mesh, this.scraps.mesh, this.words.mesh, this.star.mesh, this.flare.mesh, this.shock.mesh);
-    this.reset();
+    group.add(this.shadow, this.balloons.mesh, this.bubbles.mesh, this.scraps.mesh, this.words.mesh, this.star.mesh, this.flare.mesh, this.shock.mesh);
   }
 
-  get duration() {
-    return DURATION;
-  }
-
-  get impactTime() {
-    return POP_T;
-  }
-
-  cast(ctx: CastContext) {
-    this.ctx = ctx;
+  cast(c: Cast<null>) {
+    const ctx = c.ctx!;
     this.point.copy(ctx.point).setY(0);
     this.hand.set(ctx.from.x, 1.3, ctx.from.z);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.point).setY(1.5);
   }
 
-  play() {
-    this.reset();
-    this.playing = true;
-  }
-
-  private reset() {
-    this.time = 0;
-    this.shake = 0;
+  reset() {
     this.popped = false;
     this.idx = -1;
     this.bubT = 0;
@@ -113,26 +81,20 @@ export class HeliumBomb implements Effect {
     (this.shadow.material as THREE.MeshBasicMaterial).opacity = 0;
   }
 
-  update(dt: number) {
-    for (const e of this.emitters) e.update(dt);
+  /** The old file aged its particles every frame, playing or not. */
+  tick(dt: number) {
     this.balloons.update(dt);
     this.bubbles.update(dt);
     this.scraps.update(dt);
     this.words.update(dt);
-    if (!this.playing) return;
-    this.time += dt;
-    if (this.time >= DURATION) {
-      const loop = this.settings.loop;
-      this.playing = false;
-      this.shake = 0;
-      this.reset();
-      if (loop) this.play();
-      return;
-    }
-    const t = this.time;
-    const ctx = this.ctx;
+  }
 
-    // --- The balloon: let go from his hand, floats to the spot, hangs there and swells. ---
+  idle(dt: number) {
+    this.tick(dt);
+  }
+
+  /** The balloon: let go from his hand, floats to the spot, hangs there and swells. */
+  frame(_c: Cast<null>, t: number, dt: number) {
     if (this.idx === -1) {
       this.idx = this.balloons.place(this.hand, 'foil', 0.45);
       this.balloons.setBob(this.idx, 0.1);
@@ -163,12 +125,23 @@ export class HeliumBomb implements Effect {
         }
       }
     }
+  }
 
-    // --- 1.0 The pop. ---
-    if (!this.popped && t >= POP_T) {
-      this.popped = true;
-      this.pop(ctx);
-    }
+  /** 1.0 s, the pop (after the rules' hits): the whole snap. */
+  impact(c: Cast<null>) {
+    this.popped = true;
+    const at = this.point;
+    if (this.idx >= 0) { this.balloons.hide(this.idx); this.idx = -2; }
+    this.v1.set(at.x, HOVER_Y, at.z);
+    this.scraps.burst(this.v1, 18, 6.5, 0.3, [BALLOON.foil, BALLOON.foil, BALLOON.body, 0xd9b84a]);
+    this.bubbles.ring(this.v1, 10, 5, 0.5, 0.9, BALLOON.hot, 0);
+    this.bubbles.ring(this.v1, 8, 4, 1.1, 0.7, BALLOON.hot, 1);
+    this.v1.set(at.x, HOVER_Y + 0.4, at.z);
+    this.words.show('POP', this.v1, 1.5, 1.1);
+    c.shake = 0.38;
+  }
+
+  after(c: Cast<null>, t: number, dt: number) {
     if (this.popped) {
       const a = t - POP_T;
       this.screen.impact = impactFrameAt(t, POP_T, [1], 0.04);
@@ -182,51 +155,26 @@ export class HeliumBomb implements Effect {
       this.shock.set(this.v2.set(this.point.x, 0, this.point.z), 0.5 + BOMB_RADIUS * g, 0.05 * (1 - g) * (1 - g));
       (this.shadow.material as THREE.MeshBasicMaterial).opacity = 0.32 * (1 - smoothstep(a / 0.25));
     }
-    this.shake *= Math.exp(-dt * 9);
-  }
-
-  /** The pop: hit whoever stands in the circle now, and the whole snap. */
-  private pop(ctx: CastContext | null) {
-    const at = this.point;
-    if (ctx) {
-      // Re-check at impact: whoever stands in the circle now.
-      for (const e of ctx.enemies?.() ?? ctx.targets) {
-        const p = e.group.position;
-        if (Math.hypot(p.x - at.x, p.z - at.z) <= BOMB_RADIUS) {
-          ctx.hit(e, { damage: this.settings.damage, knock: 5, from: this.v2.set(at.x, 0, at.z).clone(), color: BALLOON_CSS.body });
-        }
-      }
-    }
-    if (this.idx >= 0) { this.balloons.hide(this.idx); this.idx = -2; }
-    this.v1.set(at.x, HOVER_Y, at.z);
-    this.scraps.burst(this.v1, 18, 6.5, 0.3, [BALLOON.foil, BALLOON.foil, BALLOON.body, 0xd9b84a]);
-    this.bubbles.ring(this.v1, 10, 5, 0.5, 0.9, BALLOON.hot, 0);
-    this.bubbles.ring(this.v1, 8, 4, 1.1, 0.7, BALLOON.hot, 1);
-    this.v1.set(at.x, HOVER_Y + 0.4, at.z);
-    this.words.show('POP', this.v1, 1.5, 1.1);
-    this.shake = 0.38;
+    c.shake *= Math.exp(-dt * 9);
   }
 }
 
-export const heliumBombModule: EffectModule = {
+export const heliumBombModule = spell<null>({
   label: 'helium bomb',
   category: 'hero: balloon',
   targeting: { mode: 'ground', radius: BOMB_RADIUS },
-  create: () => new HeliumBomb(),
-  telegraphs(effect) {
-    const e = effect as HeliumBomb;
-    const ctx = e.ctx;
-    if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: BOMB_RADIUS }, start: 0, impact: POP_T }];
+  seconds: 2.2,
+  state: () => null,
+  rules: {
+    windup: 0,
+    // Whoever stands in the circle at the pop (live), pushed out from its centre.
+    shape: { kind: 'circle', radius: BOMB_RADIUS, at: (c) => [{ x: c.ctx!.point.x, z: c.ctx!.point.z }] },
+    delay: BOMB_DELAY,
+    hit: { damage: BOMB_DAMAGE, knock: 5, color: BALLOON_CSS.body },
+    warn: 0,
   },
+  look: BombLook,
   bloom: { enabled: true, strength: 0.4, radius: 0.35, threshold: 0.88 },
-  frameCamera(camera, controls, effect) {
-    const e = effect as HeliumBomb;
-    if (e.ctx) frameCast(camera, controls, e.ctx, 5);
-  },
-  buildGui(f, effect) {
-    const s = (effect as HeliumBomb).settings;
-    f.add(s, 'loop');
-    f.add(s, 'damage', 1, 200, 1);
-  },
-};
+  frame: 5,
+  maxDamage: 200,
+});
