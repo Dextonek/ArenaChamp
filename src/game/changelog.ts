@@ -56,6 +56,13 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Heroes',
+        title: 'Sixteen more heroes show their people',
+        text: 'Wick and Tempo have the umber skin and jaw star lines of the Northerners, and Shiori has hers inked on her hands; Silvane and Vesper the blue-grey skin and shining eyes of the Gloaming folk; Bram, Ada and Referee Whistler the ash-grey skin and amber eyes of the Kilnborn; Madame Cleaver the deep brown skin, kohl and henna of the Dune folk; Barry, Zephyr and Marin the tan, tide lines and sea-glass of the Coast; Cantor and Pip the golden-brown skin and gold thread of Aubade; The Great Zambini’s pointed ears show under his hat; and Anka’s skin glows like the ember she is. Hero portraits now show the new looks too. Spells and numbers are unchanged.',
+        image: '/news/heroes-touches.jpg',
+        alt: 'Sixteen hero faces in two rows: dark-skinned Wick and Tempo with white hair, pale Shiori, blue-grey Silvane and Vesper with shining eyes, grey-skinned Bram, Ada and Referee Whistler with amber eyes, deep brown Madame Cleaver in her crimson headwrap, sea-tanned Barry, masked Zephyr and green-haired Marin, golden-brown Cantor and freckled Pip, The Great Zambini with pointed ears under a top hat, and warm-skinned Anka with her feather crest.',
+      },
+      {
+        tag: 'Heroes',
         title: 'New spell icons for every hero',
         text: 'Every hero’s spell icons are drawn anew, in one family: each sits in a gold-edged medallion, lit from the same side, in its hero’s own colours, with one sign of the hero in all four (Bram’s pillar, Mortis’s grave-light, Shiori’s ink). They read at a glance on a phone, too.',
         image: '/news/spell-icons.jpg',

@@ -1,7 +1,8 @@
 """Wick, the Doorwarden (controller): keeper of thresholds, old and thin as a door. A long dark oxblood coat to below
 the knee with wide gold braid down the front, at the hem and at the cuffs, a high stiff collar, small gold shoulder
-plates, dark gloves, a hood lying back on his shoulders with a gold rim and its point down his back, short silver
-hair. A great brass ring of oversized keys hanging from his belt at the right hip, and in the LEFT hand a small dark
+plates, dark gloves, a hood lying back on his shoulders with a gold rim and its point down his back.
+A Northerner (docs/lore/codex/revamp.md, the touches, 2026-11-16): deep umber skin, his white hair in thin braids to the
+collar, star lines along the jaw. A great brass ring of oversized keys hanging from his belt at the right hip, and in the LEFT hand a small dark
 lantern with a gold frame, held up: his one glowing piece (hold: torch)."""
 import math
 
@@ -9,10 +10,12 @@ from mathutils import Vector
 
 from realkit import PI, Real
 from real import parts_c as P
+from real import parts_a as PA
+from real.parts_d import star_lines, back_of_head
 
 
 def build():
-    R = Real("door", sex="m", height=1.04, width=0.84, depth=0.8, head=0.98, skin="#d2ac90")
+    R = Real("door", sex="m", height=1.04, width=0.84, depth=0.8, head=0.98, skin="#6e4a34")
     z = R.z
     R.mat("coat", "#5c1a22", rough=0.68, double=True)
     R.mat("lining", "#2e1018", rough=0.8, double=True)
@@ -20,7 +23,19 @@ def build():
     R.mat("gold", "#d2ae55", rough=0.32, metal=0.85, double=True)
     R.mat("brass", "#c9983c", rough=0.3, metal=0.85)
     R.mat("glow", "#ffc058", rough=0.3, emit="#ffa83a", strength=1.0)
-    R.hair("Hair_SimpleParted", "#a4a4ac", rough=0.8)
+    R.hair("Hair_SimpleParted", "#e4e2dc", rough=0.8)
+    hk = [k for k in R.M if k.startswith("hair_")][-1]
+    star_lines(R, color="#2c4590", width=0.0036, dots=0.0042, seed=3)
+    # thin white braids: two behind the ears and four at the back, to the collar
+    _, hc, hr = R.head_piece()
+    zc = hc.z
+    for s in (1, -1):
+        PA.braid(R, hk, [Vector((s * hr * 0.86, hc.y + 0.035, zc - 0.03)), Vector((s * hr * 0.9, hc.y + 0.05, zc - 0.1)),
+                         Vector((s * hr * 0.95, hc.y + 0.065, zc - 0.16))], r0=0.0095, r1=0.007, n=11, head_n=5)
+    eye, _ = R.eye_box()
+    for x in (-0.045, -0.015, 0.015, 0.045):
+        top = back_of_head(R, x, eye.z - 0.02, out=0.03)
+        PA.braid(R, hk, [top, top + Vector((x * 0.2, 0.012, -0.06)), top + Vector((x * 0.3, 0.02, -0.11))], r0=0.0095, r1=0.007, n=11, head_n=6)
 
     R.fitted("Coat", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "coat", offset=0.01)
     R.fitted("Trousers", ["thigh", "calf"], "dark", offset=0.004)

@@ -1,8 +1,8 @@
 ---
 title: The revamp plan
 tags: [lore, codex, heroes, revamp, plan]
-status: the six revamps are built (2026-11-15; not pushed, not live); the touches are still a plan
-updated: 2026-11-15
+status: the six revamps are built (2026-11-15) and the sixteen touches too (2026-11-16); not pushed, not live
+updated: 2026-11-16
 ---
 
 # The revamp plan: matching the heroes to their peoples
@@ -10,7 +10,8 @@ updated: 2026-11-15
 The user, 2026-11-14: "I think we need revamps of some heroes now, they seem all the same, like human and stuff ... and let's
 match heroes to lore". This page gives every hero its people ([the peoples](peoples/README.md)) and says whether its figure
 should change to show it. The user said yes to it on 2026-11-15 ("lets rework those that need to match the lore"): **the six
-revamps are built** (before and after: `docs/heroes/revamp/index.html`); the sixteen touches are not. Back to the [codex](README.md).
+revamps are built** (before and after: `docs/heroes/revamp/index.html`), and so are **the sixteen touches** (2026-11-16, before and after:
+`docs/heroes/touch/index.html`). Back to the [codex](README.md).
 
 Three answers:
 - **No:** the figure already reads as its people.
@@ -47,22 +48,22 @@ the four groups; the touches give every human people its own skin and marks, so 
 | 4 | Brannoc | Kilnborn | **revamp, built** | Ash-grey skin cracked with ember seams over the chest and arms, the forge-light visible through them |
 | 5 | Hank | Wood folk | **revamp, built** | Antlers, sawn short at the tips; ruddy skin; the woodcutter becomes the Horned |
 | 6 | Grandma Ironknit | Briarkin | **revamp, built** | A fae spinner of the Spindle court: pointed ears, silver eyes of one colour, very long fingers |
-| 7 | Wick | Northerners | touch | Deep umber skin, white braids under the hood, star lines on the jaw |
-| 8 | Silvane | Gloaming folk | touch | Eyeshine (silver), skin cooled to blue-grey, dark lips |
-| 9 | Bram | Kilnborn | touch | Ash-grey skin, pale amber eyes |
-| 10 | Tempo | Northerners | touch | Umber skin, star lines that tick (drawn, not moving) along the jaw |
-| 11 | Vesper | Gloaming folk | touch | Eyeshine (crimson-violet), blue-grey skin |
-| 12 | Ada | Kilnborn | touch | Ash-grey skin, faint ember seams at the knuckles |
-| 13 | Referee Whistler | Kilnborn | touch | Ash-grey skin under the black helm |
-| 14 | Madame Cleaver | Dune folk | touch | Deep brown skin, kohl to the temples; the crimson headwrap kept |
-| 15 | Barry Cloudsley | Coast folk | touch | Sea-tanned skin, tide lines on the forearms |
-| 16 | Zephyr | Coast folk | touch | Sea-tanned skin, sea-glass in one ear, tide lines |
-| 17 | Marin | Coast folk | touch | Tide lines, sea-glass in her hair, bare feet (as her page always said) |
-| 18 | Cantor | Aubade folk | touch | Golden-brown skin, the dawn line, gold thread in his hair |
-| 19 | Pip | Aubade folk | touch | Golden-brown skin, freckles kept, hair bound with gold thread |
-| 20 | Shiori | Northerners | touch | Star lines drawn in ink on the backs of her hands |
-| 21 | The Great Zambini | Briarkin | touch | Pointed ears under the hat, eyes of one colour (violet) |
-| 22 | Anka | Fallborn, an Ember | touch | A warm glow at the edges of her skin and the roots of her hair |
+| 7 | Wick | Northerners | touch, built | Deep umber skin, white braids under the hood, star lines on the jaw |
+| 8 | Silvane | Gloaming folk | touch, built | Eyeshine (silver), skin cooled to blue-grey, dark lips |
+| 9 | Bram | Kilnborn | touch, built | Ash-grey skin, pale amber eyes |
+| 10 | Tempo | Northerners | touch, built | Umber skin, star lines that tick (drawn, not moving) along the jaw |
+| 11 | Vesper | Gloaming folk | touch, built | Eyeshine (crimson-violet), blue-grey skin |
+| 12 | Ada | Kilnborn | touch, built | Ash-grey skin, faint ember seams at the knuckles |
+| 13 | Referee Whistler | Kilnborn | touch, built | Ash-grey skin under the black helm |
+| 14 | Madame Cleaver | Dune folk | touch, built | Deep brown skin, kohl to the temples; the crimson headwrap kept |
+| 15 | Barry Cloudsley | Coast folk | touch, built | Sea-tanned skin, tide lines on the forearms |
+| 16 | Zephyr | Coast folk | touch, built | Sea-tanned skin, sea-glass in one ear, tide lines |
+| 17 | Marin | Coast folk | touch, built | Tide lines, sea-glass in her hair, bare feet (as her page always said) |
+| 18 | Cantor | Aubade folk | touch, built | Golden-brown skin, the dawn line, gold thread in his hair |
+| 19 | Pip | Aubade folk | touch, built | Golden-brown skin, freckles kept, hair bound with gold thread |
+| 20 | Shiori | Northerners | touch, built | Star lines drawn in ink on the backs of her hands |
+| 21 | The Great Zambini | Briarkin | touch, built | Pointed ears under the hat, eyes of one colour (violet) |
+| 22 | Anka | Fallborn, an Ember | touch, built | A warm glow at the edges of her skin and the roots of her hair |
 | 23 | Isolde | Northerners, lake-born | no | Frost-pale and white-haired already: the lake-born look |
 | 24 | Lyra | Northerners | no | Brown skin and dark hair already; the user's accepted sample stays as it is |
 | 25 | Sefu | Dune folk | no | Reads as the Dune king |
@@ -185,6 +186,13 @@ the hood's rim; the fingers are longer from the knuckles (skin and bones, so the
   pretend not to. Her [page](heroes/grandma-ironknit.md) has it.
 
 ## The touches, in a line each
+
+**Built 2026-11-16** (the builders in `blender/heroes/real/`, the shared marks in `real/parts_d.py`: star lines, tide lines,
+kohl, henna, the dawn line, freckles, dark lips, an Ember's skin, all painted texel by texel on the skin). As built: Barry's
+flared sleeves end below the elbow and Zephyr's bracers cover only the wrist half, so their tide lines show; Ada, Bram and
+Referee Whistler also have the Kilnborn's pale amber eyes; Cantor's gold thread is wound round the locks by his face and at his
+nape, Pip's binds a short tail at his nape; Shiori's skin stays pale. The pack's painted underwear is covered on every hero built
+since (`realkit.py`, `_cover_underwear`); only Big Yoko showed it, and he was rebuilt for it.
 
 - **Wick:** deep umber skin, his white hair in braids under the hood, star lines along the jaw. A Northerner who keeps doors.
 - **Silvane:** silver eyeshine, skin cooled to blue-grey, dark lips; nothing else changes.

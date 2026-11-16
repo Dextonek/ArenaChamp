@@ -160,30 +160,66 @@ export const stormKit: HeroKit = {
     g.lineWidth = s * 0.022;
     g.stroke();
     spark(g, s * 0.69, s * 0.3, s * 0.02);
-    // Rain cloak hood and shoulders.
-    g.fillStyle = '#0e1c30';
+    // Revamped 2026-11-15 (Coast folk): no hood. Shoulders in a rain-blue oilskin, its high collar standing round her neck.
+    g.fillStyle = '#3b6a96';
     g.beginPath();
-    g.moveTo(s * 0.18, s);
-    g.quadraticCurveTo(s * 0.22, s * 0.66, s * 0.34, s * 0.52);
-    g.quadraticCurveTo(s * 0.5, s * 0.26, s * 0.66, s * 0.52);
-    g.quadraticCurveTo(s * 0.78, s * 0.66, s * 0.82, s);
+    g.moveTo(s * 0.16, s);
+    g.quadraticCurveTo(s * 0.18, s * 0.74, s * 0.36, s * 0.7);
+    g.lineTo(s * 0.64, s * 0.7);
+    g.quadraticCurveTo(s * 0.82, s * 0.74, s * 0.84, s);
     g.closePath();
     g.fill();
     g.strokeStyle = S.rain;
-    g.lineWidth = s * 0.016;
+    g.lineWidth = s * 0.014;
     g.stroke();
-    // Face opening, eyes and a bolt-blue gleam.
-    g.fillStyle = '#c9d6e2';
+    g.fillStyle = '#c08a64';
+    g.fillRect(s * 0.455, s * 0.58, s * 0.09, s * 0.12);
+    g.fillStyle = '#1a2e48';
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.56, s * 0.1, s * 0.13, 0, 0, Math.PI * 2);
+    g.moveTo(s * 0.36, s * 0.72);
+    g.lineTo(s * 0.38, s * 0.6);
+    g.lineTo(s * 0.45, s * 0.66);
+    g.lineTo(s * 0.5, s * 0.74);
+    g.lineTo(s * 0.55, s * 0.66);
+    g.lineTo(s * 0.62, s * 0.6);
+    g.lineTo(s * 0.64, s * 0.72);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = '#3b6a96';
+    g.lineWidth = s * 0.012;
+    g.stroke();
+    // A sea-tanned face; silver hair, salt-bleached, bound up in a knot at the crown, one sea-green lock by the cheek.
+    g.fillStyle = '#c08a64';
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.5, s * 0.1, s * 0.13, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#e3e7ea';
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.44, s * 0.112, s * 0.1, 0, Math.PI, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.arc(s * 0.5, s * 0.31, s * 0.05, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#5fb39c';
+    g.beginPath();
+    g.moveTo(s * 0.4, s * 0.42);
+    g.quadraticCurveTo(s * 0.37, s * 0.52, s * 0.395, s * 0.6);
+    g.quadraticCurveTo(s * 0.41, s * 0.5, s * 0.43, s * 0.43);
+    g.closePath();
     g.fill();
     g.fillStyle = S.dark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.52, s * 0.1, s * 0.09, 0, Math.PI, Math.PI * 2);
-    g.fill();
+    g.fillRect(s * 0.44, s * 0.49, s * 0.04, s * 0.012);
+    g.fillRect(s * 0.52, s * 0.49, s * 0.04, s * 0.012);
     g.fillStyle = S.body;
-    g.fillRect(s * 0.44, s * 0.56, s * 0.04, s * 0.014);
-    g.fillRect(s * 0.52, s * 0.56, s * 0.04, s * 0.014);
+    g.fillRect(s * 0.452, s * 0.502, s * 0.016, s * 0.008);
+    g.fillRect(s * 0.532, s * 0.502, s * 0.016, s * 0.008);
+    // sea-glass at her ears
+    g.fillStyle = '#86e0c8';
+    for (const x of [0.395, 0.605]) {
+      g.beginPath();
+      g.ellipse(s * x, s * 0.56, s * 0.009, s * 0.014, 0, 0, Math.PI * 2);
+      g.fill();
+    }
   },
   spells: [
     {

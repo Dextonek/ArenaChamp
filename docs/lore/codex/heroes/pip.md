@@ -50,8 +50,8 @@ told him how.
 
 Aubade folk by his father, born at the Ring: young, wiry and freckled, with ginger hair and the eager face of someone who is always about
 to leave. A deep blue capelet, a leather courier's pack with sealed scrolls and a glowing seal, a gold winged circlet and gold wings at the
-heels, and a sealed scroll in a raised hand. In the [revamp plan](../revamp.md) he gets a touch: the golden-brown skin of his people with
-his freckles kept, and his hair bound with gold thread, as a courier who keeps his oaths.
+heels, and a sealed scroll in a raised hand. His skin is the golden-brown of his people, freckled, and his hair is
+bound at the nape in a short tail with gold thread, as a courier who keeps his oaths (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before).
 
 ## Voice
 

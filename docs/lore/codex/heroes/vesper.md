@@ -55,7 +55,7 @@ Vesper has gone up as high as the Wood's crown, and come back with a look on her
 Gloaming folk, and the clearest case of what the long dusk can make of them. She looks thirty-five: tall and narrow, skin white
 with the blue-grey cast of her people, dark lips, black hair swept up under a small crown of red points. Her eyes shine crimson-violet
 in the dark. She wears a crimson gown over black with a high collar of blood-red blades, a gold edge, and a scepter with a blood
-drop in the left hand. In the [revamp plan](../revamp.md) she gets a touch: the eyeshine and the blue-grey skin, so that she reads as
+drop in the left hand. Touched on 2026-11-16 by the [revamp plan](../revamp.md): the eyeshine and the blue-grey skin, so that she reads as
 Gloaming folk and not only as pale.
 
 ## Voice

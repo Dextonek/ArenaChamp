@@ -264,19 +264,39 @@ export const ledgerKit: HeroKit = {
     g.beginPath();
     g.arc(s * 0.17, s * 0.81, s * 0.05, 0, Math.PI * 2);
     g.fill();
-    // A long, narrow, calm face.
-    g.fillStyle = '#e0c2a6';
+    // A long, narrow face of old vellum drawn on bone (revamped 2026-11-15: one of the Long Dead): hollow cheeks, bone pale
+    // at the cheekbones, two embers in deep sockets.
+    g.fillStyle = '#c4b28e';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.1, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
-    for (const sx of [0.455, 0.545]) {
-      g.fillStyle = L.core;
+    g.fillStyle = 'rgba(70,52,38,0.55)';
+    for (const dir of [-1, 1]) {
       g.beginPath();
-      g.ellipse(s * sx, s * 0.44, s * 0.026, s * 0.03, 0, 0, Math.PI * 2);
+      g.ellipse(s * (0.5 + dir * 0.068), s * 0.515, s * 0.026, s * 0.045, dir * 0.2, 0, Math.PI * 2);
       g.fill();
-      g.fillStyle = L.seal;
+    }
+    g.strokeStyle = '#efe4c8';
+    g.lineWidth = s * 0.01;
+    for (const dir of [-1, 1]) {
       g.beginPath();
-      g.arc(s * sx, s * 0.446, s * 0.014, 0, Math.PI * 2);
+      g.moveTo(s * (0.5 + dir * 0.03), s * 0.475);
+      g.quadraticCurveTo(s * (0.5 + dir * 0.07), s * 0.468, s * (0.5 + dir * 0.092), s * 0.45);
+      g.stroke();
+    }
+    for (const sx of [0.455, 0.545]) {
+      g.fillStyle = '#2a1d17';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.44, s * 0.03, s * 0.032, 0, 0, Math.PI * 2);
+      g.fill();
+      const ember = g.createRadialGradient(s * sx, s * 0.444, 0, s * sx, s * 0.444, s * 0.026);
+      ember.addColorStop(0, 'rgba(255,150,80,0.95)');
+      ember.addColorStop(1, 'rgba(255,80,22,0)');
+      g.fillStyle = ember;
+      g.fillRect(s * (sx - 0.03), s * 0.414, s * 0.06, s * 0.06);
+      g.fillStyle = '#ff7a3a';
+      g.beginPath();
+      g.arc(s * sx, s * 0.444, s * 0.011, 0, Math.PI * 2);
       g.fill();
     }
     g.strokeStyle = L.ink;

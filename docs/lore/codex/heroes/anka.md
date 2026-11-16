@@ -50,9 +50,8 @@ and she did not fight them. She came down, and burned that night for no reason, 
 
 The first and best known of the [Embers](../peoples/fallborn.md), the sparks of the sun that took a shape. She looks twenty: a dancer with
 warm skin, dark-red hair cut at the jaw, a gold circlet with a three-feather crest and a turquoise stone. An ember-red bodice, a layered skirt of
-flame-coloured scalloped feathers, a mantle of red and gold feather wings at the arms, an open feather fan in her hand. In the
-[revamp plan](../revamp.md) she gets a touch: a warm glow at the edges of her skin and the roots of her hair, so that she reads as an Ember
-and not as a woman in a feather dress.
+flame-coloured scalloped feathers, a mantle of red and gold feather wings at the arms, an open feather fan in her hand. Her skin is lit faintly from within, warmest at the jaw, the hairline and the
+fingertips, so that she reads as an Ember and not as a woman in a feather dress (Touched on 2026-11-16 by the [revamp plan](../revamp.md): kept under the floor's glow).
 
 ## Voice
 

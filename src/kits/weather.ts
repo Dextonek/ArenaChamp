@@ -124,8 +124,8 @@ export const weatherKit: HeroKit = {
         g.fill();
       }
     }
-    // The head: a calm, sure face under windswept hair.
-    g.fillStyle = '#f2c9a4';
+    // The head: a calm, sure face under windswept hair. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Coast folk, sea-tanned.
+    g.fillStyle = '#c48e66';
     g.fillRect(s * 0.46, s * 0.52, s * 0.08, s * 0.1);
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.12, s * 0.15, 0, 0, Math.PI * 2);

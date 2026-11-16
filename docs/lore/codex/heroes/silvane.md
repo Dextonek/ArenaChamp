@@ -45,9 +45,9 @@ Tally, and it troubles her more than any of them.
 ## People and appearance
 
 Gloaming folk of the mirror quarter, Noon-touched: twelve at the Fall, she looks thirty-two. Tall and calm, in a dark violet gown with a silver bodice
-and a gold edge, with a collar of looking-glass shards fanned behind her head, a calm pale face with blue eyes and sleek violet hair, and the hand mirror
-held out in the left hand with its glass aglow. In the [revamp plan](../revamp.md) she gets a touch: the silver eyeshine of her people, skin cooled to
-blue-grey, dark lips; nothing else changes, so that her sister's revamp sets the two apart.
+and a gold edge, with a collar of looking-glass shards fanned behind her head, a calm face and sleek violet hair, and the hand mirror
+held out in the left hand with its glass aglow. She has the silver eyeshine of her people, skin cooled to blue-grey
+and dark lips (Touched on 2026-11-16 by the [revamp plan](../revamp.md): nothing else changed, so that her sister's revamp sets the two apart).
 
 ## Voice
 

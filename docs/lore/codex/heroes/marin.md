@@ -42,8 +42,8 @@ her hair, from the reef off the Spires, that a boy gave her before the Fall. He 
 ## People and appearance
 
 Coast folk of Sallowmouth, Noon-touched: twelve at the Fall, she looks thirty-two. Lithe and barefoot (her page always said so), with teal-dyed hair and a
-coral flower in it, a wave-blue wrap on the shoulders, a skirt of tiered blue, and sashes of water sweeping round her. In the [revamp plan](../revamp.md) she
-gets a touch: the tide lines of her people round her forearms (she has lived through twenty-one floods), sea-glass in her hair, and her slippers gone.
+coral flower in it, a wave-blue wrap on the shoulders, a skirt of tiered blue, and sashes of water sweeping round her. The tide lines of her people ring her forearms (she has
+lived through twenty-one floods, nine drawn), sea-glass is worked into her hair, and she dances barefoot (Touched on 2026-11-16 by the [revamp plan](../revamp.md): her slippers are gone).
 
 ## Voice
 

@@ -2,7 +2,8 @@
 ruby at the throat, bare shoulders, long black gloves, a black bell skirt open in front over crimson, a tall fan of
 dark collar blades with crimson faces behind her head, a gold crown with ruby points on long black hair, a wine cape
 lined in crimson that ends in three pointed tails, and a gold scepter in the LEFT hand with a fist-sized ruby in a
-gold claw (hold = torch)."""
+gold claw (hold = torch).
+Gloaming folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): crimson-violet eyeshine, blue-grey skin."""
 import math
 
 from mathutils import Vector
@@ -15,7 +16,8 @@ FINGERS = ["hand_", "index_", "middle_", "ring_", "pinky_", "thumb_"]
 
 
 def build():
-    R = Real("blood", sex="f", height=1.05, width=0.97, skin="#f1dfd8")
+    R = Real("blood", sex="f", height=1.05, width=0.97, skin="#c8c6d6")
+    R.eye_look(color="#ffe2ea", emit="#a8205a", strength=0.45)
     z = R.z
     R.mat("bodice", "#2a1620", rough=0.5)
     R.mat("black", "#191114", rough=0.65, double=True)

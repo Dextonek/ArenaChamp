@@ -1,7 +1,8 @@
 """Bram, the Stonewright (bruiser): a broad, calm temple mason. A dark warm tunic with rolled sleeves, a deep brown leather
 apron with a bib and a gold hem, a chisel through the belt, leather bracers with gold bands on the big forearms, a gold
 gorget, iron-grey cropped hair. Carved limestone pauldrons in two gold-edged lames on each shoulder, a glowing amber
-rune in a gold ring on the chest, and a rune-cut stone maul with gold bands in the right fist."""
+rune in a gold ring on the chest, and a rune-cut stone maul with gold bands in the right fist.
+Kilnborn (docs/lore/codex/revamp.md, the touches, 2026-11-16): ash-grey skin and pale amber eyes."""
 import math
 
 from mathutils import Vector
@@ -19,7 +20,8 @@ def rune(f, key, c, u, v, s=1.0, r=0.009):
 
 
 def build():
-    R = Real("mason", sex="m", height=1.0, width=1.18, depth=1.22, head=0.95, skin="#dcae8c")
+    R = Real("mason", sex="m", height=1.0, width=1.18, depth=1.22, head=0.95, skin="#7e7670")
+    R.eye_look(color="#ffd08a", emit="#ff9a3a", strength=0.2)
     z = R.z
     R.mat("tunic", "#30251f", rough=0.75, double=True)
     R.mat("leather", "#5b3a22", rough=0.75, double=True)

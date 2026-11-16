@@ -391,6 +391,11 @@ export const phoenixKit: HeroKit = {
     g.ellipse(cx + s * 0.06, s * 0.5, s * 0.026, s * 0.02, -0.5, 0, Math.PI * 2);
     g.fill();
     g.globalAlpha = 1;
+    // // Touched 2026-11-16 (docs/lore/codex/revamp.md): an Ember: her skin glows warm at its edges, the jaw's line brightest.
+    face();
+    g.strokeStyle = 'rgba(255,207,122,0.75)';
+    g.lineWidth = s * 0.009;
+    g.stroke();
     g.lineCap = 'round';
     // Eyes under level brows, the lids a little lowered; a fine nose; a closed mouth.
     for (const d of [-1, 1]) {

@@ -2,17 +2,21 @@
 down on his back, a fitted blue tunic with a gold hem over dark leggings, tall leather boots, leather bracers, ginger
 hair. Small gold wings on a circlet at his temples and on his heels, a courier's pack on his back, wider than he is,
 with sealed scrolls standing out of its top and a glowing gold courier seal on its flap, and a sealed scroll in his
-right hand (attack: throw)."""
+right hand (attack: throw).
+Aubade folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): golden-brown skin with freckles, his hair bound at the nape with gold
+thread."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real import parts_c as P
+from real.parts_d import freckles
 
 
 def build():
-    R = Real("courier", sex="m", height=0.9, width=0.84, depth=0.84, head=1.06, skin="#dcae8e")
+    R = Real("courier", sex="m", height=0.9, width=0.84, depth=0.84, head=1.06, skin="#bd8b5e")
+    freckles(R, color="#6e3a1c", alpha=0.55)
     z = R.z
     R.mat("tunic", "#2f5aa8", rough=0.72, double=True)
     R.mat("cloak", "#1c2c58", rough=0.75, double=True)
@@ -89,4 +93,15 @@ def build():
     for t in (-0.13, 0.14):
         f.torus("gold", o + d * t, 0.027, 0.007, normal=d, seg=(14, 6))
     f.torus("wax", o + d * 0.02, 0.028, 0.012, normal=d, seg=(14, 6))
+
+    # his hair bound at the nape in a short tail with gold thread (the Aubade folk's)
+    from real.parts_d import back_of_head
+    from real import parts_b as PB
+    hk = [k for k in R.M if k.startswith("hair_")][-1]
+    nape = back_of_head(R, 0.0, z["neck"] + 0.06, out=0.022)
+    if nape is not None:
+        g = R.piece("Head")
+        PB.braid(g, hk, [nape, nape + Vector((0, 0.012, -0.035)), nape + Vector((0, 0.02, -0.07))], [0.016, 0.014, 0.011])
+        for k in range(3):
+            g.torus("gold", nape + Vector((0, 0.008 + 0.004 * k, -0.012 - 0.012 * k)), 0.017 - 0.001 * k, 0.0025, normal=(0, 0.3, 1), seg=(14, 4))
     return R

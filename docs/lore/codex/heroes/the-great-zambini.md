@@ -45,8 +45,8 @@ He fights for the applause. It is not vanity. It is survival.
 ## People and appearance
 
 A Briarkin of no court, who has kept the age of thirty-nine for sixty years. A deep violet cape with a high collar, a tailcoat with an ivory shirt front, a plum waistcoat and a gold stud,
-a pale calm face with level brows and a small pointed goatee, a tipped top hat with a violet band and a gold star, and a wand in his raised plum-gloved hand with a glowing gold star. In
-the [revamp plan](../revamp.md) he gets a touch: his people's pointed ears, visible under the hat, and violet eyes of one colour.
+a pale calm face with level brows and a small pointed goatee, a tipped top hat with a violet band and a gold star, and a wand in his raised plum-gloved hand with a glowing gold star. His people's pointed ears show under the hat, swept back, and his
+eyes are violet from lid to lid (Touched on 2026-11-16 by the [revamp plan](../revamp.md): before, the hat hid them).
 
 ## Voice
 
