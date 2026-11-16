@@ -3360,7 +3360,7 @@ export const HARBOUR: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads."
+     "Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only his own key will lift. The coast is long: take the roads."
     ],
     "quests": [
      "main",
@@ -3435,11 +3435,11 @@ export const HARBOUR: GenFloor = {
   "quests": [
    {
     "id": "main",
-    "name": "The Captain’s Key",
+    "name": "The Admiral’s Key",
     "giver": "gus",
     "main": true,
     "intro": [
-     "Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the captain’s key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     "Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the Admiral’s key lies in the wreck of his flagship, and the Mate guards it: clear them, then bring the key to the winch by the camp."
     ],
     "steps": [
      {

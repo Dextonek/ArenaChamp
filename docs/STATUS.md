@@ -87,7 +87,9 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   (rulers.md, story ch. 6, 8, 9, 13, in-game.md). Floors: the named women "her" (21 lines on 19 floors), and in a commit of its own
   the Wood keeper's him/her for the four Wood rulers now people and six "It ..." boss titles, then the ruler fights' hints ("Cut the roots that feed her...", "He goes under the
   sand..."; floors 12-29 and 21): droppable. The six plain workers (the Dockhand, the Fishwife, the Woodcutter, the Water-Carrier,
-  the Ore-Carrier, the Gleaner) have their entries in the Climb's chapters and their peoples' pages. `game.ts` `pieceDone`: a
+  the Ore-Carrier, the Gleaner) have their entries in the Climb's chapters and their peoples' pages. Floor 1's quest is "The
+  Admiral's Key" (it lies in the wreck of his flagship; the keeper: "a chain only his own key will lift"), and the codex settles
+  the ruler as the Drowned Admiral, one name (canon, names, rulers). `game.ts` `pieceDone`: a
   won ruler leaves the hero in front of its door. Cantor's four icons: engraved gold notes on plum lacquer (before:
   `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
   changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1, 21 and all 26 generated floors whose words changed (no errors, no stuck step);

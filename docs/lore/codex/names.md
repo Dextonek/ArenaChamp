@@ -140,7 +140,7 @@ The check also knows the twenty new heroes' spell names (from `pipeline/designs/
 ultimate, The Weighing, is named for the rite of the Sands it comes from.
 
 Meetings on purpose, which the check allows: Cantor and the Blind Cantor; Ostrel the Ferryman and the Deep's Ferryman; Itzel the Obsidian Herald and the
-War's Herald; the Drowned Admiral (floor 1's code called him the Drowned Captain until 2026-11-16); the Scarab Colossus and the Scarab King (mother and son);
+War's Herald; the Scarab Colossus and the Scarab King (mother and son);
 the Last Marshal (a Climb ruler) and the azure's commander in the War of the Banners, who are the same man.
 
 ## Looked up
