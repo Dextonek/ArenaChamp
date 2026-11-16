@@ -4,8 +4,8 @@
  "found": [
   {
    "kind": "list",
-   "title": "Rulers that are not people in the Codex wear a person's figure",
-   "text": "The Codex: the Bell Below is “the harbour's old bell ... It rings underwater”; floor 7 draws it with the Tide Judge's model (a robed figure). The same on floor 8 (the Lantern Leviathan, “a great fish”, in the Judge's figure) floor 17 (the Lantern Root, a root with an amber lantern, in the Antler King's stag figure), floor 18 (the Grey Oak, a dead oak that walks, in the same) and floor 19 (the Mire Heart, a bog, in the Thorn Mother's figure). The ruler models' floors were left to you when they were made; either the Codex says these rulers are people (the bell's ringer, the Leviathan's keeper...), or these floors get rulers of their own (Blender, one at a time).",
+   "title": "Rulers the Codex calls beasts or things are drawn as people",
+   "text": "The ruler models are robed giants (their line-ups were accepted on 2026-11-15, STATUS “Decided”), but the Codex (climb/rulers.md) describes many of them otherwise: the Bell Below “the harbour's old bell” (floor 7, in the Tide Judge's figure), the Lantern Leviathan “a great fish” (8), the Lantern Root, a root with an amber lantern (17), the Grey Oak, a dead oak (18), the Mire Heart, a bog (19), and in the Sands the Scarab Colossus “a beetle the size of a house” (21), the Scarab King, its son (22), the Dune Colossus “a giant of sand and stone” (23), the Brass Sphinx “a lion of brass with a woman's face” (24), the Glass Serpent (25). Since the figures are accepted, the likely fix is the Codex's words (these as the realm's people who carry those names, or the Tower's echo of them in a giant's shape); else new models (Blender, one at a time). Yours to say.",
    "pics": [
     [
      "ruler-close.jpg",
