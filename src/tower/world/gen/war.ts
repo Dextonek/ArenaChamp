@@ -420,6 +420,12 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   // and the escort's cart, which starts there, stood against them for good (floors 46 and 47's first routes).
   for (const p of places) S.dress(p, p === H ? { x: H.c.x < 0 ? -1 : 1, z: 0 } : undefined);
   const siteSpots = [A.c, Cw.c, E.c, D.c];
+  // The two ridges and the works have their standard on a 0.9 m stone foot in the middle (the main quest touches it there): their
+  // stand, and the armies' homes there, are 1.5 m clear of the foot, on its outer side, between the standard and the shields or
+  // catapults behind it, as on floor 41 (makeBannersFloor). Set after the dressing, and every spot below is still laid out from the
+  // sites' middles, so the random draw and nothing else on the floor moves.
+  for (const p of [A, Cw, E]) { const st = add(p.c, toMid(p.c), -2.4); p.stand = { x: r2(st.x), z: r2(st.z) }; }
+  const siteHomes = [A.stand, Cw.stand, E.stand, D.c];
 
   // --- roads: the camp to A and to D; a ring through the outer places; spokes to the inner ones; the middle to the siege line -----
   const outer = [A, Vh, B, Cw, E, D];
@@ -497,7 +503,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   const siteMix = (i: number) => (i < knights ? mixes[[1, 2, 1, 2][i]] : mixes[[0, 3, 0, 3][i]]);
   const siteIds = ['a', 'c', 'e', 'd'];
   const packs: PackDef[] = [
-    ...siteIds.flatMap((id, i) => site(id, siteSpots[i], siteMix(i))),
+    ...siteIds.flatMap((id, i) => site(id, siteHomes[i], siteMix(i))),
     { id: 'siege', at: siegeAt, leash: 24, mix: [{ kind: 'ashen', n: 3 }], elite: 'bearer' },
     ...(keepPack ? [{ id: 'keep', at: B.c, leash: 24, mix: [{ kind: 'ashen', n: keepElite ? 2 : 3 }], ...(keepElite ? { elite: 'castellan' } : {}) } as PackDef] : []),
     { id: 'named1', at: patrol1[0], leash: 24, mix: [{ kind: 'deserter', n: 1 }], named: { name: named1, speed: 1.6, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },

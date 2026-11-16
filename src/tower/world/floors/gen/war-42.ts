@@ -3125,8 +3125,8 @@ export const WAR_42: GenFloor = {
     "z": 27.5,
     "r": 8,
     "stand": {
-     "x": 77.04,
-     "z": 27.5
+     "x": 79.36,
+     "z": 28.12
     }
    },
    "v": {
@@ -3169,8 +3169,8 @@ export const WAR_42: GenFloor = {
     "z": -47.67,
     "r": 8,
     "stand": {
-     "x": -62.77,
-     "z": -47.67
+     "x": -64.58,
+     "z": -49.25
     }
    },
    "e": {
@@ -3180,8 +3180,8 @@ export const WAR_42: GenFloor = {
     "z": 16.46,
     "r": 8,
     "stand": {
-     "x": -99.05,
-     "z": 16.46
+     "x": -101.44,
+     "z": 16.69
     }
    },
    "d": {
@@ -3410,8 +3410,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "a-r",
     "at": {
-     "x": 77.04,
-     "z": 27.5
+     "x": 79.36,
+     "z": 28.12
     },
     "leash": 24,
     "mix": [
@@ -3432,8 +3432,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "a-b",
     "at": {
-     "x": 77.04,
-     "z": 27.5
+     "x": 79.36,
+     "z": 28.12
     },
     "leash": 24,
     "mix": [
@@ -3454,8 +3454,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "c-r",
     "at": {
-     "x": -62.77,
-     "z": -47.67
+     "x": -64.58,
+     "z": -49.25
     },
     "leash": 24,
     "mix": [
@@ -3472,8 +3472,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "c-b",
     "at": {
-     "x": -62.77,
-     "z": -47.67
+     "x": -64.58,
+     "z": -49.25
     },
     "leash": 24,
     "mix": [
@@ -3490,8 +3490,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "e-r",
     "at": {
-     "x": -99.05,
-     "z": 16.46
+     "x": -101.44,
+     "z": 16.69
     },
     "leash": 24,
     "mix": [
@@ -3508,8 +3508,8 @@ export const WAR_42: GenFloor = {
    {
     "id": "e-b",
     "at": {
-     "x": -99.05,
-     "z": 16.46
+     "x": -101.44,
+     "z": 16.69
     },
     "leash": 24,
     "mix": [

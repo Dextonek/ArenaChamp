@@ -64,6 +64,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'The War’s armies off the standards',
+        text: 'On floors 42 to 50, as on the Field of Banners, both armies at each ridge and siege works wait behind their standard instead of inside its stone foot.',
+      },
+      {
+        tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
       },
