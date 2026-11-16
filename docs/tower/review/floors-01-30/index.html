@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>28 floors checked</b> · <b>8 fixed</b> · <b>7 for you</b></div>
+<div class="sum"><b>29 floors checked</b> · <b>8 fixed</b> · <b>7 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -64,6 +64,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f26">26</a>
 <a class="" href="#f27">27</a>
 <a class="f" href="#f28">28</a>
+<a class="" href="#f29">29</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -506,6 +507,21 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f28/ruler-close.jpg"><img loading="lazy" src="f28/ruler-close.jpg" alt="The Red Jackal"></a><figcaption>The Red Jackal</figcaption></figure>
 <figure><a href="f28/pack-a.jpg"><img loading="lazy" src="f28/pack-a.jpg" alt="The red tents&#x27; pack"></a><figcaption>The red tents&#x27; pack</figcaption></figure>
 <figure><a href="f28/overview.jpg"><img loading="lazy" src="f28/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f29"><h3>Floor 29: The Mirage Road</h3><p>Clean, and the longest floor so far: the bot&#x27;s first run ran out of its 2400 game seconds just before the gate (everything else done); given 3200 it cleared in 2241 s with all four stars and no fall, under the floor&#x27;s own par (2332 s). No console error, every spot reachable; the caravan, the rival (Fenna), the trial, the Sun-Eater (the Sphinx&#x27;s model, tinted) and the gate (Brannoc) all played.</p>
+<p><span class="tag ok">ok</span><b>The Beacon-Keeper behind a wall.</b> In the first picture only her mark showed, over the caravanserai&#x27;s roof. She stands on the sand beside its wall (the probe finds no person in cover).</p>
+<div class="pics">
+<figure><a href="f29/villager-near.jpg"><img loading="lazy" src="f29/villager-near.jpg" alt="The Beacon-Keeper beside the wall"></a><figcaption>The Beacon-Keeper beside the wall</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The tombs&#x27; and the mud fort&#x27;s packs slept through the bot&#x27;s route; the probe: the lair wall&#x27;s gold edge into the dune, crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34051 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 1 float, 4 gap, 34 buried, 2 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 2241 game s, every checkpoint reached; 65 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Sun-Eater (It swallowed noon once), model models/tower/sands_sphinx_v4.glb, loaded yes after 1554 ms of real time</li><li>Frame check at the busiest spot (-55, 27), 6 units awake: median 3.3, 3.6, 3.9 ms, p95 5.1, 6, 6.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f29/ruler-close.jpg"><img loading="lazy" src="f29/ruler-close.jpg" alt="The Sun-Eater"></a><figcaption>The Sun-Eater</figcaption></figure>
+<figure><a href="f29/pack-d.jpg"><img loading="lazy" src="f29/pack-d.jpg" alt="The fallen obelisk&#x27;s pack"></a><figcaption>The fallen obelisk&#x27;s pack</figcaption></figure>
+<figure><a href="f29/overview.jpg"><img loading="lazy" src="f29/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>

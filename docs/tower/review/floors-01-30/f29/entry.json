@@ -1,0 +1,14 @@
+{
+ "floor": 29,
+ "verdict": "Clean, and the longest floor so far: the bot's first run ran out of its 2400 game seconds just before the gate (everything else done); given 3200 it cleared in 2241 s with all four stars and no fall, under the floor's own par (2332 s). No console error, every spot reachable; the caravan, the rival (Fenna), the trial, the Sun-Eater (the Sphinx's model, tinted) and the gate (Brannoc) all played.",
+ "found": [
+  {"kind": "ok", "title": "The Beacon-Keeper behind a wall", "text": "In the first picture only her mark showed, over the caravanserai's roof. She stands on the sand beside its wall (the probe finds no person in cover).", "pics": [["villager-near.jpg", "The Beacon-Keeper beside the wall"]]},
+  {"kind": "ok", "title": "Packs and props", "text": "The tombs' and the mud fort's packs slept through the bot's route; the probe: the lair wall's gold edge into the dune, crates on the rim's slope, red rocks a little sunk."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Sun-Eater"],
+  ["pack-d.jpg", "The fallen obelisk's pack"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
