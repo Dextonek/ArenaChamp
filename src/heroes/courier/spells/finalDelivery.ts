@@ -6,6 +6,7 @@ import { COURIER, COURIER_CSS, Flecks, buildParcel, wordSprite } from '../parts'
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { FINAL_DAMAGE, FINAL_PER_CHARGE, FINAL_RADIUS, FINAL_SPEED, FINAL_TIME, PARCEL_NAME, bookOf, type FinalRec } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Final Delivery (courier kit v5, R: a parcel that hunts). Pip spends ALL his Charges and a big brown parcel with the enemy's name
@@ -112,7 +113,7 @@ export class FinalDelivery implements Effect {
     this.paid = Math.min(3, b.paid);
     const p = ctx.caster.group.position;
     this.spawn.set(p.x, 0, p.z);
-    this.rec = b.fin = { t0: performance.now(), x: p.x, z: p.z, state: 'fly', paid: b.paid, hitDone: false };
+    this.rec = b.fin = { t0: fightNow(), x: p.x, z: p.z, state: 'fly', paid: b.paid, hitDone: false };
     this.v1.set(p.x, 1.2, p.z);
     this.bits.burst(this.v1, 10, [COURIER.paper, COURIER.cream, COURIER.brown], 2.6, 2.2, 0.15);
   }

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { GroundMark, Trait, TraitView } from '../../traits/types';
 import type { Obstacle } from '../../obstacles';
 import { carriedLook, dashLook, dropLook, parcelLook } from './parts';
+import { fightNow } from '../../fightClock';
 
 /** Express Letter (Q): reach, speed, wind-up, bolt radius, damage and the damage each Charge adds. */
 export const LETTER_RANGE = 8;
@@ -120,7 +121,7 @@ const decodeZ = (n: number) => (n - 100) / 10;
 // What he leaves for the effects (they play on both screens).
 // ---------------------------------------------------------------------------------------------------------------
 
-/** A Final Delivery parcel in flight. `x`, `z`: where it is (the effect moves it, on each screen). `t0`: `performance.now()` at the cast. */
+/** A Final Delivery parcel in flight. `x`, `z`: where it is (the effect moves it, on each screen). `t0`: `fightNow()` at the cast. */
 export interface FinalRec {
   t0: number;
   x: number;
@@ -320,7 +321,7 @@ export const courierTrait: Trait = {
   victimTick(t) {
     const f = courierBooks.get(t.self())?.fin, e = t.enemy();
     // A parcel whose effect stopped (a new round) is no rule any more.
-    if (!f || !e || performance.now() - f.t0 > (FINAL_TIME + 2) * 1000) return;
+    if (!f || !e || fightNow() - f.t0 > (FINAL_TIME + 2) * 1000) return;
     const p = e.group.position;
     if (f.state === 'fly') {
       if (coverGap(p.x, p.z, t.cover()) <= SIGN_REACH) {
