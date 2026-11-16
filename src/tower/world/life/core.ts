@@ -926,8 +926,8 @@ interface Beast {
 /**
  * Beasts that graze or sit about (deer at a glade's edge, a fox, hares, lizards on a rock, camels at a well): one instanced mesh a
  * kind. Each keeps near its home, now and then lifts its head and looks round; when the hero comes within `shy` m (or a fight comes
- * near) it looks up, then bolts away from the hero, and comes back at a walk when the hero has gone. `shy: 0`: it never bolts (a
- * tethered camel), it only turns its head. The legs and the head move in the shader; the processor moves only the body.
+ * near) it looks up, then bolts away from the hero, and comes back at a walk when the hero has gone. A tethered one (`watch`, a small
+ * `shy` and a short `flee`) turns its head to watch and only steps aside when the hero comes right up. The legs and the head move in the shader; the processor moves only the body.
  */
 export class Beasts {
   readonly mesh: THREE.InstancedMesh;
@@ -942,7 +942,9 @@ export class Beasts {
     private env: LifeEnv,
     geo: THREE.BufferGeometry,
     homes: { x: number; z: number }[],
-    private o: { shy: number; walk: number; run: number; stride: number; flee: number; ok: (x: number, z: number) => boolean; danger: (x: number, z: number) => boolean; graze?: number; y?: (x: number, z: number) => number },
+    private o: { shy: number; walk: number; run: number; stride: number; flee: number; ok: (x: number, z: number) => boolean; danger: (x: number, z: number) => boolean; graze?: number; y?: (x: number, z: number) => number;
+      /** Turns its head to watch the hero within 9 m (a tethered camel or horse: it only steps aside, `shy` small, `flee` short). */
+      watch?: boolean },
   ) {
     const mat = palMat(env, 0xffffff, { vertexColors: true, roughness: 0.85 });
     patch(mat, 'beast', env.time, (sh) => {
@@ -1009,7 +1011,7 @@ export class Beasts {
       switch (b.state) {
         case 'graze': case 'look': {
           if (scared) { b.state = 'alert'; b.t = 0; b.next = 0.35 + rnd() * 0.5; break; }
-          if (o.shy === 0 && dh < 9) b.want = Math.atan2(hero.x - b.x, hero.z - b.z); // a tethered one turns to look
+          if ((o.shy === 0 || o.watch) && dh < 9) b.want = Math.atan2(hero.x - b.x, hero.z - b.z); // a tethered one turns to look
           if ((b.next -= dt) < 0) {
             if (b.state === 'graze') { b.state = 'look'; b.next = 1.5 + rnd() * 2.5; if (rnd() < 0.5) b.want = b.yaw + (rnd() - 0.5) * 2; }
             else {

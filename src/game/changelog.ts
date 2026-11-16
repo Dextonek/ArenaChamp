@@ -90,7 +90,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'The Climb comes alive, chapter by chapter',
-        text: 'The Wood has its own life now: wood pigeons burst from the trees as you pass under, hinds, foxes and hares graze at the glades’ edges and bolt when you come, smoke rises through the burners’ thatch, blankets air on lines, butterflies cross the glades and woodcutters walk the trails. In the Sands kites sit on the palms and walls and lift off when you or the storm come, the lost caravan’s camels stand tethered at the caravanserai and the oasis and turn their heads to watch you, lizards dart from the rocks, dyed cloths dry on lines and water-carriers walk the roads. In the Deep, moths circle the crystals and lamps, spores hang in the air, drops fall into the glowing pools and ring them, a pale fish turns in a pool, bats flit over the halls and miners walk the tracks. On the War’s field crows sit on the stakes and walls and lift off as you come, ash drifts down, the burned farm still smoulders, the wagon train’s horses graze at their tethers, bandages dry by the field hospital and gleaners walk the roads. On the Sea, dockhands and fishwives now walk between the places, and the houses past the shore smoke from their chimneys.',
+        text: 'Every chapter of the Climb now has life of its own: wood pigeons and hinds that bolt in the Wood, kites and tethered camels in the Sands, moths and dripping pools in the Deep, crows, ash and wagon horses on the War’s field, smoke and cloth in the wind, and workers walking the paths on every floor.'
       },
       {
         tag: 'Heroes',

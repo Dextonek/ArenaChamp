@@ -16,7 +16,7 @@ import type { LifeIn } from './index';
  * - **Smoke**: the burned farm still smouldering, the braziers, the camp's cooking fire; **ash** drifting down everywhere.
  * - **Cloth**: bandages and sheets drying on lines at the field hospital (the White Sister's), pennants on short staffs by the war
  *   drums in their army's colour. The standards' own cloth is the law's (it flies the colours), so nothing is added to them.
- * - **Horses** of the wagon train, tethered at the wagons: they never bolt, they turn their heads to watch.
+ * - **Horses** of the wagon train, tethered at the wagons: they do not bolt: they watch and step aside if the hero comes right up.
  * - **People walking** beside the roads (on a computer only): the War's gleaner.
  */
 export function warLife(env: LifeEnv, inp: LifeIn, hero: THREE.Vector3): Life {
@@ -84,13 +84,13 @@ export function warLife(env: LifeEnv, inp: LifeIn, hero: THREE.Vector3): Life {
       const x0 = x - ux * span / 2, z0 = z - uz * span / 2, x1 = x + ux * span / 2, z1 = z + uz * span / 2;
       if (!room.free(x0, z0, 0.5) || !room.free(x1, z1, 0.5) || !room.free(x, z, 1.2) || beyond(x, z) > -2) continue;
       room.take(x, z, 2.4);
-      const top = 2.5;
+      const top = 3.5; // the cloths' feet stay 2.5 m up, over the heads: the line stands on walkable ground (as the Sea's washing)
       for (const [px, pz] of [[x0, z0], [x1, z1]]) kit.add(PAL.wood, cyl(0.06, 0.07, top + 0.1), px, 0, pz);
       kit.add(PAL.rope, new THREE.CylinderGeometry(0.014, 0.014, span, 4).rotateZ(Math.PI / 2), x, top, z, yaw);
       let at = 0.2;
       while (at < span - 0.4) {
         // long narrow bandages among the sheets (the linen a shade down: in the evening sun white glares)
-        const bandage = rnd() < 0.5, w = bandage ? 0.18 + rnd() * 0.08 : Math.min(span - 0.2 - at, 0.8 + rnd() * 0.4), hh = bandage ? 1.1 + rnd() * 0.4 : 0.9 + rnd() * 0.4;
+        const bandage = rnd() < 0.5, w = bandage ? 0.18 + rnd() * 0.08 : Math.min(span - 0.2 - at, 0.8 + rnd() * 0.4), hh = Math.min(top - 2.5, bandage ? 1.1 + rnd() * 0.4 : 0.9 + rnd() * 0.4);
         if (at + w > span - 0.2) break;
         cloth.add(mtx(x0 + ux * at, top, z0 + uz * at, Math.atan2(-uz, ux)).multiply(new THREE.Matrix4().makeTranslation(0, -hh, 0)), w, hh, bandage ? 0xb8b0a0 : LINEN, 1, 0.7);
         at += w + 0.08 + rnd() * 0.15;
@@ -116,7 +116,7 @@ export function warLife(env: LifeEnv, inp: LifeIn, hero: THREE.Vector3): Life {
   const horses = new Beasts(env, beastGeometry({
     s: 1.3, shoulder: 1.6, len: 1.75, girth: 0.82, neck: 0.85, head: 0.62, leg: 0.085, ears: 'point', tail: 'hang',
     colors: { body: 0x4a3226, under: 0x3e2a20, leg: 0x2a1e18, head: 0x4a3226, ear: 0x2a1e18, tail: 0x1d1b21 },
-  }), horseHomes, { shy: 0, walk: 0.8, run: 0.8, stride: 2, flee: 0, ok: () => false, danger: inp.danger, graze: 0.8 });
+  }), horseHomes, { shy: 2.8, watch: true, walk: 0.8, run: 1.4, stride: 2, flee: 3.5, ok: (x, z) => beyond(x, z) < -2.5, danger: () => false, graze: 0.8 });
   where.horses.push(...horseHomes);
   counts.horses = horses.count;
 

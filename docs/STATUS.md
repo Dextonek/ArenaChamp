@@ -61,8 +61,10 @@ starts with every agent session (about 90 MB each, and it often fails to connect
   (`sands.ts`: kites that leave when the storm comes, tethered camels, lizards, dyed cloths, pennants, smoke, oasis rings); the Deep
   (`deep.ts`: moths at the lights, spores, drips that ring the pools, a pale fish, bats, stove smoke; no light of its own, nothing dark
   standing still); the War (`war.ts`: crows, ash, the burned farm's smoke, tethered wagon horses, bandages drying, drum pennants). The
-  six Blender walkers wired (`WALKER_MODELS`, one line a chapter); the Sea's land chimneys smoke (`landLife` in `land.ts`). Fights the
-  same life on/off on two floors a chapter (prints on the page). **One change outside the life:** the War's rain (`warZone.ts` `Rain`)
+  six Blender walkers wired (`WALKER_MODELS`, one line a chapter; routes now keep 6 m apart, which moved one route on Sea floors 1, 5
+  and 8); the Sea's land chimneys smoke (`landLife` in `land.ts`). Airing lines hang over the heads (feet 2.5 m up); tethered camels and
+  horses step aside when the hero walks into them. Fights the same life on/off, checked again on the final code: floors 1 `98b0044a`,
+  11 `433b3ded`, 15 `8e91ae97`, 25 `f3eab003`, 35 `963fdc00`, 41 `5267e5db`, 45 `18d15a15` (the life-off prints of the same code). **One change outside the life:** the War's rain (`warZone.ts` `Rain`)
   rolled the fight's dice for its drops, so any change to a War floor's setup moved its fight; it has dice of its own now (looks the
   same), and the War floors' fight prints changed with it (life off: floor 41 `5267e5db`, floor 45 `18d15a15`). Not measured well:
   frame times (the computer was loaded all afternoon; the life's own update is 0.06 to 0.27 ms a frame, timed alone): the quiet

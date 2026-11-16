@@ -94,13 +94,13 @@ export function woodLife(env: LifeEnv, inp: LifeIn, hero: THREE.Vector3): Life {
       const x0 = x - ux * span / 2, z0 = z - uz * span / 2, x1 = x + ux * span / 2, z1 = z + uz * span / 2;
       if (!room.free(x0, z0, 0.5) || !room.free(x1, z1, 0.5) || !room.free(x, z, 1.2) || beyond(x, z) > -2) continue;
       room.take(x, z, 2.2);
-      const top = 2.6;
+      const top = 3.5; // the cloths' feet stay 2.5 m up, over the heads: the line stands on walkable ground (as the Sea's washing)
       for (const [px, pz] of [[x0, z0], [x1, z1]]) kit.add(PAL.wood, cyl(0.06, 0.07, top + 0.1), px, 0, pz).add('gold', cyl(0.075, 0.075, 0.05, 6), px, top + 0.08, pz);
       kit.add(PAL.rope, new THREE.CylinderGeometry(0.014, 0.014, span, 4).rotateZ(Math.PI / 2), x, top, z, yaw);
       const colors = [0xc4bba2, 0x4c6a38, 0x8a6a48, PAL.wine, 0x6e604a];
       let at = 0.25;
       while (at < span - 0.6) {
-        const w = Math.min(span - 0.25 - at, 0.6 + rnd() * 0.5), hh = 0.6 + rnd() * 0.5;
+        const w = Math.min(span - 0.25 - at, 0.6 + rnd() * 0.5), hh = Math.min(top - 2.5, 0.6 + rnd() * 0.5);
         cloth.add(mtx(x0 + ux * at, top, z0 + uz * at, Math.atan2(-uz, ux)).multiply(new THREE.Matrix4().makeTranslation(0, -hh, 0)), w, hh, colors[Math.floor(rnd() * colors.length)], 1, 0.6);
         at += w + 0.12 + rnd() * 0.2;
       }
