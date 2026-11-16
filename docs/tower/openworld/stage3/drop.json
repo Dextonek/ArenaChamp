@@ -1,0 +1,62 @@
+{
+ "floor": 3,
+ "floor2": 2,
+ "drop_started": true,
+ "drop": {
+  "back": true,
+  "before": {
+   "a": {
+    "won": [],
+    "shards": 0,
+    "lives": 3
+   },
+   "b": {
+    "won": [],
+    "shards": 0,
+    "lives": 3
+   }
+  },
+  "after": {
+   "a": {
+    "won": [],
+    "shards": 0,
+    "lives": 3,
+    "me": [
+     -0.8,
+     -85.86
+    ],
+    "log": [
+     "door lair with 1 others at 7s",
+     "piece ruler nothing counted hp 1.00 6s (with others)"
+    ],
+    "fightLog": [
+     "13205 door_start side 0 of 2, brain 0, hp 5075",
+     "23647 connection lost"
+    ],
+    "errors": [],
+    "shard": "3.1",
+    "others": 1
+   },
+   "b": {
+    "won": [],
+    "shards": 0,
+    "lives": 3,
+    "me": [
+     0.8,
+     -85.86
+    ],
+    "log": [
+     "door lair with 1 others at 5s",
+     "piece ruler nothing counted hp 1.00 6s (with others)"
+    ],
+    "fightLog": [
+     "9525 door_start side 1 of 2, brain 0, hp 5075",
+     "19969 connection lost"
+    ],
+    "errors": [],
+    "shard": "3.1",
+    "others": 1
+   }
+  }
+ }
+}
