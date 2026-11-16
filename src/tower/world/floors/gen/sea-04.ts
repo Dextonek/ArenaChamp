@@ -3350,7 +3350,7 @@ export const SEA_04: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The salt pans is overrun, and Mother of Wrecks sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads."
+     "Another climber. The salt pans are overrun, and Mother of Wrecks sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads."
     ],
     "quests": [
      "main",

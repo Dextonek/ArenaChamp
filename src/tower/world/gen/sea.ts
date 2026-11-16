@@ -331,7 +331,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   const poss = (s: string) => (s.endsWith('s') ? `${s}’` : `${s}’s`);
   const facing = (p: V) => r2(Math.atan2(-p.x, -p.z));
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Another climber. ${A.name} is overrun, and ${mid(rulerName)} sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads.`], quests: ['main', 'bounty1', 'bounty2'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Another climber. ${A.name} ${A.name.endsWith('s') ? 'are' : 'is'} overrun, and ${mid(rulerName)} sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads.`], quests: ['main', 'bounty1', 'bounty2'] },
     { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: [pick(['The sea keeps what it takes. Perhaps you can take some of it back.', 'I have work, if you have legs. The tide does not wait.', 'Everything I own is somewhere on this shore. Help me find it.'])], quests: ['g1', 'g2'] },
     { id: 'villager', hero: villagerHero, name: villagerHero, role: 'giver', at: villagerAt, face: facing(villagerAt), greet: [`You came all the way to ${lower(Vl.name)}? Then you can carry something back.`], quests: ['g3'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: facing(rivalAt), greet: [], quests: [] },

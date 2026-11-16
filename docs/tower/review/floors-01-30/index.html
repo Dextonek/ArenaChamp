@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>3 floors checked</b> · <b>2 fixed</b> · <b>2 for you</b></div>
+<div class="sum"><b>4 floors checked</b> · <b>3 fixed</b> · <b>2 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -23,11 +23,13 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <h2>Fixed</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
 <li><a href="#f02">Floor 2</a>: <b>Names on the M map lay over each other (every floor).</b> Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door&#x27;s up, a place&#x27;s down). Only the map&#x27;s drawing changed (src/tower/world/map.ts).</li>
+<li><a href="#f04">Floor 4</a>: <b>“The salt pans is overrun”.</b> The keeper&#x27;s greeting is made from the main place&#x27;s name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea&#x27;s maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.</li>
 </ul>
 <h2>Floors</h2><div class="toc">
 <a class="f l" href="#f01">1</a>
 <a class="f" href="#f02">2</a>
 <a class="" href="#f03">3</a>
+<a class="f" href="#f04">4</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -108,6 +110,25 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f03/busy.jpg"><img loading="lazy" src="f03/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
 <figure><a href="f03/overview.jpg"><img loading="lazy" src="f03/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 <figure class="ph"><a href="f03/phone-person-keeper.jpg"><img loading="lazy" src="f03/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f04"><h3>Floor 4: The Sunken Mile</h3><p>Clean but for one line of the keeper&#x27;s: cleared with four stars and no fall; the rival (Auriel), the trial, the ruler (Mother of Wrecks, in the Gull Queen&#x27;s model) and the gate (Ada) all played; no console error, every spot reachable.</p>
+<p><span class="tag fixed">fixed</span><b>“The salt pans is overrun”.</b> The keeper&#x27;s greeting is made from the main place&#x27;s name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea&#x27;s maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.</p>
+<div class="pics">
+<figure class="ph"><a href="f04/phone-fix-overrun-before.jpg"><img loading="lazy" src="f04/phone-fix-overrun-before.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure class="ph"><a href="f04/phone-fix-overrun-after.jpg"><img loading="lazy" src="f04/phone-fix-overrun-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, three shells 10 cm over the sand, the gold edge of the lair&#x27;s wall where it runs into the hill (seen and left in the props pass). Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 35004 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 18 float, 58 gap, 1 buried, 0 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1613 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: Mother of Wrecks (She keeps what sinks), model models/tower/sea_queen_v4.glb, loaded yes after 5111 ms of real time</li><li>Frame check at the busiest spot (20, -54), 6 units awake: median 13.3, 14.1, 11.2 ms, p95 24.8, 21.7, 16.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f04/ruler-close.jpg"><img loading="lazy" src="f04/ruler-close.jpg" alt="Mother of Wrecks"></a><figcaption>Mother of Wrecks</figcaption></figure>
+<figure><a href="f04/person-rival.jpg"><img loading="lazy" src="f04/person-rival.jpg" alt="Auriel, the rival"></a><figcaption>Auriel, the rival</figcaption></figure>
+<figure><a href="f04/pack-b.jpg"><img loading="lazy" src="f04/pack-b.jpg" alt="The sea caves&#x27; pack"></a><figcaption>The sea caves&#x27; pack</figcaption></figure>
+<figure><a href="f04/person-villager.jpg"><img loading="lazy" src="f04/person-villager.jpg" alt="The Lamp-Bearer in the fishers&#x27; row"></a><figcaption>The Lamp-Bearer in the fishers&#x27; row</figcaption></figure>
+<figure><a href="f04/overview.jpg"><img loading="lazy" src="f04/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f04/phone-fight.jpg"><img loading="lazy" src="f04/phone-fight.jpg" alt="Phone: a fight"></a><figcaption>Phone: a fight</figcaption></figure>
 </div>
 </section>
 </main></body></html>
