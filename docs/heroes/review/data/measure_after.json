@@ -2,21 +2,21 @@
  "blood": {
   "hero": "Vesper",
   "feet": 0,
-  "armIdle": 3,
+  "armIdle": 0,
   "armMove": [
-   6,
+   5,
    "sprint"
   ],
   "armAny": [
-   7,
-   "hit"
+   6,
+   "Q Lancet (point)"
   ],
   "heldCast": [
-   4,
+   8,
    "W Mist Waltz (lunge)"
   ],
   "heldAny": [
-   4,
+   8,
    "W Mist Waltz (lunge)"
   ]
  },
@@ -50,8 +50,8 @@
    "sprint"
   ],
   "armAny": [
-   4,
-   "stun"
+   3,
+   "sprint"
   ],
   "heldCast": [
    0,
@@ -86,10 +86,10 @@
  "dawn": {
   "hero": "Auriel",
   "feet": 0,
-  "armIdle": 3,
+  "armIdle": 0,
   "armMove": [
-   3,
-   "idle"
+   0,
+   ""
   ],
   "armAny": [
    4,
@@ -100,8 +100,8 @@
    ""
   ],
   "heldAny": [
-   4,
-   "sprint"
+   0,
+   ""
   ]
  },
  "bone": {
@@ -134,7 +134,7 @@
    ""
   ],
   "armAny": [
-   4,
+   3,
    "stun"
   ],
   "heldCast": [
@@ -180,11 +180,11 @@
    "E Time Skip (lunge)"
   ],
   "heldCast": [
-   2,
+   8,
    "E Time Skip (lunge)"
   ],
   "heldAny": [
-   2,
+   8,
    "E Time Skip (lunge)"
   ]
  },
@@ -197,7 +197,7 @@
    "idle"
   ],
   "armAny": [
-   6,
+   5,
    "stun"
   ],
   "heldCast": [
@@ -236,19 +236,19 @@
   "armIdle": 0,
   "armMove": [
    3,
-   "sprint"
+   "walk"
   ],
   "armAny": [
    3,
-   "sprint"
+   "E Burnt Offering (point)"
   ],
   "heldCast": [
    0,
    ""
   ],
   "heldAny": [
-   0,
-   ""
+   4,
+   "stun"
   ]
  },
  "courier": {
@@ -289,8 +289,8 @@
    ""
   ],
   "heldAny": [
-   3,
-   "stun"
+   0,
+   ""
   ]
  },
  "frost": {
@@ -302,7 +302,7 @@
    ""
   ],
   "armAny": [
-   5,
+   7,
    "stun"
   ],
   "heldCast": [
@@ -320,14 +320,14 @@
   "armIdle": 0,
   "armMove": [
    4,
-   "run"
+   "back"
   ],
   "armAny": [
-   13,
-   "E Pollen Glide (lunge)"
+   4,
+   "back"
   ],
   "heldCast": [
-   9,
+   8,
    "E Pollen Glide (lunge)"
   ],
   "heldAny": [
@@ -361,19 +361,19 @@
   "feet": 0,
   "armIdle": 7,
   "armMove": [
-   9,
+   8,
    "sprint"
   ],
   "armAny": [
-   9,
-   "sprint"
+   12,
+   "stun"
   ],
   "heldCast": [
-   9,
+   7,
    "E Flowing Script (lunge)"
   ],
   "heldAny": [
-   9,
+   7,
    "E Flowing Script (lunge)"
   ]
  },
@@ -386,16 +386,16 @@
    ""
   ],
   "armAny": [
-   7,
+   8,
    "E Through the Glass (lunge)"
   ],
   "heldCast": [
-   6,
+   4,
    "E Through the Glass (lunge)"
   ],
   "heldAny": [
-   8,
-   "stun"
+   4,
+   "E Through the Glass (lunge)"
   ]
  },
  "mason": {
@@ -422,7 +422,7 @@
  "ledger": {
   "hero": "Mr. Ledger",
   "feet": 0,
-  "armIdle": 7,
+  "armIdle": 8,
   "armMove": [
    8,
    "walk"
@@ -446,11 +446,11 @@
   "armIdle": 0,
   "armMove": [
    4,
-   "walk"
+   "sprint"
   ],
   "armAny": [
    5,
-   "W Wall (raise)"
+   "stun"
   ],
   "heldCast": [
    0,
@@ -464,22 +464,22 @@
  "janitor": {
   "hero": "Gus",
   "feet": 0,
-  "armIdle": 0,
+  "armIdle": 3,
   "armMove": [
-   0,
-   ""
+   3,
+   "idle"
   ],
   "armAny": [
    5,
    "stun"
   ],
   "heldCast": [
-   11,
+   15,
    "E Mop Bucket (lunge)"
   ],
   "heldAny": [
    15,
-   "stun"
+   "E Mop Bucket (lunge)"
   ]
  },
  "mole": {
@@ -488,32 +488,32 @@
   "armIdle": 0,
   "armMove": [
    3,
-   "walk"
+   "sprint"
   ],
   "armAny": [
-   9,
+   7,
    "stun"
   ],
   "heldCast": [
    5,
-   "attack"
+   "Q Claw (swing)"
   ],
   "heldAny": [
    5,
-   "attack"
+   "Q Claw (swing)"
   ]
  },
  "magic": {
   "hero": "The Great Zambini",
   "feet": 0,
-  "armIdle": 11,
+  "armIdle": 10,
   "armMove": [
    11,
    "walk"
   ],
   "armAny": [
    12,
-   "E The Hat Trick (burst)"
+   "hit"
   ],
   "heldCast": [
    0,
@@ -533,7 +533,7 @@
    ""
   ],
   "armAny": [
-   6,
+   7,
    "Q Bonk (swing)"
   ],
   "heldCast": [
@@ -555,7 +555,7 @@
   ],
   "armAny": [
    3,
-   "W Snare (point)"
+   "R Tag Out (burst)"
   ],
   "heldCast": [
    0,
@@ -579,11 +579,11 @@
    ""
   ],
   "heldCast": [
-   2,
-   "W Fan the Flames (burst)"
+   0,
+   ""
   ],
   "heldAny": [
-   5,
+   7,
    "stun"
   ]
  },
@@ -592,11 +592,11 @@
   "feet": 0,
   "armIdle": 4,
   "armMove": [
-   9,
+   8,
    "sprint"
   ],
   "armAny": [
-   10,
+   9,
    "R Supercell (burst)"
   ],
   "heldCast": [
@@ -621,33 +621,33 @@
    "E Scarab Stride (lunge)"
   ],
   "heldCast": [
-   8,
+   6,
    "E Scarab Stride (lunge)"
   ],
   "heldAny": [
-   8,
+   6,
    "E Scarab Stride (lunge)"
   ]
  },
  "shadow": {
   "hero": "Nyx",
   "feet": 0,
-  "armIdle": 3,
+  "armIdle": 0,
   "armMove": [
-   7,
+   4,
    "sprint"
   ],
   "armAny": [
-   7,
-   "sprint"
+   5,
+   "R Nightfall (burst)"
   ],
   "heldCast": [
-   5,
+   4,
    "attack"
   ],
   "heldAny": [
-   6,
-   "sprint"
+   4,
+   "attack"
   ]
  },
  "tide": {
@@ -656,11 +656,11 @@
   "armIdle": 14,
   "armMove": [
    15,
-   "back"
+   "walk"
   ],
   "armAny": [
    15,
-   "back"
+   "walk"
   ],
   "heldCast": [
    0,
@@ -722,15 +722,15 @@
    "back"
   ],
   "armAny": [
-   10,
+   9,
    "E Phase Step (lunge)"
   ],
   "heldCast": [
-   11,
+   10,
    "W Null Zone (burst)"
   ],
   "heldAny": [
-   11,
+   10,
    "W Null Zone (burst)"
   ]
  },
@@ -765,14 +765,14 @@
   ],
   "armAny": [
    13,
-   "E Charge (lunge)"
+   "Q Palm Strike (swing)"
   ],
   "heldCast": [
-   7,
+   6,
    "Q Palm Strike (swing)"
   ],
   "heldAny": [
-   7,
+   6,
    "Q Palm Strike (swing)"
   ]
  },
@@ -806,16 +806,16 @@
    ""
   ],
   "armAny": [
-   6,
-   "W Cast On (raise)"
+   5,
+   "stun"
   ],
   "heldCast": [
-   9,
-   "Q Knitting Needle (thrust)"
+   8,
+   "attack"
   ],
   "heldAny": [
-   9,
-   "Q Knitting Needle (thrust)"
+   8,
+   "attack"
   ]
  },
  "weather": {
@@ -835,7 +835,7 @@
    ""
   ],
   "heldAny": [
-   2,
+   5,
    "stun"
   ]
  },
@@ -849,7 +849,7 @@
   ],
   "armAny": [
    3,
-   "Q Crook Whack (point)"
+   "W Spare Sheep (raise)"
   ],
   "heldCast": [
    0,

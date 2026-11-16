@@ -29,23 +29,23 @@ NOTES = {
     "Marin": "Hands sank into the apron standing and sprinting: now in front of it. The flag left while backing off is her hand passing through her water ribbon (a stream, not cloth).",
     "The Great Zambini": "Wand on its side in every cast: now upright. The tailcoat flagged at the walk is the forearm brushing the coat's side, not inside it (checked by eye).",
     "Big Yoko": "Arms rested inside the rope and apron: now held over the rope (his arms stand out about 25 degrees, as a wrestler's would). Left: in his Charge (a lunge) his left forearm presses into his belly for a moment.",
-    "Sefu": "Staff on its side in casts: now upright. On the list: in Scarab Stride (the dash clip) his tall headdress cuts into his right shoulder for a moment.",
+    "Sefu": "Staff on its side in casts: now upright (a dash keeps the clip's hold: upright, the staff went through his apron as he bends). On the list: in Scarab Stride (the dash clip) his tall headdress cuts into his right shoulder for a moment.",
     "Mortis": "Staff on its side in casts: now upright. A hand in the robe while sprinting (10 cm) stays: the robe's sleeve, not the body.",
     "Wick": "His lantern lay on its side, flame sideways, in every cast: now it hangs upright.",
     "Cantor": "The lyre was turned flat like a tray in casts: now upright, strings to the front.",
-    "Vesper": "Scepter on its side in casts: now upright; in Mist Waltz (a lunge) its foot went into her skirt, now kept out.",
-    "Gus": "His broom lay across him in his attack (the staff push) and casts: now upright. Left: when stunned the broom's foot drags through his robe.",
+    "Vesper": "Scepter on its side in casts: now upright. Left as it was: in Mist Waltz (a dash, which keeps the clip's hold) the scepter's foot dips into her skirt for a moment.",
+    "Gus": "His broom lay across him in his attack (the staff push) and casts: now upright. Left as they were: in Mop Bucket (a dash) and when stunned the broom's foot passes through his robe for a moment.",
     "Shiori": "Brush on its side in casts: now upright, the ink tip down by her feet. Left: in Flowing Script (a lunge) the brush's foot touches her robe's hem.",
     "Fenna": "Staff on its side in casts: now upright. Left: walking and running, the staff's flower brushes her antlers and its foot the flaring robe (the pack's torch hold, a matter of the staff's length).",
     "Professor Puff": "On the list: he casts with his empty left hand (the pack's only push) while the brass nozzle in his right hangs down.",
     "Opaline": "Wand on its side in casts: now upright. Her right hand hung in the gown: now beside it.",
-    "Silvane": "Mirror on its side in casts: now upright.",
+    "Silvane": "Her hand mirror is held out flat in casts, its face to the target: left as the clip has it (kept upright, as the staffs now are, it turned edge-on).",
     "Mr. Ledger": "Quill on its side in casts: now upright. A flag in the walk is the forearm against the robe's front panel.",
     "Barry Cloudsley": "Staff on its side in casts: now upright.",
     "Bo": "Crook on its side in casts: now upright.",
-    "Tempo": "Staff on its side in casts: now upright.",
+    "Tempo": "Staff on its side in casts: now upright. Left as it was: in Time Skip (a dash) the staff's foot passes his coat for a moment.",
     "Isolde": "Staff on its side in casts: now upright.",
-    "Anka": "Fan on its side in casts: now upright.",
+    "Anka": "Her fan is held out open in casts, its face showing: left as the clip has it (kept upright, as the staffs now are, it turned edge-on).",
     "Oblivion": "Left: in Null Zone the greatsword's pommel sits behind his armour skirt (hidden, not seen).",
     "Sirix": "Left: in Barbed Stinger (a lunge) a claw passes his chest plate for a moment.",
     "Mabel": "Claws hung inside her skirt standing: now beside it.",
@@ -118,7 +118,7 @@ def page():
         chips = [f"feet {b['feet']} → {a['feet']} cm"]
         if b["armIdle"] >= 4 or a["armIdle"] >= 4:
             chips.append(f"hand in cloth standing {b['armIdle']} → {a['armIdle']} cm")
-        if a["hero"] in HOLDERS:
+        if a["hero"] in HOLDERS and a["hero"] not in ("Anka", "Silvane"):
             chips.append(f"{HOLDS[a['hero']]} upright in casts")
         rows = "".join(
             f"<tr><td>{esc(label)}</td><td>{b[k][0] if isinstance(b[k], list) else b[k]}</td><td>{a[k][0] if isinstance(a[k], list) else a[k]}</td>"
@@ -127,7 +127,10 @@ def page():
                              ("hand in body or cloth, walking and running", "armMove"),
                              ("hand in body or cloth, any clip", "armAny"), ("held thing in body, blows and casts", "heldCast"),
                              ("held thing in body, any clip", "heldAny")))
-        note = NOTES.get(a["hero"], "Nothing else found: no weapon or cloth through the body, the hero faces its target in the duel.")
+        top = max(a["armAny"][0], a["heldAny"][0])
+        where = a["armAny"][1] if a["armAny"][0] >= a["heldAny"][0] else a["heldAny"][1]
+        note = NOTES.get(a["hero"], "Besides the feet, nothing measured over 5 cm in any clip." if top <= 5 else
+                         f"Besides the feet: the deepest flag left is {top} cm, in {where.split(' (')[0] or 'one clip'}, for a moment; not drawn one by one.")
         duel = OUT / theme / "duel.jpg"
         duel_fig = (f'<figure><img loading="lazy" src="{theme}/duel.jpg" alt="{esc(name)} in a CPU duel"><figcaption>a CPU duel on the game page, '
                     "the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>") if duel.exists() else ""
@@ -195,25 +198,32 @@ three on a Climb floor. Tools: <code>pipeline/tools/hero-review.js</code>, <code
 <h3>1. Every hero stood sunk into the floor (all {n})</h3>
 <p>3 to 12 cm, deepest on Mabel, Professor Puff and Oblivion: the soles and toes were cut off by the floor. The animation pack's own figure
 stands exactly on the floor in its idle; our bodies' ankles sit a little lower in a longer leg, and the boots a little under the sole. Each
-model is now raised as it loads, by just enough that its lowest sole stands on the floor through the idle. Walking and running keep a foot
-on the floor too.</p>
+model is now raised as it loads, by just enough that its lowest sole stands on the floor through the idle. In a stride the big boots of the
+heavy heroes rolled their toe or heel up to 13 cm under the floor (the pack's own figure dips 2 to 3): the model now rises by the difference
+while that lasts and settles back after, so no sole goes more than about 4 cm under (measured on every hero walking, running, sprinting and
+backing off).</p>
 <figure><img loading="lazy" src="pair_feet.jpg" alt="Feet of Professor Puff, Mabel, Kaia and Big Yoko, before sunk into the floor, after standing on it"><figcaption><b>before</b> and after: Professor Puff, Mabel, Kaia, Big Yoko</figcaption></figure>
 <h3>2. Hands went into coats, robes and aprons (most of the cloth-wearers)</h3>
 <p>The pack's clips hang the hands close to a slim figure's hips; on a long coat or a flared robe they went inside it (Kaia's storm coat,
 Marin's apron, Shiori's sleeves, Mabel's skirt; up to 15 cm). The older figures have had a fix for this since 2026-11-10 (you accepted it
 then): the arm swings out from the shoulder just enough to clear the body's outline, the elbow keeping its bend. The fourth style now has
-it too. It never acts during a blow, a cast or a knock-up, where the hands go where the clip sends them.</p>
+it too, eased so an arm does not flap in and out with each stride. It never acts during a blow, a cast or a knock-up, where the hands go
+where the clip sends them.</p>
 <figure><img loading="lazy" src="pair_coat.jpg" alt="Shiori, Zambini, Mabel and Kaia standing, before and after"><figcaption><b>before</b> and after: Shiori, Zambini, Mabel, Kaia (her right hand was inside the coat)</figcaption></figure>
-<h3>3. Staffs, scepters, lyres and lanterns lay on their side in every cast (the 18 who hold one in the left hand)</h3>
+<h3>3. Staffs, scepters, lyres and lanterns lay on their side in every cast (16 of the 18 who hold one in the left hand)</h3>
 <p>The pack's push (the clip of every ranged attack and most casts) turns the palm to the front, and what the hand held turned with it:
 every staff lay across the chest, its head at the hero's right shoulder and pointing away from the target; Wick's lantern lay on its side.
-Now the hand keeps it upright through the blow or cast, leaning toward the target as far as its foot stays out of the robe.</p>
+Now the hand keeps it upright through the blow or cast, as it is held standing: a short one (a scepter, a lyre, a lantern, a wand) leans
+toward the target, a long staff stands straight or leans back a little so its foot stays out of the robe. Anka's fan and Silvane's hand mirror
+are left as the clip holds them, held out flat: their face is what shows, and upright turned them edge-on. A dash, a slam or a swing
+carries the item as its clip does (upright, a staff went through the robe of a hero bent deep into a dash).</p>
 <figure><img loading="lazy" src="pair_staff.jpg" alt="Cantor, Vesper, Mortis, Wick, Gus and Kaia at a cast, before and after"><figcaption><b>before</b> and after, at the strike of a cast: Cantor, Vesper, Mortis, Wick, Gus (his attack), Kaia</figcaption></figure>
 
 <h2>For you to decide (not changed)</h2>
 <ol>
-<li><b>The staffs upright in casts</b> (fix 3 above) is the one fix that changes how 18 heroes look while casting. It is a fault fixed
-(the head pointed away from the target), but if you liked the crosswise thrust better it is one line to undo.</li>
+<li><b>The staffs upright in casts</b> (fix 3 above) changes how 16 heroes look while casting. The head pointed away from the target,
+so it is treated as a fault, but it is also a look: if you liked the crosswise thrust better, it is one line to undo (in
+<code>HeroFigure.followReal</code>, the line that calls <code>uprightHeld</code>).</li>
 <li><b>Professor Puff casts with his empty left hand</b> while the brass nozzle hangs in his right (Q W E R and his attack): the pack has
 no right-hand push. A nozzle in the left hand would be a model change (his look), so it is yours to say.</li>
 <li><b>Sefu's headdress</b> cuts into his right shoulder for a moment in Scarab Stride (the pack's dash clip bends the head down): a lower

@@ -45,7 +45,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Motion',
         title: 'Heroes stand on the floor and hold their staffs up',
-        text: 'Every hero now stands with the whole foot on the floor; before, the soles sank a few centimetres in. Hands no longer disappear into long coats, robes and aprons. And the eighteen heroes with a staff, scepter, lyre, lantern, quill or broom keep it upright as they cast, leaning toward their target, instead of laying it sideways across the chest.',
+        text: 'Every hero now stands and walks with the whole foot on the floor; before, the soles sank a few centimetres in. Hands no longer disappear into long coats, robes and aprons. And the heroes with a staff, scepter, lyre, lantern, quill or broom keep it upright as they cast, instead of laying it sideways across the chest.',
       },
       {
         tag: 'Heroes',

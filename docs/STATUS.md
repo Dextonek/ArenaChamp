@@ -25,9 +25,10 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
 - **Done, on branch `t3/1cbb14d0` (not merged, not live) (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`).
   All 40 measured through every clip (`pipeline/tools/hero-review.js`), a sheet each, a CPU duel each over the nine arenas, three on a
   Climb floor. Three faults across the roster, fixed in code (`src/motion/real.ts`, two lines in `HeroFigure.followReal`), no model
-  rebuilt: every hero stood 3-12 cm sunk into the floor (now raised at load); hands went into coats and robes (the older figures'
-  push-out now on the fourth style); the 18 left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now
-  upright, leaning toward the target). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
+  rebuilt: every hero stood 3-12 cm sunk into the floor and big boots rolled up to 13 cm under it in a stride (now raised at load and
+  planted in a stride); hands went into coats and robes (the older figures' push-out now on the fourth style, eased); 16 of the 18
+  left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now upright; Anka's fan and Silvane's mirror left
+  as they were). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
   **Waiting on the user:** the list on the page (staffs upright: keep?; Professor Puff casts with his empty hand; Sefu's headdress in
   his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). No Blender list from the other review had come.
 - **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
