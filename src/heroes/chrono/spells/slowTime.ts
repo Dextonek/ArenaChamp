@@ -6,6 +6,7 @@ import { CHRONO, CHRONO_CSS, Dial, EchoClock, FrozenMotes } from '../parts';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { ECHO_DELAY, echoShare, stolenOn, tempoZone } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Slow Time (chrono kit v5, W: a ground zone, label 'slow time'). A luminous floor dial (3.5 m radius) draws itself in
@@ -88,7 +89,7 @@ export class SlowTime implements Effect {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
     // His trait reads the circle (on his own client) to give him haste while he stands in it.
-    tempoZone.set(ctx.caster, { x: this.point.x, z: this.point.z, r: RADIUS, until: performance.now() + ZONE_LIFE * 1000 });
+    tempoZone.set(ctx.caster, { x: this.point.x, z: this.point.z, r: RADIUS, until: fightNow() + ZONE_LIFE * 1000 });
   }
 
   play() {

@@ -1,4 +1,5 @@
 import type { Trait } from '../../traits/types';
+import { fightNow } from '../../fightClock';
 
 /**
  * Where the last Unwind sent a hero (x, z), keyed by its figure. Kept for the old Unwind spell (`unwind.ts`, which the VFX
@@ -30,7 +31,7 @@ export const SLOW_TIME_HASTE = 0.3;
 
 /**
  * What his echoes read, per figure (the effects play on both screens, so each screen keeps its own copy). `until` is a
- * `performance.now()` time in milliseconds: effects have no round clock of their own. Written from his own client
+ * `fightNow()` time in milliseconds: effects have no round clock of their own. Written from his own client
  * (`peerNote`) and, on the other screen, from `ownChanged`; R's effect also writes it at the moment it lands.
  */
 export const tempoEcho = new WeakMap<object, { until: number }>();
@@ -38,17 +39,17 @@ export const tempoEcho = new WeakMap<object, { until: number }>();
 /** The share of its damage an echo of his has now: 80% while Stolen Hour runs, else 40%. */
 export function echoShare(fig: object): number {
   const e = tempoEcho.get(fig);
-  return e && performance.now() < e.until ? ECHO_STRONG_SHARE : ECHO_SHARE;
+  return e && fightNow() < e.until ? ECHO_STRONG_SHARE : ECHO_SHARE;
 }
 
 export const stolenOn = (fig: object) => echoShare(fig) === ECHO_STRONG_SHARE;
 
 export function startStolen(fig: object, seconds = STOLEN_SECONDS) {
-  tempoEcho.set(fig, { until: performance.now() + seconds * 1000 });
+  tempoEcho.set(fig, { until: fightNow() + seconds * 1000 });
 }
 
 /**
- * Slow Time's circle (x, z, radius, and the `performance.now()` ms it ends), written by the effect when it is cast. His
+ * Slow Time's circle (x, z, radius, and the `fightNow()` ms it ends), written by the effect when it is cast. His
  * trait reads it in `tick` on his own client and gives him haste while he stands inside.
  */
 export const tempoZone = new WeakMap<object, { x: number; z: number; r: number; until: number }>();
@@ -138,7 +139,7 @@ export const chronoTrait: Trait = {
     }
     // Slow Time: faster while he stands inside the circle.
     const z = tempoZone.get(t.self());
-    if (z && performance.now() < z.until) {
+    if (z && fightNow() < z.until) {
       const p = t.self().group.position;
       if (Math.hypot(p.x - z.x, p.z - z.z) <= z.r) t.buff('haste', SLOW_TIME_HASTE, 0.3);
     }
