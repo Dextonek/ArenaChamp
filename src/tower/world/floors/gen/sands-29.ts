@@ -3532,7 +3532,7 @@ export const SANDS_29: GenFloor = {
     "name": "The Sun Widow",
     "giver": "keeper",
     "intro": [
-     "The Sun Widow rides the walls’ side. Nobody goes to the travellers’ court while it does."
+     "The Sun Widow rides the walls’ side. Nobody goes to the travellers’ court while she does."
     ],
     "steps": [
      {

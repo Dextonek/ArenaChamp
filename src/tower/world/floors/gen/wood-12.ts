@@ -3978,7 +3978,7 @@ export const WOOD_12: GenFloor = {
     "name": "The Bark Widow",
     "giver": "keeper",
     "intro": [
-     "The Bark Widow walks round the hollow oak. Fell it and the wood grows calmer."
+     "The Bark Widow walks round the hollow oak. Fell her and the wood grows calmer."
     ],
     "steps": [
      {

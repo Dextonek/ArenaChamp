@@ -3519,7 +3519,7 @@ export const SEA_02: GenFloor = {
     "name": "The Brine Widow",
     "giver": "keeper",
     "intro": [
-     "The Brine Widow walks the middle of the harbour. Fell it and the sea quietens a little."
+     "The Brine Widow walks the middle of the harbour. Fell her and the sea quietens a little."
     ],
     "steps": [
      {

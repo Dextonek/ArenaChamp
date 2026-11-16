@@ -3,7 +3,7 @@ import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { WarDecor, WarKind, WarLook } from '../warZone';
 import type { Look } from '../zone';
 import type { GenFloor } from './types';
-import { Layout, RING, add, dist, inside, mirrorRim, mulberry, polar, r2, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, RING, add, dist, inside, mirrorRim, mulberry, polar, r2, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The War chapter's generator (pipeline/designs/tower-50.md): floors 42 to 50 made from floor 41's parts (the Field of Banners: its
@@ -572,8 +572,8 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
       outro: [`The siege line is broken. ${rulerName} ${two ? 'are' : 'is'} behind it. Take your time, then go in.`],
       reward: reward(70, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the field, under no banner. Fell it, and let the song close.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from a soldier of nobody. It is lighter than it looks.'], reward: reward(45, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the west of the field, by ${lower(Vh.name)}. The wounded will not be carried in while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road to the tents is open again.'], reward: reward(40) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the field, under no banner. Fell ${herIt(named1)}, and let the song close.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from a soldier of nobody. It is lighter than it looks.'], reward: reward(45, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the west of the field, by ${lower(Vh.name)}. The wounded will not be carried in while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road to the tents is open again.'], reward: reward(40) },
     {
       id: 'g1', name: 'The White Cloth', giver: 'healer',
       intro: [`A white cloth for a truce hangs in ${lower(B.name)}. Bring it here and I will fly it over the tents, so both armies spare them.${keepPack ? ' The ashen soldiers in the keep will not give it up.' : ''}`],

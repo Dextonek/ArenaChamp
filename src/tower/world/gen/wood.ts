@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, PackDef, PersonDef, PlaceDef, QuestD
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { Look, Piece } from '../zone';
 import type { ChapterLook, GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, rimToward, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Wood chapter's generator (pipeline/designs/tower-50.md): floor `n` (12 to 20) of the Wood, made from floor 11's parts (The Walking
@@ -553,8 +553,8 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       outro: [`The wisps are home, the roots are cut. ${poss(rulerName)} door stands open, far in the north. Rest first, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks round ${lower(H.name)}. Fell it and the wood grows calmer.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the old wood. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the far glades. Nobody lights the lamps while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The glades are quiet again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks round ${lower(H.name)}. Fell ${herIt(named1)} and the wood grows calmer.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the old wood. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the far glades. Nobody lights the lamps while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The glades are quiet again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Spore Lamps', giver: 'giver', intro: [`Two spore lamps: one at ${lower(Cl.name)}, one at ${lower(E.name)}. Light both, stand by each a moment, and I can see the paths move.`],
       steps: [{ verb: 'light', text: 'Light the two spore lamps', things: [{ id: 'lamp1', at: Cl.stand }, { id: 'lamp2', at: E.stand }], seconds: 2 }] as Step[],

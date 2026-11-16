@@ -3631,7 +3631,7 @@ export const SEA_10: GenFloor = {
     "name": "Mother Kelp",
     "giver": "keeper",
     "intro": [
-     "Mother Kelp walks the middle of the harbour. Fell it and the sea quietens a little."
+     "Mother Kelp walks the middle of the harbour. Fell her and the sea quietens a little."
     ],
     "steps": [
      {

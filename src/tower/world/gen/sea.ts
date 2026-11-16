@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, PackDef, PersonDef, PlaceDef, QuestD
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { SeaLook } from '../zone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, makeOutline, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The sea chapter's generator (pipeline/designs/tower-50.md): floor `n` (2 to 10) of the sea, made from floor 1's parts (the Drowned
@@ -353,8 +353,8 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
       outro: [`The chain falls. ${poss(rulerName)} door stands open, far in the north. Take your time, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the harbour. Fell it and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the land side. Nobody goes to ${lower(Vl.name)} while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road is open again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the harbour. Fell ${herIt(named1)} and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} walks the land side. Nobody goes to ${lower(Vl.name)} while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road is open again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Net Lines', giver: 'giver', intro: ['My boat lies on the shore. My lines are hauled from a spot in the north: hold the place while I do.'],
       steps: [

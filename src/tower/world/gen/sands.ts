@@ -2,7 +2,7 @@ import type { CacheDef, DoorDef, EnemySpec, FloorDef, LawDef, PackDef, PersonDef
 import type { MoveSpec, PiecesDef, RulerDef } from '../pieces/types';
 import type { SandsDecor, SandsKind, SandsLook } from '../sandsZone';
 import type { GenFloor } from './types';
-import { Layout, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
+import { Layout, herIt, sheIt, add, dist, inside, mirrorRim, mulberry, polar, r2, r4, rimToward, roadRoute, segDist, shuffle, toMid, unit, worldOf, type V } from './core.ts';
 
 /**
  * The Sands chapter's generator (pipeline/designs/tower-50.md): floors 22 to 30 made from floor 21's parts (the Storm Canyon: its look,
@@ -494,8 +494,8 @@ export function makeSandsFloor(o: SandsGenOptions): GenFloor {
       outro: [`The winch turns and the brass door opens, far in the north. ${rulerName} is behind it. Rest first, then go in.`],
       reward: reward(80, { boon: true }),
     },
-    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dunes. Keep it.'], reward: reward(40, { relic: true }) },
-    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} rides the walls’ side. Nobody goes to ${lower(Vl.name)} while it does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road west is open again.'], reward: reward(35) },
+    { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the wadi. Nobody crosses it twice. Fell ${herIt(named1)} and the road is quieter.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from the dunes. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty2', name: named2, giver: 'keeper', intro: [`${named2} rides the walls’ side. Nobody goes to ${lower(Vl.name)} while ${sheIt(named2)} does.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named2)}`, pack: 'named2' }], outro: ['The road west is open again.'], reward: reward(35) },
     {
       id: 'g1', name: 'The Storm Count', giver: 'giver', intro: ['A marker stone stands out on the dunes. Find it, then hold the high ground in the north while I take the count of the storms. The raiders will not like it.'],
       steps: [

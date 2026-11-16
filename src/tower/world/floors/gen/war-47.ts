@@ -3900,7 +3900,7 @@ export const WAR_47: GenFloor = {
     "name": "The Mud Mother",
     "giver": "keeper",
     "intro": [
-     "The Mud Mother walks the west of the field, by the field hospital. The wounded will not be carried in while it does."
+     "The Mud Mother walks the west of the field, by the field hospital. The wounded will not be carried in while she does."
     ],
     "steps": [
      {
