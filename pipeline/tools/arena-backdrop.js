@@ -1,6 +1,6 @@
 // The model review, round 2 (docs/models/review/round2/): the older arenas' backdrops (temple, frost, caldera, glade, sky ruins: the
-// five not yet in the heroes' style). For each: the game's camera with the hero at the ring's four edges at both zoom limits (0.55 and
-// 1.7, what a player can see), a view from high above, and four low views from the rim outward. Numbers from the arena's own meshes
+// five not yet in the heroes' style). For each: the game's camera in a player's duel (it follows the hero) with the hero at the ring's
+// four edges at both zoom limits (0.55 and 1.7, what a player can see; --size 844x390 for a phone), a view from high above, and four low views from the rim outward. Numbers from the arena's own meshes
 // (instances one by one): pieces whose lowest point stands over 0.4 m above the ground outside the ring (floating), and points of
 // meshes inside the ring between 0.3 and 4 m high that are not within 0.6 m of a piece of cover (something in the play area).
 //   python -I pipeline/tools/page-shots.py pipeline/tools/arena-backdrop.js <out folder> --port 5177 --json backdrop.json --timeout 400
@@ -24,14 +24,15 @@ const segD = (px, pz, o) => {
 };
 for (const id of ARENAS) {
   vfx.view.paused = true;
-  if (!d.on) vfx.setDuel(true, 'run');
+  if (!d.on) vfx.setDuel(true, 'play');
   vfx.heroPickCtrl.setValue('Sefu');
   d.cpuLevel = CPU_BALANCE;
   d.opponentChoice = 'Kaia';
   d.arenaChoice = id;
   d.hazardsInRuns = false;
   d.shiftsInRuns = false;
-  d.start('run');
+  // a player's duel: the camera follows the hero (a CPU duel, 'run', holds it over the ring)
+  d.start('play');
   for (let k = 0; k < 200 && !hm.figure?.loaded; k++) await tick();
   await tick(3500);
   let simMs = realNow();
@@ -57,8 +58,10 @@ for (const id of ARENAS) {
       hero.set(RING.x + Math.sin(ang) * 11, hero.y, RING.z + Math.cos(ang) * 11);
       d.foe && a.placeFoe?.(d.foe, new hero.constructor(RING.x, 0, RING.z));
       hm.setZoom(z);
+      hm.focus = null;
       hm.snapCameraNow?.();
       step(2 / 60);
+      d.playerHp = d.playerMax;
       grab(`${name}, zoom ${z}`);
     }
   }

@@ -19,9 +19,10 @@ of each chapter beside its people; a line-up of all 40 and of the Climb's 25 peo
 **Fine as they are:** every hero's soles on all five chapters' floors (0.00 to 0.01 m), every hero's and person's size, the five older
 arenas from the duel camera, the rulers' flinch, kneel and knock-up, the other 14 bars.
 
-**Waiting:** four calls for the user (the rulers lying through the floor when they fall, the Heart's crown rays in its last phase, a staff
-held head-down in a kneel, two small arena notes), one thing for the engine (where shots leave, with a proposal), nothing for the floor
-reviewers. Below, one entry per item; the lists at the end.
+**Waiting:** calls for the user (the rulers lying through the floor when they fall, Ash's legs through the floor in his casts, the Heart's
+crown rays in its last phase, a staff held head-down in a kneel, the Glade's tree crowns at the widest zoom, small arena notes), one thing
+for the engine (where shots leave, with a proposal), one for the floor reviewers (floor 41's places on drums of cover). Not done: a hero
+casting on a Climb floor. Below, one entry per item; the lists at the end.
 
 Tools made for this round (all in `pipeline/tools/`): `heart-poses.js`, `boss-fight-look.js`, `ruler-react.js`, `bar-probe.js`,
-`arena-backdrop.js`, `climb-lineup.js`, `lineup-plain.js`. Each says at its top how to run it.
+`arena-backdrop.js`, `climb-lineup.js`, `lineup-plain.js`, `ground-probe.js`, `boss-parts.js`, `boss-moves.js`, `shot-origin.js`. Each says at its top how to run it.

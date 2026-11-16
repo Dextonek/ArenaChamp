@@ -8,9 +8,12 @@
    kneels). Stop the turn short of half a turn? (see the side views in [the sheets](heart/moves-3.jpg))
 3. **The Crow King's staff in his kneel** hangs head-down to the floor: keep it (a staff let fall) or hold it upright?
    ![](rulers/react-war_crow.jpg)
-4. **Small arena notes:** Frost's low ice pieces past their cover inside the ring (a measure with `arena-fit.js` would say how far);
+4. **Ash's legs in every cast** go about a metre into the floor (his crouch lowers the torso his rigid legs hang from): lift them so
+   they push up into the body? ![](bosses/ash-parts.jpg)
+5. **The Glade's tree crowns** fill a corner of the screen at the widest zoom at the west and east edges.
+6. **Small arena notes:** Frost's low ice pieces past their cover inside the ring (a measure with `arena-fit.js` would say how far);
    the Temple's lintels from the rim. The Deep's mites have their bar right on their backs.
-5. Still waiting from last round: the cream that blooms white on seven of the Climb's people in the Sands' and the War's light (it shows
+7. Still waiting from last round: the cream that blooms white on seven of the Climb's people in the Sands' and the War's light (it shows
    again in the line-ups on floor 21).
 
 ## For the raid's owner
@@ -20,7 +23,8 @@
 
 ## For the floor reviewers
 
-Nothing: no person, pack or prop was found standing wrong on the floors looked at (1, 2, 11, 15, 21, 25, 31, 41, 42).
+- **Floor 41:** the places "east" and "north" and the homes of the packs b-r, b-b, c-r, c-b are in the middle of a 0.9 m drum of cover:
+  move those spots about 1.5 m off the drums. ![](floors/f41-drum-game.jpg)
 
 ## For the engine
 

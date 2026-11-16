@@ -5,7 +5,8 @@ views a frame (the game's camera, the side, the front): standing, a light and a 
 the game's kneel, 0.25 s and 1.5 s in), knocked up, and the fall at 0.3, 0.6 and 1. Tool: `pipeline/tools/ruler-react.js`.
 
 Lowest point other than the feet (a hem, a staff, a cloak), in metres at the floor's size (the feet stay within 0.02 m of the floor
-in all of these but the fall, where they lift as the body tips):
+standing, flinching and kneeling; knocked up they read -0.07 to -0.13 m because this harness keeps the figure on the floor where the
+game lifts it; in the fall they lift as the body tips):
 
 | Ruler | Size | Hold | Standing | Hard flinch | Kneeling | Knocked up | Fallen |
 |---|---|---|---|---|---|---|---|

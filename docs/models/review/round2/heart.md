@@ -4,8 +4,9 @@ Checked through its own solo room (the Sunken Heart), every move cast for real t
 Heartbeat play as in a fight: Blade Sweep, Blade Fall, Solar Flare, The Rings Turn (and the rings fully down), Crown of Rays,
 Heartbeat (gathering and struck), Hold Still; a hit, each phase at rest, kneeling, and the fall at four moments. Two views each: the
 game's camera from where a hero stands, and from the side at its middle's height. Each part (core, face, crown, the three rings, the two
-blades, the shards) measured: its lowest point. The party's own moves (Take the Blade, The Ring of Hands, the floor turning, the crust)
-were pictured last week by `heart-phase-shots.py` and were not done again. Tool: `pipeline/tools/heart-poses.js`.
+blades, the shards) measured: its lowest point. The party's own moves (Take the Blade, The Ring of Hands, the rings over the turning floor, the crust
+falling) were pictured again in its party room with `heart-phase-shots.py` (a party of 40 or 20): they read right, the blade carried
+point-up over its hero, the rings lying round its foot. ![](heart/party-blade.jpg) ![](heart/party-rings.jpg) Tool: `pipeline/tools/heart-poses.js`.
 
 ## Found and fixed
 
