@@ -58,6 +58,15 @@ starts with every agent session (about 90 MB each, and it often fails to connect
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - Open world stage 3: done and merged (the entry below).
+- **Done, on branch `t3/b9981adf` (not merged, not live) (2026-11-16): the model review, round 3: decision 10's four ruler and boss
+  looks** (page `docs/models/review/round3/index.html`, linked from round 2's). Fallen Climb rulers lie on the floor (all 15: 0.1-1.5 m
+  under -> 0.00-0.03 m; `RealHero.restOnFloor`, Climb figures only); Ash's legs stay on the floor in every cast, the kneel and the fall
+  (up to 2.4 m under -> 0.00; `BodyParts.keepAbove`); the Heart of Noon's crown sways in its last phase instead of turning its long rays
+  into the floor (lowest -1.09 -> +0.81 m); a kneeling staff ruler holds its staff up, planted in front (all five staff rulers alike:
+  worth the user's eye; `RealHero.plantHeld`). Ash on the lava: not a fight fault (the Charge stops 1.4 m inside the 16 m floor; his
+  body hangs 0.4 m over the stone lip); stopping it 1.8 m short is a rule change and waits for a yes. Proof: seven perf prints the
+  same before and after (duel-temple 90b1abaa, raid-solo ff20c830, raid-party 9c4a9c48, raid-ash e47e69ce, raid-heart d2d3cf3e, world-1
+  98b0044a, world-5 b2403b4c), hero prints Anka, Kaia, Sefu the same. One News item. No Blender rebuild needed.
 - **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
   `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
   only Big Yoko showed the painted underwear, and the build now covers it on every hero; 20 portraits redrawn. Worth the user's eye:

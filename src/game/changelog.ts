@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Raid',
+        title: 'Bosses and rulers stay out of the floor',
+        text: 'Ash keeps his feet on the floor when he crouches to slam, charge or kneel, and the Heart of Noon’s crown of rays sways in its last phase instead of turning its long rays down into the floor. On the Climb, a fallen ruler lies on the floor instead of halfway through it, and a kneeling ruler holds its staff up, planted in front of it.',
+      },
+      {
         tag: 'Tower',
         title: 'Robes that no longer glow, and Frost’s ice spires',
         text: 'On the Climb, the cream and white robes of the Sands’ and the War’s people are a shade darker, so they no longer glow white in their floors’ bright light. In Frostfall Lake, the ice shard lying at each spire’s foot is smaller, so a hero beside the spire no longer stands in it.',
