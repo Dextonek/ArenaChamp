@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="radial-gradient-1" cx="24" cy="20" r="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2640"/>
+      <stop offset="1" stop-color="#0c0c12"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="25" cy="22" r="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c2640"/>
+      <stop offset="0.55" stop-color="#17151f"/>
+      <stop offset="1" stop-color="#0c0c12"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient-1" x1="7.103" y1="2.329" x2="56.897" y2="61.671" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f4dc94"/>
+      <stop offset="0.3" stop-color="#c9a24a"/>
+      <stop offset="0.75" stop-color="#5a3f14"/>
+      <stop offset="1" stop-color="#5a3f14"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="43.24" y1="15.615" x2="49.76" y2="23.385" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff7a6a"/>
+      <stop offset="1" stop-color="#8c1e22"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="6.193" y1="37.169" x2="23.484" y2="57.775" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7f7f2"/>
+      <stop offset="0.55" stop-color="#ebe7dc"/>
+      <stop offset="1" stop-color="#c4bca6"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-4" x1="3.188" y1="50.818" x2="12.559" y2="61.986" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8a76c4"/>
+      <stop offset="0.5" stop-color="#5c4a8c"/>
+      <stop offset="1" stop-color="#201b2a"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-5" x1="5.306" y1="50" x2="13.144" y2="59.34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f4dc94"/>
+      <stop offset="1" stop-color="#c9a24a"/>
+    </linearGradient>
+  </defs>
+  <title>mum icon</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <rect x="0" y="0" width="64" height="64" fill="url(#radial-gradient-1)"/>
+    <polygon points="43.098,5.207 58.793,20.902 58.793,43.098 43.098,58.793 20.902,58.793 5.207,43.098 5.207,20.902 20.902,5.207" fill="url(#radial-gradient-2)" stroke="url(#linear-gradient-1)" stroke-width="1.4" stroke-miterlimit="10"/>
+    <polygon points="42.486,6.686 57.314,21.514 57.314,42.486 42.486,57.314 21.514,57.314 6.686,42.486 6.686,21.514 21.514,6.686" fill="none" stroke="#0c0c12" stroke-width="1.2" stroke-miterlimit="10" opacity="0.7"/>
+    <path d="M21.5 39.5 C21.5 39.5 26 31.25 29 28.5 C32 25.75 39.5 23 39.5 23" fill="none" stroke="#0c0c12" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+    <path d="M21.5 39.5 C21.5 39.5 26 31.25 29 28.5 C32 25.75 39.5 23 39.5 23" fill="none" stroke="#f7f7f2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4.4 3"/>
+    <ellipse cx="46.5" cy="19.5" rx="8.4" ry="6.8" fill="none" stroke="#0c0c12" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+    <path d="M38.1 19.5 C38.1 15.744 41.861 12.7 46.5 12.7 C51.139 12.7 54.9 15.744 54.9 19.5 C54.9 23.256 51.139 26.3 46.5 26.3 C41.861 26.3 38.1 23.256 38.1 19.5 Z" fill="none" stroke="#f7f7f2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4.4 3"/>
+    <circle cx="46.5" cy="19.5" r="3.6" fill="#0c0c12" stroke="#0c0c12" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="46.5" cy="19.5" r="3.6" fill="url(#linear-gradient-2)"/>
+    <polyline points="30.22,26.41 29.19,31.25 34.09,32" fill="none" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="30.22,26.41 29.19,31.25 34.09,32" fill="none" stroke="#b8b4f4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="36.72,21.91 35.69,26.75 40.59,27.5" fill="none" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="36.72,21.91 35.69,26.75 40.59,27.5" fill="none" stroke="#b8b4f4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M15.695 39.847 C16.239 39.15 17.244 39.027 17.94 39.571 C18.42 39.946 18.628 40.539 18.533 41.099 C19.094 40.512 20.02 40.435 20.674 40.945 C21.266 41.408 21.444 42.203 21.15 42.859 C21.685 42.591 22.35 42.635 22.853 43.029 C23.55 43.573 23.673 44.578 23.129 45.274 L22.991 45.452 C23.508 45.232 24.127 45.293 24.602 45.664 C25.298 46.208 25.421 47.213 24.877 47.909 L23.277 49.958 C23.094 50.193 22.858 50.362 22.6 50.463 C22.469 50.761 22.299 51.047 22.09 51.315 L20.243 53.679 C19.471 54.667 18.327 55.194 17.163 55.216 C17.13 55.343 17.071 55.465 16.985 55.575 L14.522 58.727 C14.182 59.163 13.554 59.24 13.118 58.9 L7.445 54.467 C7.009 54.127 6.932 53.498 7.272 53.063 L9.735 49.911 C9.821 49.801 9.925 49.714 10.04 49.651 C9.851 48.827 9.923 47.949 10.273 47.151 C9.48 46.851 8.987 46.021 9.14 45.156 C9.313 44.177 10.246 43.523 11.225 43.695 L12.622 43.942 L12.634 43.927 C12.858 43.639 13.115 43.391 13.394 43.182 C13.425 42.895 13.534 42.613 13.724 42.368 Z" fill="#0c0c12" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+    <path d="M14.395 38.147 C14.939 37.45 15.944 37.327 16.64 37.871 C17.12 38.246 17.328 38.839 17.233 39.399 C17.794 38.812 18.72 38.735 19.374 39.245 C19.966 39.708 20.144 40.503 19.85 41.159 C20.385 40.891 21.05 40.935 21.553 41.329 C22.25 41.873 22.373 42.878 21.829 43.574 L21.691 43.752 C22.208 43.532 22.827 43.593 23.302 43.964 C23.998 44.508 24.121 45.513 23.577 46.209 L21.977 48.258 C21.794 48.493 21.558 48.662 21.3 48.763 C21.169 49.061 20.999 49.347 20.79 49.615 L18.943 51.979 C18.171 52.967 17.027 53.494 15.863 53.516 C15.83 53.643 15.771 53.765 15.685 53.875 L13.222 57.027 C12.882 57.463 12.254 57.54 11.818 57.2 L6.145 52.767 C5.709 52.427 5.632 51.798 5.972 51.363 L8.435 48.211 C8.521 48.101 8.625 48.014 8.74 47.951 C8.551 47.127 8.623 46.249 8.973 45.451 C8.18 45.151 7.687 44.321 7.84 43.456 C8.013 42.477 8.946 41.823 9.925 41.995 L11.322 42.242 L11.334 42.227 C11.558 41.939 11.815 41.691 12.094 41.482 C12.125 41.195 12.234 40.913 12.424 40.668 Z" fill="#0c0c12" stroke="#0c0c12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14.395 38.147 C14.939 37.45 15.944 37.327 16.64 37.871 C17.12 38.246 17.328 38.839 17.233 39.399 C17.794 38.812 18.72 38.735 19.374 39.245 C19.966 39.708 20.144 40.503 19.85 41.159 C20.385 40.891 21.05 40.935 21.553 41.329 C22.25 41.873 22.373 42.878 21.829 43.574 L21.691 43.752 C22.208 43.532 22.827 43.593 23.302 43.964 C23.998 44.508 24.121 45.513 23.577 46.209 L21.977 48.258 C21.794 48.493 21.558 48.662 21.3 48.763 C21.169 49.061 20.999 49.347 20.79 49.615 L18.943 51.979 C18.171 52.967 17.027 53.494 15.863 53.516 C15.83 53.643 15.771 53.765 15.685 53.875 L13.222 57.027 C12.882 57.463 12.254 57.54 11.818 57.2 L6.145 52.767 C5.709 52.427 5.632 51.798 5.972 51.363 L8.435 48.211 C8.521 48.101 8.625 48.014 8.74 47.951 C8.551 47.127 8.623 46.249 8.973 45.451 C8.18 45.151 7.687 44.321 7.84 43.456 C8.013 42.477 8.946 41.823 9.925 41.995 L11.322 42.242 L11.334 42.227 C11.558 41.939 11.815 41.691 12.094 41.482 C12.125 41.195 12.234 40.913 12.424 40.668 Z" fill="url(#linear-gradient-3)"/>
+    <line x1="17.08" y1="39.74" x2="15.11" y2="42.26" fill="none" stroke="#c4bca6" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="19.45" y1="41.59" x2="17.48" y2="44.11" fill="none" stroke="#c4bca6" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="21.81" y1="43.43" x2="19.84" y2="45.96" fill="none" stroke="#c4bca6" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M5.664 51.757 L12.914 57.421 C13.436 57.829 13.529 58.584 13.121 59.106 L11.767 60.839 C11.358 61.362 10.604 61.454 10.082 61.046 L2.832 55.382 C2.31 54.974 2.218 54.22 2.626 53.698 L3.98 51.964 C4.388 51.442 5.142 51.349 5.664 51.757 Z" fill="#0c0c12" stroke="#0c0c12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M5.664 51.757 L12.914 57.421 C13.436 57.829 13.529 58.584 13.121 59.106 L11.767 60.839 C11.358 61.362 10.604 61.454 10.082 61.046 L2.832 55.382 C2.31 54.974 2.218 54.22 2.626 53.698 L3.98 51.964 C4.388 51.442 5.142 51.349 5.664 51.757 Z" fill="url(#linear-gradient-4)"/>
+    <line x1="5.05" y1="51.41" x2="13.4" y2="57.93" fill="none" stroke="url(#linear-gradient-5)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon points="8.67,55.38 8.93,57.48 6.83,57.74 6.57,55.64" fill="#d23a3a"/>
+  </g>
+</svg>
