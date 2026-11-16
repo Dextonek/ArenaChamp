@@ -1,5 +1,5 @@
 import type { GameApi } from '../../../runtime';
-import { PieceRun, bossFight, crownFight } from './core';
+import { PieceRun, bossFight, crownFight, sharedFight } from './core';
 import { startGate, startRival, startTrial } from './duels';
 import { piecesOf } from './floors';
 import { buildRuler } from './ruler';
@@ -33,8 +33,11 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
         run.hud?.say(def.ruler.name, def.ruler.line, 3);
         break;
       }
-      const ruler = buildRuler(api, def.ruler, { hard: def.hard, boons: input.boons, ally: input.ally, run });
-      bossFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${seedN}`, tier: 1, boons: input.boons });
+      // With others (the open world's stage 3): the hub's link, and the ruler's blows set for the party.
+      const sh = input.shared;
+      const ruler = buildRuler(api, def.ruler, { hard: def.hard * (sh?.dmg ?? 1), boons: input.boons, ally: input.ally, run, link: sh?.link });
+      if (sh) sharedFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${seedN}`, tier: 1, boons: input.boons, shared: sh });
+      else bossFight(run, { def: ruler.def, link: ruler.tower!, seed: `world-ruler-${seedN}`, tier: 1, boons: input.boons });
       ruler.begin();
       run.hud?.say(def.ruler.name, def.ruler.line, 3);
       void api.duel.whenReady().then(() => { if (!run.over) ruler.ready(); });

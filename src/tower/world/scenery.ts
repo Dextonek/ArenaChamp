@@ -28,6 +28,8 @@ export class Scenery {
   private loreAt = -99;
   /** Called when the hero walks into a door that is ready. */
   enter: (door: DoorDef) => void = () => {};
+  /** A ruler's door another player holds open (the open world's stage 3): it may be walked into to fight beside them, won or not. */
+  joinable: (door: DoorDef) => boolean = () => false;
   /** Called when the hero reads the lore stone (a card or, for the autopilot, nothing). */
   read: (lines: string[]) => void = () => {};
 
@@ -279,7 +281,7 @@ export class Scenery {
     if (d.wall && !z.run.opened.includes(d.id)) return false;
     if (d.needs?.won && !z.run.has(d.needs.won)) return false;
     if (d.piece === 'trial' && (z.run.has('trial') || z.run.trialLost >= 2)) return false;
-    if (d.piece === 'ruler' && z.run.has('ruler')) return false;
+    if (d.piece === 'ruler' && z.run.has('ruler')) return this.joinable(d);
     if (d.piece === 'gate' && z.run.has('gate')) return false;
     // A rival's duel is fought once: after it (won or lost) the arch is quiet.
     if (d.piece === 'rival' && z.run.rival !== 'none') return false;

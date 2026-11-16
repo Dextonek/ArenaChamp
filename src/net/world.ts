@@ -8,10 +8,16 @@
  * Stage 2, shared packs: a pack woken here is claimed (`claimPack`); the screen that runs a pack sends its units ten times a second
  * (`packStates`), its blows on other heroes (`packHurt`) and its end (`packClear`, `packRelease`); a screen that draws it sends its hits
  * (`packHit`). What the hub says of packs goes to `packs` (src/tower/world/share.ts). Section "The Climb's open world, stage 2".
+ *
+ * Stage 3, doors together: a ruler's door walked into goes to the hub (`doorEnter`), which holds it for those near, says go alone, or
+ * starts a fight of the party; the first in may go at once (`doorGo`). While the hero is behind a door with others the seat stays in
+ * the shard (`away`: the floor is not drawn and nothing of it is sent) and joining again brings it back. What the hub says of doors goes
+ * to `doors` (src/tower/world/game.ts); the fight itself is the Raid's messages, on `net` (src/tower/world/together.ts). Section "The
+ * Climb's open world, stage 3".
  */
 
 import { WORLD } from '../../server/protocol.mjs';
-import type { NetClient } from './client';
+import type { NetClient, ServerMsg } from './client';
 
 /** Another player in this floor's shard, as the hub says it. `hp`: the share of its health, 0 when it has fallen. */
 export interface WorldPlayer {
@@ -56,6 +62,15 @@ export interface PackSink {
   clear(): void;
 }
 
+/** What the hub says of doors (stage 3): a held door, go alone, a fight of the party, a door busy on the floor, a fight's end. */
+export interface DoorSink {
+  gather(m: Extract<ServerMsg, { t: 'door_gather' }>): void;
+  solo(door: string): void;
+  start(m: Extract<ServerMsg, { t: 'door_start' }>): void;
+  busy(m: Extract<ServerMsg, { t: 'door_busy' }>): void;
+  end(m: Extract<ServerMsg, { t: 'door_end' }>): void;
+}
+
 /** Who draws the others: what the hub says, as it comes. */
 export interface WorldSink {
   /** The shard as it is now (on joining, and on joining again after a drop): everyone else in it. */
@@ -90,6 +105,16 @@ export interface WorldPresence {
   packHurt(pack: string, to: number, share: number, x: number, z: number, kind?: string, net?: { kind: 'root' | 'slow'; s: number }): void;
   packClear(pack: string): void;
   packRelease(pack: string): void;
+  /** Stage 3: the page's connection, for a door's fight (the Raid's messages); null when there is none. */
+  readonly net: NetClient | null;
+  /** Where the hub's news of doors goes, or null. */
+  doors: DoorSink | null;
+  /** This hero walked into a ruler's door that is ready for it. */
+  doorEnter(door: string): void;
+  /** The first in a held door goes in now. */
+  doorGo(): void;
+  /** Behind a door with others: the seat stays in the shard, the floor goes from this screen. `join` brings it back. */
+  away(): void;
 }
 
 /** A place is the same to the centimetre; a facing to a hundredth of a radian; health to a hundredth. */
@@ -98,7 +123,10 @@ const SAME_M = 0.01, SAME_YAW = 0.01, SAME_HP = 0.01;
 export class WorldLink implements WorldPresence {
   sink: WorldSink | null = null;
   packs: PackSink | null = null;
+  doors: DoorSink | null = null;
   you = 0;
+  /** Behind a door with others: the floor's news is not drawn and nothing of the floor is sent until the next `join`. */
+  private gone = false;
   private signedIn = false;
   private connected = false;
   /** The floor and hero the Climb is on, kept so a connection that comes back joins again. */
@@ -108,7 +136,7 @@ export class WorldLink implements WorldPresence {
   shard = '';
   private last = { x: NaN, z: NaN, yaw: NaN, walk: false, hp: NaN, at: -Infinity };
 
-  constructor(private net: NetClient) {
+  constructor(readonly net: NetClient) {
     net.on('session', () => {
       this.signedIn = true;
       this.connected = true;
@@ -129,17 +157,27 @@ export class WorldLink implements WorldPresence {
       this.sink?.roster(m.shard, m.players.map(tagged));
       this.packs?.roster(m.you, m.packs ?? []);
     });
-    net.on('world_joined', (m) => { if (this.joined) this.sink?.joined(tagged(m)); });
-    net.on('world_moved', (m) => { if (this.joined) this.sink?.moved(m.id, m.x, m.z, m.yaw, !!m.walk, m.hp ?? 1, m.ts); });
-    net.on('world_cast', (m) => { if (this.joined) this.sink?.cast(m.id, m.label, m.x, m.z, m.tx, m.tz); });
-    net.on('world_left', (m) => { if (this.joined) this.sink?.left(m.id); });
-    net.on('pack_owner', (m) => { if (this.joined) this.packs?.owner(m.pack, m.owner, m.n); });
-    net.on('pack_scale', (m) => { if (this.joined) this.packs?.scale(m.pack, m.n); });
-    net.on('pack_state', (m) => { if (this.joined) this.packs?.state(m.packs); });
-    net.on('pack_hit', (m) => { if (this.joined) this.packs?.hit(m.pack, m.u, m.dmg, m.by); });
-    net.on('pack_hurt', (m) => { if (this.joined) this.packs?.hurt(m); });
-    net.on('pack_cleared', (m) => { if (this.joined) this.packs?.cleared(m.pack); });
-    net.on('pack_respawn', (m) => { if (this.joined) this.packs?.respawn(m.pack); });
+    net.on('world_joined', (m) => { if (this.here) this.sink?.joined(tagged(m)); });
+    net.on('world_moved', (m) => { if (this.here) this.sink?.moved(m.id, m.x, m.z, m.yaw, !!m.walk, m.hp ?? 1, m.ts); });
+    net.on('world_cast', (m) => { if (this.here) this.sink?.cast(m.id, m.label, m.x, m.z, m.tx, m.tz); });
+    net.on('world_left', (m) => { if (this.here) this.sink?.left(m.id); });
+    net.on('pack_owner', (m) => { if (this.here) this.packs?.owner(m.pack, m.owner, m.n); });
+    net.on('pack_scale', (m) => { if (this.here) this.packs?.scale(m.pack, m.n); });
+    net.on('pack_state', (m) => { if (this.here) this.packs?.state(m.packs); });
+    net.on('pack_hit', (m) => { if (this.here) this.packs?.hit(m.pack, m.u, m.dmg, m.by); });
+    net.on('pack_hurt', (m) => { if (this.here) this.packs?.hurt(m); });
+    net.on('pack_cleared', (m) => { if (this.here) this.packs?.cleared(m.pack); });
+    net.on('pack_respawn', (m) => { if (this.here) this.packs?.respawn(m.pack); });
+    net.on('door_gather', (m) => { if (this.here) this.doors?.gather(m); });
+    net.on('door_solo', (m) => { if (this.joined) this.doors?.solo(m.door); });
+    net.on('door_start', (m) => { if (this.joined) this.doors?.start(m); });
+    net.on('door_busy', (m) => { if (this.here) this.doors?.busy(m); });
+    net.on('door_end', (m) => { if (this.joined) this.doors?.end(m); });
+  }
+
+  /** On the floor: joined, and not behind a door. */
+  private get here() {
+    return this.joined && !this.gone;
   }
 
   get online() {
@@ -147,7 +185,9 @@ export class WorldLink implements WorldPresence {
   }
 
   join(floor: number, hero: string, x: number, z: number, yaw: number) {
-    const same = this.want && this.want.floor === floor && this.want.hero === hero && this.joined;
+    // Back from behind a door: the hub kept the seat, and joining again puts it on the floor (the roster comes again).
+    const same = this.want && this.want.floor === floor && this.want.hero === hero && this.joined && !this.gone;
+    this.gone = false;
     this.want = { floor, hero };
     this.last.x = x;
     this.last.z = z;
@@ -157,6 +197,7 @@ export class WorldLink implements WorldPresence {
 
   leave() {
     const was = this.joined;
+    this.gone = false;
     this.want = null;
     this.joined = false;
     this.shard = '';
@@ -167,7 +208,7 @@ export class WorldLink implements WorldPresence {
   }
 
   move(x: number, z: number, yaw: number, walk: boolean, hp: number) {
-    if (!this.joined || !this.online) return;
+    if (!this.here || !this.online) return;
     const l = this.last, now = performance.now();
     if (now - l.at < 1000 / WORLD.sendHz - 2) return;
     if (Math.abs(x - l.x) < SAME_M && Math.abs(z - l.z) < SAME_M && Math.abs(Math.atan2(Math.sin(yaw - l.yaw), Math.cos(yaw - l.yaw))) < SAME_YAW
@@ -177,13 +218,28 @@ export class WorldLink implements WorldPresence {
   }
 
   cast(label: string, x: number, z: number, tx: number, tz: number) {
-    if (!this.joined || !this.online) return;
+    if (!this.here || !this.online) return;
     this.net.send({ t: 'world_cast', label, x: mm(x), z: mm(z), tx: mm(tx), tz: mm(tz) });
   }
 
   /** True when a pack message may go: in a shard (the roster came) and connected. */
   private get inShard() {
-    return this.joined && this.you > 0 && this.online;
+    return this.here && this.you > 0 && this.online;
+  }
+
+  doorEnter(door: string) {
+    if (this.inShard) this.net.send({ t: 'door_enter', door });
+  }
+
+  doorGo() {
+    if (this.inShard) this.net.send({ t: 'door_go' });
+  }
+
+  away() {
+    if (!this.joined) return;
+    this.gone = true;
+    this.sink?.clear();
+    this.packs?.clear();
   }
 
   claimPack(pack: string, x: number, z: number) {
@@ -223,6 +279,7 @@ export class WorldLink implements WorldPresence {
   /** The connection or the session went: nobody else is drawn, and a join waits for the next session. */
   private lost() {
     this.joined = false;
+    this.gone = false;
     this.shard = '';
     this.you = 0;
     this.sink?.clear();

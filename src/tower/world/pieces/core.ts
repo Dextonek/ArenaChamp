@@ -1,12 +1,12 @@
 import { BOSSES } from '../../../raid/bosses';
 import { LocalLink } from '../../../raid/link';
 import type { RunUpgrades } from '../../../raid/upgrades';
-import type { BossDef } from '../../../raid/types';
+import type { BossDef, RaidLink } from '../../../raid/types';
 import type { GameApi } from '../../../runtime';
 import { setHealth } from '../../hooks';
 import type { TowerLink } from '../../link';
 import { PieceHud } from './hud';
-import type { PieceHandle, PieceIn, PieceOut, PieceReport } from './types';
+import type { PieceHandle, PieceIn, PieceOut, PieceReport, SharedPiece } from './types';
 
 /** How long a finished fight is left on the screen before the piece hands its outcome back (ms), in a person's play. */
 const END_PAUSE = 2000;
@@ -87,7 +87,7 @@ export class PieceRun implements PieceHandle {
     this.over = true;
     if (this.timer) clearTimeout(this.timer);
     this.finishOff();
-    this.done({ won: out.won, hp: Math.max(0, Math.min(1, out.hp)), seconds: +out.seconds.toFixed(1) });
+    this.done({ won: out.won, hp: Math.max(0, Math.min(1, out.hp)), seconds: +out.seconds.toFixed(1), none: out.none, shared: out.shared });
   }
 
   cancel() {
@@ -115,6 +115,8 @@ export class PieceRun implements PieceHandle {
 export function crownFight(run: PieceRun, id: string, seed: string, tier = 1) {
   const { api, input } = run, def = BOSSES[id];
   if (!def) throw new Error(`no raid boss ${id}`);
+  // With others (the open world's stage 3): the Raid's own two-screen fight, on the hub.
+  if (input.shared) return sharedFight(run, { def, link: input.shared.link(def), seed, tier, boons: input.boons, shared: input.shared });
   const link = new LocalLink(def, tier);
   if (api.duel.on) api.duel.stop();
   api.setKit(input.hero);
@@ -146,5 +148,37 @@ export function bossFight(run: PieceRun, o: { def: BossDef; link: TowerLink; see
     // A fight is won by a hero on its feet.
     const won = result === 'win' && d.heroHp > 0;
     return { won, hp: won ? d.heroHp / Math.max(1, d.heroMax) : 0, seconds: d.result?.seconds ?? 0 };
+  });
+}
+
+/** A fallen hero whose party still won comes out with this much of its health. */
+const UP_AFTER = 0.25;
+
+/**
+ * A ruler (or a crown's Raid boss) fought with others of the floor's shard (the open world's stage 3, src/tower/world/together.ts): the
+ * duel's boss path as a raid for two or more runs it (`startBoss` with the party; one screen runs the brain, the others follow; a fallen
+ * hero lies until a partner gets it up), held until the hub's countdown. It ends when the hub says (`door_end`): won for this player
+ * if its hero hit the ruler, nothing either way if it never did, lost when everyone was down.
+ */
+export function sharedFight(run: PieceRun, o: { def: BossDef; link: RaidLink; seed: string; tier: number; boons: RunUpgrades | null; shared: SharedPiece }) {
+  const { api, input } = run, s = o.shared;
+  if (api.duel.on) api.duel.stop();
+  api.setKit(input.hero);
+  api.setHeroMode(true);
+  // The fight waits for every screen to load: the hub's `match_fight` starts the countdown.
+  api.duel.holdStart = input.mode === 'play';
+  api.duel.startBoss({
+    def: o.def, link: o.link, seed: o.seed, mode: input.mode, tier: o.tier, upgrades: o.boons ?? undefined, name: s.name,
+    partner: s.party.length === 1 ? s.party[0] : undefined, party: s.party.length > 1 ? s.party : undefined, band: 2, card: () => null,
+  });
+  setHealth(api, input.hp * api.duel.heroMax);
+  void api.duel.whenReady().then(() => { if (!run.over) s.loaded(api.duel.heroMax); });
+  run.onEnd(() => { api.duel.holdStart = false; s.stop(); });
+  run.watch(() => {
+    const d = api.duel, r = s.result(), seconds = d.result?.seconds ?? 0;
+    if (!r) return { won: false, hp: input.hp, seconds, none: true, shared: true };
+    if (r.won && !r.hit) return { won: false, hp: Math.max(UP_AFTER, d.heroHp / Math.max(1, d.heroMax)), seconds, none: true, shared: true };
+    if (r.won) return { won: true, hp: d.heroHp > 0 ? d.heroHp / Math.max(1, d.heroMax) : UP_AFTER, seconds, shared: true };
+    return { won: false, hp: 0, seconds, shared: true };
   });
 }
