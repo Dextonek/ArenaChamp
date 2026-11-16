@@ -69,6 +69,11 @@ export const CHANGELOG: Release[] = [
         alt: 'A grid of the new spell icons, each hero’s four side by side.',
       },
       {
+        tag: 'Tower',
+        title: 'The Climb’s enemies and rulers move better',
+        text: 'The War’s bowmen level their crossbows at you instead of punching with the empty hand; enemies that back away or circle you step the way they go instead of sliding; the rulers with a staff plant it when they shake the ground instead of driving it through the floor, the long gowns and coats of the Pale One and the rulers stay above the ground when they strike, and the tall enemies’ health bars float over their crowns and plumes instead of through them.',
+      },
+      {
         tag: 'Heroes',
         title: 'Every hero has a story',
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
