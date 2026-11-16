@@ -5,15 +5,7 @@ import { forgeTrait } from './forge';
 import { hiveTrait } from './hive';
 import { frostTrait } from './frost';
 import { ledgerTrait } from './ledger';
-import { courierTrait } from './courier';
-import { janitorTrait } from './janitor';
-import { moleTrait } from './mole';
-import { yarnTrait } from './yarn';
 import { weatherTrait } from './weather';
-import { sheepTrait } from './sheep';
-import { magicTrait } from './magic';
-import { doorTrait } from './door';
-import { twinsTrait } from './twins';
 import { FOLDER_TRAITS } from '../heroes/traits';
 
 export { TraitRuntime, type TraitHost } from './runtime';
@@ -30,15 +22,7 @@ export const TRAITS: Record<string, Trait> = {
   Sirix: hiveTrait,
   Isolde: frostTrait,
   'Mr. Ledger': ledgerTrait,
-  Pip: courierTrait,
-  Gus: janitorTrait,
-  Mabel: moleTrait,
-  'Grandma Ironknit': yarnTrait,
   'Barry Cloudsley': weatherTrait,
-  Bo: sheepTrait,
-  'The Great Zambini': magicTrait,
-  Wick: doorTrait,
-  'Pim and Pom': twinsTrait,
   ...FOLDER_TRAITS,
 };
 

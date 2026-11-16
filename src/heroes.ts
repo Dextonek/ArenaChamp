@@ -15,15 +15,7 @@ import { stormKit } from './kits/storm';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
 import { ledgerKit } from './kits/ledger';
-import { courierKit } from './kits/courier';
-import { janitorKit } from './kits/janitor';
-import { moleKit } from './kits/mole';
-import { yarnKit } from './kits/yarn';
 import { weatherKit } from './kits/weather';
-import { sheepKit } from './kits/sheep';
-import { magicKit } from './kits/magic';
-import { doorKit } from './kits/door';
-import { twinsKit } from './kits/twins';
 import { useVcIcons } from './icons/vc';
 import { HERO_CARDS } from './heroes/index';
 
@@ -132,14 +124,7 @@ const MODELS: Record<string, string> = {
   Auriel: 'models/heroes/dawn_v2.glb',
   Sirix: 'models/heroes/hive.glb',
   'Mr. Ledger': 'models/heroes/ledger_v3.glb',
-  Pip: 'models/heroes/courier_v3.glb',
-  Gus: 'models/heroes/janitor_v3.glb',
-  Mabel: 'models/heroes/mole_v3.glb',
-  'Grandma Ironknit': 'models/heroes/yarn_v3.glb',
   'Barry Cloudsley': 'models/heroes/weather_v3.glb',
-  Bo: 'models/heroes/sheep_v3.glb',
-  'The Great Zambini': 'models/heroes/magic_v3.glb',
-  Wick: 'models/heroes/door_v3.glb',
 };
 
 /**
@@ -157,16 +142,13 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Auriel: { radius: 0.47, height: 2.33 },
   Sirix: { radius: 0.44, height: 2.31 },
   'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
-  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
-  Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
-  Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
+  'Barry Cloudsley': { radius: 0.46, height: 3.06 },
   // the heroes in folders: their cards'
   ...Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body])),
 };
 
 /** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
-const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, ledgerKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
+const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, ledgerKit, weatherKit];
 
 /** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
 function roster(): HeroKit[] {

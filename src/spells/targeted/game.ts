@@ -1,43 +1,8 @@
 import type { EffectModule } from '../../effects/types';
-import { tagOutModule } from './tagOut';
-import { pomBackflipModule } from './pomBackflip';
-import { pomSnareModule } from './pomSnare';
-import { pomPebbleModule } from './pomPebble';
-import { pimShieldUpModule } from './pimShieldUp';
-import { pimChargeModule } from './pimCharge';
-import { pimBonkModule } from './pimBonk';
-import { grandLobbyModule } from './grandLobby';
-import { doorSlamModule } from './doorSlam';
-import { wickDoorModule } from './wickDoor';
-import { keyTossModule } from './keyToss';
-import { grandFinaleModule } from './grandFinale';
-import { hatTrickModule } from './hatTrick';
-import { sawnInHalfModule } from './sawnInHalf';
-import { cardSprayModule } from './cardSpray';
-import { stampedeModule } from './stampede';
-import { shearModule } from './shear';
-import { spareSheepModule } from './spareSheep';
-import { crookWhackModule } from './crookWhack';
 import { severeWarningModule } from './severeWarning';
 import { forecastUpdateModule } from './forecastUpdate';
 import { lightningRiskModule } from './lightningRisk';
 import { coldFrontModule } from './coldFront';
-import { mrBiscuitModule } from './mrBiscuit';
-import { sweaterModule } from './sweater';
-import { castOnModule } from './castOn';
-import { knittingNeedleModule } from './knittingNeedle';
-import { sinkholeModule } from './sinkhole';
-import { moleTunnelModule } from './moleTunnel';
-import { moleDigModule } from './moleDig';
-import { moleClawModule } from './moleClaw';
-import { floodModule } from './flood';
-import { mopBucketModule } from './mopBucket';
-import { wetFloorSignModule } from './wetFloorSign';
-import { bigMopModule } from './bigMop';
-import { finalDeliveryModule } from './finalDelivery';
-import { shortcutModule } from './shortcut';
-import { fragileModule } from './fragile';
-import { expressLetterModule } from './expressLetter';
 import { foreclosureModule } from './foreclosure';
 import { callItInModule } from './callItIn';
 import { lateFeeModule } from './lateFee';
@@ -75,45 +40,10 @@ import { FOLDER_SPELLS } from '../../heroes/spells';
  * (src/heroes/<theme>/fight.ts) or, for a hero not moved yet, here.
  */
 export const gameModules: EffectModule[] = [
-  tagOutModule,
-  pomBackflipModule,
-  pomSnareModule,
-  pomPebbleModule,
-  pimShieldUpModule,
-  pimChargeModule,
-  pimBonkModule,
-  grandLobbyModule,
-  doorSlamModule,
-  wickDoorModule,
-  keyTossModule,
-  grandFinaleModule,
-  hatTrickModule,
-  sawnInHalfModule,
-  cardSprayModule,
-  stampedeModule,
-  shearModule,
-  spareSheepModule,
-  crookWhackModule,
   severeWarningModule,
   forecastUpdateModule,
   lightningRiskModule,
   coldFrontModule,
-  mrBiscuitModule,
-  sweaterModule,
-  castOnModule,
-  knittingNeedleModule,
-  sinkholeModule,
-  moleTunnelModule,
-  moleDigModule,
-  moleClawModule,
-  floodModule,
-  mopBucketModule,
-  wetFloorSignModule,
-  bigMopModule,
-  finalDeliveryModule,
-  shortcutModule,
-  fragileModule,
-  expressLetterModule,
   foreclosureModule,
   callItInModule,
   lateFeeModule,

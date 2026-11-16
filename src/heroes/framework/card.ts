@@ -19,8 +19,11 @@ export interface HeroCard {
   body: { radius: number; height: number };
   /** Its row in the hero shop. The server keeps its own copy (`HERO_SHOP` in server/protocol.mjs: it cannot read this file); the page checks the two agree. */
   shop: { kind: string; shelf: number };
-  /** The stem of its VectorCraft spell icons: `public/icons/spells/<icons>-q.svg` ... (src/icons/vc.ts). */
-  icons: string;
+  /**
+   * The stem of its VectorCraft spell icons: `public/icons/spells/<icons>-q.svg` ... (src/icons/vc.ts). A hero of two halves
+   * (Pim and Pom) names one stem a half: the kit's, then its `alt`'s.
+   */
+  icons: string | [string, string];
   /** Where the rest of the hero lives: its lore entry, its model's build, its design. */
   pointers: { lore: string; model: string; design: string };
 }
