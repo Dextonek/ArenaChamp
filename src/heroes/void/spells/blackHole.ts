@@ -8,6 +8,7 @@ import type { TelegraphShape } from '../../../effects/telegraph';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { voidFx, watchCover } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Black Hole (void kit v5, R: a slow skillshot with a recast; label 'void black hole' because 'black hole' is the VFX tool's
@@ -211,7 +212,7 @@ export class BlackHole implements Effect {
   play() {
     this.reset();
     this.playing = true;
-    this.startMs = performance.now();
+    this.startMs = fightNow();
     this.riftSlot = this.rift.openStanding(this.v1.set(0, 0.1, 0), 3.6, this.face, 0.9, 0.5, { seed: 5 });
   }
 
