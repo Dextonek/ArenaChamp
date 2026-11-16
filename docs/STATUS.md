@@ -61,7 +61,8 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   won ruler leaves the hero in front of its door. Cantor's four icons: engraved gold notes on plum lacquer (before:
   `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
   changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1 and 21 and all 24
-  floors whose words changed (no errors, no stuck step); the door rule in five cases; tsc, build, server tests. Left for the user:
+  floors whose words changed (no errors, no stuck step); the door rule in five cases; tsc, build; server tests 364 of 364 twice (a first run straight after the build failed once,
+  its check not captured). Left for the user:
   the War Drummer is "a boy" drawn as the Siege Lord's horned giant; the named men stay "it" (Sir Rust, Captain Candle...); floor
   11's "cut the roots that feed it" stays (the Elder Root is still the oak).
 - Open world stage 3: done and merged (the entry below).
