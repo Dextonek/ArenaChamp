@@ -1,0 +1,130 @@
+{
+ "floor": 5,
+ "part": "climb-review-shots",
+ "wallSeconds": 14.5,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 5,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-35.3,-87.8 y11.28 depth out4n w6.03 h10.14 m0.18 p4 #304837 #4b3525",
+  "probe-float-1": "-197.7,-38.4 y5.84 depth out71n w4.35 h5.87 m1.03 p3 #304837",
+  "probe-float-2": "-182.6,-82.4 y4.83 depth out72n w5.71 h6.06 m1.4 p2 #304837",
+  "probe-float-3": "-119.9,-142.8 y10.97 depth out73n w5.73 h6.1 m0.96 p2 #304837",
+  "probe-gap-4": "-76.6,-83.3 y9.94 depth edge w4.6 h3.89 m9.38 sunk-0.25 #304837",
+  "probe-gap-5": "1.2,-76.1 y9.55 depth edge w4.91 h3.68 m8.37 sunk-1.19 #304837",
+  "probe-gap-6": "-72.7,-84.6 y8.23 depth edge w5.1 h3.83 m7.98 sunk-1.75 #304837",
+  "frames": {
+   "at": [
+    -64,
+    36
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 3.2,
+     "p95": 4.8,
+     "worst": 21.5
+    },
+    {
+     "med": 3.5,
+     "p95": 4.5,
+     "worst": 6.6
+    },
+    {
+     "med": 4.3,
+     "p95": 6.5,
+     "worst": 8.5
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Tide Judge",
+   "title": "Every tide a sentence",
+   "model": "models/tower/sea_judge_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 3689,
+   "frames": 481,
+   "at": [
+    -0.2,
+    16.7
+   ],
+   "heroAt": [
+    -0.2,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

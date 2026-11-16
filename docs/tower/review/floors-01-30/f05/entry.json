@@ -1,0 +1,16 @@
+{
+ "floor": 5,
+ "verdict": "Clean: cleared with four stars and no fall; the rival (Sefu), the trial (The Salt Cellar), the ruler (the Tide Judge, own model) and the gate (Bram) all played; no console error, every spot reachable. The keeper's “drying racks are overrun” is the line fixed on floor 4.",
+ "found": [
+  {"kind": "ok", "title": "The props the probe flagged", "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths on the hillside. Nothing in the air."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Tide Judge"],
+  ["person-rival.jpg", "Sefu, the rival"],
+  ["route-trial-1.jpg", "The trial: the Salt Cellar"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"],
+  ["phone-camp.jpg", "Phone: the camp"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
