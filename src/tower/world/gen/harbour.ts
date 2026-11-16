@@ -53,8 +53,8 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
   };
   const words: Record<string, Partial<QuestDef>> = {
     main: {
-      name: 'The Captain’s Key',
-      intro: ['Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the captain’s key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp.'],
+      name: 'The Admiral’s Key',
+      intro: ['Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the Admiral’s key lies in the wreck of his flagship, and the Mate guards it: clear them, then bring the key to the winch by the camp.'],
       outro: ['The chain falls. The Drowned Admiral’s door stands open, far in the north. Take your time, then go in.'],
     },
     bounty: { name: 'Old Barnacle', intro: ['Old Barnacle walks the middle of the harbour. A hundred tides on him. Fell him and the sea quietens a little.'], outro: ['A relic from a barnacle. Keep it.'] },
@@ -66,7 +66,7 @@ export function makeHarbourFloor(o: { attempt?: number } = {}): GenFloor {
     return { ...q, id, giver: PERSON[q.giver] ?? q.giver, steps: q.steps.map(renameStep), ...(words[id] ?? {}) };
   });
   const greet: Record<string, string> = {
-    gus: 'Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only the captain’s key will lift. The coast is long: take the roads.',
+    gus: 'Another climber. The tide took the last ones, and the market is overrun. The Drowned Admiral sits in his lair far to the north, behind a chain only his own key will lift. The coast is long: take the roads.',
     anka: 'The sea washed me up here. I keep losing things to it. Perhaps you can fetch them.',
     pip: 'Shards for what you need. Prices are fixed; the sea does not haggle either.',
   };

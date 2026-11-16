@@ -266,6 +266,5 @@ were written; where a people's mark is missing on a figure, the revamp plan list
 
 Some names in the game meet each other on purpose, and the checks allow them: Cantor (the hero) and the Blind Cantor (a ruler
 in the Deep, who sang in the Hymn and went blind at the Fall); Ostrel the Ferryman (a hero) and the Ferryman (a quest giver in
-the Deep, who brings the living back: they do not speak); Itzel the Obsidian Herald and the Herald (the War's keeper); the
-Drowned Admiral (the ruler of floors 1 and 2), once called the Drowned Captain in the floor's oldest code; the Scarab
-Colossus (floor 21) and the Scarab King (floor 22), mother and son.
+the Deep, who brings the living back: they do not speak); Itzel the Obsidian Herald and the Herald (the War's keeper); the Scarab Colossus (floor 21) and the Scarab King (floor 22), mother
+and son. The ruler of floors 1 and 2 has one name, the Drowned Admiral, in the lore and on both floors (settled 2026-11-16).
