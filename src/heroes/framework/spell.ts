@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Enemy } from '../../effects/common';
 import { boltWidth } from '../../effects/projectile';
 import { frameCast, type CastContext, type HitOptions } from '../../effects/targeting';
-import type { TelegraphSpec } from '../../effects/telegraph';
+import { insideTelegraph, type TelegraphShape, type TelegraphSpec } from '../../effects/telegraph';
 import type { Effect, EffectModule } from '../../effects/types';
 import type { Emitter } from '../../emitter';
 import type { Hit, Look, Move, Num, P, SpellDef } from './blocks';
@@ -44,9 +44,15 @@ export class Cast<S, K extends string = never> implements Effect {
   /** Circles: their centres at the cast; landed; which still burned. */
   centres: readonly P[] = [];
   impacted = false;
-  /** A sure hit: the chosen enemy (null if none) and where they stood at the cast (on the ground). */
+  /** A sure hit: the chosen enemy (null if none) and where they stood at the cast (on the ground); whether it landed. */
   target: Enemy | null = null;
   readonly spot = new THREE.Vector3();
+  landed = false;
+  /** A zone: its shape (made at the cast); circles and zones: whom the impact hit. */
+  area: TelegraphShape | null = null;
+  caught: Enemy[] = [];
+  /** The aim's yaw (or the caster's facing, with `facing`). */
+  yaw = 0;
   lit: readonly boolean[] = [];
   /** A move: the spot asked for and then where the engine put her; how far along the aim she got (a lane's or a bolt's length until then). */
   readonly landing = new THREE.Vector3();
@@ -58,7 +64,10 @@ export class Cast<S, K extends string = never> implements Effect {
   constructor(readonly def: SpellDef<S, K>) {
     const tuned = {} as Record<K, number>;
     for (const k in def.tune) tuned[k] = def.tune[k][0];
-    this.settings = { damage: def.rules.hit.damage, ...tuned, loop: false };
+    const base: Record<string, number | boolean> = def.noDamage ? {} : { damage: def.rules.hit.damage };
+    Object.assign(base, tuned);
+    if (!def.noLoop) base.loop = false;
+    this.settings = base as { damage: number; loop: boolean } & Record<K, number>;
     this.state = def.state();
     this.endT = def.seconds;
     this.look = new def.look(this.group, this);
@@ -77,7 +86,7 @@ export class Cast<S, K extends string = never> implements Effect {
   /** Seconds after play() of the release, or of circles' (or a sure hit's) impact. */
   get impactTime() {
     const r = this.def.rules;
-    return r.windup + (r.shape.kind === 'circle' || r.shape.kind === 'target' ? r.delay ?? 0 : 0);
+    return r.windup + (r.shape.kind === 'circle' || r.shape.kind === 'target' || r.shape.kind === 'zone' ? r.delay ?? 0 : 0);
   }
 
   /** A number of the rules, now: a plain one, or the tool page's slider of that name. */
@@ -87,7 +96,7 @@ export class Cast<S, K extends string = never> implements Effect {
 
   /** The engine's hit from the rules' `Hit`: only the fields given, `from` the shape's default unless the hit says. */
   hitOptions(h: Hit<K> = this.def.rules.hit, from?: THREE.Vector3): HitOptions {
-    const o: HitOptions = { damage: h.none ? 0 : this.settings.damage, knock: this.num(h.knock) };
+    const o: HitOptions = { damage: h.none || this.def.noDamage ? 0 : this.settings.damage, knock: this.num(h.knock) };
     if (h.pull !== undefined) o.pull = this.num(h.pull);
     const at = h.from === 'none' ? undefined : h.from === 'caster' ? this.from.clone() : from;
     if (at) o.from = at;
@@ -106,7 +115,8 @@ export class Cast<S, K extends string = never> implements Effect {
     this.ctx = ctx;
     this.state = this.def.state();
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
-    this.dir.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
+    this.yaw = r.facing ? ctx.caster.group.rotation.y : ctx.aim;
+    this.dir.set(Math.sin(this.yaw), 0, Math.cos(this.yaw));
     this.reach = sh.kind === 'lane' ? sh.length : sh.kind === 'bolt' ? sh.range : 0;
     if (sh.kind === 'target') {
       this.target = ctx.targets[0] ?? null;
@@ -114,6 +124,7 @@ export class Cast<S, K extends string = never> implements Effect {
     }
     r.on?.cast?.(this);
     this.centres = sh.kind === 'circle' ? sh.at(this) : [];
+    this.area = sh.kind === 'zone' ? sh.area(this) : null;
     this.look.cast?.(this);
   }
 
@@ -129,7 +140,8 @@ export class Cast<S, K extends string = never> implements Effect {
     this.time = 0;
     this.shake = 0;
     this.bolt = null;
-    this.released = this.stopped = this.hitSomething = this.impacted = false;
+    this.released = this.stopped = this.hitSomething = this.impacted = this.landed = false;
+    this.caught = [];
     this.lit = [];
     this.struck.clear();
     this.endT = this.def.seconds;
@@ -182,6 +194,7 @@ export class Cast<S, K extends string = never> implements Effect {
     const r = this.def.rules, sh = r.shape, ctx = this.ctx;
     this.impacted = true;
     if (sh.kind === 'target') return this.strike();
+    if (sh.kind === 'zone') return this.judge();
     if (!ctx || sh.kind !== 'circle') return;
     this.look.impacting?.(this);
     const centres = this.centres;
@@ -194,6 +207,7 @@ export class Cast<S, K extends string = never> implements Effect {
         const at = live.find((q) => Math.hypot(p.x - q.x, p.z - q.z) <= sh.radius);
         if (!at) continue;
         ctx.hit(en, this.hitOptions(r.hit, new THREE.Vector3(at.x, 0, at.z)));
+        this.caught.push(en);
       }
     }
     r.on?.impact?.(this, live.length > 0);
@@ -204,12 +218,29 @@ export class Cast<S, K extends string = never> implements Effect {
   private strike() {
     const r = this.def.rules, sh = r.shape, ctx = this.ctx;
     if (sh.kind !== 'target') return;
-    this.look.impacting?.(this);
     const tg = this.target, p = tg?.group.position;
     const landed = !!ctx && !!tg && (sh.inside === undefined || Math.hypot(p!.x - this.spot.x, p!.z - this.spot.z) <= sh.inside);
+    this.landed = landed;
+    this.look.impacting?.(this);
     if (landed) ctx!.hit(tg!, this.hitOptions());
     r.on?.impact?.(this, landed);
     this.look.impact?.(this, [landed]);
+  }
+
+  /** A zone is judged: every enemy inside it now (live) is hit once, from where she stood unless the hit says. */
+  private judge() {
+    const r = this.def.rules, ctx = this.ctx, area = this.area;
+    this.look.impacting?.(this);
+    if (ctx && area) {
+      for (const en of ctx.enemies?.() ?? ctx.targets) {
+        const q = en.group.position;
+        if (!insideTelegraph(area, q.x, q.z)) continue;
+        ctx.hit(en, this.hitOptions(r.hit, this.from.clone()));
+        this.caught.push(en);
+      }
+    }
+    r.on?.impact?.(this, this.caught.length > 0);
+    this.look.impact?.(this, [this.caught.length > 0]);
   }
 
   /** A lane's front, `t` s after play(): how far along it the hit has reached. */
@@ -262,8 +293,9 @@ export class Cast<S, K extends string = never> implements Effect {
       this.stop(this.bolt.pos.x - this.dir.x * 0.2, this.bolt.pos.z - this.dir.z * 0.2, false);
     }
     this.look.frame?.(this, t, dt);
-    if ((sh.kind === 'circle' || sh.kind === 'target') && !this.impacted && t >= r.windup + (r.delay ?? 0)) this.impact();
+    if ((sh.kind === 'circle' || sh.kind === 'target' || sh.kind === 'zone') && !this.impacted && t >= r.windup + (r.delay ?? 0)) this.impact();
     if (sh.kind === 'lane' && this.released && t <= r.windup + (r.move?.seconds ?? 0) + (sh.late ?? 0)) this.sweep(t);
+    r.on?.frame?.(this, t, dt);
     this.look.after?.(this, t, dt);
   }
 
@@ -288,6 +320,11 @@ export class Cast<S, K extends string = never> implements Effect {
         }];
       case 'target':
         return [{ shape: { kind: 'circle', x: this.spot.x, z: this.spot.z, radius: sh.mark }, start: warn, impact: r.windup + (r.delay ?? 0) }];
+      case 'zone': {
+        if (!this.area) return [];
+        const impact = r.windup + (r.delay ?? 0);
+        return [sh.until === undefined ? { shape: this.area, start: warn, impact } : { shape: this.area, start: warn, impact, until: impact + sh.until }];
+      }
     }
   }
 }
@@ -307,8 +344,8 @@ export function spell<S, K extends string = never>(def: SpellDef<S, K>): EffectM
     },
     buildGui(f, effect) {
       const s = (effect as Cast<S, K>).settings as unknown as Record<string, number>;
-      f.add(s, 'loop');
-      f.add(s, 'damage', 1, def.maxDamage, 1);
+      if (!def.noLoop) f.add(s, 'loop');
+      if (!def.noDamage) f.add(s, 'damage', 1, def.maxDamage, 1);
       for (const k in def.tune) {
         const [, min, max, step] = def.tune[k];
         f.add(s, k, min, max, step);

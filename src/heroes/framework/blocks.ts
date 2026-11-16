@@ -1,6 +1,7 @@
 import type { Enemy } from '../../effects/common';
 import type { StatusKind } from '../../effects/status';
 import type { TargetingSpec } from '../../effects/targeting';
+import type { TelegraphShape } from '../../effects/telegraph';
 import type { BloomSettings } from '../../presets';
 import type { Cast } from './spell';
 
@@ -18,6 +19,9 @@ import type { Cast } from './spell';
  * and hooks into her passive: which cast this is, where an ember is laid or spent, which ember she flies to.
  * The trial of 2026-11-16 (docs/pipeline/hero-framework/blocks-trial.html) added, for Sefu and Professor Puff:
  * - a sure hit on the chosen enemy (`target`),
+ * - an area judged once (`zone`: a circle round him, a cone or a strip in front of him; the danger zone IS the hit's shape),
+ * - `facing` (a quick spell goes the way he faces, not the aim), a per-frame rules hook (`on.frame`), settings without a
+ *   damage or a loop slider (as some old files had),
  * - numbers the tool page tunes (`tune`, `Num`), and a hit's pull, status, `from` and `projectile`,
  * - the look's moments before the rules (`releasing`, `impacting`) and its ticking while idle (`idle`), so the dice keep
  *   their order where the old file drew first.
@@ -55,7 +59,13 @@ export type Shape<S, K extends string = never> =
    * it lands at `windup + delay` on the enemy's live position. The danger zone is a circle of `mark` m where they stood at the
    * cast. With `inside`, they must still stand within that many metres of that spot, or it lands on nothing.
    */
-  | { kind: 'target'; mark: number; inside?: number };
+  | { kind: 'target'; mark: number; inside?: number }
+  /**
+   * An area judged once, at `windup + delay`: every enemy inside `area` then (live positions, the engine's own
+   * `insideTelegraph`) is hit, from where she stood at the cast unless the hit says. `area` is made at the cast and is also
+   * the danger zone, shown from `warn` to the impact (and `until` seconds after it).
+   */
+  | { kind: 'zone'; area: (c: Cast<S, K>) => TelegraphShape; until?: number };
 
 /**
  * What one hit does. The damage is the spell's `settings.damage` (the tool page's slider), first set from `damage`; with
@@ -101,6 +111,8 @@ export interface Rules<S, K extends string = never> {
   move?: Move<S, K>;
   /** Seconds after the cast when the danger zone appears (default 0.04). */
   warn?: number;
+  /** The spell goes the way the caster faces (`caster.group.rotation.y`), not the aim: `c.dir` and `c.yaw` follow it. */
+  facing?: true;
   /** The hero's own hooks, at the moments the rules say. */
   on?: {
     /** At the cast, after `c.from` and `c.dir` are set (a passive's cast number, which ember to fly to ...). */
@@ -109,8 +121,10 @@ export interface Rules<S, K extends string = never> {
     release?(c: Cast<S, K>): void;
     /** A bolt stopped at (x, z): in an enemy (`hit`), at a wall or at its full reach. Once a cast. */
     stop?(c: Cast<S, K>, x: number, z: number, hit: boolean): void;
-    /** Circles: after their hits. A sure hit: after it (`hit`: whether it landed on someone). */
+    /** Circles, a zone: after their hits (`c.caught`). A sure hit: after it (`hit`: whether it landed on someone). */
     impact?(c: Cast<S, K>, hit: boolean): void;
+    /** Every frame while it plays, after the impact and the sweep, before the look's `after` (a follow-up of the hero's own). */
+    frame?(c: Cast<S, K>, t: number, dt: number): void;
   };
 }
 
@@ -158,6 +172,10 @@ export interface SpellDef<S, K extends string = never> {
   rules: Rules<S, K>;
   /** More numbers the tool page tunes (the rules name them, `Num`), after the damage: kept in `settings` under their names. */
   tune?: Record<K, Slider>;
+  /** No damage slider (the spell deals none, or its damage is a `tune` number): `settings` has no `damage`, hits deal 0. */
+  noDamage?: true;
+  /** No loop switch (the old file had none). */
+  noLoop?: true;
   look: new (group: import('three').Group, c: Cast<S, K>) => Look<S, K>;
   bloom: BloomSettings;
   /** How far the tool page's camera stands back from the cast (`frameCast`). */
