@@ -48,9 +48,8 @@ and compare notes on the Tear, which is getting wider. This year Wick has starte
 ## People and appearance
 
 A Northerner of Hearthmere: tall, thin and old, with a long calm face, level brows and a thin smile; his white hair, which went white
-before he was thirty as Northern hair does, swept back. Today his skin is pale and he wears no star lines, which the
-[revamp plan](../revamp.md) touches: deep umber skin, his white hair in braids under the hood, the star lines of his birth hour along the
-jaw. The oxblood coat, the gold braid, the ring of keys and the amber gem stay.
+before he was thirty as Northern hair does, swept back. His skin is deep umber, his white hair worn in thin braids to the
+collar, and the star lines of his birth hour run in indigo along his jaw (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before). The oxblood coat, the gold braid, the ring of keys and the amber gem stay.
 
 ## Voice
 

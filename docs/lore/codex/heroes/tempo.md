@@ -42,8 +42,8 @@ She is the only person on the Dial who can write down both of his sentences at o
 ## People and appearance
 
 A Northerner of Hearthmere, and Noon-touched, or something stranger: he looks forty, with white hair swept back, a monocle, a long dark coat with an ivory dial plate on
-the shoulder, the minute-hand staff in the left hand, and the glowing clock dial behind his head. Today his skin is pale. In the [revamp plan](../revamp.md) he gets a
-touch: the umber skin of his people, and their star lines along his jaw, drawn as a clock's ticks.
+the shoulder, the minute-hand staff in the left hand, and the glowing clock dial behind his head. His skin is the umber of his people, and their star lines run
+along his jaw drawn as a clock's ticks (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before).
 
 ## Voice
 
