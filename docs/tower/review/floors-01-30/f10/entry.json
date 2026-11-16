@@ -1,0 +1,15 @@
+{
+ "floor": 10,
+ "verdict": "Clean: the Sea's crown. Cleared with four stars and no fall, no console error, every spot reachable; the Sun Warden (the Raid's boss, its own model, alone in the Sun Court) fought and fell to the bot on the first try; the rival (Isolde), the trial and the gate (Shiori) all played.",
+ "found": [
+  {"kind": "ok", "title": "The props the probe flagged", "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths. Nothing in the air."}
+ ],
+ "pictures": [
+  ["ruler.jpg", "The Sun Court: the Sun Warden's fight as it opens"],
+  ["ruler-close.jpg", "The Sun Warden"],
+  ["person-rival.jpg", "Isolde, the rival"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
