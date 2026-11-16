@@ -558,8 +558,9 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       steps: [{ verb: 'light', text: 'Light the two spore lamps', things: [{ id: 'lamp1', at: Cl.stand }, { id: 'lamp2', at: E.stand }], seconds: 2 }] as Step[],
       outro: ['Now I can see. Take this, it was in the moss.'], reward: reward(35, { boon: true }),
     },
-    { id: 'g2', name: pick(['The Lost Spade', 'The Lost Lantern', 'The Lost Bundle']), giver: 'giver', intro: [`${leadNpc} dropped a bundle in ${lower(B.name)} and will not go back for it. Carry it to the camp fire. A hit and you drop it.`],
-      steps: [{ verb: 'carry', text: `Bring the bundle from ${lower(B.name)} to the fire`, item: 'bundle', itemName: 'The bundle', toName: 'the camp fire', look: 'bundle', plain: true, from: spadeFrom, to: spadeTo, r: 2.2 } as Step], outro: ['Here, for the trouble.'], reward: reward(45) },
+    // the thing lost is the one the quest's name says (a spade, a lantern or a bundle; it is drawn as a bundle in the hand)
+    ((name: string, thing = name.slice(9).toLowerCase()) => ({ id: 'g2', name, giver: 'giver', intro: [`${leadNpc} dropped a ${thing} in ${lower(B.name)} and will not go back for it. Carry it to the camp fire. A hit and you drop it.`],
+      steps: [{ verb: 'carry', text: `Bring the ${thing} from ${lower(B.name)} to the fire`, item: thing, itemName: `The ${thing}`, toName: 'the camp fire', look: 'bundle', plain: true, from: spadeFrom, to: spadeTo, r: 2.2 } as Step], outro: ['Here, for the trouble.'], reward: reward(45) }))(pick(['The Lost Spade', 'The Lost Lantern', 'The Lost Bundle'])),
     {
       id: 'g3', name: 'The Burners’ Watch', giver: 'villager', intro: [`My stacks lie past ${lower(Vl.name)}. Find them, then hold the clearing while I bring the charcoal in: the hounds smell the smoke.`],
       steps: [

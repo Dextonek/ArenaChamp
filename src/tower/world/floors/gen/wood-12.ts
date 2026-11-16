@@ -4059,14 +4059,14 @@ export const WOOD_12: GenFloor = {
     "name": "The Lost Spade",
     "giver": "giver",
     "intro": [
-     "Bram the younger dropped a bundle in the thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
+     "Bram the younger dropped a spade in the thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
     ],
     "steps": [
      {
       "verb": "carry",
-      "text": "Bring the bundle from the thicket to the fire",
-      "item": "bundle",
-      "itemName": "The bundle",
+      "text": "Bring the spade from the thicket to the fire",
+      "item": "spade",
+      "itemName": "The spade",
       "toName": "the camp fire",
       "look": "bundle",
       "plain": true,

@@ -4201,14 +4201,14 @@ export const WOOD_17: GenFloor = {
     "name": "The Lost Lantern",
     "giver": "giver",
     "intro": [
-     "Ivy dropped a bundle in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
+     "Ivy dropped a lantern in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
     ],
     "steps": [
      {
       "verb": "carry",
-      "text": "Bring the bundle from the dark thicket to the fire",
-      "item": "bundle",
-      "itemName": "The bundle",
+      "text": "Bring the lantern from the dark thicket to the fire",
+      "item": "lantern",
+      "itemName": "The lantern",
       "toName": "the camp fire",
       "look": "bundle",
       "plain": true,
