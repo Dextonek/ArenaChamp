@@ -358,6 +358,16 @@
     for (const kit of [a.heroMode.currentKit, d.opponentKit]) for (const k of [kit, kit.base, kit.alt]) for (const sp of k?.spells ?? []) labels.add(sp.label);
     const unbuilt = [...labels].filter((l) => !a.slots.get(l)?.effect);
     if (unbuilt.length) throw new Error(`not built before the fight: ${unbuilt.join(', ')}`);
+    // Casts per slot, both sides, counted where every cast passes once (the side's trait runtime, as pipeline/sim/page.js counts
+    // them): a charge's short gap or a free recast never shows in a cooldown sampled every half second, a count does.
+    const casts = { hero: [0, 0, 0, 0], opponent: [0, 0, 0, 0] };
+    const proto = Object.getPrototypeOf(d.heroRt ?? d.oppRt);
+    const cast0 = proto.cast;
+    proto.cast = function (slot, ...rest) {
+      const tally = casts[this.side];
+      if (tally && slot >= 0 && slot < 4) tally[slot]++;
+      return cast0.call(this, slot, ...rest);
+    };
     const r1 = (v) => Math.round(v * 10) / 10, r2 = (v) => Math.round(v * 100) / 100;
     const units = (side) => { try { return a.arena.summons.alive(side).length; } catch { return -1; } };
     return {
@@ -365,7 +375,7 @@
       every: 30,
       print: () => [r1(d.playerHp), r1(a.arena.hpOf(d.foe)), r2(a.arena.caster.group.position.x), r2(a.arena.caster.group.position.z),
         r2(d.foe.group.position.x), r2(d.foe.group.position.z), (a.heroMode.cooldowns ?? []).map(r1), (d.cooldowns ?? []).map(r1),
-        units('hero'), units('opponent'), d.result ? 1 : 0],
+        units('hero'), units('opponent'), d.result ? 1 : 0, [...casts.hero], [...casts.opponent]],
     };
   };
 

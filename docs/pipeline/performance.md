@@ -112,9 +112,10 @@ writes the scene's state each frame (`fine()` in the scene, else its print), whi
 
 `python pipeline/tools/hero-prints.py take|check|show [Name,...]` plays one fixed duel per hero (the scene `hero` in
 perf-page.js: the hero against Isolde in the Harbour, Isolde against Brannoc, both at the CPU's balance level, 3,600 frames,
-dice 7) and keeps its print in `docs/perf/data/hero-prints.json`. Its print is finer than the duel's: every half second
-both heroes' health to a tenth, places to a hundredth of a metre, the four cooldowns of each (so every cast shows), the
-units alive on each side. The scene refuses to run when the foe is not the one asked for or when a spell of either side
+dice 7) and keeps its print in `docs/perf/data/hero-prints.json`; `--foe Brannoc` takes the second set, against a melee foe, in
+`hero-prints-brannoc.json`. Its print is finer than the duel's: every half second
+both heroes' health to a tenth, places to a hundredth of a metre, the four cooldowns of each, the units alive on each
+side, and the casts of each slot so far. The scene refuses to run when the foe is not the one asked for or when a spell of either side
 was not built before the fight. It is the proof that moving a hero into the hero framework changes nothing
 (docs/pipeline/hero-framework.md, "The fight prints"): `take` before, `check` after. About 25 s a hero, five browsers at
 once, its own dev server on port 5191.

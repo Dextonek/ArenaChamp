@@ -7,15 +7,18 @@ print must stay the same while heroes are moved into the hero framework.
     python pipeline/tools/hero-prints.py check                # every hero once more, against the reference
     python pipeline/tools/hero-prints.py check Anka           # one hero (about a minute)
     python pipeline/tools/hero-prints.py show                 # the reference as a table
+    python pipeline/tools/hero-prints.py take --foe Brannoc   # the second set: against a melee foe (its own file)
 
 The duel: the hero (the autopilot at its keys) against FOE on ARENA (FOE itself against FOE_SELF), both at the CPU's balance level, the arena's hazards and
 shifts on, the dice seeded (7) and the clock the performance tool's own (pipeline/tools/perf-page.js, scene `hero`), FRAMES
 frames of a 60th of a second; a round that ends begins again. Every half second the print notes both heroes' health (to a
-tenth), places (to a hundredth of a metre), the four cooldowns of each (so every cast shows), the units alive on each side
-and whether the round has ended. Its hash is the fight's fingerprint: the same code gives the same hash every run.
+tenth), places (to a hundredth of a metre), the four cooldowns of each, the units alive on each side, whether the round
+has ended, and how many times each side has cast each slot so far (a charge or a free recast shows there, not in a cooldown). Its hash is the fight's fingerprint: the same code gives the same hash every run.
 
 `take` runs each hero `--runs` times (default 2) and says whether the runs agree; it writes docs/perf/data/hero-prints.json
-(heroes taken again replace their old entry). `check` runs each hero once and compares it with that file: SAME, or
+(heroes taken again replace their old entry), or hero-prints-<foe>.json with `--foe`. Two sets are kept: against Isolde, who
+keeps her distance, and against Brannoc, who closes in: the dashes, escapes and self spells the CPU casts only up close show in
+the second. A move must leave both the same. `check` runs each hero once and compares it with that file: SAME, or
 ANOTHER FIGHT with the first moment the two part and what differs there. It exits with 1 if any hero differs.
 
 It starts its own dev server on --port (5191; pipeline/tools/hero-prints.vite.config.ts, no hot reload) and stops it at
@@ -42,7 +45,7 @@ FRAMES = 3600
 SEED = 7
 BROWSER_ARGS = ["--mute-audio", "--ignore-gpu-blocklist", "--enable-gpu", "--use-angle=d3d11",
                 "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"]
-FIELDS = ["hero hp", "foe hp", "hero x", "hero z", "foe x", "foe z", "hero cooldowns", "foe cooldowns", "hero units", "foe units", "round over"]
+FIELDS = ["hero hp", "foe hp", "hero x", "hero z", "foe x", "foe z", "hero cooldowns", "foe cooldowns", "hero units", "foe units", "round over", "hero casts", "foe casts"]
 
 
 def default_browser():
@@ -126,7 +129,15 @@ async def run_all(args, jobs):
 
 
 def foe_of(args, hero):
-    return FOE_SELF if hero == args.foe else args.foe
+    """The foe asked for, except for itself (the duel never puts a hero against itself): then FOE_SELF, or FOE for FOE_SELF."""
+    if hero != args.foe:
+        return args.foe
+    return FOE_SELF if args.foe != FOE_SELF else FOE
+
+
+def data_file(args):
+    """One reference file a foe: hero-prints.json for FOE, hero-prints-<foe>.json for another."""
+    return DATA if args.foe == FOE else DATA.with_name("hero-prints-" + args.foe.lower().replace(" ", "-").replace(".", "") + ".json")
 
 
 def first_part(a, b):
@@ -159,9 +170,9 @@ async def roster(args):
             await browser.close()
 
 
-def load():
-    if DATA.exists():
-        return json.loads(DATA.read_text(encoding="utf-8"))
+def load(path):
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
     return {"heroes": {}}
 
 
@@ -186,7 +197,7 @@ def main():
     ap.add_argument("--arena", default=ARENA)
     ap.add_argument("--frames", type=int, default=FRAMES)
     args = ap.parse_args()
-    data = load()
+    data = load(data_file(args))
     if args.cmd == "show":
         show(data)
         return
@@ -215,8 +226,8 @@ def main():
                         entry["parts"] = first_part(rs[0]["print"], rs[1]["print"])
                     entry["crashes"] = [r["crashed"] for r in rs if r.get("crashed")]
                 data["heroes"][name] = entry
-            DATA.write_text(json.dumps(data, indent=None, separators=(",", ":")), encoding="utf-8")
-            print(f"\n{len(names) - len(bad)} of {len(names)} heroes repeat ({round(time.time() - t0)} s). Written: {DATA.relative_to(ROOT)}")
+            data_file(args).write_text(json.dumps(data, indent=None, separators=(",", ":")), encoding="utf-8")
+            print(f"\n{len(names) - len(bad)} of {len(names)} heroes repeat ({round(time.time() - t0)} s). Written: {data_file(args).relative_to(ROOT)}")
             for name in bad:
                 print(f"  DOES NOT REPEAT: {name}: {data['heroes'][name].get('parts') or data['heroes'][name].get('crashes')}")
         else:
