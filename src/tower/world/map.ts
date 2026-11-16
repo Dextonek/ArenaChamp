@@ -316,8 +316,9 @@ export class WorldMap {
       const hw = g.measureText(text).width / 2 + 2 * dpr, x = Math.max(hw, Math.min(px - hw, p.x)), line = 13 * dpr;
       const box = (y: number) => [x - hw, y - 10 * dpr, x + hw, y + 3 * dpr];
       const cover = (b: number[]) => taken.reduce((s, t) => s + Math.max(0, Math.min(b[2], t[2]) - Math.max(b[0], t[0])) * Math.max(0, Math.min(b[3], t[3]) - Math.max(b[1], t[1])), 0);
-      let y = p.y + dy, least = cover(box(y));
-      for (const k of [1, -1, 2, -2, 3, -3]) { if (least === 0) break; const at = p.y + dy + k * line, c = cover(box(at)); if (c < least) { y = at; least = c; } }
+      const y0 = Math.max(12 * dpr, Math.min(px - 5 * dpr, p.y + dy));
+      let y = y0, least = cover(box(y));
+      for (const k of [1, -1, 2, -2, 3, -3]) { if (least === 0) break; const at = y0 + k * line, c = cover(box(at)); if (c < least && at >= 12 * dpr && at <= px - 5 * dpr) { y = at; least = c; } }
       taken.push(box(y));
       g.lineWidth = 3 * dpr;
       g.strokeStyle = 'rgba(0,0,0,0.85)';
