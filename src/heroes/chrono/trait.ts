@@ -1,4 +1,4 @@
-import type { Trait } from '../../traits/types';
+import type { Trait, TraitView } from '../../traits/types';
 import { fightNow } from '../../fightClock';
 
 /**
@@ -56,6 +56,9 @@ export const tempoZone = new WeakMap<object, { x: number; z: number; r: number; 
 
 const GOLD = '#ffc83a';
 
+/** Gone in Time Skip: nothing reaches him. */
+const skipping = (t: TraitView) => t.time < (t.mem.skipUntil ?? 0);
+
 /**
  * Tempo (mage). Passive Echo: every spell he casts plays twice. The echo lives in each spell's effect (Tick, Slow Time,
  * Time Skip and Stolen Hour each repeat their hit 1.5 s after the first, from the same place, at 40% of the damage, 80%
@@ -109,8 +112,9 @@ export const chronoTrait: Trait = {
       t.hold(SKIP_VANISH);
     }
   },
+  untouchable: (t) => skipping(t),
   taken(t, hit) {
-    if (t.time < (t.mem.skipUntil ?? 0)) hit.blocked = true;
+    if (skipping(t)) hit.blocked = true;
   },
   landed(t, hit) {
     if (hit.kind !== 'spell' || hit.slot !== 0 || !hit.victimIsHero) return;

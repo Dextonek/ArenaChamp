@@ -2601,7 +2601,7 @@ export class Duel {
       const ward = this.ward(this.heroRt);
       const opens = (i: number) => !!this.oppRt?.canRecast(i) && !this.oppRt.recastOf(i)?.aiWait;
       const aiHolds = (i: number) => !!this.oppRt?.trait?.aiHold?.(this.oppRt, i, flat(at, me));
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || this.mech.sealedLeft('opponent', i) > 0 || this.mechHolds(this.opponentKit, i, 'opponent') || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
+      const cooling = (i: number) => ward || aiHolds(i) || this.mech.sealedLeft('opponent', i) > 0 || this.mechHolds(this.opponentKit, i, 'opponent') || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
       let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv, this.reachFrom(this.oppRt, me));
@@ -2774,13 +2774,11 @@ export class Duel {
   }
 
   /**
-   * What the AI holds its spells for: 2 while the other hero sits in an ice block (nothing lands), 1 while its void maw
-   * is open (only Q goes in, as bait), else 0.
+   * The AI holds its spells while nothing can land on the other hero (`Trait.untouchable`: Tempo's Time Skip, Anka in her ashes,
+   * Zephyr in the wind, Marin's mist).
    */
   private ward(rt: TraitRuntime | null) {
-    if (!rt) return 0;
-    if (rt.time < (rt.mem.iceUntil ?? 0)) return 2;
-    return rt.mem.mawCast === -1 && rt.time < (rt.mem.mawUntil ?? 0) ? 1 : 0;
+    return !!rt?.trait?.untouchable?.(rt);
   }
 
   /** Autopilot: the player's hero fights with the same rules as the opponent (for duel simulations). */
@@ -2850,7 +2848,7 @@ export class Duel {
       const ward = this.ward(this.oppRt);
       const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
       // A dash is a walk: none so close to a beat that it would still be going.
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i) || (beat < STILL_DASH && !!kit.spells[i].dash) || this.mechHolds(kit, i, 'hero');
+      const cooling = (i: number) => ward || !hm.ready(i) || waits(i) || (beat < STILL_DASH && !!kit.spells[i].dash) || this.mechHolds(kit, i, 'hero');
       const foeHeld = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.

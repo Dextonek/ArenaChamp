@@ -255,6 +255,11 @@ export interface Trait {
   /** The CPU playing this hero holds its basic attack now (a sleeper wakes at the first hit: Vela lets it sleep). */
   aiHoldAttack?(t: TraitView): boolean;
   /**
+   * Nothing can land on this hero now: its `taken` swallows every hit (Tempo's Time Skip, Anka in her ashes, Zephyr in the wind,
+   * Marin's mist). The enemy CPU holds its spells meanwhile. The same test `taken` uses, so the two never disagree.
+   */
+  untouchable?(t: TraitView): boolean;
+  /**
    * Cuts in this hero's HP bar at these HP values, asked every frame on both screens (read `own`, `hp`, `maxHp`): Ramet's lion
    * in front of his own part. Beats `HeroKit.hpChunks`. Null or empty: none.
    */

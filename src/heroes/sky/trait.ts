@@ -1,4 +1,4 @@
-import type { Trait } from '../../traits/types';
+import type { Trait, TraitView } from '../../traits/types';
 
 /** Seconds Skyward keeps him airborne and untouchable: take-off to touchdown (the effect lands on this beat). */
 export const SKYWARD_AIR = 0.6;
@@ -33,6 +33,12 @@ export const skyRendFizzled = new WeakMap<object, boolean>();
 /** Gusts he holds now: his own counter with a deadline (the stacks API is for stacks on the enemy). */
 function gusts(t: { time: number; mem: Record<string, number> }) {
   return t.time < (t.mem.gustUntil ?? 0) ? t.mem.gust ?? 0 : 0;
+}
+
+/** In the wind, nothing touches him: Skyward's window, or Sky Rend's cuts while they run (not when it fizzled). */
+function inWind(t: TraitView) {
+  const rend = t.time >= (t.mem.rendFrom ?? 0) && t.time < (t.mem.rendUntil ?? 0) && !skyRendFizzled.get(t.self());
+  return rend || t.time < (t.mem.airUntil ?? 0);
 }
 
 /**
@@ -120,9 +126,9 @@ export const skyTrait: Trait = {
     t.show('gust', gusts(t));
     t.show('step', t.ammo);
   },
+  untouchable: (t) => inWind(t),
   taken(t, hit) {
-    const rend = t.time >= (t.mem.rendFrom ?? 0) && t.time < (t.mem.rendUntil ?? 0) && !skyRendFizzled.get(t.self());
-    if (!rend && t.time >= (t.mem.airUntil ?? 0)) return;
+    if (!inWind(t)) return;
     // In the wind: nothing touches him.
     hit.blocked = true;
     if (t.time >= (t.mem.saidAt ?? 0)) { t.mem.saidAt = t.time + 0.5; t.say('UNTOUCHABLE', '#7fe6c8'); }
