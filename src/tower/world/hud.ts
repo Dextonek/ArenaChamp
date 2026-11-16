@@ -74,7 +74,8 @@ export class WorldHud {
     this.cards.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;gap:8px;width:min(620px,calc(100vw - 12px));box-sizing:border-box;`;
     this.result.style.cssText = 'position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(4,3,6,0.72);';
     this.doorEl.className = 'world-door';
-    this.doorEl.style.cssText = `position:fixed;left:50%;top:calc(${s ? 128 : 96}px + env(safe-area-inset-top, 0px));transform:translateX(-50%);z-index:9;display:none;` +
+    // Above the hero's spell bar, clear of the banner a door's opening puts up top.
+    this.doorEl.style.cssText = `position:fixed;left:50%;bottom:calc(${TOUCH ? 236 : 168}px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:9;display:none;` +
       `align-items:center;gap:10px;padding:${s ? '6px 10px' : '8px 14px'};border-radius:10px;background:rgba(12,9,10,0.9);border:1px solid #c9a24a;` +
       `box-shadow:0 3px 14px #000b;max-width:calc(100vw - 20px);box-sizing:border-box;font:600 ${s ? 12 : 14}px/1.3 ui-sans-serif,system-ui;color:#f2e6c8;`;
     document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl);

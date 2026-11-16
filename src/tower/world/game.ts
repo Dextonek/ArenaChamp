@@ -79,6 +79,8 @@ export class WorldGame implements DoorSink {
   private asking: { door: DoorDef; left: number; names: string[]; first: boolean; held: boolean } | null = null;
   private invite: { door: string; left: number; names: string[] } | null = null;
   private starting: Extract<ServerMsg, { t: 'door_start' }> | null = null;
+  /** This hero's seat in the party's fight and how many were in it: they come out side by side, not on one spot. */
+  private seat: { side: number; n: number } | null = null;
   /** The party's fight on this connection (null alone, offline, in the tools). */
   readonly together: DoorFight | null = null;
   private lastX = NaN;
@@ -439,6 +441,7 @@ export class WorldGame implements DoorSink {
     if (!d || !shared) { this.presence?.net?.send({ t: 'match_leave' }); this.asking = null; return; }
     const { run, floor } = this;
     this.piece = d.piece;
+    this.seat = { side: m.side, n: m.n };
     const input = { floor: floor.n, hero: run.hero, hp: Math.max(0.05, run.hp), boons: run.boons, ally: run.ally, mode: this.mode, shared };
     this.log.push(`door ${d.id} with ${m.n - 1} others at ${run.clock.toFixed(0)}s`);
     this.save();
@@ -449,6 +452,7 @@ export class WorldGame implements DoorSink {
 
   private startPiece(d: DoorDef) {
     if (this.piece || !this.zone) return;
+    this.seat = null;
     const { run, floor } = this;
     this.piece = d.piece;
     const input = { floor: floor.n, hero: run.hero, hp: Math.max(0.05, run.hp), boons: run.boons, ally: run.ally, mode: this.mode };
@@ -516,10 +520,11 @@ export class WorldGame implements DoorSink {
     after?.();
   }
 
-  /** The hero's place in front of a door, on the ring's side. */
+  /** The hero's place in front of a door, on the ring's side; after a party's fight, side by side by seat (1.6 m apart). */
   private inFront(d: DoorDef): Spot {
-    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z);
-    return { x: d.at.x + Math.sin(away) * 5, z: d.at.z + Math.cos(away) * 5 };
+    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z), seat = this.seat;
+    const across = seat ? (seat.side - (seat.n - 1) / 2) * 1.6 : 0;
+    return { x: d.at.x + Math.sin(away) * 5 + Math.cos(away) * across, z: d.at.z + Math.cos(away) * 5 - Math.sin(away) * across };
   }
 
   /** Falls that happened inside a piece (the zone does not see them), for the tool's report. */
