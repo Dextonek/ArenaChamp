@@ -220,8 +220,30 @@ export class RealHero {
    * model review, docs/heroes/review/). The lowest foot or boot vertex over the idle's loop is set on the floor. (2) The
    * body's outline for `clearArms`: per 4 cm of height and 15 degrees round the upright axis, the furthest vertex of the
    * hips, chest, legs and what hangs from them (robes, coats, aprons; see-through things like wings left out).
+   * Measured with clips set up for it alone and dice of its own, all dropped after: three.js rolls dice for each clip's
+   * id, and the fights' dice (seeded in the perf scenes, docs/pipeline/performance.md) and first frames stay as they were.
    */
   private measure(scene: THREE.Object3D) {
+    const random = Math.random, had = new Set(this.actions.keys()), pelvis = this.pelvis.length;
+    let seed = 7;
+    Math.random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    try {
+      this.measureNow(scene);
+    } finally {
+      Math.random = random;
+      for (const [key, a] of [...this.actions]) {
+        if (had.has(key)) continue;
+        a.stop();
+        this.live.delete(a);
+        this.mixer?.uncacheAction(a.getClip());
+        this.mixer?.uncacheClip(a.getClip());
+        this.actions.delete(key);
+      }
+      this.pelvis.length = pelvis;
+    }
+  }
+
+  private measureNow(scene: THREE.Object3D) {
     const feet: [THREE.SkinnedMesh, number[]][] = [], body: [THREE.SkinnedMesh, number[]][] = [];
     scene.traverse((o) => {
       const m = o as THREE.SkinnedMesh;
@@ -349,7 +371,7 @@ export class RealHero {
     // the hand in the root's frame, and the most lean whose foot and lower shaft are clear of the body
     const H = this.root.worldToLocal(hand.getWorldPosition(this.armH)), b = this.body, below = this.heldBelow;
     const clear = () => {
-      if (!b || below < 0.25) return true;
+      if (!b || below < 0.08) return true;
       for (const k of [0.5, 0.75, 1]) {
         const x = H.x - want.x * below * k, y = H.y - want.y * below * k, z = H.z - want.z * below * k;
         if (Math.hypot(x, z) < bodyReach(b, x, y, z) + ARM_MARGIN) return false;
