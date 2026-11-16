@@ -380,6 +380,65 @@ flags; this adds what lives near you.</p>
     (most of them the three walkers) and 6 on a phone.</li>
   <li>A quiet measurement of all four chapters is in the hand-over (one command, with no other agent running).</li>
 </ul>
+<h2 class="ch" id="deep">Chapter IV: the Deep (floors 31 to 40)</h2>
+<p class="sub">The far halls on the night their crystals went out: "only crystals give light, and beyond their glow you see nothing, and
+the lurkers hunt there." The zone already had bats under the north wall, the waterfall and the glints on the black lake. Two rules
+from the lore shaped this chapter: nothing here makes light of its own (the only living light in the Deep is the Firefly-Seller's, in
+her jars), and nothing dark stands still at the edge of the light (that is what a lurker does). So the Deep's life is quiet, as it
+should be: it shows where there is light.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Moths</b> round every crystal, lamp and fire: pale wings, drawn to the light, seen only in it.</li>
+  <li><b>Spores</b> hanging in the air round you, rising slowly; seen where a crystal lights them.</li>
+  <li><b>Drips</b> falling from the dark into the glowing pools, a ring opening where each lands; a <b>pale blind fish</b> going
+    slowly round a pool here and there.</li>
+  <li><b>Bats</b> flitting low over the halls, a few, never still.</li>
+  <li><b>Smoke</b> from the camp's fire and the stoves of the miners' huts.</li>
+  <li><b>People walking</b> beside the mine's tracks (on a computer only): the Deep's miner.</li>
+</ul>
+<h3>Clip</h3>
+<div class="clips">
+  <figure class="after"><video src="deep/crystal.mp4" poster="deep/crystal.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 32, a great crystal.</b> Moths (pale specks) round the crystal, spores in the air. The clip is the 3D view
+    alone: the dark the game lays over the screen is left out, so it looks brighter than the game.</figcaption></figure>
+  <figure class="after"><img src="deep/close.jpg" alt="A pale fish in a glowing pool, the miner walking" loading="lazy">
+    <figcaption><b>Closer (floor 32):</b> a ring and a pale fish in a glowing pool; the miner walking by the tracks.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot. In the dark the changes are small on purpose; the clip shows them moving.</p>
+<h3>Floor 32, the Amethyst Seam: the pools</h3>
+<div class="pair">
+  <figure><img src="deep/f32-d-before.jpg" alt="Floor 32, the Amethyst Seam: the pools, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f32-d-after.jpg" alt="Floor 32, the Amethyst Seam: the pools, after: rings opening where drops fall, spores in the air" loading="lazy"><figcaption><b>After:</b> rings opening where drops fall, a pale fish in the lower pool, spores in the air</figcaption></figure>
+</div>
+<h3>Floor 31, the Lightless Deep: the pools</h3>
+<div class="pair">
+  <figure><img src="deep/f31-pools-before.jpg" alt="Floor 31, the Lightless Deep: the pools, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f31-pools-after.jpg" alt="Floor 31, the Lightless Deep: the pools, after: rings on the pools, spores" loading="lazy"><figcaption><b>After:</b> rings on the pools, spores</figcaption></figure>
+</div>
+<h3>Floor 38, the Sunless Market: the miners' rest</h3>
+<div class="pair">
+  <figure><img src="deep/f38-v-before.jpg" alt="Floor 38, the Sunless Market: the miners' rest, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f38-v-after.jpg" alt="Floor 38, the Sunless Market: the miners' rest, after: a faint thread of smoke from a stove (right)" loading="lazy"><figcaption><b>After:</b> a faint thread of smoke from a stove (right): in the dark the smoke is barely seen</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the moths, fewer spores and drips, no fish and no walkers.</p>
+<div class="pair">
+  <figure class="after"><img src="deep/f32-d-phone.jpg" alt="Floor 32 pools at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 32, the pools</figcaption></figure>
+  <figure class="after"><img src="deep/f32-v-phone.jpg" alt="Floor 32 rest at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 32, the miners' rest</figcaption></figure>
+</div>
+<h3>What it costs</h3>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 31</td><td>17.7</td><td>16.8</td><td>186 → 205</td><td>yes (<code>19e8c310</code>)</td></tr>
+  <tr><td>Computer, floor 35</td><td>19.2</td><td>16.4</td><td>194 → 202</td><td>yes (<code>963fdc00</code>)</td></tr>
+  <tr><td>Phone (slowed four times), floor 35</td><td>84.7</td><td>35.4</td><td>194 → 200</td><td>yes</td></tr>
+</table>
+<ul>
+  <li>Again under other agents' load: the frame times only show the noise (here life on came out faster). Sure: the same fight both
+    ways, and 8 to 19 more draws on a computer (the three walkers most of them), 6 on a phone. The Deep's life moves nothing on the
+    processor but the bats and the walkers.</li>
+</ul>
 <!-- CHAPTERS -->
 <h2 class="ch" id="all">For every chapter</h2>
 <h3>The walkers</h3>

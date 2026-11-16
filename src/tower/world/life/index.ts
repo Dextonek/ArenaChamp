@@ -13,6 +13,7 @@ import { lifeTier, mulberry, quiet, type Life, type LifeEnv } from './core';
 import { seaLife } from './sea';
 import { woodLife } from './wood';
 import { sandsLife } from './sands';
+import { deepLife } from './deep';
 
 /** The look a floor is drawn from (its places, paths, cover...): the generator's, or the chapter's handmade first floor's. */
 export function lifeLook(n: number): ChapterLook | null {
@@ -68,7 +69,7 @@ const CHAPTERS: (ChapterLife | null)[] = [
   },
   woodLife,
   sandsLife,
-  null,
+  deepLife,
   null,
 ];
 

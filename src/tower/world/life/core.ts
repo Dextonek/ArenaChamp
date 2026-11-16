@@ -1193,3 +1193,109 @@ export function roomOf(look: { paths?: [number, number][][]; pieces: { o: { ax: 
   });
 }
 
+
+// --- drips: drops falling from the dark into still water, each opening a ring where it lands -------------------------------------------
+
+/**
+ * Drops falling from the dark above into a pool: one `Points` for all, on the shader's clock. Each drop falls in the first tenth of
+ * its period; the ring it opens is a `Shallows` ring on the same period, timed to the landing (`ring` below adds it).
+ */
+export class Drips {
+  private list: { x: number; y: number; z: number; h: number; per: number; ph: number }[] = [];
+  constructor(private env: LifeEnv) {}
+  /** A drop falling `h` m onto (x, y, z) every `per` s; its ring goes to `rings`. */
+  add(rings: Shallows, x: number, y: number, z: number, h: number, per: number, ph: number) {
+    this.list.push({ x, y, z, h, per, ph });
+    // the drop lands at a tenth of the period: the ring starts there
+    rings.ring(x, y + 0.01, z, per, ph - 0.1, 0.55);
+  }
+  get count() {
+    return this.list.length;
+  }
+  build(color = 0xc8d4e0) {
+    const n = this.list.length;
+    if (!n) return null;
+    const pos = new Float32Array(n * 3), drop = new Float32Array(n * 3);
+    this.list.forEach((d, i) => { pos.set([d.x, d.y, d.z], i * 3); drop.set([d.h, d.per, d.ph], i * 3); });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aDrop', new THREE.BufferAttribute(drop, 3));
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e5);
+    const map = puffTexture();
+    const mat = new THREE.PointsMaterial({ color, map, size: 1, sizeAttenuation: true, transparent: true, opacity: 0.8, depthWrite: false, fog: true });
+    patch(mat, 'drip', this.env.time, (sh) => {
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+          uniform float uTime;
+          attribute vec3 aDrop; // height, period, phase`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          float age = fract(uTime / aDrop.y + aDrop.z);
+          float k = clamp(age / 0.1, 0.0, 1.0);
+          transformed.y += aDrop.x * (1.0 - k * k);
+          float on = age < 0.1 ? 1.0 : 0.0;`)
+        .replace('gl_PointSize = size;', 'gl_PointSize = 0.12 * on;');
+    });
+    this.env.own.push(g, mat, map);
+    const pts = new THREE.Points(g, mat);
+    pts.frustumCulled = false;
+    this.env.group.add(pts);
+    return pts;
+  }
+}
+
+// --- swimmers: a slow fish going round a pool -------------------------------------------------------------------------------------
+
+/**
+ * Fish that go slowly round a pool just under its face: one instanced mesh, each on an ellipse of its own (the pool's), turned along
+ * its way, its tail beating, all in the shader. Pale (blind cave fish, in the Deep), never lit from inside.
+ */
+export class Swimmers {
+  private list: { x: number; y: number; z: number; rx: number; rz: number; rot: number; w: number; ph: number }[] = [];
+  constructor(private env: LifeEnv) {}
+  add(x: number, y: number, z: number, rx: number, rz: number, rot: number, w: number, ph: number) {
+    this.list.push({ x, y, z, rx, rz, rot, w, ph });
+  }
+  get count() {
+    return this.list.length;
+  }
+  build(color: number, len = 0.5) {
+    const n = this.list.length;
+    if (!n) return null;
+    const geo = mergeGeometries([
+      new THREE.SphereGeometry(1, 8, 5).scale(len * 0.13, len * 0.13, len * 0.5),
+      new THREE.ConeGeometry(len * 0.16, len * 0.3, 4).rotateX(Math.PI / 2).scale(0.25, 1, 1).translate(0, 0, -len * 0.62),
+    ])!;
+    const mat = palMat(this.env, color, { roughness: 0.4, metalness: 0.3 });
+    const attr = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4), path = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4);
+    geo.setAttribute('aSwim', attr);
+    geo.setAttribute('aPath', path);
+    patch(mat, 'swim', this.env.time, (sh) => {
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+          uniform float uTime;
+          attribute vec4 aSwim; // the ellipse's middle x, y, z, its turn
+          attribute vec4 aPath; // its half widths rx, rz, the angular speed, the phase`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          float a = uTime * aPath.z + aPath.w;
+          // the tail beats (the back of the body sways)
+          transformed.x += sin(uTime * 5.0 + aPath.w) * 0.06 * smoothstep(0.0, -${(len * 0.7).toFixed(2)}, transformed.z);
+          // turned along its way round the ellipse
+          vec2 vel = vec2(-sin(a) * aPath.x, cos(a) * aPath.y) * sign(aPath.z);
+          float hy = atan(vel.x, vel.y) + aSwim.w;
+          transformed.xz = vec2(transformed.x * cos(hy) + transformed.z * sin(hy), -transformed.x * sin(hy) + transformed.z * cos(hy));
+          vec2 p = vec2(cos(a) * aPath.x, sin(a) * aPath.y);
+          p = vec2(p.x * cos(aSwim.w) + p.y * sin(aSwim.w), -p.x * sin(aSwim.w) + p.y * cos(aSwim.w));
+          transformed += vec3(aSwim.x + p.x, aSwim.y, aSwim.z + p.y);`);
+    });
+    const im = new THREE.InstancedMesh(geo, mat, n);
+    this.list.forEach((f, i) => {
+      (attr.array as Float32Array).set([f.x, f.y, f.z, f.rot], i * 4);
+      (path.array as Float32Array).set([f.rx, f.rz, f.w, f.ph], i * 4);
+    });
+    im.frustumCulled = false;
+    im.castShadow = false;
+    this.env.own.push(geo);
+    this.env.group.add(im);
+    return im;
+  }
+}
