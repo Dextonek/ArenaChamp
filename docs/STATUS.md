@@ -60,6 +60,16 @@ cost per spell and a recommendation; page `docs/pipeline/hero-framework/blocks-t
 workbench, `new-hero.md`).
 
 ## Today's entries (2026-11-16)
+- **Done, on branch `t3/c4b07aea` (not merged, not live) (2026-11-16): the spell blocks trial** (page
+  `docs/pipeline/hero-framework/blocks-trial.html`; design section 12). Twelve spells of Sefu, Professor Puff and Big Yoko tried on
+  the blocks: eight moved (Cobra Spit, Shepherd's Crook, Sarcophagus, Helium Bomb, Hot Air, Stomp, Salt Throw, Palm Strike), four
+  stayed code (Scarab Stride, Air Hose, Pop!, Sumo Charge: each needs a block no other spell here uses). New blocks: a sure hit
+  (`target`), a zone judged once (`zone`: circle, cone, strip), sliders (`tune`), a fuller hit, facing aim, a move at the impact, a
+  rules hook per frame, the look's moments before the rules. The eight files -21% lines (the looks moved as they were); rules
+  19-47 lines a spell; about 5 minutes of writing a spell. All 80 prints the same, roster identical, self test identical, the looks
+  the same frame by frame (new: `pipeline/tools/spell-look-compare.py`, old code against new), tsc, build, guard the same.
+  **Waiting on the user: the recommendation** (some shapes only: new heroes on the blocks, a hero's fitting spells when it is
+  next opened anyway; no conversion project of the other ~120, about 12-15 hours, a third staying code).
 - **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
   41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
   (every spot against the cover).

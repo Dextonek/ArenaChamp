@@ -1,38 +1,29 @@
 import * as THREE from 'three';
-import { Emitter } from '../../../emitter';
-import { smoothstep, type Enemy } from '../../../effects/common';
+import { smoothstep } from '../../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../../effects/parts';
+import type { Look } from '../../framework/blocks';
+import { spell, type Cast } from '../../framework/spell';
 import { SAND, SAND_CSS, Dust, SandRibbon } from '../parts';
-import { frameCast, type CastContext } from '../../../effects/targeting';
-import type { Effect, EffectModule } from '../../../effects/types';
 
 /**
  * Shepherd's Crook (sand kit v5, W: a targeted hook and pull). A click on the enemy (6 m, the engine checks sight at the cast)
  * with a 0.5 s wind-up. Sefu swings a sandstone crook out: a ribbon of sand leaves his hand at 0.3 s, sets into pale carved
  * stone as it flies, and its hooked end curls round the enemy's neck (the hook follows their live position) while an ochre
  * cobra of sand winds up the shaft. A gold mark (a ring and a star, both following the enemy) shows who is hooked during the
- * wind-up. At 0.5 s the hit lands (`projectile: true`: the range and the sight were the check, there is nothing to sidestep):
+ * wind-up. At 0.5 s the hit lands (a sure hit: the range and the sight were the check, there is nothing to sidestep):
  * 35 damage, `pull: 3` toward him (the engine stops them 1 m short, at most 4 m), `knock: 0`, slowed 0.5 s. The trait
- * (`src/traits/sand.ts`) Judges them for 3 s. Then the crook snaps back and crumbles. Clean by 1.3 s.
+ * (`../trait.ts`) Judges them for 3 s. Then the crook snaps back and crumbles. Clean by 1.4 s.
  * Network duels: the hit is decided on the victim's screen from the cast's live positions; the dealer's screen draws only the
  * hook (the pull moves the victim's own figure there).
+ *
+ * On the spell blocks (docs/pipeline/hero-framework.md): a sure hit on the chosen enemy. The look is the old file's drawing code.
  */
-export interface ShepherdsCrookSettings {
-  damage: number;
-  /** Metres of the pull (engine cap 4). */
-  pull: number;
-  /** Slow seconds (engine cap 2.5). */
-  slow: number;
-  loop: boolean;
-}
 
-export const defaultShepherdsCrook = (): ShepherdsCrookSettings => ({ damage: 35, pull: 3, slow: 0.5, loop: false });
+type Tune = 'pull' | 'slow';
 
-// Timeline (seconds).
 const LAUNCH_T = 0.3; // the crook leaves his hand
 const HIT_T = 0.5; // the hook closes and the hit lands
 const SNAP_T = 0.9; // the crook snaps back
-const DURATION = 1.4;
 
 const MARK_R = 1.2; // the telegraph circle on the enemy
 const HOOK_R = 0.42; // the hook's loop round the neck
@@ -40,22 +31,8 @@ const HOOK_SWEEP = 4.2; // radians of the loop (about 240 degrees)
 const NECK_Y = 1.55;
 const UP = new THREE.Vector3(0, 1, 0);
 
-export class ShepherdsCrook implements Effect {
-  readonly group = new THREE.Group();
-  readonly settings: ShepherdsCrookSettings;
-  readonly emitters: Emitter[] = [];
+class CrookLook implements Look<null, Tune> {
   readonly screen = createScreenFx();
-  shake = 0;
-  playing = false;
-
-  /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
-  ctx: CastContext | null = null;
-  /** Where the enemy stood at the cast (the telegraph circle's centre). */
-  readonly spot = new THREE.Vector3();
-  private target: Enemy | null = null;
-  private time = 0;
-
-  private from = new THREE.Vector3();
   private hand = new THREE.Vector3();
   private foe = new THREE.Vector3();
   private dir = new THREE.Vector3(0, 0, -1);
@@ -76,43 +53,26 @@ export class ShepherdsCrook implements Effect {
 
   private v1 = new THREE.Vector3();
 
-  constructor(settings: ShepherdsCrookSettings = defaultShepherdsCrook()) {
-    this.settings = settings;
+  constructor(group: THREE.Group) {
     this.screen.impactColor.set(SAND.stone);
     this.staff.shed = 14;
     this.cobra.shed = 0;
     this.dust.life = 0.55;
-    this.group.add(this.staff.mesh, this.cobra.mesh, this.dust.mesh, this.markStar.mesh, this.markRing.mesh, this.pop.mesh, this.groundShock.mesh);
-    this.reset();
+    group.add(this.staff.mesh, this.cobra.mesh, this.dust.mesh, this.markStar.mesh, this.markRing.mesh, this.pop.mesh, this.groundShock.mesh);
   }
 
-  get duration() {
-    return DURATION;
-  }
-
-  get impactTime() {
-    return HIT_T;
-  }
-
-  cast(ctx: CastContext) {
-    this.ctx = ctx;
-    this.target = ctx.targets[0] ?? null;
-    this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
-    this.spot.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
-    this.foe.copy(this.spot);
+  cast(c: Cast<null, Tune>) {
+    const ctx = c.ctx!;
+    this.foe.copy(c.spot);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.foe).setY(1.2);
   }
 
-  play() {
-    this.reset();
-    this.playing = true;
-    this.liveFoe();
+  played(c: Cast<null, Tune>) {
+    this.liveFoe(c);
   }
 
-  private reset() {
-    this.time = 0;
-    this.shake = 0;
+  reset() {
     const f = this.flags;
     f.launched = f.hit = f.snapped = false;
     clearScreenFx(this.screen);
@@ -125,11 +85,17 @@ export class ShepherdsCrook implements Effect {
     this.groundShock.set(this.foe, 0, 0);
   }
 
+  tick(dt: number) {
+    this.staff.update(dt);
+    this.cobra.update(dt);
+    this.dust.update(dt);
+  }
+
   /** The enemy's live feet, and the geometry that hangs off them: the shaft's two ends and the hook's frame. */
-  private liveFoe() {
-    if (this.target) this.foe.copy(this.target.group.position).setY(0);
-    const ctx = this.ctx;
-    const from = ctx && !ctx.sentFrom ? ctx.caster.group.position : this.from;
+  private liveFoe(c: Cast<null, Tune>) {
+    if (c.target) this.foe.copy(c.target.group.position).setY(0);
+    const ctx = c.ctx;
+    const from = ctx && !ctx.sentFrom ? ctx.caster.group.position : c.from;
     this.v1.set(this.foe.x - from.x, 0, this.foe.z - from.z);
     const d = this.v1.length();
     if (d > 0.05) this.dir.copy(this.v1).multiplyScalar(1 / d);
@@ -162,52 +128,30 @@ export class ShepherdsCrook implements Effect {
     return out.addScaledVector(this.side, Math.cos(a) * 0.22).addScaledVector(UP, Math.sin(a) * 0.22);
   };
 
-  update(dt: number) {
-    for (const e of this.emitters) e.update(dt);
-    if (!this.playing) return;
-    this.staff.update(dt);
-    this.cobra.update(dt);
-    this.dust.update(dt);
-    this.time += dt;
-    if (this.time >= DURATION) {
-      const loop = this.settings.loop;
-      this.playing = false;
-      clearScreenFx(this.screen);
-      this.shake = 0;
-      this.reset();
-      if (loop) this.play();
-      return;
-    }
-    const t = this.time;
-    const ctx = this.ctx;
-    const f = this.flags;
-    this.liveFoe();
-
-    if (!f.launched && t >= LAUNCH_T) {
-      f.launched = true;
+  frame(c: Cast<null, Tune>, t: number) {
+    this.liveFoe(c);
+    if (!this.flags.launched && t >= LAUNCH_T) {
+      this.flags.launched = true;
       this.dust.puff(this.v1.copy(this.hand).setY(0.5), 0.5);
     }
+  }
 
-    // The hit: the hook has closed on the neck. `projectile`: judged by the live position (range and sight were the check).
-    if (!f.hit && t >= HIT_T) {
-      f.hit = true;
-      this.hitPos.set(this.foe.x, NECK_Y, this.foe.z);
-      this.shake = 0.3;
-      this.dust.puff(this.v1.set(this.foe.x, 0.3, this.foe.z), 0.7);
-      this.dust.fall(this.v1.set(this.foe.x, 0, this.foe.z), 0.7, 8, 2.0, 0.6);
-      if (ctx && this.target) {
-        ctx.hit(this.target, {
-          damage: this.settings.damage, knock: 0, pull: this.settings.pull, color: SAND_CSS.body, projectile: true,
-          status: { kind: 'slow', seconds: this.settings.slow },
-        });
-      }
-    }
-    if (!f.snapped && t >= SNAP_T) {
-      f.snapped = true;
+  /** The hook has closed on the neck (before the hit lands). */
+  impacting(c: Cast<null, Tune>) {
+    this.flags.hit = true;
+    this.hitPos.set(this.foe.x, NECK_Y, this.foe.z);
+    c.shake = 0.3;
+    this.dust.puff(this.v1.set(this.foe.x, 0.3, this.foe.z), 0.7);
+    this.dust.fall(this.v1.set(this.foe.x, 0, this.foe.z), 0.7, 8, 2.0, 0.6);
+  }
+
+  after(c: Cast<null, Tune>, t: number, dt: number) {
+    if (!this.flags.snapped && t >= SNAP_T) {
+      this.flags.snapped = true;
       this.dust.puff(this.v1.copy(this.hand).setY(0.5), 0.5);
     }
     this.layout(t);
-    this.shake *= Math.exp(-dt * 9);
+    c.shake *= Math.exp(-dt * 9);
   }
 
   private layout(t: number) {
@@ -246,27 +190,23 @@ export class ShepherdsCrook implements Effect {
   }
 }
 
-export const shepherdsCrookModule: EffectModule = {
+export const shepherdsCrookModule = spell<null, Tune>({
   label: "shepherd's crook",
   category: 'hero: sand',
   // Click an enemy within 6 m (the engine checks sight at the cast); the 0.5 s wind-up and the gold mark are the warning.
   targeting: { mode: 'enemy' },
-  create: () => new ShepherdsCrook(),
-  telegraphs(effect) {
-    const e = effect as ShepherdsCrook;
-    if (!e.ctx) return [];
-    return [{ shape: { kind: 'circle', x: e.spot.x, z: e.spot.z, radius: MARK_R }, start: 0, impact: HIT_T }];
+  seconds: 1.4,
+  state: () => null,
+  rules: {
+    windup: HIT_T,
+    shape: { kind: 'target', mark: MARK_R },
+    hit: { damage: 35, knock: 0, pull: 'pull', color: SAND_CSS.body, projectile: true, status: { kind: 'slow', seconds: 'slow' } },
+    warn: 0,
   },
+  // Metres of the pull (engine cap 4); slow seconds (engine cap 2.5).
+  tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },
+  look: CrookLook,
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
-  frameCamera(camera, controls, effect) {
-    const e = effect as ShepherdsCrook;
-    if (e.ctx) frameCast(camera, controls, e.ctx, 2);
-  },
-  buildGui(f, effect) {
-    const s = (effect as ShepherdsCrook).settings;
-    f.add(s, 'loop');
-    f.add(s, 'damage', 1, 100, 1);
-    f.add(s, 'pull', 0, 4, 0.5);
-    f.add(s, 'slow', 0, 2, 0.1);
-  },
-};
+  frame: 2,
+  maxDamage: 100,
+});
