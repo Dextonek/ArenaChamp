@@ -76,7 +76,8 @@ and how it ends. The full account of the factions' old beliefs, and how far each
     go. They are wrong (the Story's ending).
 12. **The Ring is the Tower's threshold.** The Truce was sworn at the Tower's foot, in its shadow, and the Aumbry keeps what is sworn
     in its shadow: the fourth clause became its own law. The Hundred Doors under the stands are its doors into the realms. The duels
-    are its trials: it keeps an echo of every champion who fights in the Ring (the echoes of the weekly Tower, the Trials). Big Yoko's
+    are its trials: it keeps an echo of every champion who fights in the Ring (the echoes of the weekly Tower, the Trials). The hero
+    who "holds the gate" of a Climb chapter (Marin, Fenna, Sefu, Opaline, Oblivion) is such an echo, set there by the Tower. Big Yoko's
     circle stands where the Tower's shadow stopped, and holds it there.
 13. **What it means to do.** At noon on the Hundredth Midsummer it means to close its hand on what is left: the Ring and its
     champions, the last of the light, the three untaken realms whole, and to leave by the Tear. Wick saw the Ring after, empty.

@@ -10,9 +10,10 @@ updated: 2026-11-16
 [Codex](../README.md)
 
 <!-- team -->The Story book (2026-11-15). The user chose: the sun fell because the Tower took it, and the Tower is a collector of worlds.
-The facts the chapters keep to are numbered in [the canon](../canon.md). Chapters 1 to 7 are the Dial's history up to the game's year 100;
-from the Truce Table's council in chapter 7 on, the Story tells what is coming, and nothing in it has happened in the game yet. How the game
-can tell it: [in-game.md](in-game.md).<!-- /team -->
+The facts the chapters keep to are numbered in [the canon](../canon.md). How the game can tell it: [in-game.md](in-game.md).<!-- /team -->
+
+**Where we are.** Chapters 1 to 6, and chapter 7 up to its signs, are the Dial's history, up to now: the spring of the hundredth summer,
+where the rest of the Codex stands. From the night the Uncrowned walks into the Truce Table, the Story tells what is still to come.
 
 ## The story in a page
 

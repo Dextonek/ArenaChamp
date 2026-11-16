@@ -8,9 +8,6 @@ tags: [lore, codex, story]
 *Part three, year 100: now. The Dial is told what the Tower is, and does not want to believe it, and then does.* ·
 [The Long Noon](README.md)
 
-<!-- team -->This chapter is the game's present: everything up to the Truce Table's council has happened in year 100. From the council on,
-the Story tells what is coming.<!-- /team -->
-
 ## Signs
 
 The hundredth summer came with everything at once.
@@ -25,6 +22,8 @@ year since the Fall, toward the Tower, and the villages at its edge could not ke
 found at ten, was larger. The climbers who went up the Tower that spring came down fewer.
 
 And the light was thinner every morning, and nobody could say it was not.
+
+*That is where the Dial stands now. From here on, the Story tells what is still to come.*
 
 ## The Uncrowned at the Table
 
@@ -56,7 +55,8 @@ had been raised on the Hymn. The Countess [Vesper](../heroes/vesper.md) did not 
 
 [Wick](../heroes/wick.md) stood up. He was a hundred and fifty years old by the count, and looked seventy, and he had never in a hundred
 years spoken at the Truce Table. He told them about the hundredth door, and the Ring on the other side of it, at night, empty, a hundred
-years from the night he opened it. He had worked it out years ago. That night was this summer.
+years from the night he opened it. He had worked it out years ago: that night was four summers away. Whatever emptied the Ring would
+have done it by then.
 
 The table stopped laughing.
 

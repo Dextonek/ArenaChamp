@@ -52,13 +52,15 @@ Heart of Noon, its heart. The crowns are the sun's own, and the Raid's bosses.
   years.
 - **The traders** take turns floor by floor, and will take obols, which nobody in the Tower should know about.
 - **The rival**, a hero of the Ring who climbed ahead and wants the right to go higher, waits on some floors for a duel.
-- **The gatekeeper**, a hero of the chapter's realm, holds the gate up at the end of the chapter's first floor. Four of them are
+- **The gatekeeper**, a hero of the chapter's realm, holds the gate up at the end of the chapter's first floor: not the hero
+  themselves, but the Tower's echo of them, kept from a duel in the Ring. Four of them are
   heroes of that realm. At the War it is Oblivion, because that endless war is the one thing on the Dial it has truly unmade.
 - **The ruler** of each floor, the worst thing its realm had ([rulers](rulers.md)), and its enemies ([bestiary](bestiary.md)).
 
 ## Above the fiftieth floor
 
-**The Noon Seat**, where the sun rested at noon. It is empty. Whoever reaches it decides what hangs there. No champion has.
+**The Noon Seat**, where the sun rested at noon. From below it looks empty: it is where the Tower keeps the noon it took. Whoever
+reaches it decides what hangs there. No champion has.
 
 ## What the factions say about the Climb
 

@@ -105,6 +105,9 @@ def to_blocks(src_id, body, known, svgs):
             items = None
         if table is not None:
             head, rows = table[0], [r for r in table[1:] if not re.match(r'^\s*:?-{2,}', r[0] if r else '')]
+            if head and head[0] == 'Hero':
+                # a table of heroes leaves out, in the game, the heroes not in it yet
+                rows = [r for r in rows if re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', r[0]).strip() not in UNRELEASED_CALLS]
             blocks.append(['t', [fix_links(src_id, c, known) for c in head], [[fix_links(src_id, c, known) for c in r] for r in rows]])
             table = None
 
@@ -237,7 +240,9 @@ _NAMES_RE = re.compile(r'\b(' + '|'.join(sorted(map(re.escape, UNRELEASED_CALLS)
 
 def hide_unreleased(text):
     """The text with every unreleased hero's name put as the game calls them. A name that stands beside its own title
-    ("Name, the Title," "Name the Title", "the Title, Name") is first cut to the name, so the title is not said twice."""
+    ("Name, the Title," "Name the Title", "the Title, Name") is first cut to the name, so the title is not said twice;
+    "the new Name" (a page listing the new heroes) becomes "new to the Ring, Name"."""
+    text = re.sub(r'\bthe new (?=' + _NAMES_RE.pattern + ')', 'new to the Ring, ', text)
     for name, titles in _TITLES.items():
         for t in sorted(titles, key=len, reverse=True):
             n, tt = re.escape(name), re.escape(t)

@@ -15,7 +15,7 @@ challenged the Court of Dusk in the Ring.
 The quarrel was an old one, of the kind the Ring was made for: a bell quarter of Aubade against a house of Gloaming. The bell quarter
 claimed one of its daughters, a singer of the hundred who had gone west in the first year and never come home; the Court said she was
 its harlequin, and free, and staying. Cantor stood for the bell quarter. He had told nobody why, after ninety years, that spring; he
-did not know himself. He was sixty and looked forty-eight, and he thought, perhaps, that if he could not sing her home he could fight
+did not know himself. He was a hundred and twenty and looked forty-eight, and he thought, perhaps, that if he could not sing her home he could fight
 for her, and that she would have to look at him.
 
 The Court's champion was named on the morning of the duel, at Mum's own asking. It was Mum.

@@ -80,7 +80,7 @@ The crowns of the chapters are the sun's own: the Sun Warden on the tenth and fo
 fiftieth, and the Heart of Noon itself on the thirtieth. Above the fiftieth floor is **the Noon Seat**, where the sun rested at noon.
 It looks empty from below: it is where the Tower keeps the noon it took. Whoever reaches it decides what hangs there.
 
-Each chapter's gate is held by a hero of that realm: Marin at the Sea, Fenna at the Wood, Sefu at the Sands, Opaline at the Deep. At
+Each chapter's gate is held by the Tower's echo of a hero of that realm, kept from a duel in the Ring: Marin at the Sea, Fenna at the Wood, Sefu at the Sands, Opaline at the Deep. At
 the War the gatekeeper is Oblivion, because that endless war is the one thing on the Dial it has truly unmade.
 
 ## Places

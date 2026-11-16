@@ -62,7 +62,8 @@ The Aumbry had closed its hand.
 
 Everything in the hour of noon at the Tower's top was taken into it. The choir went still, mid-note, ninety-eight singers in their white
 and gold, the master first, before he could draw the breath for the last verse; and then they were not there. Cantor saw it happen. He
-had turned his head to look at Mum, because she had stumbled on the beat and he loved her, and in that turn he was out of step with the
+had turned his head toward a voice that had slipped off the beat, somewhere along the row to his left, because a voice off the beat was
+the one thing he could never let pass; he would believe for a hundred years that it was Ansel's. In that turn he was out of step with the
 hour too, and it passed him by. He saw the singers go still, like a painting of a choir, and then the court was white and empty, and
 there was only the Warden on his knees, and Mum, and himself.
 

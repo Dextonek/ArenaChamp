@@ -197,7 +197,7 @@ A pool for the duel's loading screen, one at random.
 - The Truce was sworn in the Tower's shadow, and the Tower keeps what is sworn there. The fourth clause is cut in its gate.
 - The Mountain's circle is where the Tower's shadow stopped at the Fall. He has not stepped out of it in a hundred years.
 - The Arbiter swept this sand on the day of the Fall. His father was in the market. The market is in the Tower.
-- The Tally's page for the duel of year 90 was blank for ten years. Then the winner wrote on it, in chalk.
+- The Tally's page for the duel of year 90 is blank. The Arbiter remembers raising the winner's arm, and cannot see the face.
 - Every duel ends at the Truce Table. Whoever eats there may not strike in anger outside the Ring.
 - A hundred doors lie under the stands. Nobody built them. The Doorwarden keeps them, and while he keeps them, the Tower cannot use them.
 - The Hymn of Noon held the sun to the Tower. Only its last verse made it let go.

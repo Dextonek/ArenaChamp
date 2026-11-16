@@ -114,7 +114,7 @@ stopped, because only the master knew it.
 "Who was behind the beat?" Cantor asked him. "On the day. I have always believed it was Ansel."
 
 The Blind Cantor laughed, a bass laugh, a hundred years old. "Ansel? Ansel was the steadiest tenor in the hundred. It was the girl, at the
-master's right hand. A hair behind, in the second line, and you turned your head to her, I saw you. And then the master was gone, before he could
+master's right hand. A hair behind, in the second line, and you turned your head toward her, I saw you. And then the master was gone, before he could
 breathe for the verse, and then we all were. Everyone who was on the beat." He turned his white eyes toward Cantor. "She did not drop it, brother.
 It took us because we were in step. It missed her because she wasn't. And it missed you because you were looking at her."
 

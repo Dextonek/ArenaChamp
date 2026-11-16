@@ -47,7 +47,8 @@ sun ([The Tower and the Sun](../tower-and-sun.md)).
   in year 90. Beyond it, the Climb.
 - **The Sun Court.** At the Tower's top, above the clouds: the court where the choir sang the Hymn of Noon and the **Sun Warden**
   kept his post. Its great dial still strikes the hours of the old day, wrong now, and can be heard on still nights from the Ring.
-- **The Noon Seat.** Above the Sun Court, where the sun rested at noon. It is empty. Whoever reaches it decides what hangs there.
+- **The Noon Seat.** Above the Sun Court, where the sun rested at noon. From below it looks empty: the Tower keeps the noon it took
+  there. Whoever reaches it decides what hangs there.
 - **The Tear.** Above everything, where the sun hung: a rent in the sky, black with a burning pink edge, a hand's breadth wider every
   year. Things come through it.
 
