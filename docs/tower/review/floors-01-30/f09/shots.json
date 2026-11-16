@@ -1,0 +1,130 @@
+{
+ "floor": 9,
+ "part": "climb-review-shots",
+ "wallSeconds": 26.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 9,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-183.2,-53.6 y7.32 depth out71n w5.73 h7.74 m1.66 p3 #304837",
+  "probe-float-1": "-151.2,-97.9 y8.8 depth out71n w4.72 h6.35 m1.05 p3 #304837",
+  "probe-float-2": "40.1,191.7 y7.25 depth out73s w6.09 h5.18 m2.55 p1 #4b663b",
+  "probe-float-3": "-31.7,201 y7.68 depth out71s w6.22 h5.73 m2.26 p2 #4b663b #576f40",
+  "probe-gap-4": "17.1,-81.1 y9.7 depth edge w4.12 h3.49 m8.66 sunk-0.53 #304837",
+  "probe-gap-5": "-18.8,-78.5 y9.46 depth out3n w5.82 h4.37 m8.49 sunk-0.76 #304837",
+  "probe-gap-6": "17.1,-81.1 y7.6 depth edge w5.27 h3.96 m7.23 sunk-2.71 #304837",
+  "frames": {
+   "at": [
+    -72,
+    34
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 4.8,
+     "p95": 8.3,
+     "worst": 20.9
+    },
+    {
+     "med": 3.9,
+     "p95": 6.5,
+     "worst": 7.2
+    },
+    {
+     "med": 3.8,
+     "p95": 5,
+     "worst": 7.7
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Gull Queen",
+   "title": "Wings and anchors",
+   "model": "models/tower/sea_queen_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 3461,
+   "frames": 481,
+   "at": [
+    -0.4,
+    15.5
+   ],
+   "heroAt": [
+    -0.4,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

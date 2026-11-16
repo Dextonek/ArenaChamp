@@ -1,0 +1,805 @@
+{
+ "floor": 26,
+ "part": "climb-review-static",
+ "wallSeconds": 55.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 26,
+  "texts": {
+   "id": "sands-26",
+   "name": "The Brass Road",
+   "blurb": "An old road of brass markers, half buried.",
+   "ring": 136,
+   "par": 2200,
+   "shop": {
+    "heal": 40,
+    "boon": 70,
+    "life": 100,
+    "hint": 15
+   },
+   "law": {
+    "kind": "storm",
+    "name": "The storm",
+    "text": null,
+    "raw": {
+     "kind": "storm",
+     "name": "The storm",
+     "blurb": "Every 132 seconds a wall of sand 26 m deep crosses from the north. Inside it you see a few steps and it hurts, unless you stand behind a rock."
+    }
+   },
+   "people": [
+    {
+     "id": "keeper",
+     "name": "The Star-Reader",
+     "role": "keeper",
+     "hero": "Oblivion",
+     "figure": "sands_seer",
+     "at": [
+      2.6,
+      126.1
+     ],
+     "face": -0.4,
+     "greet": [
+      "Another climber. The raiders\u2019 camp is full of raiders, the oasis is dry, and the Mirage Lord waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
+     ],
+     "quests": [
+      "main",
+      "bounty1",
+      "bounty2"
+     ]
+    },
+    {
+     "id": "giver",
+     "name": "The Storm-Counter",
+     "role": "giver",
+     "hero": "Vitriol",
+     "figure": "sands_counter",
+     "at": [
+      -5.5,
+      123.4
+     ],
+     "face": 0.5,
+     "greet": [
+      "The caravans will not move while the road is like this."
+     ],
+     "quests": [
+      "g1",
+      "g2"
+     ]
+    },
+    {
+     "id": "villager",
+     "name": "The Beacon-Keeper",
+     "role": "giver",
+     "hero": "Bram",
+     "figure": "sands_beacon",
+     "at": [
+      55.1,
+      -13.6
+     ],
+     "face": -1.2,
+     "greet": [
+      "You walked all the way to the travellers\u2019 court? Then you can light a fire for me."
+     ],
+     "quests": [
+      "g3"
+     ]
+    },
+    {
+     "id": "rival",
+     "name": "Tempo",
+     "role": "rival",
+     "hero": "Tempo",
+     "figure": null,
+     "at": [
+      62.5,
+      -38.3
+     ],
+     "face": -0.9,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "trader",
+     "name": "The Glass-Seller",
+     "role": "trader",
+     "hero": "Zephyr",
+     "figure": "sands_glass",
+     "at": [
+      5.5,
+      129.6
+     ],
+     "face": -0.6,
+     "greet": [
+      "Shards for what you need. Sand is free; everything else costs."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "The Brass Door",
+     "giver": "keeper",
+     "main": true,
+     "intro": [
+      "Four things. Clear the raiders\u2019 camp. Carry a jar from the camp spring to the oasis, so the road has water again. Then the sun key lies in the scarab dig, and the Red Chief guards it: clear them, then bring it to the winch by the camp."
+     ],
+     "outro": [
+      "The winch turns and the brass door opens, far in the north. The Mirage Lord is behind it. Rest first, then go in."
+     ],
+     "reward": {
+      "shards": 100,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "fell",
+       "text": "Clear the raiders\u2019 camp",
+       "packs": [
+        "a"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the oasis",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the oasis",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the scarab dig",
+       "packs": [
+        "d"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Bring the sun key from the scarab dig to the winch",
+       "item": "key",
+       "itemName": "The sun key",
+       "toName": "the winch",
+       "r": 2.2,
+       "opens": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty1",
+     "name": "The Hollow Rider",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "The Hollow Rider walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     ],
+     "outro": [
+      "A relic from the dunes. Keep it."
+     ],
+     "reward": {
+      "shards": 50,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Hollow Rider",
+       "pack": "named1"
+      }
+     ]
+    },
+    {
+     "id": "bounty2",
+     "name": "Sirocco",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "Sirocco rides the walls\u2019 side. Nobody goes to the travellers\u2019 court while it does."
+     ],
+     "outro": [
+      "The road west is open again."
+     ],
+     "reward": {
+      "shards": 44
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell Sirocco",
+       "pack": "named2"
+      }
+     ]
+    },
+    {
+     "id": "g1",
+     "name": "The Storm Count",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "A marker stone stands out on the dunes. Find it, then hold the high ground in the north while I take the count of the storms. The raiders will not like it."
+     ],
+     "outro": [
+      "The count is done. Take your share."
+     ],
+     "reward": {
+      "shards": 56,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Find the marker stone on the dunes",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the high ground while the count is taken",
+       "r": 3.6,
+       "seconds": 18
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "name": "Sabe\u2019s Caravan",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "Sabe\u2019s caravan waits by the tombs and will not move without a guard. Walk it to the travellers\u2019 court; stand close and it follows the road. Not in a storm: it will not live through one in the open."
+     ],
+     "outro": [
+      "The caravan is in. Sabe pays in what they carry."
+     ],
+     "reward": {
+      "shards": 56
+     },
+     "steps": [
+      {
+       "verb": "lead",
+       "text": "Lead the caravan from the tombs to the travellers\u2019 court",
+       "name": "The caravan",
+       "look": "cart",
+       "speed": 2.2,
+       "r": 3
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "name": "The Watch Fires",
+     "giver": "villager",
+     "main": false,
+     "intro": [
+      "Two watch fires stand cold: at the signal tower and at the sun shrine. Light both, standing by each a moment, and we will see the storm coming."
+     ],
+     "outro": [
+      "Now we see it coming. Take this, from the last storm."
+     ],
+     "reward": {
+      "shards": 44,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "light",
+       "text": "Light the fires at the signal tower and the sun shrine",
+       "seconds": 2
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The Mirage Lord\u2019s door",
+     "at": [
+      0,
+      -99.3
+     ],
+     "locked": "A brass door, shut. The Star-Reader has a quest about the sun key.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Dust Court",
+     "at": [
+      66.1,
+      78.6
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      -17.4,
+      131.7
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Mirage Lord has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    },
+    {
+     "id": "rival",
+     "piece": "rival",
+     "name": "Tempo\u2019s arch",
+     "at": [
+      66.8,
+      -41.1
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Tempo",
+    "mode": "duel",
+    "goal": "the arch",
+    "lines": [
+     "A climber on my road. I am Tempo. Step through the arch behind me and we see who is better. Win, and I fight beside you."
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The wind stone",
+    "text": [
+     "The brass markers showed the road to the sea.",
+     "There has been no sea for a thousand years."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      34.4,
+      108.7
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      91.6,
+      8.5
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      31.6,
+      -78.8
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      -29.7,
+      -80.3
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      -53.5,
+      -1
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      -59.2,
+      100.3
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      47,
+      26.3
+     ],
+     "name": "The raiders\u2019 camp stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      51.9,
+      -11.7
+     ],
+     "name": "The travellers\u2019 court stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      35.7,
+      -38.3
+     ],
+     "name": "The tombs stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      -39,
+      -24.5
+     ],
+     "name": "The signal tower stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      -46.1,
+      44.6
+     ],
+     "name": "The scarab dig stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      -19.7,
+      18.6
+     ],
+     "name": "The oasis stone"
+    }
+   ],
+   "enemies": {
+    "raider": {
+     "name": "Raider",
+     "blurb": "Strikes up close.",
+     "look": "raider",
+     "model": null
+    },
+    "slinger": {
+     "name": "Slinger",
+     "blurb": "Throws stones from a distance.",
+     "look": "slinger",
+     "model": null
+    },
+    "wraith": {
+     "name": "Dust wraith",
+     "blurb": "Lives only in the storm.",
+     "look": "wraith",
+     "model": null
+    },
+    "chief": {
+     "name": "The Red Chief",
+     "blurb": "Guards the scarab dig.",
+     "look": "chief",
+     "model": null
+    },
+    "mother": {
+     "name": "The Hollow Rider",
+     "blurb": "Walks the canyon and strikes hard.",
+     "look": "mother",
+     "model": null
+    },
+    "rider": {
+     "name": "Sirocco",
+     "blurb": "Walks the wall side and strikes hard.",
+     "look": "chief",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "a",
+     "at": [
+      64.4,
+      31.7
+     ],
+     "mix": "2xraider 2xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "d",
+     "at": [
+      -59.2,
+      55.8
+     ],
+     "mix": "2xraider",
+     "elite": "chief",
+     "named": null
+    },
+    {
+     "id": "b",
+     "at": [
+      44,
+      -53
+     ],
+     "mix": "1xraider 3xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "f",
+     "at": [
+      -6.8,
+      -42.8
+     ],
+     "mix": "2xraider 1xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "named1",
+     "at": [
+      22.6,
+      -6.3
+     ],
+     "mix": "1xmother",
+     "elite": null,
+     "named": {
+      "name": "The Hollow Rider",
+      "bounty": {
+       "shards": 50,
+       "relic": true
+      }
+     }
+    },
+    {
+     "id": "named2",
+     "at": [
+      40.7,
+      27.2
+     ],
+     "mix": "1xrider",
+     "elite": null,
+     "named": {
+      "name": "Sirocco",
+      "bounty": {
+       "shards": 44,
+       "relic": false
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      127.6
+     ]
+    },
+    "a": {
+     "name": "The raiders\u2019 camp",
+     "at": [
+      64.4,
+      31.7
+     ]
+    },
+    "v": {
+     "name": "The travellers\u2019 court",
+     "at": [
+      66,
+      -17.6
+     ]
+    },
+    "b": {
+     "name": "The tombs",
+     "at": [
+      43.1,
+      -51.8
+     ]
+    },
+    "f": {
+     "name": "The old fort",
+     "at": [
+      -6.8,
+      -42.8
+     ]
+    },
+    "c": {
+     "name": "The signal tower",
+     "at": [
+      -45.7,
+      -30.3
+     ]
+    },
+    "e": {
+     "name": "The sun shrine",
+     "at": [
+      -65.4,
+      14.4
+     ]
+    },
+    "d": {
+     "name": "The scarab dig",
+     "at": [
+      -56.1,
+      53.3
+     ]
+    },
+    "h": {
+     "name": "The oasis",
+     "at": [
+      -33.3,
+      20
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 26,
+    "hard": 1.33,
+    "ruler": {
+     "name": "The Mirage Lord",
+     "title": "Never where it stands",
+     "stand": "Cantor",
+     "tint": "#d0a060",
+     "scale": 2.66,
+     "hp": 3750,
+     "speed": 2.1,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "canyon",
+     "surge": {
+      "safe": {
+       "shell": 4.4
+      },
+      "burn": 0.05,
+      "name": "The storm",
+      "look": "storm"
+     },
+     "line": "It goes under the sand and comes up where you stood",
+     "model": "models/tower/sands_sphinx_v4.glb",
+     "body": {
+      "radius": 0.4,
+      "height": 2.7
+     },
+     "tintAmount": 0.22
+    },
+    "gate": {
+     "hero": "Gus",
+     "arena": "canyon",
+     "level": 3,
+     "twist": {
+      "kind": "hazard",
+      "name": "A storm crosses"
+     }
+    },
+    "trial": {
+     "kind": "break",
+     "height": 7
+    },
+    "rival": {
+     "hero": "Tempo",
+     "twist": "warded",
+     "line": "Tempo waits by the arch",
+     "height": 7
+    }
+   }
+  },
+  "check": {
+   "floor": 26,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34169,
+     "ringM2": 58107,
+     "unreachable": [],
+     "spots": 55,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 5,
+    "at": [
+     47,
+     30
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 26,
+   "pieces": 6109,
+   "things": 1967,
+   "counts": {
+    "float": 2,
+    "gap": 8,
+    "buried": 30,
+    "cover": 2
+   },
+   "float": [
+    "-175.9,32.9 y11.76 depth out80s w33.07 h15.51 m4.28 p2 #8a4c36 #a0664a",
+    "68.3,-113.9 y26.33 depth out39n w0.71 h0.51 m0.11 p1 #8a7a4a"
+   ],
+   "gap": [
+    "22,-98.8 y3.8 depth edge w8.15 h0.1 m3.8 sunk-8.2 #c9a24a",
+    "99.3,-5.1 y3.94 depth edge w1.58 h0.3 m3.67 sunk-1.14 #248985",
+    "22,-98.8 y2.74 depth edge w8.04 h0.38 m2.74 sunk-9.05 #1f8a86",
+    "84.1,-48.6 y14.75 jackal out8n w8.55 h0.81 m0.98 sunk-1.93 #9b7751",
+    "39.2,-89 y2.31 depth edge w1.88 h0.3 m0.64 sunk-3.41 #248985",
+    "83.9,-43.5 y14.84 jackal out5n w0.53 h0.44 m0.37 sunk-0.33 #232126",
+    "84.5,-43.1 y14.84 jackal out5n w0.53 h0.44 m0.3 sunk-0.18 #232126",
+    "84.7,-44 y14.82 jackal out6n w1.97 h0.56 m0.27 sunk-1.15 #232126"
+   ],
+   "buried": [
+    "-42.6,-111.3 y4.62 ribs out17n w3.33 h1.66 m-2.91 p6 #c3b79b #232126",
+    "23.3,136.9 y-0.41 depth edge w1.47 h0.95 m-0.38 p1 #8a4c36",
+    "14.6,139.9 y-0.57 depth edge w2.52 h1.52 m-0.14 p1 #8a4c36",
+    "20.2,139.2 y-0.31 depth edge w2.18 h1.27 m-0.53 p1 #a0664a",
+    "10.1,141.1 y-0.5 depth edge w2.33 h1.35 m-0.31 p1 #a0664a",
+    "1.7,142.8 y-0.39 depth edge w1.8 h1.04 m-0.46 p1 #a0664a",
+    "17.6,139.2 y-0.62 depth edge w2.65 h1.54 m-0.14 p1 #6c3a2c",
+    "-12.6,142.9 y-0.44 depth edge w1.95 h1.12 m-0.39 p1 #6c3a2c",
+    "-21.2,142.3 y-0.46 depth edge w2.31 h1.34 m-0.27 p1 #6c3a2c",
+    "5.1,-106.9 y0.14 depth edge w1.5 h0.9 m-2.76 p1 #8a4c36",
+    "7.7,-106.4 y0.3 depth edge w2.45 h1.51 m-2.63 p1 #a0664a",
+    "-17.6,-105.5 y-0.37 depth edge w1.8 h1.05 m-1.1 p1 #a0664a",
+    "-9.9,-107.6 y0.47 depth edge w2.1 h1.21 m-1.86 p1 #a0664a",
+    "95.3,-15.3 y-0.67 depth edge w2.73 h1.58 m-0.12 p1 #6c3a2c",
+    "66.6,108.3 y-0.46 depth edge w3.65 h1.59 m-0.23 p2 #a0664a #6c3a2c",
+    "64.7,111.1 y-0.05 depth edge w1.46 h0.92 m-0.79 p1 #8a4c36",
+    "93.4,71.8 y-0.42 depth edge w2.06 h1.2 m-0.16 p1 #a0664a",
+    "32.2,-93.9 y-0.59 depth edge w2.29 h1.38 m-0.02 p1 #6c3a2c",
+    "105.2,18.6 y-0.57 depth edge w4.73 h2.56 m-0.44 p2 #a0664a #6c3a2c",
+    "103.1,41.8 y-0.54 depth edge w3.92 h2.13 m-0.05 p2 #a0664a #6c3a2c",
+    "103.7,30.5 y-0.38 depth edge w1.53 h0.88 m-0.43 p1 #8a4c36",
+    "39.1,129.8 y-0.43 depth edge w1.82 h1.16 m-0.4 p1 #a0664a",
+    "34.9,131.6 y-0.48 depth edge w1.88 h1.11 m-0.12 p1 #6c3a2c",
+    "27,134.5 y-0.39 depth edge w1.56 h0.91 m-0.09 p1 #6c3a2c",
+    "-26.1,141.5 y-0.12 depth edge w1.69 h0.98 m-0.75 p1 #8a4c36",
+    "-27.5,140.1 y-0.41 depth edge w1.59 h0.98 m-0.12 p1 #a0664a",
+    "-30.9,139.2 y-0.45 depth edge w1.86 h1.08 m-0.36 p1 #6c3a2c",
+    "26.9,-98.6 y-0.65 depth edge w8.44 h2.66 m-0.27 p4 #a0664a #6c3a2c #8a4c36",
+    "48.5,-81.6 y0.67 depth edge w1.84 h1.08 m-2.24 p1 #a0664a",
+    "82,-41.9 y0 depth edge w3.41 h2.22 m-1.73 p2 #6c3a2c #a0664a"
+   ],
+   "cover": [
+    "-35.9,21 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+    "68.8,-18.7 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a"
+   ]
+  },
+  "grass": {
+   "floor": 26,
+   "planes": [
+    "588m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v6 h0.15 #2a2220",
+     "n": 8,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 19.96,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v95 h0.83 #8a7a4a",
+     "n": 552,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 0.32,
+     "nowhere": 0,
+     "steep": []
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

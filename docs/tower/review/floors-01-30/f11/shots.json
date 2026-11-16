@@ -1,0 +1,136 @@
+{
+ "floor": 11,
+ "part": "climb-review-shots",
+ "wallSeconds": 29.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 11,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-bo",
+   "person-mortis",
+   "person-nyx",
+   "person-silvane",
+   "pack-den",
+   "pack-bramble",
+   "pack-giants",
+   "pack-oak",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-93.9,27.6 y1.87 depth in w0.17 h0.12 m1.87 p1 #ffffff",
+  "probe-float-1": "0.9,111.7 y0.74 depth in w0.21 h0.1 m0.74 p1 #ffffff",
+  "probe-float-2": "-81.1,49.8 y5.32 depth in w0.22 h0.11 m5.32 p1 #ffffff",
+  "probe-float-3": "-43.4,-3.5 y3.6 depth in w0.2 h0.12 m3.6 p1 #ffffff",
+  "probe-gap-4": "73,-74.9 y9.71 depth out18n w5.5 h4.3 m4.87 sunk-0.7 #2e4435",
+  "probe-gap-5": "-34.2,-102.3 y12.88 depth out24n w5.37 h4.2 m4.62 sunk-0.7 #2e4435",
+  "probe-gap-6": "-36.2,-103.9 y13.79 depth out26n w4.76 h3.72 m4.2 sunk-0.53 #2e4435",
+  "probe-cover-7": "-31.7,-70.1 y2.6 depth in w3.72 h2.69 m8.99 r10.65  #4d6a3b",
+  "probe-cover-8": "-31.5,-71.2 y-0.07 depth in w1.47 h1.28 m8.88 r10.65  #3d5537",
+  "probe-cover-9": "-32.5,-68.6 y2.87 depth in w1.94 h1.88 m7.67 r10.65  #4d6a3b",
+  "probe-cover-10": "-33.1,-70.1 y0 depth in w0.79 h3.72 m7.56 r10.65  #4b3525",
+  "frames": {
+   "at": [
+    -77,
+    23
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 6.6,
+     "p95": 9.7,
+     "worst": 12.3
+    },
+    {
+     "med": 5.7,
+     "p95": 8.4,
+     "worst": 10
+    },
+    {
+     "med": 6.5,
+     "p95": 8.5,
+     "worst": 11
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Elder Root",
+   "title": "The heart of the wood",
+   "model": "models/tower/wood_elder_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 4725,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 47.78,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty: not taken",
+    "mortis-lamps: not taken",
+    "mortis-spade: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 48s"
+   ]
+  }
+ }
+}

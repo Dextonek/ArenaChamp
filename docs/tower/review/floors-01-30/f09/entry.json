@@ -1,0 +1,32 @@
+{
+ "floor": 9,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable; the rival (Fenna), the trial, the ruler (the Gull Queen, in her own model) and the gate (Zephyr) all played.",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths, a tuft under the ground. Nothing in the air."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler-close.jpg",
+   "The Gull Queen"
+  ],
+  [
+   "person-villager.jpg",
+   "The Lamp-Bearer in the lane of nets"
+  ],
+  [
+   "pack-d.jpg",
+   "The wreck's pack"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

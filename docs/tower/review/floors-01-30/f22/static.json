@@ -1,0 +1,793 @@
+{
+ "floor": 22,
+ "part": "climb-review-static",
+ "wallSeconds": 11.0,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 22,
+  "texts": {
+   "id": "sands-22",
+   "name": "The Red Wadi",
+   "blurb": "A riverbed that forgot its river.",
+   "ring": 128,
+   "par": 2024,
+   "shop": {
+    "heal": 32,
+    "boon": 58,
+    "life": 84,
+    "hint": 15
+   },
+   "law": {
+    "kind": "storm",
+    "name": "The storm",
+    "text": null,
+    "raw": {
+     "kind": "storm",
+     "name": "The storm",
+     "blurb": "Every 140 seconds a wall of sand 23 m deep crosses from the north. Inside it you see a few steps and it hurts, unless you stand behind a rock."
+    }
+   },
+   "people": [
+    {
+     "id": "keeper",
+     "name": "The Star-Reader",
+     "role": "keeper",
+     "hero": "Vitriol",
+     "figure": "sands_seer",
+     "at": [
+      2.6,
+      114.5
+     ],
+     "face": -0.4,
+     "greet": [
+      "Another climber. The raiders\u2019 camp is full of raiders, the oasis is dry, and the Scarab King waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
+     ],
+     "quests": [
+      "main",
+      "bounty1",
+      "bounty2"
+     ]
+    },
+    {
+     "id": "giver",
+     "name": "The Storm-Counter",
+     "role": "giver",
+     "hero": "Zephyr",
+     "figure": "sands_counter",
+     "at": [
+      -5.5,
+      111.8
+     ],
+     "face": 0.5,
+     "greet": [
+      "Sand is free here. Everything else I need help with."
+     ],
+     "quests": [
+      "g1",
+      "g2"
+     ]
+    },
+    {
+     "id": "villager",
+     "name": "The Beacon-Keeper",
+     "role": "giver",
+     "hero": "Pip",
+     "figure": "sands_beacon",
+     "at": [
+      82.8,
+      -11.2
+     ],
+     "face": -1.3,
+     "greet": [
+      "You walked all the way to the travellers\u2019 court? Then you can light a fire for me."
+     ],
+     "quests": [
+      "g3"
+     ]
+    },
+    {
+     "id": "rival",
+     "name": "Bram",
+     "role": "rival",
+     "hero": "Bram",
+     "figure": null,
+     "at": [
+      69.8,
+      -62.3
+     ],
+     "face": -0.8,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "trader",
+     "name": "The Glass-Seller",
+     "role": "trader",
+     "hero": "Tempo",
+     "figure": "sands_glass",
+     "at": [
+      5.5,
+      118
+     ],
+     "face": -0.6,
+     "greet": [
+      "Shards for what you need. Sand is free; everything else costs."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "Water and Brass",
+     "giver": "keeper",
+     "main": true,
+     "intro": [
+      "Four things. Clear the raiders\u2019 camp. Carry a jar from the camp spring to the palm well, so the road has water again. Then the brass seal lies in the fallen obelisk, and the Brass Captain guards it: clear them, then bring it to the winch by the camp."
+     ],
+     "outro": [
+      "The winch turns and the brass door opens, far in the north. The Scarab King is behind it. Rest first, then go in."
+     ],
+     "reward": {
+      "shards": 84,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "fell",
+       "text": "Clear the raiders\u2019 camp",
+       "packs": [
+        "a"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the palm well",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the palm well",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the fallen obelisk",
+       "packs": [
+        "d"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Bring the brass seal from the fallen obelisk to the winch",
+       "item": "key",
+       "itemName": "The brass seal",
+       "toName": "the winch",
+       "r": 2.2,
+       "opens": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty1",
+     "name": "The Dune Mother",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "The Dune Mother walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     ],
+     "outro": [
+      "A relic from the dunes. Keep it."
+     ],
+     "reward": {
+      "shards": 42,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Dune Mother",
+       "pack": "named1"
+      }
+     ]
+    },
+    {
+     "id": "bounty2",
+     "name": "Sandjaw",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "Sandjaw rides the walls\u2019 side. Nobody goes to the travellers\u2019 court while it does."
+     ],
+     "outro": [
+      "The road west is open again."
+     ],
+     "reward": {
+      "shards": 37
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell Sandjaw",
+       "pack": "named2"
+      }
+     ]
+    },
+    {
+     "id": "g1",
+     "name": "The Storm Count",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "A marker stone stands out on the dunes. Find it, then hold the high ground in the north while I take the count of the storms. The raiders will not like it."
+     ],
+     "outro": [
+      "The count is done. Take your share."
+     ],
+     "reward": {
+      "shards": 47,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Find the marker stone on the dunes",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the high ground while the count is taken",
+       "r": 3.6,
+       "seconds": 16
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "name": "Hadi\u2019s Caravan",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "Hadi\u2019s caravan waits by the tombs and will not move without a guard. Walk it to the travellers\u2019 court; stand close and it follows the road. Not in a storm: it will not live through one in the open."
+     ],
+     "outro": [
+      "The caravan is in. Hadi pays in what they carry."
+     ],
+     "reward": {
+      "shards": 47
+     },
+     "steps": [
+      {
+       "verb": "lead",
+       "text": "Lead the caravan from the tombs to the travellers\u2019 court",
+       "name": "The caravan",
+       "look": "cart",
+       "speed": 2.2,
+       "r": 3
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "name": "The Watch Fires",
+     "giver": "villager",
+     "main": false,
+     "intro": [
+      "Two watch fires stand cold: at the watchtower and at the sun shrine. Light both, standing by each a moment, and we will see the storm coming."
+     ],
+     "outro": [
+      "Now we see it coming. Take this, from the last storm."
+     ],
+     "reward": {
+      "shards": 37,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "light",
+       "text": "Light the fires at the watchtower and the sun shrine",
+       "seconds": 2
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The Scarab King\u2019s door",
+     "at": [
+      0,
+      -107.5
+     ],
+     "locked": "A brass door, shut. The Star-Reader has a quest about a seal.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Dust Court",
+     "at": [
+      66.9,
+      83.2
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      14.7,
+      117.2
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Scarab King has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    },
+    {
+     "id": "rival",
+     "piece": "rival",
+     "name": "Bram\u2019s arch",
+     "at": [
+      73.5,
+      -65.6
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Bram",
+    "mode": "duel",
+    "goal": "the arch",
+    "lines": [
+     "A climber on my road. I am Bram. Step through the arch behind me and we see who is better. Win, and I fight beside you."
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The wind stone",
+    "text": [
+     "The river left one summer and did not say why.",
+     "The wadi still waits for it."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      35,
+      109.4
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      95.7,
+      0.2
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      20.4,
+      -100.6
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      -35.4,
+      -86.7
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      -54,
+      -9.3
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      -41.3,
+      75
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      53.9,
+      21.5
+     ],
+     "name": "The raiders\u2019 camp stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      67,
+      -17.6
+     ],
+     "name": "The travellers\u2019 court stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      34.8,
+      -64.8
+     ],
+     "name": "The tombs stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      -43.7,
+      -46.7
+     ],
+     "name": "The watchtower stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      -32.2,
+      33.9
+     ],
+     "name": "The fallen obelisk stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      -27.2,
+      -0.4
+     ],
+     "name": "The palm well stone"
+    }
+   ],
+   "enemies": {
+    "raider": {
+     "name": "Raider",
+     "blurb": "Strikes up close.",
+     "look": "raider",
+     "model": null
+    },
+    "slinger": {
+     "name": "Slinger",
+     "blurb": "Throws stones from a distance.",
+     "look": "slinger",
+     "model": null
+    },
+    "wraith": {
+     "name": "Dust wraith",
+     "blurb": "Lives only in the storm.",
+     "look": "wraith",
+     "model": null
+    },
+    "chief": {
+     "name": "The Brass Captain",
+     "blurb": "Guards the fallen obelisk.",
+     "look": "chief",
+     "model": null
+    },
+    "mother": {
+     "name": "The Dune Mother",
+     "blurb": "Walks the canyon and strikes hard.",
+     "look": "mother",
+     "model": null
+    },
+    "rider": {
+     "name": "Sandjaw",
+     "blurb": "Walks the wall side and strikes hard.",
+     "look": "chief",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "a",
+     "at": [
+      68.4,
+      25.7
+     ],
+     "mix": "2xraider 2xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "d",
+     "at": [
+      -47.7,
+      44
+     ],
+     "mix": "2xraider",
+     "elite": "chief",
+     "named": null
+    },
+    {
+     "id": "b",
+     "at": [
+      40.7,
+      -79.5
+     ],
+     "mix": "2xraider 2xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "f",
+     "at": [
+      -3.9,
+      -44.4
+     ],
+     "mix": "2xraider 1xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "named1",
+     "at": [
+      20.8,
+      -7.2
+     ],
+     "mix": "1xmother",
+     "elite": null,
+     "named": {
+      "name": "The Dune Mother",
+      "bounty": {
+       "shards": 42,
+       "relic": true
+      }
+     }
+    },
+    {
+     "id": "named2",
+     "at": [
+      45.6,
+      31.9
+     ],
+     "mix": "1xrider",
+     "elite": null,
+     "named": {
+      "name": "Sandjaw",
+      "bounty": {
+       "shards": 37,
+       "relic": false
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      116
+     ]
+    },
+    "a": {
+     "name": "The raiders\u2019 camp",
+     "at": [
+      68.4,
+      25.7
+     ]
+    },
+    "v": {
+     "name": "The travellers\u2019 court",
+     "at": [
+      81.1,
+      -22.9
+     ]
+    },
+    "b": {
+     "name": "The tombs",
+     "at": [
+      40.1,
+      -78.1
+     ]
+    },
+    "f": {
+     "name": "The mud fort",
+     "at": [
+      -3.9,
+      -44.4
+     ]
+    },
+    "c": {
+     "name": "The watchtower",
+     "at": [
+      -49.5,
+      -53.5
+     ]
+    },
+    "e": {
+     "name": "The sun shrine",
+     "at": [
+      -54.1,
+      18.5
+     ]
+    },
+    "d": {
+     "name": "The fallen obelisk",
+     "at": [
+      -44.6,
+      41.5
+     ]
+    },
+    "h": {
+     "name": "The palm well",
+     "at": [
+      -36.9,
+      -8.6
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 22,
+    "hard": 1.27,
+    "ruler": {
+     "name": "The Scarab King",
+     "title": "Crowned in a shell",
+     "stand": "Sirix",
+     "tint": "#c0904a",
+     "scale": 2.58,
+     "hp": 3450,
+     "speed": 2.1,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "canyon",
+     "surge": {
+      "safe": {
+       "shell": 4.4
+      },
+      "burn": 0.05,
+      "name": "The storm",
+      "look": "storm"
+     },
+     "line": "It goes under the sand and comes up where you stood",
+     "model": "models/tower/sands_scarab_v4.glb",
+     "body": {
+      "radius": 0.6,
+      "height": 2.55
+     },
+     "tintAmount": 0.22
+    },
+    "gate": {
+     "hero": "Cantor",
+     "arena": "canyon",
+     "level": 3,
+     "twist": {
+      "kind": "hazard",
+      "name": "A storm crosses"
+     }
+    },
+    "trial": {
+     "kind": "break",
+     "height": 6
+    },
+    "rival": {
+     "hero": "Bram",
+     "twist": "swift",
+     "line": "Bram waits by the arch",
+     "height": 6
+    }
+   }
+  },
+  "check": {
+   "floor": 22,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34300,
+     "ringM2": 51472,
+     "unreachable": [],
+     "spots": 59,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 5,
+    "at": [
+     52,
+     20
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 22,
+   "pieces": 6098,
+   "things": 1999,
+   "counts": {
+    "float": 1,
+    "gap": 1,
+    "buried": 18,
+    "cover": 2
+   },
+   "float": [
+    "-147.1,-87.9 y18.05 depth out70n w31.35 h14.76 m10.92 p2 #a0664a #9a7252"
+   ],
+   "gap": [
+    "75,-86.8 y1.95 depth edge w2.05 h0.3 m1.02 sunk-2.02 #248985"
+   ],
+   "buried": [
+    "-23.3,120 y-0.32 depth edge w1.55 h0.89 m-0.39 p1 #a0664a",
+    "18,-115.1 y-0.34 depth edge w2.26 h1.39 m-2.6 p1 #a0664a",
+    "-7.2,-114.6 y-0.41 depth edge w1.95 h1.15 m-1.71 p1 #6c3a2c",
+    "-3.5,-114.4 y-0.45 depth edge w1.81 h1.05 m-1 p1 #8a4c36",
+    "-10.1,-114.1 y-0.43 depth edge w1.92 h1.19 m-1.23 p1 #a0664a",
+    "80.6,94.9 y-0.54 depth edge w2.63 h1.52 m-0.15 p1 #a0664a",
+    "47.9,-106.6 y-0.67 depth edge w4.63 h2.19 m-1.44 p2 #6c3a2c #8a4c36",
+    "101.7,41.3 y-0.76 depth edge w4.13 h2.18 m-0.02 p2 #a0664a #6c3a2c",
+    "72.9,105.9 y-0.36 depth edge w2.64 h1.59 m-0.1 p1 #6c3a2c",
+    "53.2,123.3 y-0.42 depth edge w4.11 h1.95 m-0.02 p2 #a0664a #6c3a2c",
+    "35.3,130.8 y-0.33 depth edge w1.72 h1.02 m-0.65 p1 #6c3a2c",
+    "31.5,131.6 y-0.34 depth edge w1.55 h0.93 m-0.49 p1 #8a4c36",
+    "13.5,133.2 y-0.47 depth edge w1.96 h1.18 m-0.52 p1 #8a4c36",
+    "11.4,133.5 y-0.35 depth edge w2.02 h1.21 m-0.6 p1 #a0664a",
+    "1.5,131.6 y-0.53 depth edge w2.78 h1.62 m-0.1 p1 #a0664a",
+    "90,-68.5 y-0.36 depth edge w1.78 h1.06 m-2.17 p1 #a0664a",
+    "96.6,-58.2 y0.28 depth edge w2.03 h1.2 m-3.06 p1 #6c3a2c",
+    "107.3,-1.1 y-0.1 depth edge w3.68 h2.26 m-0.05 p2 #8a4c36 #6c3a2c"
+   ],
+   "cover": [
+    "-39.5,-9.7 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+    "83.9,-24 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a"
+   ]
+  },
+  "grass": {
+   "floor": 22,
+   "planes": [
+    "572m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v6 h0.15 #2a2220",
+     "n": 8,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 21.88,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v95 h0.83 #8a7a4a",
+     "n": 563,
+     "over06": 1,
+     "over10": 0,
+     "offMax": 0.24,
+     "nowhere": 0,
+     "steep": [
+      {
+       "x": 67.7,
+       "z": -123.3,
+       "y": 14.2,
+       "slope": 0.71,
+       "off": -0.08
+      }
+     ]
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

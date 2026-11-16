@@ -1,0 +1,41 @@
+{
+ "floor": 20,
+ "verdict": "Clean but for one word: the Wood's crown. Cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; Ash and Ember (the Raid's twin bosses, their own models, in the Cinder Court) fell on the first try; the rival (Anka), the trial and the gate (Tempo) all played.",
+ "found": [
+  {
+   "kind": "fixed",
+   "title": "“Once Ash and Ember has fallen”",
+   "text": "The gate's lock spoke of the twin crown in the singular. The Wood's maker now says “have” for them (with floor 13's fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed."
+  },
+  {
+   "kind": "ok",
+   "title": "The same words on floor 50: fixed by the floors 31-50 review",
+   "text": "Floor 50 said “Ash and Ember has fallen”; the War's agent fixed it at the same time (merged)."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler.jpg",
+   "The Cinder Court: Ash and Ember as the fight opens"
+  ],
+  [
+   "ruler-close.jpg",
+   "Ash"
+  ],
+  [
+   "person-rival.jpg",
+   "Anka, the rival"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

@@ -3812,7 +3812,7 @@ export const WOOD_14: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and the Antler King waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and the Antler King waits at its heart, far to the north. Free the wisps, cut the roots that feed him, and his door opens."
     ],
     "quests": [
      "main",
@@ -3891,7 +3891,7 @@ export const WOOD_14: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the thorn brake, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Antler King, and its door opens."
+     "Clear the thorn brake, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Antler King, and his door opens."
     ],
     "steps": [
      {
@@ -4093,14 +4093,14 @@ export const WOOD_14: GenFloor = {
     "name": "The Lost Spade",
     "giver": "giver",
     "intro": [
-     "Bram the younger dropped a bundle in the thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
+     "Bram the younger dropped a spade in the thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
     ],
     "steps": [
      {
       "verb": "carry",
-      "text": "Bring the bundle from the thicket to the fire",
-      "item": "bundle",
-      "itemName": "The bundle",
+      "text": "Bring the spade from the thicket to the fire",
+      "item": "spade",
+      "itemName": "The spade",
       "toName": "the camp fire",
       "look": "bundle",
       "plain": true,

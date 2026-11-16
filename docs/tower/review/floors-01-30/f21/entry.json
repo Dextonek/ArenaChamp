@@ -1,0 +1,48 @@
+{
+ "floor": 21,
+ "verdict": "Clean: the Sands' handmade floor. Cleared with four stars and no fall through the storms, no console error, every spot reachable; the wells, the caravan, the rival (Vesper, as the Codex has it), the trial, the Scarab Colossus (own model) and the gate (Sefu) all played; the people and their lines match the Codex (the Star-Reader, the Storm-Counter).",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "Packs and props",
+   "text": "The ridge's slingers and the fort's raiders slept through the bot's route (they fight as anyone walks in: picture). The probe: 47 red rocks at the canyon foot sunk a little into the sand (nothing shows), a house at the cliff foot and a crate on the rocks with a gap the eye does not see, two shrubs on the rim."
+  }
+ ],
+ "pictures": [
+  [
+   "start.jpg",
+   "The camp as it opens"
+  ],
+  [
+   "person-pip.jpg",
+   "The Star-Reader"
+  ],
+  [
+   "person-kaia.jpg",
+   "The Storm-Counter"
+  ],
+  [
+   "pack-fort.jpg",
+   "The old fort and the Raider Chief"
+  ],
+  [
+   "ruler-close.jpg",
+   "The Scarab Colossus"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ],
+  [
+   "phone-camp.jpg",
+   "Phone: the camp"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

@@ -3367,7 +3367,7 @@ export const SANDS_28: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The red tents is full of raiders, the oasis is dry, and the Red Jackal waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
+     "Another climber. The red tents are full of raiders, the oasis is dry, and the Red Jackal waits behind the brass door in the far north. The wadi is long: keep to the roads, and to the rocks when the wind comes."
     ],
     "quests": [
      "main",
@@ -3835,7 +3835,7 @@ export const SANDS_28: GenFloor = {
      "r": 0.5,
      "height": 3.8
     },
-    "locked": "A brass door, shut. Mabel has a quest about a seal."
+    "locked": "A brass door, shut. Mabel has a quest about the scarab seal."
    },
    {
     "id": "trial",

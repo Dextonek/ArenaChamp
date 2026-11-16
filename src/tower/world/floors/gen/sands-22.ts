@@ -3677,7 +3677,7 @@ export const SANDS_22: GenFloor = {
      "r": 0.5,
      "height": 3.8
     },
-    "locked": "A brass door, shut. Vitriol has a quest about a seal."
+    "locked": "A brass door, shut. Vitriol has a quest about the brass seal."
    },
    {
     "id": "trial",

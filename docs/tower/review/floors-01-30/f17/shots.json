@@ -1,0 +1,141 @@
+{
+ "floor": 17,
+ "part": "climb-review-shots",
+ "wallSeconds": 35.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 17,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-12.6,-39.3 y3.55 depth in w0.19 h0.12 m3.55 p1 #ffffff",
+  "probe-float-1": "-20.3,5.8 y0.5 depth in w0.21 h0.12 m0.5 p1 #ffffff",
+  "probe-float-2": "-58,-0.5 y4.09 depth in w0.17 h0.12 m4.09 p1 #ffffff",
+  "probe-float-3": "-45.5,58.9 y4.2 depth in w0.21 h0.11 m4.2 p1 #ffffff",
+  "probe-gap-4": "-46.6,-123.7 y10.3 depth out20n w5.41 h4.24 m4.67 sunk-0.56 #2e4435",
+  "probe-gap-5": "-13.1,-136.5 y10.79 depth out22n w5.43 h4.25 m4.38 sunk-0.36 #2e4435",
+  "probe-gap-6": "11.1,-137.1 y11.72 depth out22n w5.35 h4.19 m4.26 sunk-0.08 #2e4435",
+  "probe-cover-7": "39.8,86 y0 depth in w0.49 h2.11 m4.27 r4.27  #4b3525",
+  "probe-cover-8": "-62.3,18.8 y0 depth in w0.41 h4.72 m4.27 r4.27  #c7bfa7",
+  "probe-cover-9": "-62.3,18.8 y3.46 depth in w2.44 h2.93 m4.27 r4.27  #797939",
+  "probe-cover-10": "39.8,86 y4.07 depth in w1.67 h1.95 m4.23 r4.27  #2e4435",
+  "frames": {
+   "at": [
+    23,
+    -72
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 11.6,
+     "p95": 21.9,
+     "worst": 67.3
+    },
+    {
+     "med": 10,
+     "p95": 15.7,
+     "worst": 223.7
+    },
+    {
+     "med": 9.9,
+     "p95": 13.5,
+     "worst": 77.1
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Lantern Root",
+   "title": "It drinks the light",
+   "model": "models/tower/wood_antler_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 6948,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 55.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}

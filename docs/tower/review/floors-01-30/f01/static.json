@@ -1,0 +1,845 @@
+{
+ "floor": 1,
+ "part": "climb-review-static",
+ "wallSeconds": 7.6,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 1,
+  "texts": {
+   "id": "harbour",
+   "name": "The Drowned Harbour",
+   "blurb": "A harbour town the sea keeps taking back, tide by tide.",
+   "ring": 137,
+   "par": 1716,
+   "shop": {
+    "heal": 30,
+    "boon": 55,
+    "life": 80,
+    "hint": 15
+   },
+   "law": {
+    "kind": "tide",
+    "name": "The tide",
+    "text": null,
+    "raw": {
+     "kind": "tide",
+     "name": "The tide",
+     "blurb": "Every 80 seconds the sea comes in for 15: the tidal flats flood, slow and hurt. The higher ground stays dry."
+    }
+   },
+   "people": [
+    {
+     "id": "gus",
+     "name": "The Bell-Warden",
+     "role": "keeper",
+     "hero": "Gus",
+     "figure": "sea_keeper",
+     "at": [
+      -2.6,
+      92.6
+     ],
+     "face": 0.4,
+     "greet": [
+      "Another climber. The tide took the last ones, and the market is overrun. The Drowned Captain sits in his lair far to the north, behind a chain only the captain\u2019s key will lift. The coast is long: take the roads."
+     ],
+     "quests": [
+      "main",
+      "bounty",
+      "bounty2"
+     ]
+    },
+    {
+     "id": "anka",
+     "name": "The Net-Father",
+     "role": "giver",
+     "hero": "Anka",
+     "figure": "sea_fisher",
+     "at": [
+      5.5,
+      89.9
+     ],
+     "face": -0.5,
+     "greet": [
+      "The sea keeps what it takes. Perhaps you can take some of it back."
+     ],
+     "quests": [
+      "anka-net",
+      "anka-tam"
+     ]
+    },
+    {
+     "id": "villager",
+     "name": "The Lamp-Bearer",
+     "role": "giver",
+     "hero": "Mabel",
+     "figure": "sea_lamp",
+     "at": [
+      -85.1,
+      -14.7
+     ],
+     "face": 1.3,
+     "greet": [
+      "You came all the way to the old village? Then you can carry something back."
+     ],
+     "quests": [
+      "g3"
+     ]
+    },
+    {
+     "id": "zephyr",
+     "name": "Zephyr",
+     "role": "rival",
+     "hero": "Zephyr",
+     "figure": null,
+     "at": [
+      -71,
+      -44.7
+     ],
+     "face": 0.9,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "pip",
+     "name": "The Tide-Broker",
+     "role": "trader",
+     "hero": "Pip",
+     "figure": "sea_trader",
+     "at": [
+      -5.5,
+      96.1
+     ],
+     "face": 0.6,
+     "greet": [
+      "Shards for what you need. Prices are fixed; the sea does not haggle either."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "The Captain\u2019s Key",
+     "giver": "gus",
+     "main": true,
+     "intro": [
+      "Four things. Clear the fish market, where they gather. Light the lighthouse and the beacon, so the boats know the harbour lives. Last, the captain\u2019s key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     ],
+     "outro": [
+      "The chain falls. The Drowned Captain\u2019s door stands open, far in the north. Take your time, then go in."
+     ],
+     "reward": {
+      "shards": 80,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "fell",
+       "text": "Clear the fish market",
+       "packs": [
+        "market"
+       ]
+      },
+      {
+       "verb": "light",
+       "text": "Light the lighthouse and the beacon",
+       "seconds": 2
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the wreck",
+       "packs": [
+        "wreck"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Bring the key from the wreck to the winch",
+       "item": "key",
+       "itemName": "The key",
+       "toName": "the winch",
+       "r": 2.2,
+       "opens": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty",
+     "name": "Old Barnacle",
+     "giver": "gus",
+     "main": false,
+     "intro": [
+      "Old Barnacle walks the middle of the harbour. A hundred tides on him. Fell him and the sea quietens a little."
+     ],
+     "outro": [
+      "A relic from a barnacle. Keep it."
+     ],
+     "reward": {
+      "shards": 40,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell Old Barnacle",
+       "pack": "barnacle"
+      }
+     ]
+    },
+    {
+     "id": "bounty2",
+     "name": "The Tidecaller",
+     "giver": "gus",
+     "main": false,
+     "intro": [
+      "The Tidecaller walks the land side. Nobody goes to the old village while it does."
+     ],
+     "outro": [
+      "The road is open again."
+     ],
+     "reward": {
+      "shards": 35
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Tidecaller",
+       "pack": "named2"
+      }
+     ]
+    },
+    {
+     "id": "anka-net",
+     "name": "The Net Lines",
+     "giver": "anka",
+     "main": false,
+     "intro": [
+      "My boat lies on the shore. My net lines are hauled from a spot far in the north: hold the place while I do."
+     ],
+     "outro": [
+      "The lines are in. Take this, from the sea\u2019s own pockets."
+     ],
+     "reward": {
+      "shards": 35,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Find the boat on the shore",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the net spot while the lines come in",
+       "r": 3.6,
+       "seconds": 18
+      }
+     ]
+    },
+    {
+     "id": "anka-tam",
+     "name": "Tam the Net-Mender",
+     "giver": "anka",
+     "main": false,
+     "intro": [
+      "Tam mends nets in the caves. He will not come out alone. Walk him back to the camp; stand close and he follows the road."
+     ],
+     "outro": [
+      "Tam is home. He pays in what he has."
+     ],
+     "reward": {
+      "shards": 45
+     },
+     "steps": [
+      {
+       "verb": "lead",
+       "text": "Lead Tam from the caves to the camp",
+       "name": "Tam",
+       "r": 2.5
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "name": "A Jar of Oil",
+     "giver": "villager",
+     "main": false,
+     "intro": [
+      "A jar of good lamp oil, for the camp. Carry it there before the tide finds it."
+     ],
+     "outro": [
+      "Good oil, and dry. Take this."
+     ],
+     "reward": {
+      "shards": 40
+     },
+     "steps": [
+      {
+       "verb": "carry",
+       "text": "Bring the jar to the camp",
+       "item": "jar",
+       "itemName": "A jar of oil",
+       "toName": "the camp",
+       "r": 2.2,
+       "look": "jar"
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The Drowned Captain\u2019s lair",
+     "at": [
+      0,
+      -105.8
+     ],
+     "locked": "A chain holds the lair shut. The Bell-Warden has a quest about a key.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Flooded Vault",
+     "at": [
+      -45.7,
+      76.6
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      -15.9,
+      95.4
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Drowned Captain has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Zephyr",
+    "mode": "race",
+    "goal": "the lighthouse",
+    "lines": [
+     "Another climber? I am Zephyr, and I am faster. To the lighthouse: whoever touches its foot first. Care to try?"
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The tide stone",
+    "text": [
+     "The sea came in once and kept what it liked.",
+     "Those who swore to the harbour still stand watch, drowned, at their posts."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      -20.8,
+      93.9
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      -81.7,
+      3.8
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      -20.3,
+      -94.7
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      34.5,
+      -97.1
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      78,
+      -13.7
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      38.4,
+      71
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      -44,
+      25.7
+     ],
+     "name": "The fish market stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      -60.4,
+      -6.1
+     ],
+     "name": "The old village stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      -48.8,
+      -47
+     ],
+     "name": "The caves stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      51.5,
+      -58.6
+     ],
+     "name": "The lighthouse stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      34.6,
+      35.8
+     ],
+     "name": "The wreck stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      -19.3,
+      8.2
+     ],
+     "name": "The drowned chapel stone"
+    }
+   ],
+   "enemies": {
+    "docker": {
+     "name": "Drowned docker",
+     "blurb": "Strikes up close.",
+     "look": "docker",
+     "model": null
+    },
+    "netter": {
+     "name": "Net caster",
+     "blurb": "Throws a net: you are rooted a moment.",
+     "look": "netter",
+     "model": null
+    },
+    "crab": {
+     "name": "Brine crab",
+     "blurb": "Slow and armoured.",
+     "look": "crab",
+     "model": null
+    },
+    "mate": {
+     "name": "The Harbourmaster\u2019s Mate",
+     "blurb": "Guards the wreck.",
+     "look": "mate",
+     "model": null
+    },
+    "named1": {
+     "name": "Old Barnacle",
+     "blurb": "Walks the harbour and strikes hard.",
+     "look": "barnacle",
+     "model": null
+    },
+    "named2": {
+     "name": "The Tidecaller",
+     "blurb": "Walks the land side and strikes hard.",
+     "look": "mate",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "market",
+     "at": [
+      -58.3,
+      30.3
+     ],
+     "mix": "2xdocker 1xnetter 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "wreck",
+     "at": [
+      49,
+      42.7
+     ],
+     "mix": "2xdocker",
+     "elite": "mate",
+     "named": null
+    },
+    {
+     "id": "caves",
+     "at": [
+      -55.7,
+      -59.2
+     ],
+     "mix": "2xdocker 2xnetter 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "f",
+     "at": [
+      -0.8,
+      -37.7
+     ],
+     "mix": "2xdocker 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "barnacle",
+     "at": [
+      -20.7,
+      -5.5
+     ],
+     "mix": "1xnamed1",
+     "elite": null,
+     "named": {
+      "name": "Old Barnacle",
+      "bounty": {
+       "shards": 40,
+       "relic": true
+      }
+     }
+    },
+    {
+     "id": "named2",
+     "at": [
+      -37.2,
+      31.4
+     ],
+     "mix": "1xnamed2",
+     "elite": null,
+     "named": {
+      "name": "The Tidecaller",
+      "bounty": {
+       "shards": 35,
+       "relic": false
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      94.1
+     ]
+    },
+    "market": {
+     "name": "The fish market",
+     "at": [
+      -58.3,
+      30.3
+     ]
+    },
+    "v": {
+     "name": "The old village",
+     "at": [
+      -74.7,
+      -8.3
+     ]
+    },
+    "caves": {
+     "name": "The caves",
+     "at": [
+      -54.4,
+      -58.2
+     ]
+    },
+    "f": {
+     "name": "The old fort",
+     "at": [
+      -0.8,
+      -37.7
+     ]
+    },
+    "lighthouse": {
+     "name": "The lighthouse",
+     "at": [
+      58.9,
+      -63.7
+     ]
+    },
+    "e": {
+     "name": "The beacon",
+     "at": [
+      76.5,
+      20.2
+     ]
+    },
+    "wreck": {
+     "name": "The wreck",
+     "at": [
+      45.8,
+      40.3
+     ]
+    },
+    "h": {
+     "name": "The drowned chapel",
+     "at": [
+      -36.8,
+      10.4
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 1,
+    "hard": 1,
+    "ruler": {
+     "name": "The Drowned Captain",
+     "title": "Anchor, cannon and tide",
+     "stand": "Bram",
+     "scale": 2.2,
+     "hp": 2800,
+     "speed": 2,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "harbour",
+     "sentries": {
+      "look": "cannon",
+      "hp": 150,
+      "again": 22,
+      "fall": {
+       "stagger": 55
+      },
+      "from": 1
+     },
+     "surge": {
+      "safe": {
+       "decks": [
+        {
+         "x": 0,
+         "z": 7,
+         "r": 3.7
+        },
+        {
+         "x": 0,
+         "z": 14.6,
+         "r": 2.3
+        },
+        {
+         "x": 0,
+         "z": -0.6,
+         "r": 2.3
+        }
+       ]
+      },
+      "burn": 0.06,
+      "slow": 0.35,
+      "name": "The tide",
+      "look": "sea"
+     },
+     "line": "Stand on the deck when the tide comes in",
+     "model": "models/tower/sea_admiral_v4.glb",
+     "body": {
+      "radius": 0.4,
+      "height": 2.38
+     },
+     "tintAmount": 0.22
+    },
+    "gate": {
+     "hero": "Marin",
+     "arena": "harbour",
+     "level": 3,
+     "twist": {
+      "kind": "shift",
+      "name": "The tide comes in",
+      "early": 29
+     }
+    },
+    "trial": {
+     "kind": "gauntlet",
+     "height": 2
+    }
+   }
+  },
+  "check": {
+   "floor": 1,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34968,
+     "ringM2": 58965,
+     "unreachable": [],
+     "spots": 51,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 5,
+    "at": [
+     -71,
+     -67
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 1,
+   "pieces": 11785,
+   "things": 5726,
+   "counts": {
+    "float": 14,
+    "gap": 56,
+    "buried": 0,
+    "cover": 0
+   },
+   "float": [
+    "-13.3,-181.4 y10.25 depth out71n w5.03 h6.48 m0.66 p6 #304837",
+    "24.3,174.9 y4.97 depth out71s w5.11 h3.86 m1.01 p3 #4b663b #576f40 #304837",
+    "30.2,174.9 y5.45 depth out73s w5.38 h4.04 m1.52 p1 #304837",
+    "-163.7,-50.1 y5.23 depth out71n w4.72 h6.37 m1.21 p3 #304837",
+    "-168.2,-14.5 y4.05 depth out72n w4.21 h3.16 m0.99 p1 #304837",
+    "-159.8,44.6 y7.36 depth out71s w6.25 h5.31 m2.6 p1 #4b663b",
+    "138.4,-4.5 y-0.75 depth out17n w7.63 h0.87 m2.32 p3 #232126 #c9a24a #4b3525",
+    "82.7,72.8 y-0.75 depth out20s w6.45 h7.8 m2.5 p5 #5e202c #c9a24a #4b3525",
+    "75.9,93 y-0.75 depth out31s w7.35 h7.8 m2.65 p5 #232126 #c9a24a #4b3525",
+    "101.3,-123.7 y-0.75 depth out31n w6.5 h7.8 m2.65 p5 #2f5660 #c9a24a #4b3525",
+    "96.2,56.3 y-0.75 depth out16s w6.63 h0.87 m2.2 p3 #232126 #c9a24a #4b3525",
+    "132.8,21.4 y-0.75 depth out22s w7.38 h7.8 m2.65 p5 #5e202c #c9a24a #4b3525",
+    "134,-57.2 y-0.75 depth out15n w7.46 h7.8 m1.82 p5 #5e202c #c9a24a #4b3525",
+    "84.7,-147.8 y-2.12 depth out46n w7.31 h8.34 m0.89 p1 #615d5a"
+   ],
+   "gap": [
+    "-55.8,-94.4 y9.36 depth edge w4.57 h3.87 m9.03 sunk-0.3 #304837",
+    "-29.3,-106.9 y9.36 depth edge w4.27 h3.62 m8.96 sunk-0.95 #304837",
+    "-73.5,-80.2 y8.02 depth edge w5.22 h3.92 m7.71 sunk-2.07 #304837",
+    "-67.7,-85.4 y7.63 depth edge w5.66 h4.25 m7.34 sunk-1.97 #304837",
+    "-55.8,-94.4 y7.04 depth edge w5.84 h4.39 m7.03 sunk-2.77 #304837",
+    "-29.3,-106.9 y7.19 depth edge w5.46 h4.11 m7.02 sunk-3.99 #304837",
+    "-66.8,-86.6 y7.87 depth edge w4.07 h3.05 m6.81 sunk-1.4 #304837",
+    "-82.6,-70.1 y8.45 depth out3n w3.4 h2.55 m5.83 sunk-1.13 #304837",
+    "-67.7,-85.4 y5.75 depth edge w0.78 h3 m1.02 sunk-1.06 #4b3525",
+    "-29.3,-106.9 y5.38 depth edge w0.77 h2.9 m0.99 sunk-1.5 #4b3525",
+    "-73.5,-80.3 y6.29 depth edge w0.73 h2.77 m0.98 sunk-1.04 #4b3525",
+    "-55.7,-94.4 y5.11 depth edge w0.83 h3.1 m0.96 sunk-1.48 #4b3525",
+    "-84,-65.3 y2.71 depth edge w2.69 h1.52 m0.86 sunk-3.09 #3b3e48",
+    "-112.2,13.6 y3.47 depth out18s w5.68 h6.14 m0.84 sunk-0.77 #b3aa93",
+    "-8,-112.3 y2.66 depth edge w3.13 h1.7 m0.76 sunk-2.78 #3b3e48",
+    "-68.9,-86.3 y9.18 depth out4n w0.83 h3.15 m0.71 sunk-0.2 #4b3525",
+    "-66.8,-86.6 y6.52 depth edge w0.56 h2.15 m0.7 sunk-0.69 #4b3525",
+    "-107.8,3.4 y1.78 depth out13n w5.73 h6.82 m0.61 sunk-0.69 #b3aa93",
+    "-105.5,-48 y2.49 depth out14n w6.08 h6.96 m0.58 sunk-0.57 #b3aa93",
+    "-82.5,-70.1 y7.32 depth out3n w0.47 h1.8 m0.57 sunk-0.69 #4b3525",
+    "-71.8,-81.1 y3.51 depth edge w1.93 h1.06 m0.57 sunk-2.45 #3b3e48",
+    "-108.3,-27.8 y1.36 depth out13n w7.04 h5.88 m0.55 sunk-0.74 #b3aa93",
+    "0,-113.7 y3.78 depth edge w2.46 h1.36 m0.54 sunk-2.98 #3b3e48",
+    "-71.3,-84.9 y10.02 depth out4n w0.7 h2.66 m0.53 sunk0.03 #4b3525",
+    "-88.6,84.2 y2.23 depth out18s w7.19 h6.22 m0.52 sunk-0.47 #b3aa93",
+    "-116,-11.4 y2.7 depth out20n w5.36 h6.5 m0.5 sunk-0.46 #b3aa93",
+    "-110.8,-17.8 y1.66 depth out14n w6.79 h5.76 m0.5 sunk-0.59 #b3aa93",
+    "-106,25.6 y2.06 depth out15s w6.22 h7.05 m0.5 sunk-0.57 #b3aa93",
+    "-100.4,-39.3 y1.28 depth out7n w7.1 h6.84 m0.46 sunk-0.54 #b3aa93",
+    "-75.1,-80.4 y9.14 depth out4n w0.51 h1.91 m0.43 sunk-0.02 #4b3525",
+    "-72.6,104.5 y1.99 depth out19s w6.98 h6.53 m0.4 sunk-0.38 #b3aa93",
+    "-25.4,-107.8 y2.91 depth edge w2.73 h1.49 m0.4 sunk-2.69 #3b3e48",
+    "50.4,-117.7 y0.47 depth out7n w2.67 h0 m0.4 sunk0.04 #a29981",
+    "-103.6,44.9 y1.7 depth out17s w6.69 h7.28 m0.36 sunk-0.43 #b3aa93",
+    "-78.5,97.8 y1.81 depth out18s w7.01 h6.83 m0.36 sunk-0.46 #b3aa93",
+    "-103.3,16.4 y1.13 depth out10s w5.05 h6.46 m0.35 sunk-0.48 #b3aa93",
+    "-98.5,0.3 y0.4 depth edge w5.75 h6.49 m0.33 sunk-0.17 #b3aa93",
+    "-93.5,73.5 y1.89 depth out18s w6.53 h6.23 m0.33 sunk-0.4 #b3aa93",
+    "-82.7,78.2 y0.96 depth out10s w6.71 h6.86 m0.32 sunk-0.39 #b3aa93",
+    "-42.6,-100.5 y1.11 depth edge w2.34 h1.38 m0.32 sunk-2.78 #3b3e48",
+    "-63.4,91.2 y0.4 depth edge w6.86 h5.98 m0.3 sunk-0.06 #b3aa93",
+    "-84.6,58.1 y0.4 depth out3s w7.33 h5.73 m0.3 sunk-0.09 #b3aa93",
+    "-98.1,56 y1.27 depth out15s w6.69 h6.8 m0.3 sunk-0.4 #b3aa93",
+    "-93.9,64.4 y1.28 depth out14s w7.07 h5.81 m0.29 sunk-0.3 #b3aa93",
+    "-58.7,108.4 y1.04 depth out13s w6.31 h6.46 m0.24 sunk-0.32 #b3aa93",
+    "-77.6,84.9 y0.83 depth out10s w6.72 h6.24 m0.24 sunk-0.32 #b3aa93",
+    "-64.8,100.6 y0.83 depth out11s w6.1 h5.87 m0.22 sunk-0.29 #b3aa93",
+    "-99.3,-26.7 y0.41 depth out4n w5.66 h5.77 m0.21 sunk-0.12 #b3aa93",
+    "-93.6,-49.7 y3.48 depth out3n w0.76 h2.92 m0.18 sunk-0.34 #4b3525",
+    "-56.6,98.6 y0.4 depth out4s w6.53 h5.68 m0.17 sunk-0.07 #b3aa93",
+    "-95.7,39.7 y0.64 depth out8s w6.7 h7.05 m0.17 sunk-0.29 #b3aa93",
+    "-97,28.5 y0.57 depth out6s w5.52 h7.01 m0.14 sunk-0.26 #b3aa93",
+    "-89.7,47.1 y0.42 depth out4s w6.85 h7.16 m0.14 sunk-0.13 #b3aa93",
+    "-75.3,-102.1 y10.22 depth out20n w0.59 h2.25 m0.12 sunk-0.01 #4b3525",
+    "-99.9,-7.8 y0.42 depth out4n w5.25 h6.66 m0.12 sunk-0.12 #b3aa93",
+    "47.5,-117.6 y1.15 depth out6n w0.45 h0.09 m0.12 sunk0.01 #b7995a"
+   ],
+   "buried": [],
+   "cover": []
+  },
+  "grass": {
+   "floor": 1,
+   "planes": [
+    "591m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v54 h0.60 #566f3e",
+     "n": 4020,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 0.01,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v96 h0.44 #4b663b",
+     "n": 1253,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 0.18,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v48 h0.26 #f2f2ee",
+     "n": 9,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 25.34,
+     "nowhere": 0,
+     "steep": []
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

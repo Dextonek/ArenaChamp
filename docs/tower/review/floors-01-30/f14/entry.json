@@ -1,0 +1,32 @@
+{
+ "floor": 14,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Sirix), the trial, the Antler King (own model) and the gate (Isolde) all played. The keeper's “feed him, and his door” is floor 13's fix.",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "Packs and props",
+   "text": "The thicket's pack slept through the bot's route; the probe's hits are the Wood's trees, spore motes and the hills past the edge."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler-close.jpg",
+   "The Antler King"
+  ],
+  [
+   "person-villager.jpg",
+   "The Kiln-Mother at the charcoal clearing"
+  ],
+  [
+   "pack-a.jpg",
+   "The thorn brake's pack"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

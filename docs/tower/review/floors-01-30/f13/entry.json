@@ -1,0 +1,51 @@
+{
+ "floor": 13,
+ "verdict": "Clean but for one line: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Mabel), the trial, the Thorn Mother (own model) and the gate (Mortis) all played.",
+ "found": [
+  {
+   "kind": "fixed",
+   "title": "The keeper called the Thorn Mother “it”",
+   "text": "“... cut the roots that feed it, and its door opens”, for the Thorn Mother, the Moss Warden, the Antler King, the Briar Witch, and “Ash and Ember waits” on the crown. The Wood's maker now gives each its word: her, him, them (a tree, a root or a bog stays “it”). src/tower/world/gen/wood.ts; floors 12-20 re-baked, only those lines changed (five floors).",
+   "pics": [
+    [
+     "fix-her-before.jpg",
+     "Before"
+    ],
+    [
+     "fix-her-after.jpg",
+     "After"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "Packs and props",
+   "text": "The stag glade's pack slept through the bot's route (nothing it is asked takes it there); the props probe's hits are the Wood's trees, its spore motes and the trees on the hills past the edge."
+  }
+ ],
+ "pictures": [
+  [
+   "person-rival.jpg",
+   "Mabel, the rival"
+  ],
+  [
+   "pack-d.jpg",
+   "The standing stones and the Stag-Crowned"
+  ],
+  [
+   "ruler-close.jpg",
+   "The Thorn Mother"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

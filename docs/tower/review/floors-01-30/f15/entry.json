@@ -1,0 +1,32 @@
+{
+ "floor": 15,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Sefu), the trial (a horde), the Hollow Elder (the Elder's model, tinted) and the gate (Silvane) all played.",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "Packs and props",
+   "text": "The standing stones' pack slept through the bot's route; the probe's hits are the Wood's trees, spore motes and the hills past the edge."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler-close.jpg",
+   "The Hollow Elder"
+  ],
+  [
+   "pack-d.jpg",
+   "The stag glade and the Stag-Crowned"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

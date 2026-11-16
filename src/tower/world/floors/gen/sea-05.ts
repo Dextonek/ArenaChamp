@@ -3361,7 +3361,7 @@ export const SEA_05: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The drying racks is overrun, and the Tide Judge sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads."
+     "Another climber. The drying racks are overrun, and the Tide Judge sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads."
     ],
     "quests": [
      "main",

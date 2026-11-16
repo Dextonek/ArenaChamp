@@ -1,0 +1,141 @@
+{
+ "floor": 13,
+ "part": "climb-review-shots",
+ "wallSeconds": 27.4,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 13,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-62.4,43 y0.59 depth in w0.18 h0.11 m0.59 p1 #ffffff",
+  "probe-float-1": "-60.6,42.9 y3.62 depth in w0.2 h0.09 m3.62 p1 #ffffff",
+  "probe-float-2": "-58.7,-36.5 y4.67 depth in w0.19 h0.09 m4.67 p1 #ffffff",
+  "probe-float-3": "-36.8,31.8 y3.67 depth in w0.21 h0.12 m3.67 p1 #ffffff",
+  "probe-gap-4": "-82.2,-94 y11.9 depth out22n w4.84 h3.79 m4.51 sunk-0.74 #2e4435",
+  "probe-gap-5": "-37.8,-113.4 y9.32 depth out19n w5.4 h4.22 m4.5 sunk-0.72 #2e4435",
+  "probe-gap-6": "5.9,-110.7 y10.73 depth out20n w5.25 h4.11 m4.49 sunk-0.49 #2e4435",
+  "probe-cover-7": "-14.1,1.4 y0 depth in w0.58 h2.75 m4.01 r4.01  #4b3525",
+  "probe-cover-8": "-14.1,1.4 y2.16 depth in w3.3 h2.81 m4.01 r4.01  #405a35",
+  "probe-cover-9": "-77.7,-32.3 y0 depth in w0.85 h4.03 m3.89 r3.89  #4b3525",
+  "probe-cover-10": "-77.7,-32.3 y3.16 depth in w4.84 h4.11 m3.89 r3.89  #405a35",
+  "frames": {
+   "at": [
+    -6,
+    -38
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 8.8,
+     "p95": 12.4,
+     "worst": 35.1
+    },
+    {
+     "med": 8.6,
+     "p95": 15.6,
+     "worst": 101.5
+    },
+    {
+     "med": 8.8,
+     "p95": 11.7,
+     "worst": 58.1
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Thorn Mother",
+   "title": "She grows the walls",
+   "model": "models/tower/wood_briar_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 5393,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 55.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}

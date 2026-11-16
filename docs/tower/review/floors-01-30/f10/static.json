@@ -1,0 +1,880 @@
+{
+ "floor": 10,
+ "part": "climb-review-static",
+ "wallSeconds": 29.9,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 10,
+  "texts": {
+   "id": "sea-10",
+   "name": "The Crown of the Sea",
+   "blurb": "Where the sea ends, a court of the sun keeps the way up.",
+   "ring": 133,
+   "par": 2112,
+   "shop": {
+    "heal": 48,
+    "boon": 82,
+    "life": 116,
+    "hint": 15
+   },
+   "law": {
+    "kind": "tide",
+    "name": "The tide",
+    "text": null,
+    "raw": {
+     "kind": "tide",
+     "name": "The tide",
+     "blurb": "Every 71 seconds the sea comes in for 17: the tidal flats flood, slow and hurt. The higher ground stays dry."
+    }
+   },
+   "people": [
+    {
+     "id": "keeper",
+     "name": "The Bell-Warden",
+     "role": "keeper",
+     "hero": "Opaline",
+     "figure": "sea_keeper",
+     "at": [
+      2.6,
+      79.9
+     ],
+     "face": -0.4,
+     "greet": [
+      "Another climber. The net market is overrun, and the Sun Warden sits in the lair to the far north, behind a chain only a key will lift. The coast is long: take the roads."
+     ],
+     "quests": [
+      "main",
+      "bounty1",
+      "bounty2"
+     ]
+    },
+    {
+     "id": "giver",
+     "name": "The Net-Father",
+     "role": "giver",
+     "hero": "Oblivion",
+     "figure": "sea_fisher",
+     "at": [
+      -5.5,
+      77.2
+     ],
+     "face": 0.5,
+     "greet": [
+      "The sea keeps what it takes. Perhaps you can take some of it back."
+     ],
+     "quests": [
+      "g1",
+      "g2"
+     ]
+    },
+    {
+     "id": "villager",
+     "name": "The Lamp-Bearer",
+     "role": "giver",
+     "hero": "Wick",
+     "figure": "sea_lamp",
+     "at": [
+      89.2,
+      -16.8
+     ],
+     "face": -1.3,
+     "greet": [
+      "You came all the way to the lane of nets? Then you can carry something back."
+     ],
+     "quests": [
+      "g3"
+     ]
+    },
+    {
+     "id": "rival",
+     "name": "Isolde",
+     "role": "rival",
+     "hero": "Isolde",
+     "figure": null,
+     "at": [
+      85.7,
+      -47.1
+     ],
+     "face": -1,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "trader",
+     "name": "The Coral-Pedlar",
+     "role": "trader",
+     "hero": "Pip",
+     "figure": "sea_pedlar",
+     "at": [
+      5.5,
+      83.4
+     ],
+     "face": -0.6,
+     "greet": [
+      "Shards for what you need. Prices are fixed; the sea does not haggle either."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "The Captain\u2019s Key",
+     "giver": "keeper",
+     "main": true,
+     "intro": [
+      "Four things. Clear the net market, where they gather. Light the lighthouse and the signal fire, so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     ],
+     "outro": [
+      "The chain falls. The Sun Warden\u2019s door stands open, far in the north. Take your time, then go in."
+     ],
+     "reward": {
+      "shards": 116,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "fell",
+       "text": "Clear the net market",
+       "packs": [
+        "a"
+       ]
+      },
+      {
+       "verb": "light",
+       "text": "Light the lighthouse and the signal fire",
+       "seconds": 2
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the wreck",
+       "packs": [
+        "d"
+       ]
+      },
+      {
+       "verb": "carry",
+       "text": "Bring the key from the wreck to the winch",
+       "item": "key",
+       "itemName": "The key",
+       "toName": "the winch",
+       "r": 2.2,
+       "opens": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty1",
+     "name": "Mother Kelp",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "Mother Kelp walks the middle of the harbour. Fell it and the sea quietens a little."
+     ],
+     "outro": [
+      "A relic from the deep. Keep it."
+     ],
+     "reward": {
+      "shards": 58,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell Mother Kelp",
+       "pack": "named1"
+      }
+     ]
+    },
+    {
+     "id": "bounty2",
+     "name": "The Tidecaller",
+     "giver": "keeper",
+     "main": false,
+     "intro": [
+      "The Tidecaller walks the land side. Nobody goes to the lane of nets while it does."
+     ],
+     "outro": [
+      "The road is open again."
+     ],
+     "reward": {
+      "shards": 51
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Tidecaller",
+       "pack": "named2"
+      }
+     ]
+    },
+    {
+     "id": "g1",
+     "name": "The Net Lines",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "My boat lies on the shore. My lines are hauled from a spot in the north: hold the place while I do."
+     ],
+     "outro": [
+      "The lines are in. Take this, from the sea\u2019s own pockets."
+     ],
+     "reward": {
+      "shards": 51,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Find the boat on the shore",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the net spot while the lines come in",
+       "r": 3.6,
+       "seconds": 22
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "name": "Bring Tam Home",
+     "giver": "giver",
+     "main": false,
+     "intro": [
+      "Tam hides in the sea caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
+     ],
+     "outro": [
+      "Tam is home, and pays in what they have."
+     ],
+     "reward": {
+      "shards": 65
+     },
+     "steps": [
+      {
+       "verb": "lead",
+       "text": "Lead Tam from the sea caves to the camp",
+       "name": "Tam",
+       "r": 2.5
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "name": "A Jar of Oil",
+     "giver": "villager",
+     "main": false,
+     "intro": [
+      "A jar of good lamp oil, for the camp. Carry it there before the tide finds it."
+     ],
+     "outro": [
+      "Good oil, and dry. Take this."
+     ],
+     "reward": {
+      "shards": 58
+     },
+     "steps": [
+      {
+       "verb": "carry",
+       "text": "Bring the jar to the camp",
+       "item": "jar",
+       "itemName": "A jar of oil",
+       "toName": "the camp",
+       "r": 2.2,
+       "look": "jar"
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The Sun Court",
+     "at": [
+      0,
+      -97.4
+     ],
+     "locked": "A chain holds the lair shut. The Bell-Warden has a quest about a key.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Salt Cellar",
+     "at": [
+      45.4,
+      76.9
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      -18.2,
+      78.9
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Sun Warden has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    },
+    {
+     "id": "rival",
+     "piece": "rival",
+     "name": "Isolde\u2019s arch",
+     "at": [
+      89.9,
+      -49.7
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Isolde",
+    "mode": "duel",
+    "goal": "the arch",
+    "lines": [
+     "Another climber. I am Isolde. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The tide stone",
+    "text": [
+     "The sea does not drown a town all at once.",
+     "It takes a street a year, and asks nothing."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      23.5,
+      85.9
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      99.1,
+      9.2
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      21.4,
+      -89.4
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      -24.6,
+      -87.4
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      -71.7,
+      -10.4
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      -34.6,
+      65.5
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      53,
+      31.3
+     ],
+     "name": "The net market stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      63.4,
+      -15.8
+     ],
+     "name": "The lane of nets stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      47.1,
+      -46.2
+     ],
+     "name": "The sea caves stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      -46.7,
+      -56.4
+     ],
+     "name": "The lighthouse stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      -39.5,
+      33.4
+     ],
+     "name": "The wreck stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      -18.8,
+      15.6
+     ],
+     "name": "The sailors\u2019 chapel stone"
+    }
+   ],
+   "enemies": {
+    "docker": {
+     "name": "Drowned docker",
+     "blurb": "Strikes up close.",
+     "look": "docker",
+     "model": null
+    },
+    "netter": {
+     "name": "Net caster",
+     "blurb": "Throws a net: you are rooted a moment.",
+     "look": "netter",
+     "model": null
+    },
+    "crab": {
+     "name": "Brine crab",
+     "blurb": "Slow and armoured.",
+     "look": "crab",
+     "model": null
+    },
+    "mate": {
+     "name": "The Harbourmaster\u2019s Mate",
+     "blurb": "Guards the wreck.",
+     "look": "mate",
+     "model": null
+    },
+    "named1": {
+     "name": "Mother Kelp",
+     "blurb": "Walks the middle and strikes hard.",
+     "look": "barnacle",
+     "model": null
+    },
+    "named2": {
+     "name": "The Tidecaller",
+     "blurb": "Walks the land side and strikes hard.",
+     "look": "mate",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "a",
+     "at": [
+      68.2,
+      37.2
+     ],
+     "mix": "2xdocker 1xnetter 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "d",
+     "at": [
+      -54.2,
+      39.1
+     ],
+     "mix": "2xdocker",
+     "elite": "mate",
+     "named": null
+    },
+    {
+     "id": "b",
+     "at": [
+      54.8,
+      -58.8
+     ],
+     "mix": "1xdocker 3xnetter 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "f",
+     "at": [
+      1.4,
+      -36.2
+     ],
+     "mix": "2xdocker 1xcrab",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "named1",
+     "at": [
+      15.1,
+      1.7
+     ],
+     "mix": "1xnamed1",
+     "elite": null,
+     "named": {
+      "name": "Mother Kelp",
+      "bounty": {
+       "shards": 58,
+       "relic": true
+      }
+     }
+    },
+    {
+     "id": "named2",
+     "at": [
+      40.5,
+      37.4
+     ],
+     "mix": "1xnamed2",
+     "elite": null,
+     "named": {
+      "name": "The Tidecaller",
+      "bounty": {
+       "shards": 51,
+       "relic": false
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      81.4
+     ]
+    },
+    "a": {
+     "name": "The net market",
+     "at": [
+      68.2,
+      37.2
+     ]
+    },
+    "v": {
+     "name": "The lane of nets",
+     "at": [
+      77.8,
+      -21.4
+     ]
+    },
+    "b": {
+     "name": "The sea caves",
+     "at": [
+      53.6,
+      -57.8
+     ]
+    },
+    "f": {
+     "name": "The watch fort",
+     "at": [
+      1.4,
+      -36.2
+     ]
+    },
+    "c": {
+     "name": "The lighthouse",
+     "at": [
+      -52.3,
+      -60.5
+     ]
+    },
+    "e": {
+     "name": "The signal fire",
+     "at": [
+      -85.6,
+      13.6
+     ]
+    },
+    "d": {
+     "name": "The wreck",
+     "at": [
+      -50.7,
+      37
+     ]
+    },
+    "h": {
+     "name": "The sailors\u2019 chapel",
+     "at": [
+      -30,
+      21.6
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 10,
+    "hard": 1.11,
+    "ruler": {
+     "name": "The Sun Warden",
+     "title": "Keeper of the Sun Court",
+     "stand": "Cantor",
+     "tint": "#2f8a96",
+     "scale": 2.47,
+     "hp": 3300,
+     "speed": 2,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "harbour",
+     "sentries": {
+      "look": "cannon",
+      "hp": 150,
+      "again": 22,
+      "fall": {
+       "stagger": 55
+      },
+      "from": 1
+     },
+     "surge": {
+      "safe": {
+       "decks": [
+        {
+         "x": 0,
+         "z": 7,
+         "r": 3.7
+        },
+        {
+         "x": 0,
+         "z": 14.6,
+         "r": 2.3
+        },
+        {
+         "x": 0,
+         "z": -0.6,
+         "r": 2.3
+        }
+       ]
+      },
+      "burn": 0.06,
+      "slow": 0.35,
+      "name": "The tide",
+      "look": "sea"
+     },
+     "line": "A Raid boss, alone: read its sun and keep moving"
+    },
+    "gate": {
+     "hero": "Shiori",
+     "arena": "harbour",
+     "level": 3,
+     "twist": {
+      "kind": "shift",
+      "name": "The tide comes in",
+      "early": 29
+     }
+    },
+    "trial": {
+     "kind": "hold",
+     "height": 3
+    },
+    "crown": "sun",
+    "rival": {
+     "hero": "Isolde",
+     "twist": "giant",
+     "line": "Isolde waits by the arch",
+     "height": 4
+    }
+   }
+  },
+  "check": {
+   "floor": 10,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34825,
+     "ringM2": 55572,
+     "unreachable": [],
+     "spots": 51,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 5,
+    "at": [
+     38,
+     -63
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 10,
+   "pieces": 11821,
+   "things": 5893,
+   "counts": {
+    "float": 16,
+    "gap": 67,
+    "buried": 0,
+    "cover": 0
+   },
+   "float": [
+    "-40.8,-173.4 y10.15 depth out72n w5.76 h6.1 m0.84 p2 #304837",
+    "22,-174.8 y12.41 depth out72n w7.97 h7.32 m0.74 p3 #304837",
+    "-27.7,-173.1 y12.45 depth out71n w5.54 h7.47 m1.18 p3 #304837",
+    "184,-3.3 y7.02 depth out72n w4.91 h5.21 m1.21 p2 #304837",
+    "6.9,167.7 y6.62 depth out70s w5.4 h4.91 m1.65 p2 #4b663b #576f40",
+    "101.8,144.9 y5.95 depth out71s w4.9 h4.19 m2.02 p1 #4b663b",
+    "82.4,156.1 y5.07 depth out71s w4.35 h3.66 m1.23 p2 #4b663b #576f40",
+    "88.5,152.8 y4.93 depth out71s w4.44 h3.77 m1.35 p2 #4b663b #576f40",
+    "-149,-51.1 y-0.75 depth out28n w7.36 h7.8 m2.65 p5 #5e202c #c9a24a #4b3525",
+    "-86.3,79.2 y-0.75 depth out26s w7.58 h0.87 m2.65 p3 #232126 #c9a24a #4b3525",
+    "-81.1,85.7 y-0.75 depth out29s w7.6 h7.8 m2.65 p5 #5e202c #c9a24a #4b3525",
+    "-67.7,72.7 y-0.75 depth out11s w7.14 h7.8 m1.45 p5 #2f5660 #c9a24a #4b3525",
+    "-136.4,-40.4 y-0.75 depth out13n w6.99 h0.87 m1.55 p3 #232126 #c9a24a #4b3525",
+    "-168,-21.6 y-3.29 depth out42n w7.76 h10.68 m0.11 p1 #615d5a",
+    "-111.9,105.9 y-2.69 depth out62s w10 h9.49 m0.71 p1 #615d5a",
+    "-204.5,-74.1 y-2.68 depth out88n w33.74 h8.93 m0.72 p1 #4b663b"
+   ],
+   "gap": [
+    "78.8,-86.3 y10.97 depth out3n w5.88 h4.41 m9.93 sunk-0.48 #304837",
+    "2.3,-106.7 y10.09 depth out3n w5.56 h4.18 m8.78 sunk-0.14 #304837",
+    "88,-77.4 y9.18 depth edge w4.39 h3.71 m8.56 sunk-1.09 #304837",
+    "61,-96.5 y11.21 depth out3n w5.07 h3.81 m8.53 sunk-0.1 #304837",
+    "12.4,-105.9 y10.75 depth edge w3.62 h3.07 m8.46 sunk-0.72 #304837",
+    "12.4,-105.9 y8.91 depth edge w4.62 h3.48 m8.14 sunk-2.55 #304837",
+    "7.7,-105.6 y8.59 depth edge w3.46 h2.93 m7.23 sunk-1.5 #304837",
+    "7.7,-105.6 y6.84 depth edge w4.42 h3.32 m6.6 sunk-3.88 #304837",
+    "88.1,-77.4 y6.95 depth edge w5.61 h4.21 m6.55 sunk-3.47 #304837",
+    "8.9,-106.1 y9.91 depth edge w2.71 h2.29 m6.38 sunk-0.8 #304837",
+    "8.9,-106.1 y8.54 depth edge w3.46 h2.6 m5.95 sunk-2.56 #304837",
+    "57.3,-97.1 y8.77 depth edge w2.73 h2.31 m5.93 sunk-0.97 #304837",
+    "-13.4,-106.8 y9.94 depth out4n w3.57 h2.68 m5.69 sunk-0.21 #304837",
+    "57.3,-97.1 y7.39 depth edge w3.48 h2.61 m5.68 sunk-3.11 #304837",
+    "65,-93.1 y7.41 depth edge w2.95 h2.49 m5.41 sunk-0.91 #304837",
+    "64.9,-93.1 y5.91 depth edge w3.77 h2.83 m4.64 sunk-3.48 #304837",
+    "61.5,-96.7 y10.16 depth out4n w0.85 h3.22 m1.72 sunk-0.53 #4b3525",
+    "61,-96.6 y9.53 depth out3n w0.72 h2.69 m1.58 sunk-0.4 #4b3525",
+    "2.4,-106.7 y8.24 depth out3n w0.77 h2.95 m1.37 sunk-0.44 #4b3525",
+    "78.8,-86.2 y9.02 depth out3n w0.83 h3.12 m1.19 sunk-0.96 #4b3525",
+    "6.5,-107.1 y9.47 depth out4n w0.71 h2.71 m1.14 sunk-0.59 #4b3525",
+    "12.5,-105.9 y7.37 depth edge w0.65 h2.46 m1.09 sunk-0.47 #4b3525",
+    "8.9,-106.1 y7.39 depth edge w0.49 h1.83 m0.96 sunk-0.39 #4b3525",
+    "88,-77.4 y5.1 depth edge w0.78 h2.97 m0.96 sunk-1.47 #4b3525",
+    "-13.4,-106.8 y8.76 depth out4n w0.5 h1.89 m0.91 sunk-0.09 #4b3525",
+    "80.9,96.3 y3.41 depth out20s w7.4 h6.07 m0.79 sunk-0.88 #b3aa93",
+    "25.7,-104.1 y3.1 depth edge w1.98 h1.14 m0.78 sunk-2.22 #3b3e48",
+    "91.6,85.8 y3.52 depth out19s w6.42 h5.33 m0.77 sunk-0.85 #b3aa93",
+    "110.8,-50.8 y2.68 depth out6n w6.55 h6.87 m0.72 sunk-0.56 #b3aa93",
+    "129.3,-16.7 y2.28 depth out17n w6.09 h6.53 m0.68 sunk-0.77 #b3aa93",
+    "7.7,-105.6 y5.37 depth edge w0.61 h2.34 m0.66 sunk-0.93 #4b3525",
+    "65,-93.1 y4.67 depth edge w0.52 h2 m0.64 sunk-0.59 #4b3525",
+    "130.2,3.4 y2.66 depth out19n w5.56 h5.79 m0.62 sunk-0.57 #b3aa93",
+    "74.5,-87.5 y2.88 depth edge w3.37 h1.86 m0.58 sunk-4.37 #3b3e48",
+    "46.7,-99.6 y3.69 depth edge w1.55 h0.84 m0.56 sunk-1.32 #3b3e48",
+    "130.2,-26 y2.29 depth out18n w6.25 h6.67 m0.5 sunk-0.62 #b3aa93",
+    "91.8,75.3 y1.53 depth out12s w7.33 h7.08 m0.49 sunk-0.62 #b3aa93",
+    "122.3,20.6 y1.56 depth out15s w6.15 h6.34 m0.47 sunk-0.5 #b3aa93",
+    "117.7,-56.5 y2.87 depth out14n w5.92 h6.86 m0.46 sunk-0.67 #b3aa93",
+    "103.3,64.7 y2.06 depth out15s w7.06 h6.73 m0.42 sunk-0.37 #b3aa93",
+    "80.4,-82.9 y2.17 depth edge w1.99 h1.12 m0.42 sunk-3.03 #3b3e48",
+    "112.2,56.9 y2.39 depth out19s w6.96 h6.29 m0.4 sunk-0.42 #b3aa93",
+    "57.3,-97.1 y6.23 depth edge w0.49 h1.85 m0.39 sunk-0.79 #4b3525",
+    "60,102.8 y1.54 depth out14s w6.4 h5.43 m0.37 sunk-0.4 #b3aa93",
+    "128.3,-44.2 y2.56 depth out20n w6.78 h5.77 m0.37 sunk-0.44 #b3aa93",
+    "69.3,96.7 y1.48 depth out13s w6.85 h5.43 m0.36 sunk-0.47 #b3aa93",
+    "122,7.8 y1.19 depth out11s w5.3 h6.51 m0.35 sunk-0.4 #b3aa93",
+    "115.4,36.8 y1.28 depth out13s w6.88 h6.87 m0.35 sunk-0.42 #b3aa93",
+    "45.5,96.9 y0.39 depth edge w6.48 h5.89 m0.34 sunk-0.07 #b3aa93",
+    "57.9,91.3 y0.39 depth edge w7.07 h7.14 m0.33 sunk-0.07 #b3aa93",
+    "52.1,108.8 y1.85 depth out16s w5.87 h6.09 m0.33 sunk-0.34 #b3aa93",
+    "15.6,-104.7 y4.27 depth edge w1.15 h0.7 m0.32 sunk-1.97 #3b3e48",
+    "69.5,-94.7 y9.89 depth out5n w0.69 h2.61 m0.31 sunk-0.21 #4b3525",
+    "83.6,69.7 y0.4 depth edge w6.41 h5.56 m0.31 sunk-0.08 #b3aa93",
+    "122.6,32.6 y2.18 depth out18s w5.65 h5.93 m0.31 sunk-0.22 #b3aa93",
+    "80.8,81.5 y0.91 depth out9s w6.54 h6.81 m0.3 sunk-0.43 #b3aa93",
+    "3.8,-104.4 y0.37 depth edge w3.54 h2.06 m0.29 sunk-4.5 #3b3e48",
+    "105.4,48.6 y0.84 depth out9s w6.11 h5.45 m0.27 sunk-0.36 #b3aa93",
+    "114.8,-28.2 y0.41 depth out3n w6.69 h6.14 m0.25 sunk-0.13 #b3aa93",
+    "113.7,27.2 y0.7 depth out8s w5.85 h6.83 m0.21 sunk-0.33 #b3aa93",
+    "95.2,62.8 y0.72 depth out8s w6.2 h5.34 m0.2 sunk-0.29 #b3aa93",
+    "121,-13.7 y0.69 depth out9n w5.66 h6.13 m0.19 sunk-0.32 #b3aa93",
+    "107,32.8 y0.41 depth out4s w6.32 h5.97 m0.18 sunk-0.11 #b3aa93",
+    "4.6,-105.3 y3.18 depth edge w2.79 h1.54 m0.17 sunk-2.71 #3b3e48",
+    "32.2,-102.3 y1.09 depth edge w3.76 h2.08 m0.15 sunk-3.5 #3b3e48",
+    "62.8,-97.2 y10.66 depth out5n w0.61 h2.31 m0.14 sunk-0.22 #4b3525",
+    "70.9,86.7 y0.54 depth out6s w7.71 h6.03 m0.14 sunk-0.34 #b3aa93"
+   ],
+   "buried": [],
+   "cover": []
+  },
+  "grass": {
+   "floor": 10,
+   "planes": [
+    "582m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v54 h0.60 #566f3e",
+     "n": 4020,
+     "over06": 1,
+     "over10": 0,
+     "offMax": 0.06,
+     "nowhere": 0,
+     "steep": [
+      {
+       "x": 93.6,
+       "z": -65.7,
+       "y": 0,
+       "slope": 0.69,
+       "off": -0.06
+      }
+     ]
+    },
+    {
+     "kind": "unnamed v96 h0.44 #4b663b",
+     "n": 1253,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 0.18,
+     "nowhere": 0,
+     "steep": []
+    },
+    {
+     "kind": "unnamed v48 h0.26 #f2f2ee",
+     "n": 9,
+     "over06": 0,
+     "over10": 0,
+     "offMax": 24.68,
+     "nowhere": 0,
+     "steep": []
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

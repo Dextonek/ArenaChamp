@@ -1,0 +1,130 @@
+{
+ "floor": 24,
+ "part": "climb-review-shots",
+ "wallSeconds": 40.9,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 24,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-gap-2",
+   "probe-gap-3",
+   "probe-gap-4",
+   "probe-cover-5",
+   "probe-cover-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "52.1,-148.9 y29.29 depth out39n w0.37 h0.27 m0.08 p1 #8a7a4a",
+  "probe-float-1": "-97.7,-38.3 y0.64 depth edge w0.49 h0.35 m0.08 p1 #8a7a4a",
+  "probe-gap-2": "22,-121.8 y3.8 depth edge w8.15 h0.1 m3.8 sunk-9.58 #c9a24a",
+  "probe-gap-3": "22,-121.8 y2.74 depth edge w8.04 h0.38 m2.74 sunk-10.5 #1f8a86",
+  "probe-gap-4": "87.7,-51.3 y4.16 depth edge w2.04 h0.3 m2.72 sunk-1.48 #248985",
+  "probe-cover-5": "-26.7,29.7 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+  "probe-cover-6": "69.7,-13.7 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a",
+  "frames": {
+   "at": [
+    46,
+    26
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 12.8,
+     "p95": 20.7,
+     "worst": 75.2
+    },
+    {
+     "med": 11.9,
+     "p95": 19.3,
+     "worst": 48
+    },
+    {
+     "med": 12,
+     "p95": 19.3,
+     "worst": 30.1
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Brass Sphinx",
+   "title": "Riddles and claws",
+   "model": "models/tower/sands_sphinx_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 3864,
+   "frames": 481,
+   "at": [
+    0,
+    14.4
+   ],
+   "heroAt": [
+    0,
+    20
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

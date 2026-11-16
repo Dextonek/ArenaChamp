@@ -1,0 +1,42 @@
+{
+ "floor": 27,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable; the caravan, the rival (Mum), the trial, the Sand Tyrant (the Red Jackal's model, tinted) and the gate (Nyx; second try) all played.",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "The shut lair holds",
+   "text": "Checked because a picture run seemed to start the ruler early (it was the run's own door, at the end): from five spots outside, on floors 2, 12, 22 and 27, a hero walking at the shut lair never starts its fight; the door only opens to the quest (scenery.ts `ready`). On floors 2, 22 and 27 the hero can walk round the end of the shut wall and stand on the door's spot; nothing happens there."
+  },
+  {
+   "kind": "ok",
+   "title": "The Sand Tyrant hits hard early",
+   "text": "A hero who stands still in his hall falls in about 7 s (the bot, fighting, won with nearly all its health): a boss, not a fault."
+  },
+  {
+   "kind": "ok",
+   "title": "Props",
+   "text": "A mesa past the north edge on its own high ground, the lair wall's gold edge into the dune, crates on the rim's slope, red rocks a little sunk."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler-close.jpg",
+   "The Sand Tyrant"
+  ],
+  [
+   "person-rival.jpg",
+   "Mum, the rival"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

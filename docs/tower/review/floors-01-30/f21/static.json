@@ -1,0 +1,778 @@
+{
+ "floor": 21,
+ "part": "climb-review-static",
+ "wallSeconds": 13.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+ ],
+ "result": {
+  "floor": 21,
+  "texts": {
+   "id": "canyon",
+   "name": "The Storm Canyon",
+   "blurb": "A dry road between red walls, and a wind that crosses it.",
+   "ring": 140,
+   "par": 1980,
+   "shop": {
+    "heal": 30,
+    "boon": 55,
+    "life": 80,
+    "hint": 15
+   },
+   "law": {
+    "kind": "storm",
+    "name": "The storm",
+    "text": null,
+    "raw": {
+     "kind": "storm",
+     "name": "The storm",
+     "blurb": "Every 147 seconds a wall of sand 22 m deep crosses from the north. Inside it you see a few steps and it hurts, unless you stand behind a rock."
+    }
+   },
+   "people": [
+    {
+     "id": "pip",
+     "name": "The Star-Reader",
+     "role": "keeper",
+     "hero": "Pip",
+     "figure": "sands_seer",
+     "at": [
+      -2.6,
+      124.9
+     ],
+     "face": 0.4,
+     "greet": [
+      "Another climber. Three wells have gone dry, a caravan is waiting, and the raiders hold the gate in the north. The stars say you will carry what is needed."
+     ],
+     "quests": [
+      "main",
+      "bounty"
+     ]
+    },
+    {
+     "id": "kaia",
+     "name": "The Storm-Counter",
+     "role": "giver",
+     "hero": "Kaia",
+     "figure": "sands_counter",
+     "at": [
+      3.6,
+      124.5
+     ],
+     "face": -0.5,
+     "greet": [
+      "I watch the storms. When the wind comes, I am the one behind the rock."
+     ],
+     "quests": [
+      "kaia-fires",
+      "kaia-tower"
+     ]
+    },
+    {
+     "id": "vesper",
+     "name": "Vesper",
+     "role": "rival",
+     "hero": "Vesper",
+     "figure": null,
+     "at": [
+      -69,
+      -7.5
+     ],
+     "face": 1.4,
+     "greet": [],
+     "quests": []
+    },
+    {
+     "id": "wick",
+     "name": "The Silk-Merchant",
+     "role": "trader",
+     "hero": "Wick",
+     "figure": "sands_silk",
+     "at": [
+      -4.6,
+      121.7
+     ],
+     "face": 0.6,
+     "greet": [
+      "Shards for what you need. Sand is free; everything else costs."
+     ],
+     "quests": []
+    }
+   ],
+   "quests": [
+    {
+     "id": "main",
+     "name": "Water for the Road",
+     "giver": "pip",
+     "main": true,
+     "intro": [
+      "Fill three jars at the camp spring and pour them into the three wells. Then bring the caravan up the canyon towards the gate, and clear the raiders from the gate."
+     ],
+     "outro": [
+      "The wells are full and the caravan is through. The raiders\u2019 gate stands open, far in the north. Rest first, then go in."
+     ],
+     "reward": {
+      "shards": 60,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the west well",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the west well",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the east well",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the east well",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "carry",
+       "text": "Carry water from the camp spring to the north well",
+       "item": "water",
+       "itemName": "A jar of water",
+       "toName": "the north well",
+       "look": "jar",
+       "r": 2.6
+      },
+      {
+       "verb": "lead",
+       "text": "Lead the caravan from the camp up the canyon, between two storms",
+       "name": "The caravan",
+       "look": "cart",
+       "speed": 2.2,
+       "r": 3
+      },
+      {
+       "verb": "fell",
+       "text": "Clear the raiders from the gate",
+       "packs": [
+        "gate"
+       ]
+      },
+      {
+       "verb": "open",
+       "text": "Go to the raiders\u2019 gate",
+       "door": "lair"
+      }
+     ]
+    },
+    {
+     "id": "bounty",
+     "name": "The Dune Mother",
+     "giver": "pip",
+     "main": false,
+     "intro": [
+      "A hooded woman of sand walks the middle of the canyon. Nobody has crossed it twice. Fell her and the road is quieter."
+     ],
+     "outro": [
+      "A relic from the dunes. Keep it."
+     ],
+     "reward": {
+      "shards": 40,
+      "relic": true
+     },
+     "steps": [
+      {
+       "verb": "fell-named",
+       "text": "Fell the Dune Mother",
+       "pack": "mother"
+      }
+     ]
+    },
+    {
+     "id": "kaia-fires",
+     "name": "The Watch Fires",
+     "giver": "kaia",
+     "main": false,
+     "intro": [
+      "Two watch fires stand cold on the road. Light both, standing by each a moment, and I will see the storm coming."
+     ],
+     "outro": [
+      "Now I see it coming. Take this, from the last storm."
+     ],
+     "reward": {
+      "shards": 35,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "light",
+       "text": "Light the two watch fires",
+       "seconds": 2
+      }
+     ]
+    },
+    {
+     "id": "kaia-tower",
+     "name": "The Watchtower",
+     "giver": "kaia",
+     "main": false,
+     "intro": [
+      "There is a watchtower on the way to the old fort. Reach it and hold it while I take the count. The raiders will not like it."
+     ],
+     "outro": [
+      "The count is done. Take your share."
+     ],
+     "reward": {
+      "shards": 45,
+      "boon": true
+     },
+     "steps": [
+      {
+       "verb": "reach",
+       "text": "Go to the watchtower",
+       "r": 3
+      },
+      {
+       "verb": "hold",
+       "text": "Hold the watchtower",
+       "r": 3.6,
+       "seconds": 16
+      }
+     ]
+    }
+   ],
+   "doors": [
+    {
+     "id": "lair",
+     "piece": "ruler",
+     "name": "The raiders\u2019 gate",
+     "at": [
+      0,
+      -126
+     ],
+     "locked": "The gate is barred from the inside. The Star-Reader has a quest about the road.",
+     "needs": null,
+     "wall": true
+    },
+    {
+     "id": "trial",
+     "piece": "trial",
+     "name": "The Dust Court",
+     "at": [
+      -53.2,
+      70.8
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    },
+    {
+     "id": "gate",
+     "piece": "gate",
+     "name": "The gate up",
+     "at": [
+      50.9,
+      74.7
+     ],
+     "locked": "The gate is sealed. Its warden answers only once the Scarab Colossus has fallen.",
+     "needs": {
+      "won": "ruler"
+     },
+     "wall": false
+    },
+    {
+     "id": "rival",
+     "piece": "rival",
+     "name": "Vesper\u2019s bridge",
+     "at": [
+      -73.9,
+      -8.5
+     ],
+     "locked": "",
+     "needs": null,
+     "wall": false
+    }
+   ],
+   "rival": {
+    "hero": "Vesper",
+    "mode": "duel",
+    "goal": "the bridge",
+    "lines": [
+     "A climber on my road. I am Vesper. I hold the bridge, and nobody crosses without a word with me. Step through the arch and we talk with our hands. Win, and I fight beside you."
+    ]
+   },
+   "lore": {
+    "id": "lore",
+    "name": "The wind stone",
+    "text": [
+     "The caravans came for the water, and the wind came for the caravans.",
+     "Only the rocks remember the way, and they will not move for you."
+    ]
+   },
+   "caches": [
+    {
+     "id": "c1",
+     "at": [
+      -62.2,
+      28
+     ]
+    },
+    {
+     "id": "c2",
+     "at": [
+      59.9,
+      -22.6
+     ]
+    },
+    {
+     "id": "c3",
+     "at": [
+      -73.1,
+      -78.4
+     ]
+    },
+    {
+     "id": "c4",
+     "at": [
+      -21.6,
+      88.1
+     ]
+    },
+    {
+     "id": "c5",
+     "at": [
+      22,
+      92.9
+     ]
+    },
+    {
+     "id": "c6",
+     "at": [
+      21.5,
+      -94.9
+     ]
+    }
+   ],
+   "waystones": [
+    {
+     "id": "w1",
+     "at": [
+      -10,
+      111.1
+     ],
+     "name": "The camp stone"
+    },
+    {
+     "id": "w2",
+     "at": [
+      9.8,
+      45.5
+     ],
+     "name": "The middle stone"
+    },
+    {
+     "id": "w3",
+     "at": [
+      23.3,
+      -50.6
+     ],
+     "name": "The gate stone"
+    },
+    {
+     "id": "w4",
+     "at": [
+      -27,
+      23.2
+     ],
+     "name": "The west stone"
+    },
+    {
+     "id": "w5",
+     "at": [
+      -57.7,
+      -5.8
+     ],
+     "name": "The bridge stone"
+    },
+    {
+     "id": "w6",
+     "at": [
+      40.5,
+      -38.2
+     ],
+     "name": "The fort stone"
+    }
+   ],
+   "enemies": {
+    "raider": {
+     "name": "Raider",
+     "blurb": "Strikes up close.",
+     "look": "raider",
+     "model": null
+    },
+    "slinger": {
+     "name": "Slinger",
+     "blurb": "Throws stones from a distance.",
+     "look": "slinger",
+     "model": null
+    },
+    "wraith": {
+     "name": "Dust wraith",
+     "blurb": "Lives only in the storm.",
+     "look": "wraith",
+     "model": null
+    },
+    "chief": {
+     "name": "The Raider Chief",
+     "blurb": "Leads the raiders of the fort.",
+     "look": "chief",
+     "model": null
+    },
+    "mother": {
+     "name": "The Dune Mother",
+     "blurb": "Walks the canyon and strikes hard.",
+     "look": "mother",
+     "model": null
+    }
+   },
+   "packs": [
+    {
+     "id": "well1",
+     "at": [
+      -40.8,
+      29.3
+     ],
+     "mix": "2xraider 1xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "well2",
+     "at": [
+      42.2,
+      19.5
+     ],
+     "mix": "2xslinger 1xraider",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "ridge",
+     "at": [
+      -62.9,
+      -55.9
+     ],
+     "mix": "3xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "fort",
+     "at": [
+      51.6,
+      -54.4
+     ],
+     "mix": "2xraider",
+     "elite": "chief",
+     "named": null
+    },
+    {
+     "id": "gate",
+     "at": [
+      0,
+      -110
+     ],
+     "mix": "2xraider 1xslinger",
+     "elite": null,
+     "named": null
+    },
+    {
+     "id": "mother",
+     "at": [
+      -16.6,
+      -12.6
+     ],
+     "mix": "1xmother",
+     "elite": null,
+     "named": {
+      "name": "The Dune Mother",
+      "bounty": {
+       "shards": 40,
+       "relic": true
+      }
+     }
+    }
+   ],
+   "places": {
+    "camp": {
+     "name": "The camp",
+     "at": [
+      0,
+      126
+     ]
+    },
+    "well1": {
+     "name": "The west well",
+     "at": [
+      -41.4,
+      29.6
+     ]
+    },
+    "well2": {
+     "name": "The east well",
+     "at": [
+      42.9,
+      19.7
+     ]
+    },
+    "well3": {
+     "name": "The north well",
+     "at": [
+      -47,
+      -19.5
+     ]
+    },
+    "bridge": {
+     "name": "The bridge",
+     "at": [
+      -72.5,
+      -8.2
+     ]
+    },
+    "hollow": {
+     "name": "The west bay",
+     "at": [
+      -53.8,
+      71.6
+     ]
+    },
+    "gateway": {
+     "name": "The east bay",
+     "at": [
+      51.5,
+      75.5
+     ]
+    },
+    "fort": {
+     "name": "The old fort",
+     "at": [
+      51.6,
+      -54.4
+     ]
+    },
+    "gate": {
+     "name": "The raiders\u2019 gate",
+     "at": [
+      0,
+      -106
+     ]
+    }
+   },
+   "pieces": {
+    "floor": 21,
+    "tunedAs": 3,
+    "hard": 1.25,
+    "ruler": {
+     "name": "The Scarab Colossus",
+     "title": "Under the sand",
+     "stand": "Sirix",
+     "scale": 2.5,
+     "hp": 3400,
+     "speed": 2.1,
+     "stagger": {
+      "max": 100,
+      "kneel": 5
+     },
+     "room": "canyon",
+     "surge": {
+      "safe": {
+       "shell": 4.4
+      },
+      "burn": 0.05,
+      "name": "The storm",
+      "look": "storm"
+     },
+     "line": "It goes under the sand and comes up where you stood",
+     "model": "models/tower/sands_scarab_v4.glb",
+     "body": {
+      "radius": 0.6,
+      "height": 2.55
+     },
+     "tintAmount": 0.22
+    },
+    "gate": {
+     "hero": "Sefu",
+     "arena": "canyon",
+     "level": 3,
+     "twist": {
+      "kind": "hazard",
+      "name": "A storm crosses"
+     }
+    },
+    "trial": {
+     "kind": "hold",
+     "height": 6
+    },
+    "rival": {
+     "hero": "Vesper",
+     "twist": "giant",
+     "line": "Vesper holds the bridge",
+     "height": 6
+    }
+   }
+  },
+  "check": {
+   "floor": 21,
+   "states": [
+    {
+     "paths": null,
+     "reachableM2": 34305,
+     "ringM2": 61575,
+     "unreachable": [],
+     "spots": 59,
+     "barriers": [],
+     "map": null
+    }
+   ],
+   "mostUnitsNear": {
+    "n": 3,
+    "at": [
+     -80,
+     -61
+    ]
+   }
+  },
+  "peopleInCover": [],
+  "props": {
+   "floor": 21,
+   "pieces": 5842,
+   "things": 1906,
+   "counts": {
+    "float": 2,
+    "gap": 3,
+    "buried": 47,
+    "cover": 3
+   },
+   "float": [
+    "-122.8,20.6 y29.04 depth out39s w0.75 h0.54 m0.09 p1 #8a7a4a",
+    "-129.5,-15.5 y29.61 depth out37n w0.54 h0.39 m0.11 p1 #8a7a4a"
+   ],
+   "gap": [
+    "81.8,22.7 y3.96 depth edge w1.75 h0.3 m2.97 sunk-0.41 #248985",
+    "-79.3,29.1 y1.89 depth edge w1.84 h0.3 m1.25 sunk-0.92 #248985",
+    "41.2,-125.3 y12.72 jackal out9n w8.79 h0.77 m0.55 sunk-1.1 #9b7751"
+   ],
+   "buried": [
+    "23.1,135.4 y-0.53 depth edge w4.43 h1.7 m-0.18 p2 #6c3a2c #8a4c36",
+    "13.6,139 y-0.39 depth edge w4.11 h1.75 m-0.21 p2 #6c3a2c #8a4c36",
+    "1.2,141.6 y-0.35 depth edge w2.45 h1.27 m-0.54 p2 #8a4c36 #a0664a",
+    "-4.7,140.9 y-0.39 depth edge w1.68 h1 m-0.61 p1 #6c3a2c",
+    "-14.6,140 y-0.13 depth edge w2.06 h1.22 m-0.55 p1 #6c3a2c",
+    "-21.7,137.1 y-0.4 depth edge w3.27 h1.33 m-0.12 p2 #6c3a2c #a0664a",
+    "-7.8,141.1 y-0.29 depth edge w2.41 h1.39 m-0.3 p1 #8a4c36",
+    "-20.7,-132.2 y-0.54 depth edge w3.11 h1.32 m-0.43 p2 #6c3a2c #8a4c36",
+    "-2.6,-134 y-0.67 depth edge w4.55 h2.12 m-0.2 p2 #6c3a2c #a0664a",
+    "3.4,-134 y-0.32 depth edge w1.66 h0.96 m-2.2 p1 #8a4c36",
+    "19.6,-131.1 y-0.53 depth edge w2.15 h1.24 m-0.21 p1 #6c3a2c",
+    "-94.2,-23.1 y-0.38 depth edge w2.1 h1.23 m-1.57 p1 #6c3a2c",
+    "-61.5,92.8 y0.15 depth edge w1.82 h1.11 m-0.09 p1 #6c3a2c",
+    "-70.1,72 y0.16 depth edge w1.83 h1.07 m-0.03 p1 #a0664a",
+    "-89,-82.8 y-0.78 depth edge w3.43 h2.05 m-0.04 p1 #a0664a",
+    "-84,-94.5 y-0.46 depth edge w1.71 h1.06 m-0.03 p1 #a0664a",
+    "46.8,115.8 y-0.34 depth edge w2.16 h1.3 m-0.33 p1 #6c3a2c",
+    "-94.7,-53.6 y-0.56 depth edge w2.33 h1.35 m-0.23 p1 #a0664a",
+    "58,-91.9 y-0.59 depth edge w5.79 h1.8 m-0.78 p3 #a0664a #6c3a2c #8a4c36",
+    "61,-87.6 y-0.5 depth edge w2.41 h1.39 m-1.18 p1 #6c3a2c",
+    "64.8,-77.9 y-0.67 depth edge w2.6 h1.56 m-0.13 p1 #6c3a2c",
+    "50.4,109 y-0.46 depth edge w1.98 h1.14 m-0.15 p1 #8a4c36",
+    "33.5,128.2 y-0.64 depth edge w2.73 h1.56 m-0.03 p1 #6c3a2c",
+    "31.2,129.9 y-0.13 depth edge w2.05 h1.19 m-0.41 p1 #8a4c36",
+    "36.5,127.2 y-0.11 depth out3s w2.48 h1.5 m-0.21 p1 #a0664a",
+    "28,131.8 y-0.46 depth edge w3 h1.81 m-0.03 p1 #a0664a",
+    "-34.9,129.8 y-0.46 depth edge w2.17 h1.27 m-0.27 p1 #8a4c36",
+    "-28.5,133.2 y-0.26 depth edge w1.75 h1.01 m-0.61 p1 #a0664a",
+    "-37.1,128.4 y-0.24 depth edge w1.9 h1.1 m-0.52 p1 #a0664a",
+    "-31.4,131.6 y-0.38 depth edge w2.43 h1.41 m-0.32 p1 #6c3a2c",
+    "-50.6,112 y-0.38 depth edge w1.57 h0.92 m-0.28 p1 #a0664a",
+    "-52.2,109.3 y-0.5 depth edge w2.48 h1.44 m-0.22 p1 #6c3a2c",
+    "-74,55.9 y0.32 depth edge w1.88 h1.13 m-0.11 p1 #6c3a2c",
+    "-97.2,-42.7 y0.36 depth edge w3 h1.72 m-0.98 p1 #8a4c36",
+    "-77.6,-105.5 y-0.33 depth edge w1.86 h1.1 m-1.63 p1 #6c3a2c",
+    "-75.1,-110.1 y-0.29 depth edge w1.65 h0.95 m-2 p1 #8a4c36",
+    "-72.9,-112 y-0.47 depth edge w1.84 h1.1 m-0.2 p1 #a0664a",
+    "-34.4,-128.8 y-0.47 depth edge w1.85 h1.1 m-0.63 p1 #a0664a",
+    "-32.2,-128.8 y-0.39 depth edge w1.57 h0.91 m-0.14 p1 #6c3a2c",
+    "26.1,-126.3 y-0.58 depth edge w2.36 h1.35 m-0.14 p1 #a0664a",
+    "28.7,-123.6 y-0.45 depth edge w1.81 h1.04 m-0.23 p1 #6c3a2c",
+    "30.9,-122.7 y-0.41 depth edge w1.64 h0.99 m-1.76 p1 #8a4c36",
+    "49.6,-106.3 y-0.53 depth edge w3.26 h2.09 m-1.08 p1 #a0664a",
+    "52,-101.8 y-0.6 depth edge w3.19 h1.5 m-1.01 p2 #6c3a2c #8a4c36",
+    "78.9,-47.6 y1.28 depth edge w2.02 h1.16 m-2.16 p1 #8a4c36",
+    "80.4,-38.2 y-0.29 depth edge w1.65 h1.02 m-1.29 p1 #8a4c36",
+    "78.6,-43.5 y-0.36 depth edge w1.9 h1.14 m-0.34 p1 #a0664a"
+   ],
+   "cover": [
+    "-43.8,31 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+    "45.5,20.5 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+    "-49.4,-20.9 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a"
+   ]
+  },
+  "grass": {
+   "floor": 21,
+   "planes": [
+    "596m/2.10"
+   ],
+   "kinds": [
+    {
+     "kind": "unnamed v6 h0.15 #2a2220",
+     "n": 8,
+     "over06": 2,
+     "over10": 1,
+     "offMax": 20.8,
+     "nowhere": 0,
+     "steep": [
+      {
+       "x": -71.1,
+       "z": -113.3,
+       "y": 22.38,
+       "slope": 2.97,
+       "off": 20.8
+      },
+      {
+       "x": 76.6,
+       "z": -63.3,
+       "y": 20.26,
+       "slope": 0.72,
+       "off": 6.59
+      }
+     ]
+    },
+    {
+     "kind": "unnamed v95 h0.83 #8a7a4a",
+     "n": 521,
+     "over06": 1,
+     "over10": 0,
+     "offMax": 0.15,
+     "nowhere": 0,
+     "steep": [
+      {
+       "x": -92.4,
+       "z": 66.1,
+       "y": 4.44,
+       "slope": 0.62,
+       "off": -0.07
+      }
+     ]
+    }
+   ]
+  },
+  "packsTable": {
+   "has": true,
+   "same": true,
+   "table": 6,
+   "floor": 6
+  }
+ }
+}

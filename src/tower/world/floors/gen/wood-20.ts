@@ -4019,7 +4019,7 @@ export const WOOD_20: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and Ash and Ember waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and Ash and Ember wait at its heart, far to the north. Free the wisps, cut the roots that feed them, and their door opens."
     ],
     "quests": [
      "main",
@@ -4098,7 +4098,7 @@ export const WOOD_20: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the hounds’ den, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed Ash and Ember, and its door opens."
+     "Clear the hounds’ den, and its wisp follows you: lead it to the heart. Then the old stones: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed Ash and Ember, and their door opens."
     ],
     "steps": [
      {
@@ -4300,14 +4300,14 @@ export const WOOD_20: GenFloor = {
     "name": "The Lost Spade",
     "giver": "giver",
     "intro": [
-     "Linden dropped a bundle in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
+     "Linden dropped a spade in the dark thicket and will not go back for it. Carry it to the camp fire. A hit and you drop it."
     ],
     "steps": [
      {
       "verb": "carry",
-      "text": "Bring the bundle from the dark thicket to the fire",
-      "item": "bundle",
-      "itemName": "The bundle",
+      "text": "Bring the spade from the dark thicket to the fire",
+      "item": "spade",
+      "itemName": "The spade",
       "toName": "the camp fire",
       "look": "bundle",
       "plain": true,
@@ -4530,7 +4530,7 @@ export const WOOD_20: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once Ash and Ember has fallen."
+    "locked": "The gate is sealed. Its warden answers only once Ash and Ember have fallen."
    },
    {
     "id": "rival",

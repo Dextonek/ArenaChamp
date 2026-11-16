@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Tower',
+        title: 'The Climb’s first thirty floors, read again',
+        text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
+      },
+      {
         tag: 'Arenas',
         title: 'The harbour’s cannons and the Tide Judge’s glaive',
         text: 'The two cannons on the Drowned Harbour’s walls are a little smaller, so a hero standing at their back no longer stands inside the gun. On the Climb, the Tide Judge’s glaive no longer runs back through his gown.',

@@ -488,6 +488,8 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   // Floor 20 is the chapter's crown: behind the lair are Ash and Ember, a Raid boss, alone (pieces/core.ts `crownFight`).
   const crown = n === 20 ? ('ash' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['Ash and Ember', 'The fire at the wood’s end'] : RULERS[(n - 12) % RULERS.length];
+  // How the keeper's words speak of the ruler: the Thorn Mother is “her”, Ash and Ember “them” (a tree or a bog stays “it”).
+  const [rulerObj, rulerPoss] = ({ 'The Moss Warden': ['him', 'his'], 'The Thorn Mother': ['her', 'her'], 'The Antler King': ['him', 'his'], 'The Briar Witch': ['her', 'her'], 'Ash and Ember': ['them', 'their'] } as Record<string, [string, string]>)[rulerName] ?? ['it', 'its'];
   const extra: [string, MoveSpec] = pick([
     ['fan', { use: 'fan', share: 0.05 }],
     ['briars', { use: 'stones', name: 'Falling Briars', share: 0.07, count: 4, radius: 1.5, cooldown: 8 }],
@@ -527,7 +529,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const poss = (s: string) => (s.endsWith('s') ? `${s}’` : `${s}’s`);
   const facing = (p: V) => r2(Math.atan2(-p.x, -p.z));
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Careful, climber. The wood walks. Two wisps are bound in it, and ${mid(rulerName)} waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens.`], quests: ['main', 'bounty1', 'bounty2'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Careful, climber. The wood walks. Two wisps are bound in it, and ${mid(rulerName)} ${rulerObj === 'them' ? 'wait' : 'waits'} at its heart, far to the north. Free the wisps, cut the roots that feed ${rulerObj}, and ${rulerPoss} door opens.`], quests: ['main', 'bounty1', 'bounty2'] },
     { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: [pick(['I lose things in this wood, and the wood keeps them. Maybe you can bring them back.', 'Two lamps, a lost tool, and nobody with the legs for it. Except you.', 'The paths move, but my lamps stay put. Mostly.'])], quests: ['g1', 'g2'] },
     { id: 'villager', hero: villagerHero, name: villagerHero, role: 'giver', at: villagerAt, face: facing(villagerAt), greet: [`You found ${lower(Vl.name)}? Then you can stand by it a while.`], quests: ['g3'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: facing(rivalAt), greet: [], quests: [] },
@@ -538,7 +540,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const quests: QuestDef[] = [
     {
       id: 'main', name: pick(['The Heart of the Wood', 'The Bound Wisps', 'The Feeding Roots']), giver: 'keeper', main: true,
-      intro: [`Clear ${lower(A.name)}, and its wisp follows you: lead it to the heart. Then ${lower(D.name)}: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed ${mid(rulerName)}, and its door opens.`],
+      intro: [`Clear ${lower(A.name)}, and its wisp follows you: lead it to the heart. Then ${lower(D.name)}: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed ${mid(rulerName)}, and ${rulerPoss} door opens.`],
       steps: [
         { verb: 'fell', text: `Clear ${lower(A.name)}`, packs: ['a'] },
         { verb: 'lead', text: `Lead the wisp from ${lower(A.name)} to the heart`, name: 'The wisp', look: 'wisp', speed: 3, from: wispA, r: 3, path: roadA },
@@ -558,8 +560,9 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
       steps: [{ verb: 'light', text: 'Light the two spore lamps', things: [{ id: 'lamp1', at: Cl.stand }, { id: 'lamp2', at: E.stand }], seconds: 2 }] as Step[],
       outro: ['Now I can see. Take this, it was in the moss.'], reward: reward(35, { boon: true }),
     },
-    { id: 'g2', name: pick(['The Lost Spade', 'The Lost Lantern', 'The Lost Bundle']), giver: 'giver', intro: [`${leadNpc} dropped a bundle in ${lower(B.name)} and will not go back for it. Carry it to the camp fire. A hit and you drop it.`],
-      steps: [{ verb: 'carry', text: `Bring the bundle from ${lower(B.name)} to the fire`, item: 'bundle', itemName: 'The bundle', toName: 'the camp fire', look: 'bundle', plain: true, from: spadeFrom, to: spadeTo, r: 2.2 } as Step], outro: ['Here, for the trouble.'], reward: reward(45) },
+    // the thing lost is the one the quest's name says (a spade, a lantern or a bundle; it is drawn as a bundle in the hand)
+    ((name: string, thing = name.slice(9).toLowerCase()) => ({ id: 'g2', name, giver: 'giver', intro: [`${leadNpc} dropped a ${thing} in ${lower(B.name)} and will not go back for it. Carry it to the camp fire. A hit and you drop it.`],
+      steps: [{ verb: 'carry', text: `Bring the ${thing} from ${lower(B.name)} to the fire`, item: thing, itemName: `The ${thing}`, toName: 'the camp fire', look: 'bundle', plain: true, from: spadeFrom, to: spadeTo, r: 2.2 } as Step], outro: ['Here, for the trouble.'], reward: reward(45) }))(pick(['The Lost Spade', 'The Lost Lantern', 'The Lost Bundle'])),
     {
       id: 'g3', name: 'The Burners’ Watch', giver: 'villager', intro: [`My stacks lie past ${lower(Vl.name)}. Find them, then hold the clearing while I bring the charcoal in: the hounds smell the smoke.`],
       steps: [
@@ -572,7 +575,7 @@ export function makeWoodFloor(o: WoodGenOptions): GenFloor {
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
     { id: 'lair', piece: 'ruler', name: crown ? 'The Cinder Court' : `${poss(rulerName)} door`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: lairZ, bx: 3.4, bz: lairZ, r: 0.6, height: 3.8 }, locked: `Roots hold the door shut. ${keeperHero} has a quest about the wisps.` },
     { id: 'trial', piece: 'trial', name: pick(['The Hollow Stump', 'The Root Cellar', 'The Moss Barrow']), at: trial, r: 2, locked: '' },
-    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} has fallen.` },
+    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} ${rulerObj === 'them' ? 'have' : 'has'} fallen.` },
     { id: 'rival', piece: 'rival', name: `${poss(rivalHero)} thicket`, at: rivalDoor, r: 2, locked: '' },
   ];
   const cacheDefs = caches.map((c, i) => ({ id: `c${i + 1}`, at: c, shards: shard([25, 30, 20, 30, 25, 20][i]), ...(i === 2 || i === 5 ? { boon: true } : {}) }));
