@@ -155,8 +155,8 @@ export class LightningRisk implements Effect {
   private strike(ctx: CastContext | null) {
     const p = this.spot;
     if (ctx) {
-      // Re-check at impact: whoever stands in the circle now.
-      for (const e of ctx.targets) {
+      // At impact: whoever stands in the circle now, wherever they stood at the cast (the tooltip: it strikes after 0.8 s).
+      for (const e of ctx.enemies?.() ?? ctx.targets) {
         const q = e.group.position;
         if (Math.hypot(q.x - p.x, q.z - p.z) <= BOLT_RADIUS) {
           ctx.hit(e, { damage: this.settings.damage, knock: 3, from: p, color: '#f4e65a' });

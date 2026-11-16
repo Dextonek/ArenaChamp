@@ -394,7 +394,7 @@ impl Spell for ColdFront {
 const BOLT_DURATION: f64 = 2.0;
 const BOLT_KNOCK: f64 = 3.0;
 
-/// W Lightning Risk: at 0.8 s whoever of the cast's targets stands in the 1.5 m circle now takes the hit.
+/// W Lightning Risk: at 0.8 s whoever stands in the 1.5 m circle now takes the hit.
 #[derive(Clone, Debug, Default)]
 pub struct LightningRisk {
     ctx: Option<Ctx>,
@@ -422,8 +422,8 @@ impl Spell for LightningRisk {
         }
         if !self.struck && self.time >= BOLT_DELAY {
             self.struck = true;
-            // `ctx.targets`: the enemy was near the aimed spot at the cast; then its live position against the spot.
-            if c.has_target && w.pos(c.side.other()).dist(c.point) <= BOLT_RADIUS {
+            // `ctx.enemies()`: whoever stands in the circle when it strikes, wherever they stood at the cast.
+            if w.pos(c.side.other()).dist(c.point) <= BOLT_RADIUS {
                 let damage = w.kits[c.side.i()].spells[c.slot].num("damage");
                 w.spell_hit(&c, Hit { damage, knock: Some(BOLT_KNOCK), from: Some(c.point), ..Hit::default() });
             }
