@@ -97,11 +97,27 @@ const AT = new THREE.Vector3();
 const UP0 = new THREE.Vector3();
 const UP1 = new THREE.Vector3();
 
+/** Up to about 300 points of the meshes under `node`, in its own space: what `BodyParts.keepAbove` measures. */
+function pointsOf(node: THREE.Object3D) {
+  const pts: THREE.Vector3[] = [];
+  node.updateWorldMatrix(true, true);
+  const inv = new THREE.Matrix4().copy(node.matrixWorld).invert(), m4 = new THREE.Matrix4();
+  node.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const P = mesh.geometry.attributes.position;
+    m4.multiplyMatrices(inv, mesh.matrixWorld);
+    const every = Math.max(1, Math.floor(P.count / 300));
+    for (let k = 0; k < P.count; k += every) pts.push(new THREE.Vector3().fromBufferAttribute(P, k).applyMatrix4(m4));
+  });
+  return pts;
+}
+
 /** A boss model's named parts, each a rigid node with its pivot where it should turn. A name the model lacks is simply skipped. */
 export class BodyParts {
   private nodes = new Map<string, { node: THREE.Object3D; p: THREE.Vector3; q: THREE.Quaternion; s: THREE.Vector3; mats: THREE.MeshStandardMaterial[]; glow: number[] }>();
 
-  constructor(root: THREE.Object3D) {
+  constructor(private root: THREE.Object3D) {
     root.traverse((o) => {
       if (!o.name || this.nodes.has(o.name)) return;
       const mats: THREE.MeshStandardMaterial[] = [];
@@ -182,6 +198,28 @@ export class BodyParts {
     n.position.lerp(parent.worldToLocal(AT.set(x, y, z)), k);
     if (up) n.position.add(parent.worldToLocal(UP1.set(0, up, 0)).sub(parent.worldToLocal(UP0.set(0, 0, 0))));
   }
+
+  /**
+   * Lifts a part straight up in the world, as far as it needs, so nothing of it is under the floor (the root's height) plus `clear` (m):
+   * a rigid leg that hangs from a body crouching low pushes up into the body instead of going through the floor. Measured on the points
+   * of its meshes, a few hundred at most, taken once.
+   */
+  keepAbove(name: string, clear = 0) {
+    const n = this.nodes.get(name)?.node, parent = n?.parent;
+    if (!n || !parent) return;
+    let pts = this.points.get(n);
+    if (!pts) this.points.set(n, (pts = pointsOf(n)));
+    if (!pts.length) return;
+    n.updateWorldMatrix(true, false);
+    const floor = this.root.getWorldPosition(AT).y + clear;
+    let low = Infinity;
+    for (const p of pts) low = Math.min(low, UP0.copy(p).applyMatrix4(n.matrixWorld).y);
+    if (low >= floor) return;
+    n.position.add(parent.worldToLocal(UP1.set(0, floor - low, 0)).sub(parent.worldToLocal(UP0.set(0, 0, 0))));
+  }
+
+  /** A part's points in its own space (`keepAbove`). */
+  private points = new Map<THREE.Object3D, THREE.Vector3[]>();
 
   /** Scales a part from rest, or hides it at 0. */
   size(name: string, s: number) {

@@ -43,9 +43,19 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Raid',
+        title: 'Bosses and rulers stay out of the floor',
+        text: 'Ash keeps his feet on the floor when he crouches to slam, charge or kneel, and the Heart of Noon’s crown of rays sways in its last phase instead of turning its long rays down into the floor. On the Climb, a fallen ruler lies on the floor instead of halfway through it, and a kneeling ruler holds its staff up, planted in front of it.',
+      },
+      {
         tag: 'Tower',
         title: 'Robes that no longer glow, and Frost’s ice spires',
         text: 'On the Climb, the cream and white robes of the Sands’ and the War’s people are a shade darker, so they no longer glow white in their floors’ bright light. In Frostfall Lake, the ice shard lying at each spire’s foot is smaller, so a hero beside the spire no longer stands in it.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Drowned Admiral, a tidier phone screen, shots from the hand',
+        text: 'Floor 1’s ruler is called the Drowned Admiral, as in the lore, and on a phone the box with your hero’s passive fits what is in it. Bowmen, slingers and net casters loose their shots from the hand, and on the Field of Banners each army waits beside its standard, not inside its stone foot.',
       },
       {
         tag: 'Tower',

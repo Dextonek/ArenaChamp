@@ -44,6 +44,8 @@ export interface FoeModel {
   legs?: number;
   /** The health bar's height over the feet (m, before the unit's scale); default a little over `height`. */
   barY?: number;
+  /** A shooter's hand at the release (m over the feet, before the unit's scale): its bolts leave there (none: at `BOLT_HEIGHT`). */
+  shotY?: number;
 }
 
 const POOL = new Map<string, RealHero[]>();
@@ -253,6 +255,7 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
     const rig: MinionRig = {
       root,
       barY: f.barY ?? f.height + 0.15,
+      shotY: f.shotY,
       animate(dt: number, pose: MinionPose) {
         if (!hero.loaded) {
           code?.animate(dt, pose);

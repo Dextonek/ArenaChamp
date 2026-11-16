@@ -64,6 +64,13 @@ function check(ok, what) {
   if (!ok) failed = true;
 }
 
+/**
+ * On a busy machine (several agents building and running browsers) a reply can come late. SMOKE_SLOW=2 doubles every wait
+ * (`SMOKE_SLOW=2 npm run test:server`; PowerShell: `$env:SMOKE_SLOW=2; npm run test:server`). Waits only matter when a reply is
+ * missing, so a longer wait never makes a check pass that should fail; it only makes a failing run take longer.
+ */
+const SLOW = Math.max(1, Number(process.env.SMOKE_SLOW) || 1);
+
 /** A test client: `next(type)` waits for the next message of that type. @param {string} [to] */
 async function client(to = url) {
   const ws = new WebSocket(/** @type {string} */ (to));
@@ -98,7 +105,7 @@ async function client(to = url) {
       if (i >= 0) return Promise.resolve(inbox.splice(i, 1)[0]);
       return new Promise((resolve, reject) => {
         waiting.push({ t, resolve });
-        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), ms);
+        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), ms * SLOW);
       });
     },
     close: () => ws.close(),
@@ -222,7 +229,8 @@ async function shopCases() {
     nia.send({ t: 'queue_join', hero: cheap });
     ok((await nia.next('error')).error.includes('locked') && nia.got.queue === undefined, 'a locked hero is refused at the queue');
     nia.send({ t: 'lobby_create', raid: 'sun' });
-    const raidRoom = await nia.next('lobby');
+    let raidRoom = await nia.next('lobby');
+    while (!raidRoom.lobby) raidRoom = await nia.next('lobby'); // a late "left" (lobby: null) from the leave above, on a busy machine
     nia.send({ t: 'lobby_pick', hero: cheap });
     ok((await nia.next('error')).error.includes('locked') && raidRoom.lobby.seats[0].rank === null, 'and in a raid room');
     nia.send({ t: 'lobby_leave' });

@@ -17,7 +17,7 @@ export const PIECES: PiecesDef[] = [
   {
     floor: 1, hard: 1,
     ruler: {
-      name: 'The Drowned Captain', title: 'Anchor, cannon and tide', stand: 'Bram', tint: '#2f8a96', scale: 2.2, hp: 2800, speed: 2.0, stagger: { max: 100, kneel: 5 },
+      name: 'The Drowned Admiral', title: 'Anchor, cannon and tide', stand: 'Bram', tint: '#2f8a96', scale: 2.2, hp: 2800, speed: 2.0, stagger: { max: 100, kneel: 5 },
       room: 'harbour',
       moves: {
         anchor: { use: 'sweep', name: 'Anchor Sweep', share: 0.045, cooldown: 9 },
@@ -28,7 +28,7 @@ export const PIECES: PiecesDef[] = [
         tide: { use: 'surge', name: 'The Tide Comes In', warn: 2.6, seconds: 11, cooldown: 28 },
       },
       phases: [
-        { name: 'The Captain wakes', at: 1, moves: ['anchor', 'cleave', 'lunge'], gap: [1.4, 2.2] },
+        { name: 'The Admiral wakes', at: 1, moves: ['anchor', 'cleave', 'lunge'], gap: [1.4, 2.2] },
         { name: 'The wreck opens fire', at: 0.66, opener: 'raise', moves: ['anchor', 'cannons', 'cleave', 'lunge'], gap: [1.3, 2.1] },
         { name: 'He calls the tide', at: 0.5, opener: 'tide', moves: ['anchor', 'cannons', 'cleave', 'lunge'], timed: { move: 'tide', first: 24, every: 26, most: 99 }, gap: [1.1, 1.8] },
       ],

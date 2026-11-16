@@ -12,6 +12,11 @@ import type { HitOptions } from './targeting';
 export interface ProjectileOptions {
   /** Where it starts (feet position of the caster; y is ignored). */
   from: THREE.Vector3;
+  /**
+   * How high it leaves (m above the floor; default `BOLT_HEIGHT`): a tall unit's hand. It glides down to `BOLT_HEIGHT` over its first
+   * `GLIDE` m. Only the drawing sees it: what a bolt meets is found in x and z, and a hit is reported at `BOLT_HEIGHT` as before.
+   */
+  height?: number;
   /** Flight direction on the ground plane (y is ignored, need not be normalised). */
   dir: THREE.Vector3;
   /** m/s. */
@@ -108,6 +113,8 @@ export const boltWidth = (radius: number) => 2 * (radius + 0.42);
 export const BOUNCE_RANGE = 6;
 /** Bolts fly this high above the floor (m). */
 export const BOLT_HEIGHT = 1.1;
+/** A bolt that leaves higher (`ProjectileOptions.height`) comes down to `BOLT_HEIGHT` over this many metres of its flight. */
+export const GLIDE = 4;
 
 /** The handle a spell follows: where the bolt is, whether it still flies, and what it split into. */
 export class Projectile {
@@ -130,6 +137,9 @@ export class Projectile {
   splitDone = false;
   /** Turn rate now (rad/s, from `opts.curve`). */
   curve: number;
+  /** How far over `BOLT_HEIGHT` it left (m; 0 for most), and how far it has flown since (m): its height glides down over `GLIDE`. */
+  lift = 0;
+  flown = 0;
 
   /** @internal */
   constructor(
@@ -280,7 +290,7 @@ export class ProjectileSystem {
 
   spawn(world: ProjectileWorld, opts: ProjectileOptions): Projectile {
     const p = new Projectile(this.nextId++, world, opts, null, [], opts.speed, opts.radius, opts.range, false);
-    this.init(p, opts.from, opts.dir);
+    this.init(p, opts.from, opts.dir, Math.max(0, (opts.height ?? BOLT_HEIGHT) - BOLT_HEIGHT));
     this.tally(world.tag).fired++;
     this.open.add(p);
     return p;
@@ -346,8 +356,9 @@ export class ProjectileSystem {
     return p.hits + p.children.reduce((s, c) => s + this.familyHits(c), 0);
   }
 
-  private init(p: Projectile, from: THREE.Vector3, dir: THREE.Vector3) {
-    p.pos.set(from.x, BOLT_HEIGHT, from.z);
+  private init(p: Projectile, from: THREE.Vector3, dir: THREE.Vector3, lift = 0) {
+    p.lift = lift;
+    p.pos.set(from.x, BOLT_HEIGHT + lift, from.z);
     p.dir.set(dir.x, 0, dir.z);
     if (p.dir.lengthSq() < 1e-8) p.dir.set(0, 0, -1);
     p.dir.normalize();
@@ -388,7 +399,7 @@ export class ProjectileSystem {
       .sort((c1, c2) => c1.t - c2.t);
     let moved = dist;
     for (const c of touched) {
-      const at = new THREE.Vector3().copy(a).addScaledVector(p.dir, dist * c.t);
+      const at = new THREE.Vector3().copy(a).addScaledVector(p.dir, dist * c.t).setY(BOLT_HEIGHT);
       p.hitSet.add(c.v.figure);
       p.hits++;
       this.tally(p.world.tag).hits++;
@@ -399,6 +410,7 @@ export class ProjectileSystem {
       if (p.opts.pierce) continue;
       // The first hit of a bolt that does not pierce: split, bounce on, or end here.
       p.pos.copy(at);
+      p.lift = 0;
       moved = dist * c.t;
       p.rangeLeft -= moved;
       if (p.opts.split?.at === 'hit' && !p.splitDone) {
@@ -418,6 +430,10 @@ export class ProjectileSystem {
       return;
     }
     p.pos.addScaledVector(p.dir, moved);
+    if (p.lift) {
+      p.flown += moved;
+      p.pos.y = BOLT_HEIGHT + p.lift * Math.max(0, 1 - p.flown / GLIDE);
+    }
     if (cover && !wallCut) {
       if (p.reflections >= (p.opts.reflect ?? 0)) {
         p.alive = false;

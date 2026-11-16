@@ -47,7 +47,7 @@ export const RULER_MODELS: Record<string, RulerModel> = {
 
 /** Which ruler stands on which floor (the made floors' names in the comments). The first of a chapter's is on its first floor. */
 export const RULER_OF: Record<number, string> = {
-  // the Sea: the Drowned Captain, the Drowned Admiral, the Salt King / Mother of Wrecks, the Pearl Tyrant, the Gull Queen / the Tide
+  // the Sea: the Drowned Admiral (floors 1 and 2), the Salt King / Mother of Wrecks, the Pearl Tyrant, the Gull Queen / the Tide
   // Judge, the Bell Below, the Lantern Leviathan
   1: 'sea_admiral', 2: 'sea_admiral', 3: 'sea_admiral', 4: 'sea_queen', 6: 'sea_queen', 9: 'sea_queen', 5: 'sea_judge', 7: 'sea_judge', 8: 'sea_judge',
   // the Wood: the Elder Root, the Moss Warden, the Hollow Elder / the Thorn Mother, the Briar Witch, the Mire Heart / the Antler King,

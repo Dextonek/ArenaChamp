@@ -285,7 +285,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'named2', n: 1 }], named: { name: named2, speed: 1.7, patrol: patrol2Loop, bounty: { shards: shard(35), relic: false } } },
   ];
 
-  // --- the set pieces: the ruler (the Drowned Captain's moves, another body and name), the gate, the trial, the rival ------------------
+  // --- the set pieces: the ruler (the Drowned Admiral's moves, another body and name), the gate, the trial, the rival ------------------
   // Floor 10 is the chapter's crown: behind the lair is a Raid boss, alone (pieces/core.ts `crownFight`); the first is the Sun Warden.
   const crown = n === 10 ? ('sun' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['The Sun Warden', 'Keeper of the Sun Court'] : RULERS[fi % RULERS.length];

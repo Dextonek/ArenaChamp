@@ -27,6 +27,18 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   2026-11-16: "you can make more agents, not just 3"). Blender (MCP): one agent at a
   time. One writer at a time on the shared engine files (`src/heroMode.ts`, `src/arena.ts`, `src/duel.ts`,
   `src/main.ts`).
+- **Load on this computer (2026-11-16; the user: "make adjustments so there will be not that much load and agents can work well").**
+  The agents think in the cloud; their builds, dev servers, hidden browsers, Blender and measurements run here (Ryzen 7 5700X,
+  32 GB, RX 6700 XT). Six agents is fine for code, lore, models and checks. What does not mix:
+  - A job that MEASURES TIME (perf.py frame times, phone profiles, `--headed` loading runs, the simulator's whole roster) runs through
+    the lock: `python pipeline/tools/heavy.py run -- <command>` (one at a time across all worktrees; waits at most 9 min). Fight prints
+    (`hero-prints.py`, perf prints) are the same under load and need no lock. A measurement that matters for a decision (e.g. the phone
+    frame) is taken with no other agent running.
+  - Server tests under load: `SMOKE_SLOW=2 npm run test:server` (PowerShell: `$env:SMOKE_SLOW=2; npm run test:server`); a timing
+    failure under load is rerun once before it counts.
+  - Each agent keeps ONE dev server and one browser, and stops them (by PID) when its job ends; Blender one agent at a time.
+  - Disk: every agent works in its own copy (worktree). After merging a job, the parent removes the copies of merged jobs (link to
+    `node_modules` first, the link only); keep at least 30 GB free on C:.
 - **Loops:** every wait or poll ends by itself within 10 minutes. Never kill processes by name. "stop", "sstop" or
   "slowly finish" means stop all agents and loops at once, then summarise.
 - **Scope:** "brainstorm" or "just ideas" means no code. Use a named model, path or tool exactly; ask before choosing

@@ -46,10 +46,40 @@ Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C
   stays). Work clips (kneel, harvest, carry) not added: +366 KB (+30 %) on the animation file every player loads.
 **Queued:** the hero bugs (design section 8), after the 39 are moved.
 
+**Load and disk (2026-11-16; the user: "lets clean up some worktrees and make adjustments so there will be not that much load"):**
+58 worktrees of merged jobs removed (their `node_modules` links unlinked first; the main `node_modules` intact): C: free 16 -> 42 GB.
+Kept: the running agents' five and six with work never merged (`t3/tune-cantor-brannoc-vesper-1`, `t3/texturecraft-hero-sample`,
+`t3/twin-forge-party-fight`, `t3/twin-flames-party-boss-room` (changes not committed), a scratch `dry` copy, a `.claude/worktrees` one).
+New: `pipeline/tools/heavy.py` (one timing run at a time across worktrees), `SMOKE_SLOW=2` for the server tests under load (and the
+shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's own config): the `rea` MCP server in `~/.claude.json`
+starts with every agent session (about 90 MB each, and it often fails to connect here).
+
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
+  and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
+  spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the
+  hand (net caster, slinger, bowman, thorn sprite) and glide to 1.1 m, the hit unchanged (prints the same). Rust guard lists 19 lines
+  (the new one `projectile.ts`, drawing only). Passed to the lore agent: "The Captain's Key" -> the Admiral's, and the codex's note
+  that the ruler has two names.
+
+- **Done and merged (2026-11-16): ruler and boss looks** (page `docs/models/review/round3/index.html`): fallen rulers lie on the floor
+  (0-3 cm, was up to 1.6 m under), Ash's feet on the floor in all his casts, the Heart's crown sways instead of turning (rays clear of
+  the floor), the five staff rulers kneel with the staff up (kept for all five, by the parent). Ash on the lava: his charge stops
+  1.4 m inside the floor; his wide body only looks out over the lava from the steep camera; left as it is (the parent: the charge's
+  reach stays). Prints the same (duel, raid solo, party, Ash, Heart, world 1 and 5); heroes unchanged.
+
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - Open world stage 3: done and merged (the entry below).
+- **Done, on branch `t3/b9981adf` (not merged, not live) (2026-11-16): the model review, round 3: decision 10's four ruler and boss
+  looks** (page `docs/models/review/round3/index.html`, linked from round 2's). Fallen Climb rulers lie on the floor (all 15: 0.1-1.5 m
+  under -> 0.00-0.03 m; `RealHero.restOnFloor`, Climb figures only); Ash's legs stay on the floor in every cast, the kneel and the fall
+  (up to 2.4 m under -> 0.00; `BodyParts.keepAbove`); the Heart of Noon's crown sways in its last phase instead of turning its long rays
+  into the floor (lowest -1.09 -> +0.81 m); a kneeling staff ruler holds its staff up, planted in front (all five staff rulers alike:
+  worth the user's eye; `RealHero.plantHeld`). Ash on the lava: not a fight fault (the Charge stops 1.4 m inside the 16 m floor; his
+  body hangs 0.4 m over the stone lip); stopping it 1.8 m short is a rule change and waits for a yes. Proof: seven perf prints the
+  same before and after (duel-temple 90b1abaa, raid-solo ff20c830, raid-party 9c4a9c48, raid-ash e47e69ce, raid-heart d2d3cf3e, world-1
+  98b0044a, world-5 b2403b4c), hero prints Anka, Kaia, Sefu the same. One News item. No Blender rebuild needed.
 - **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
   `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
   only Big Yoko showed the painted underwear, and the build now covers it on every hero; 20 portraits redrawn. Worth the user's eye:
