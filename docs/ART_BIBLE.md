@@ -87,6 +87,7 @@ in small details.
 | Moss / rune (Hank; foil: wood `#b5763a`, bark `#6a4426`, pine `#3f6b3a`, steel `#cfd5d8`) | `#f4ffe0` | `#c8f08a` | `#7fbf55` | `#e8b868` | `#1c120b` |
 | Illusion (The Great Zambini; foil: card `#efe8d8`, deep violet `#2a1248`) | `#ffffff` | `#e8c8ff` | `#b05aff` | `#d8404a` | `#120a1e` |
 | Threshold (Wick; foil: brass `#b08a4a`, door wood `#5a3321`) | `#fffbe8` | `#ffe6a8` | `#ffcf7a` | `#c8423a` | `#1a0d0a` |
+| Mirror (Silvane; foil: silver `#c6cedb`, glass shade `#8fa8cc`, deep glass `#5a4a98`) | `#ffffff` | `#f4f9ff` | `#cfe6ff` | `#d9b8ff` | `#121a2e` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

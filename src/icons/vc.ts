@@ -10,14 +10,17 @@ import type { HeroKit, HeroSpell } from '../heroes';
  * kit's own canvas icon is drawn, and the file's picture replaces it in that canvas once it has decoded.
  */
 const DRAWN = new Set<string>([
+  'ada',
   'anka',
   'barry-cloudsley',
   'big-yoko',
   'bo',
   'bram',
+  'fenna',
   'grandma-ironknit',
   'gus',
   'hank',
+  'isolde',
   'kaia',
   'lyra',
   'mabel',
@@ -27,16 +30,21 @@ const DRAWN = new Set<string>([
   'mum',
   'nyx',
   'oblivion',
+  'opaline',
   'pim',
   'pip',
   'pom',
   'professor-puff',
   'referee-whistler',
   'sefu',
+  'silvane',
   'sir-whiskers',
+  'sirix',
   'tempo',
   'the-great-zambini',
+  'vesper',
   'wick',
+  'zephyr',
 ]);
 
 /** A hero's file stem: its name in lower case with dashes (`Big Yoko` -> `big-yoko`); the twins are `pim` and `pom`. */

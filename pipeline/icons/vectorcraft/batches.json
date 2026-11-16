@@ -164,5 +164,39 @@
    "Weakest: Lyra's Q and W are a bow and two arrows: clear at 48 px, thin lines at 32. The Illusionist's E and R both show hats (three in a row, three round a ring with swords); the ring and the swords tell R apart. Kaia's Supercell and Barry's Lightning Risk (batch 2) both put lightning under a cloud; hers is a turning storm with three bolts, his one bolt on a mark.",
    "Redrawn after a first look: Pip's Shortcut (a blue boot read as a modern sneaker; now a wrapped messenger's boot), Hank's TIMBER! (the fourth tree ran out of the frame), Sefu's Cobra Spit (a cobra seen from the front read as a microphone at 32 px; now from the side) and Scarab Stride (read as a caterpillar)."
   ]
+ },
+ "4": {
+  "date": "2026-11-16",
+  "stems": [
+   "silvane",
+   "opaline",
+   "zephyr",
+   "fenna",
+   "isolde",
+   "vesper",
+   "sirix",
+   "ada"
+  ],
+  "rows": {
+   "silvane": "Proposed row Mirror (src/kits/mirror.ts): the glass's pale blue, violet as the accent, silver foils.",
+   "opaline": "The art bible's Prism row, its spectrum as the accent; amethyst and cream for her crystals (her revamp's colours).",
+   "zephyr": "The art bible's Sky row, cloud as its foil.",
+   "fenna": "The art bible's Grove row, the bark's cream as its foil.",
+   "isolde": "The art bible's Frost row (rime as its foil).",
+   "vesper": "The art bible's Blood row, drawn as the art bible's blood rules ask (dark rim, one hot line, a pinpoint highlight, bone near it).",
+   "sirix": "The art bible's Hive row, wax as its foil.",
+   "ada": "The art bible's Clockwork row; brass and steel, the cyan spark as the accent."
+  },
+  "bible": {
+   "silvane": [
+    "Mirror",
+    "Silvane; foil: silver `#c6cedb`, glass shade `#8fa8cc`, deep glass `#5a4a98`"
+   ]
+  },
+  "notes": [
+   "Most of this batch had good icons already (Opaline, Isolde, Vesper read well today); the new ones bring them into the family and give each a sign of its own: Silvane's silver-framed mirrors, Opaline's amethyst crystals and split light, Zephyr's wind crescents and feather, Fenna's flowers and vines, Isolde's ice and snowflake, Vesper's blood and gold chalice, Sirix's wasps and honeycomb, Ada's brass gears and cyan-eyed machines.",
+   "Weakest: Silvane's Hand Mirror (Q) is small at 32 px, its bounce line thin. Zephyr's Crosswind (Q) and Skyward (W) are both wind arcs at 32 px. Sirix's Swarm Cloud (E) and Swarm Surge (R) are many small wasps: busy at 32 px, though the ring and the column tell them apart; his Barbed Stinger (Q) reads a little like an ear of wheat.",
+   "Redrawn after a first look: Isolde's Winter's Shatter (its Chill pips sat in the key letter's corner)."
+  ]
  }
 }
