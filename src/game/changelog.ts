@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Tower',
+        title: 'The Climb’s first thirty floors, read again',
+        text: 'On the M map, names that stood close together no longer lie on top of each other (the gate and the camp, a chapel and its signal fire). And the people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
+      },
+      {
         tag: 'Heroes',
         title: 'The Story: why the sun fell, and how it ends',
         text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',
