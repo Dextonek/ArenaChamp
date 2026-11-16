@@ -41,6 +41,15 @@ export class WorldHud {
   private lawText = '';
   private questKey = '';
   private statKey = '';
+  /**
+   * On a phone, the hero's plate (the touch HUD's portrait and passive, in heroMode) sits over this panel: its height is kept in the
+   * page's `--plate-h`, so the minimap's rule (map.ts) puts the panel under it. Looked for once a second (a new hero builds a new plate).
+   */
+  private plate: HTMLElement | null = null;
+  private plateWatch = TOUCH && typeof ResizeObserver !== 'undefined'
+    ? new ResizeObserver(() => document.documentElement.style.setProperty('--plate-h', `${this.plate?.offsetHeight ?? 0}px`))
+    : null;
+  private plateLook = 0;
   /** What the screen's talk card is for, so the zone can close it when the hero walks off. */
   cardFor = '';
   onLeave: (() => void) | null = null;
@@ -206,6 +215,15 @@ export class WorldHud {
 
   /** Once a frame. */
   update(dt: number) {
+    if (this.plateWatch && (this.plateLook -= dt) <= 0) {
+      this.plateLook = 1;
+      const p = document.querySelector<HTMLElement>('.hero-plate');
+      if (p !== this.plate) {
+        if (this.plate) this.plateWatch.unobserve(this.plate);
+        this.plate = p;
+        if (p) this.plateWatch.observe(p);
+      }
+    }
     if (this.bannerLeft <= 0) return;
     this.bannerLeft -= dt;
     if (this.bannerLeft <= 0.5) this.banner.style.opacity = '0';
@@ -429,6 +447,8 @@ export class WorldHud {
   }
 
   dispose() {
+    this.plateWatch?.disconnect();
+    document.documentElement.style.removeProperty('--plate-h');
     this.show(false);
     for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl, this.hideBar]) e.remove();
   }
