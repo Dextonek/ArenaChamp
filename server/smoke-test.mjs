@@ -718,7 +718,7 @@ async function doorCases() {
   };
   const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
   const server = createServer();
-  attachGameServer(server, { dataFile: join(dir, 'accounts-doors.json'), log: (m) => { if (process.env.DOORLOG) console.log('HUB', m); }, shop: false });
+  attachGameServer(server, { dataFile: join(dir, 'accounts-doors.json'), log: () => {}, shop: false });
   await new Promise((r) => server.listen(0, () => r(undefined)));
   const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
   /** A new account, signed in, on `floor` at x, z. @param {string} name @param {number} floor @param {number} x @param {number} z @param {string} [hero] */
@@ -870,6 +870,26 @@ async function doorCases() {
     e.c.send({ t: 'door_enter', door: 'lair' });
     ok((await e.c.next('door_solo', 1500)).door === 'lair' && !e.c.got.door_gather, 'alone on the floor: the lair is played alone at once');
     e.c.close();
+
+    // A crown floor's lair (a Raid boss) is fought alone for now, even with another near.
+    const k1 = await walker('dka', 10, 0, -95), k2 = await walker('dkb', 10, 3, -95);
+    k1.c.send({ t: 'door_enter', door: 'lair' });
+    ok((await k1.c.next('door_solo', 1500)).door === 'lair' && !k2.c.got.door_gather, 'the lair of a crown floor is played alone, even with another near');
+    for (const x of [k1, k2]) x.c.close();
+
+    // One leaves the fight but not the floor (match_leave): the other fights on; the floor sees the leaver again and hears its walk.
+    const m1 = await walker('dma', 3, 1, -90), m2 = await walker('dmb', 3, 3, -88), m3 = await walker('dmc', 3, 40, 40);
+    m1.c.send({ t: 'door_enter', door: 'lair' });
+    await m1.c.next('door_gather');
+    m2.c.send({ t: 'door_enter', door: 'lair' });
+    await Promise.all([m1.c.next('door_start'), m2.c.next('door_start')]);
+    m3.c.forget('world_joined');
+    m1.c.send({ t: 'match_leave' });
+    const gone = await m2.c.next('partner_left'), again = await m3.c.next('world_joined');
+    m1.c.send({ t: 'world_move', x: 2, z: -84, yaw: 0, walk: true, hp: 1 });
+    const walk = await m3.c.next('world_moved');
+    ok(gone.side === 0 && again.id === m1.r.you && walk.id === m1.r.you, 'one who leaves the fight but stays on the floor: the other fights on, the floor sees it again and its walk');
+    for (const x of [m1, m2, m3]) x.c.close();
   } catch (err) {
     ok(false, String(err instanceof Error ? err.stack : err));
   }

@@ -348,7 +348,8 @@ export const packScale = (n) => {
 
 /**
  * The Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md; docs/architecture/multiplayer.md). A ruler's
- * door that a signed-in player walks into while another player of the shard stands within `nearR` m of it holds `gatherS` seconds:
+ * door (not a crown floor's: that Raid boss is fought alone for now) that a signed-in player walks into while another player of the
+ * shard stands within `nearR` m of it holds `gatherS` seconds:
  * whoever else walks in by then fights the ruler with them, on the Raid's machinery (one screen runs its brain, revives, hand-over).
  * - `enterR`: how far from the door (past its own ring) the hub still takes a player's word that it walked in (its last report).
  * - `hp`, `dmg`: what each player past the first adds to the ruler's health (the design's gatekeepers' and rulers' 0.75) and to its

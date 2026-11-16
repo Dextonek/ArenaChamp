@@ -19,6 +19,7 @@ How it works: [docs/architecture/multiplayer.md](../../../architecture/multiplay
 | `run2-a-door-held.jpg`, `run2-b-invited.jpg` | Floor 2, the Drowned Admiral's lair, the same way in |
 | `b-before-a-closes.jpg`, `b-took-over.jpg` | B's screen in the fight before and 3 s after A's tab (the brain's) was closed: B runs the Admiral alone |
 | `b-out-alone.jpg` | B back on floor 2 after winning alone |
+| `drop-a-fight.jpg`, `drop-b-fight.jpg`, `drop-a-out.jpg`, `drop-b-out.jpg` | Floor 3 (`--drop`): both connections dropped mid-fight (as a deploy drops them): both back in front of the Salt King's door, "Nothing counted for you", three lives each |
 
 ## What was checked
 - **Into the door together.** A walked in: the door was held (B was within 30 m) and B was invited. B walked in: nobody else was near,
@@ -45,10 +46,13 @@ How it works: [docs/architecture/multiplayer.md](../../../architecture/multiplay
 - **The clear counts for both, and they come out together.** The ruler fell 8.6 s after the added damage began. Both runs: the lair won,
   40 shards, "piece ruler won (with others)" in the log; both back on floor 1 in shard 1.1, side by side in front of the door
   (1.6 m apart), each seeing the other. Run 2: B won alone after A left, and it counted for B.
+- **A dropped connection** (`--drop`, floor 3, `drop.json`): both pages' sockets closed 6 s into the fight. Both came out in front of
+  the door at once, side by side, with nothing counted (no win, no shards, three lives still); the page signed in again by itself and
+  both were back in shard 3.1, each seeing the other.
 - No errors on either page.
 - **Alone as before.** The route bot (the tool page, not signed in: no link) clears floors 1, 11, 21, 31 and 41 (stars 1-1-0-1, 4, 4,
   1-1-0-1, 4; the bot's own luck). `perf.py` plays the same fights as the baseline: duel-temple 90b1abaa, raid-party 9c4a9c48, raid-solo
   ff20c830, world-1 d862aa08 (`docs/perf/data/stage3.json`).
-- The server's side: `npm run test:server`, 362 checks, the doors' 33 among them (multiplayer.md lists them).
-- Not checked here: three or more people in one door (the server tests cover a party of three), a phone, a crown floor's lair together
-  (the hub's side is tested; no two-tab run), a person's hands.
+- The server's side: `npm run test:server`, 364 checks, the doors' 35 among them (multiplayer.md lists them).
+- Not checked here: three or more people in one door (the server tests cover a party of three), a guarded or still ruler (floors 11,
+  41), a phone, a person's hands. A crown floor's lair is played alone (not shared).

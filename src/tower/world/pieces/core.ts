@@ -115,8 +115,6 @@ export class PieceRun implements PieceHandle {
 export function crownFight(run: PieceRun, id: string, seed: string, tier = 1) {
   const { api, input } = run, def = BOSSES[id];
   if (!def) throw new Error(`no raid boss ${id}`);
-  // With others (the open world's stage 3): the Raid's own two-screen fight, on the hub.
-  if (input.shared) return sharedFight(run, { def, link: input.shared.link(def), seed, tier, boons: input.boons, shared: input.shared });
   const link = new LocalLink(def, tier);
   if (api.duel.on) api.duel.stop();
   api.setKit(input.hero);
@@ -155,7 +153,7 @@ export function bossFight(run: PieceRun, o: { def: BossDef; link: TowerLink; see
 const UP_AFTER = 0.25;
 
 /**
- * A ruler (or a crown's Raid boss) fought with others of the floor's shard (the open world's stage 3, src/tower/world/together.ts): the
+ * A ruler fought with others of the floor's shard (the open world's stage 3, src/tower/world/together.ts): the
  * duel's boss path as a raid for two or more runs it (`startBoss` with the party; one screen runs the brain, the others follow; a fallen
  * hero lies until a partner gets it up), held until the hub's countdown. It ends when the hub says (`door_end`): won for this player
  * if its hero hit the ruler, nothing either way if it never did, lost when everyone was down.

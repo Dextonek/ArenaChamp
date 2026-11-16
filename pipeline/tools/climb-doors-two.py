@@ -12,6 +12,8 @@ hero is struck down and A gets it up. A's page is frozen for 5.5 s (a tab put aw
 when A wakes (A follows again). Then both screens add damage through the hub until the ruler falls; both come out in front of the door,
 in the same shard, the lair won on both runs.
 Run 2 (floor --floor2): the same up to the fight, then A's tab is closed mid-fight: B takes the brain over and wins alone.
+--drop (floor --floor alone): the same up to the fight, then both pages' connections drop (their sockets are closed, as a deploy
+drops them): both must come out in front of the door with nothing counted and no life lost. Writes drop.json and drop-*.jpg instead.
 
 It starts its own dev server on --port with the hero shop off and stops it by its PID (one already there is used and left alone).
 Writes run.json and the pictures into the out folder, and prints a summary.
@@ -215,6 +217,28 @@ async def run(args):
             for pg in (a, b):
                 await pg.evaluate(go)
 
+            if args.drop:
+                print(f"drop: floor {args.floor}")
+                await climb(a, "Kaia", args.floor)
+                await climb(b, "Lyra", args.floor)
+                before = {"a": await a.evaluate(STATE), "b": await b.evaluate(STATE)}
+                door, ok, took, held = await to_door(a, b, out, "drop-")
+                report["drop_started"] = ok
+                await asyncio.sleep(6)
+                await asyncio.gather(shot(a, out / "drop-a-fight.jpg"), shot(b, out / "drop-b-fight.jpg"))
+                for pg in (a, b):
+                    await pg.evaluate("() => window.game.net.ws?.close()")
+                back = all([await wait_for(pg, "() => !!window._worldGame.zone && window._worldGame.piece === null", 30, "back on the floor after the drop") for pg in (a, b)])
+                await asyncio.sleep(3)
+                after = {"a": await a.evaluate(STATE), "b": await b.evaluate(STATE)}
+                await asyncio.gather(shot(a, out / "drop-a-out.jpg"), shot(b, out / "drop-b-out.jpg"))
+                report["drop"] = {"back": back, "before": {k: {f: v[f] for f in ("won", "shards", "lives")} for k, v in before.items()},
+                                  "after": {k: {f: v[f] for f in ("won", "shards", "lives", "me", "log", "fightLog", "errors", "shard", "others")} for k, v in after.items()}}
+                (out / "drop.json").write_text(json.dumps(report, indent=1, default=str), encoding="utf8")
+                print(json.dumps(report["drop"], indent=1, default=str)[:4000])
+                await browser.close()
+                return
+
             # --- run 1 -----------------------------------------------------------------------------------------------------
             print(f"run 1: floor {args.floor}")
             await climb(a, "Kaia", args.floor)
@@ -350,7 +374,8 @@ async def run(args):
             await cb.close()
             await browser.close()
     finally:
-        (out / "run.json").write_text(json.dumps(report, indent=1, default=str), encoding="utf8")
+        if not args.drop:
+            (out / "run.json").write_text(json.dumps(report, indent=1, default=str), encoding="utf8")
         if proc:
             proc.terminate()
             try:
@@ -366,6 +391,7 @@ def main():
     ap.add_argument("--port", type=int, default=5267)
     ap.add_argument("--floor", type=int, default=1)
     ap.add_argument("--floor2", type=int, default=2)
+    ap.add_argument("--drop", action="store_true", help="both connections drop mid-fight (one floor)")
     ap.add_argument("--width", type=int, default=1100)
     ap.add_argument("--height", type=int, default=680)
     asyncio.run(run(ap.parse_args()))

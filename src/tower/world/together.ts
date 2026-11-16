@@ -37,8 +37,12 @@ export class DoorFight {
   private outcome: { won: boolean; hit: boolean } | null = null;
   /** What `door_start` and `boss_brain` said, for the two-tab test (`vfx.world.together.log`). */
   readonly log: string[] = [];
-  /** The connection went mid-fight: the piece ends with nothing counted. */
-  onLost: () => void = () => {};
+  /** The connection went mid-fight (a deploy drops every one): the fight ends here with nothing counted (no outcome: `none`). */
+  private lost() {
+    this.log.push(`${Math.round(performance.now())} connection lost`);
+    this.outcome = null;
+    this.link?.on.end('lose');
+  }
 
   constructor(private net: NetClient, private api: GameApi) {
     const on = () => this.active;
@@ -83,7 +87,7 @@ export class DoorFight {
       this.log.push(`${Math.round(performance.now())} brain_moved ${m.side}`);
       if (m.side !== this.side) fight()?.dropBrain(m.which);
     });
-    net.on('socket', (m) => { if (!m.open && on()) this.onLost(); });
+    net.on('socket', (m) => { if (!m.open && on()) this.lost(); });
   }
 
   /** The hub began a fight of the party behind a door: this screen's part in it, for `startPiece`. */
@@ -162,9 +166,14 @@ export class DoorFight {
   }
 }
 
-/** The ruler's doors this floor has, as the hub's table says (only those can be fought together). */
+/**
+ * The ruler's doors this floor has, as the hub's table says (only those can be fought together). A crown floor's lair (a Raid boss) is
+ * fought alone for now: its party fight was not played in two tabs.
+ */
 export function sharedDoors(floor: FloorDef) {
-  return new Set((CLIMB_DOORS[floor.n]?.doors ?? []).filter((d) => d[1] === 'ruler').map((d) => d[0]));
+  const t = CLIMB_DOORS[floor.n];
+  if (!t || t.ruler.crown || !t.ruler.hp) return new Set<string>();
+  return new Set(t.doors.filter((d) => d[1] === 'ruler').map((d) => d[0]));
 }
 
 /** On the dev server: says in the console when the hub's table of this floor's doors and ruler is older than the floor. */

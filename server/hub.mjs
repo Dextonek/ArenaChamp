@@ -1622,8 +1622,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     // Where it last said it stood: far from the door, it did not walk in.
     if (Math.hypot(seat.x - door.x, seat.z - door.z) > door.r + DR.enterR) return;
     const solo = () => send(c, { t: 'door_solo', door: door.id });
-    // Only a ruler's lair is fought together (a gate and a rival are duels with the CPU, a trial a room of its own).
-    if (door.piece !== 'ruler' || !CLIMB_DOORS[shard.floor]?.ruler.hp) return solo();
+    // Only a ruler's lair is fought together (a gate and a rival are duels with the CPU, a trial a room of its own). A crown floor's
+    // lair (a Raid boss) is fought alone for now: its party fight was not played on two screens.
+    const ruler = CLIMB_DOORS[shard.floor]?.ruler;
+    if (door.piece !== 'ruler' || !ruler?.hp || ruler.crown) return solo();
     let g = shard.gathers.get(door.id);
     if (g?.members.includes(c)) return send(c, gatherMsg(g, false));
     doorUngather(shard, c);
@@ -1664,23 +1666,17 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     tellGather(shard, g, true);
     const inn = g.members.filter((x) => !x.closed && x.world?.shard === shard && !x.world.inside && !(x.match && x.match.state !== 'over'));
     const rules = CLIMB_DOORS[shard.floor]?.ruler;
-    if (inn.length < 2 || !rules) {
+    if (inn.length < 2 || !rules || rules.crown) {
       for (const x of inn) send(x, { t: 'door_solo', door: g.door });
       return;
     }
-    const n = inn.length, k = doorScale(n), raid = rules.crown && Object.hasOwn(RAID_BOSSES, rules.crown) ? RAID_BOSSES[rules.crown] : null;
-    const crown = raid ? /** @type {string} */ (rules.crown) : null;
-    // A crown floor's lair holds a Raid boss at its tier, fought as the Raid fights it alone, then set for the party as a ruler is.
-    const hp = Math.round((crown ? raidHp(crown, 1, rules.tier ?? 1) : rules.hp) * k.hp);
+    const n = inn.length, k = doorScale(n), hp = Math.round(rules.hp * k.hp);
     /** @type {RaidBoss} */
     const boss = {
-      id: crown ?? `ruler-${shard.floor}`, band: 2, hp, max: hp, staggerMax: Math.round((raid ? raid.staggerMax : rules.staggerMax) * k.hp), phase: 0, gauge: 0,
+      id: `ruler-${shard.floor}`, band: 2, hp, max: hp, staggerMax: Math.round(rules.staggerMax * k.hp), phase: 0, gauge: 0,
       kneelUntil: 0, brain: 0, brainAt: 0, revives: new Array(n).fill(0), stood: new Map(), settled: new Set(), walls: new Set(), taken: new Set(),
       hpTimer: null, hpAt: 0,
-      rules: {
-        phases: raid ? raid.phases : rules.phases, kneel: raid ? raid.kneel : rules.kneel, rewards: crown ? RAID_REWARDS[crown] : rules.rewards,
-        ring: raid ? raid.ring : DR.ring, gauge: k.hp,
-      },
+      rules: { phases: rules.phases, kneel: rules.kneel, rewards: rules.rewards, ring: DR.ring, gauge: k.hp },
     };
     /** @type {Match} */
     const match = {
@@ -1708,7 +1704,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     });
     match.players.forEach((p, side) => send(p.client, {
       t: 'door_start', id: match.id, door: g.door, side, you: { name: p.name, hero: p.hero }, party, n, hp, brain: 0, dmg: k.dmg,
-      staggerMax: boss.staggerMax, crown: crown ?? undefined,
+      staggerMax: boss.staggerMax,
     }));
     tellShard(shard, { t: 'door_busy', door: g.door, n, names: party.map((p) => p.name) }, null);
     if (n > 2) match.ticker = setInterval(() => partyMoves(match), MOVES_MS);
@@ -1727,8 +1723,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const me = match.players[side], boss = match.boss;
     if (!boss || me.left || match.state === 'over') return;
     me.left = true;
+    const was = me.client;
     me.client = GONE;
     me.move = null;
+    // It left the fight but not the floor (`match_leave`): back on the floor at once, where it last said it stood.
+    const seat = was.world;
+    if (seat?.inside === match) {
+      seat.inside = null;
+      tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: was.name, tag: tagOf(was.name), hero: seat.hero, ...worldSeen(seat) }, was);
+    }
     if (match.players.every((p) => p.left || p.down)) return doorEnd(match, 'lost');
     if (match.state === 'loading' && match.players.every((p) => p.loaded || p.left)) fight(match);
     tell(match, { t: 'partner_left', side });

@@ -79,8 +79,8 @@ drops every connection. Two-tab tests with the local test accounts (fetched by t
   (0.75 a player, this design); (3) the result of the piece for each player in it (a won ruler counts for all who were in, as a kill
   does), and what a player who was not in sees when the door opens again (the ruler down for a while, as a cleared pack).
 - **Stage 3, doors together: built (2026-11-16, branch `t3/climb-stage3-doors-together`), not deployed (PROTOCOL 19).** Only a ruler's
-  lair (and a crown floor's Raid boss behind it) is fought together; a gate, a trial and a rival stay alone (the gate and the rival are
-  duels with a CPU hero, not on the boss path; sharing them is a stage of its own). Walking into a lair with another player of the shard
+  lair is fought together; a gate, a trial, a rival and a crown floor's lair stay alone (the gate and the rival are duels with a CPU
+  hero, not on the boss path; a crown's Raid boss was not played on two screens: the hub's side would take its table row as it is). Walking into a lair with another player of the shard
   within 30 m holds the door 6 s ("held for others near", a Go in now button for the first one in; the others near are invited to walk
   in); whoever walks in by then fights the ruler with them, on the Raid's machinery as the design asked (one screen runs the brain, the
   others follow by `NetLink`, revives, the hand-over to the next screen when the brain's leaves or goes quiet). The ruler is set for the

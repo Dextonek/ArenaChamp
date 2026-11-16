@@ -301,7 +301,7 @@ export type ServerMsg =
   // fight of the party begun (then as a raid: `match_fight`, `boss_*`, `peer_*`, `revived`, `boss_brain`), a door busy on the floor, the end.
   | { t: 'door_gather'; door: string; by: number; ids: number[]; names: string[]; left: number }
   | { t: 'door_solo'; door: string }
-  | { t: 'door_start'; id: string; door: string; side: number; you: { name: string; hero: string }; party: PartyMember[]; n: number; hp: number; brain: number; dmg: number; staggerMax: number; crown?: string }
+  | { t: 'door_start'; id: string; door: string; side: number; you: { name: string; hero: string }; party: PartyMember[]; n: number; hp: number; brain: number; dmg: number; staggerMax: number }
   | { t: 'door_busy'; door: string; n: number; names: string[] }
   | { t: 'door_end'; door: string; result: 'won' | 'lost'; hit: boolean; seconds: number; hp: number }
   // The leaderboards and clans (since PROTOCOL 17; docs/architecture/multiplayer.md, "Leaderboards and clans").

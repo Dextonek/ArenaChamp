@@ -48,13 +48,16 @@ The three agents below were restarted in their own threads from their saved comm
   holds the door 6 s (a line with "Go in now" for the first; the others near are invited to walk in); whoever walks in fights the ruler
   on the Raid's machinery (one brain, `NetLink`, revives, hand-over), set for the party (health and gauge x(1+0.75 per extra), blows
   x(1+0.15)); seats stay in the shard; all come out side by side in front of the door; the clear counts for whoever hit, nothing for one
-  who never did, all down is a life each. Nothing on the accounts. Checked: server tests 362 (33 new), type check, build, a two-tab run
+  who never did, all down is a life each. Nothing on the accounts. Checked: server tests 364 (35 new), type check, build, a two-tab run
   (A Kaia, B Lyra, floor 1 then 2): both see the same ruler (its place within 0.05 m p95 after the 100 ms play-back delay, health within
   0.1 % p95), B struck down and got up by A's autopilot in 4.3 s, A's tab frozen 5.5 s: B took the brain in 4.7 s; A's tab closed: B took
-  it in 0.37 s and won alone; the clear counted on both (lair won, 40 shards), both back side by side in shard 1.1. Route bot (not
-  signed in) clears 1, 11, 21, 31, 41; perf prints the same (duel-temple 90b1abaa, raid-party 9c4a9c48). Known: the ruler's sentries,
-  guard and called keepers are each screen's own (each hero clears its own); a crown's Raid boss keeps its own blows; nobody joins a
-  fight once it began. After any change to a floor's doors or ruler: `node pipeline/tools/climb-packs.mjs`. Waiting on the user's look,
+  it in 0.37 s and won alone; the clear counted on both (lair won, 40 shards), both back side by side in shard 1.1; both connections
+  dropped mid-fight: both out with nothing counted, lives kept, back in the same shard. Route bot (not signed in) clears 1, 11, 21, 31,
+  41; perf prints the same (duel-temple 90b1abaa, raid-party 9c4a9c48). A crown floor's lair stays alone (not played on two screens). Known: the ruler's sentries,
+  guard and called keepers are each screen's own (each hero clears its own; only the brain's felled sentries earn stagger or a kneel);
+  the duel's boss health bar stays hidden in Climb ruler fights, alone or together, as before (the party list shows the heroes); a lost
+  party fight wakes everyone at the door (alone: at the last waystone); nobody joins a fight once it began; a guarded or still ruler
+  (floors 11, 41) and a party of three were not played in two tabs. After any change to a floor's doors or ruler: `node pipeline/tools/climb-packs.mjs`. Waiting on the user's look,
   then merge into `feat/particle-editor`.
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
   words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
