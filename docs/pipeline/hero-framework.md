@@ -8,8 +8,9 @@ updated: 2026-11-16
 
 Steps 1 and 2 of `docs/pipeline/hero-framework-brief.md` (the user's yes, 2026-11-16): what the 40 heroes are made of today,
 how one hero will live in one folder, the spell building blocks, what must keep working, the risks, and Anka's move planned
-file by file. The fight prints that prove a move changes nothing are taken (section 7). No hero has been moved. The page for
-the user: [hero-framework/index.html](hero-framework/index.html).
+file by file. The fight prints that prove a move changes nothing are taken (section 7). **Step 3 is done: Anka is moved
+(section 10; the page [hero-framework/anka.html](hero-framework/anka.html)); no other hero is.** The page for the user:
+[hero-framework/index.html](hero-framework/index.html).
 
 ## 1. In short
 
@@ -384,7 +385,7 @@ Checked by me in the code (file and line), unless marked *by reading*: then an a
 - The audit files with every finding (177 entries, most of them stale comments) are kept with this design's working notes in
   the session; the list above is what matters for play.
 
-## 9. Anka's move, file by file (planned, step 3)
+## 9. Anka's move, file by file (the plan; done, section 10)
 
 | Today | Becomes | Note |
 |---|---|---|
@@ -405,3 +406,78 @@ Checked by me in the code (file and line), unless marked *by reading*: then an a
 Checks for her move: `hero-prints.py check` (all 40, since the shared runner is new), `sim.py hero Anka` inside the noise of her
 last result, `guard.py` no worse, two tabs online (Anka against another moved hero), `npx tsc --noEmit -p .`, `npm run build` and
 `perf.py load` (the start must not grow). What to show the user: the folder, her kit before and after, the lines, the checks.
+
+## 10. Step 3 done: Anka moved (2026-11-16)
+
+The page for the user: [hero-framework/anka.html](hero-framework/anka.html). Six commits, each checked with her two prints, so a
+changed print could be found by halves: the files moved as they were (3a), the game's own list of spells (3b), then her spells
+onto the blocks one at a time (3c Ember Quill with the blocks and their runner, 3d Fan the Flames, 3e Ember Flight, 3f Firebird).
+
+**What is where now**
+- `src/heroes/phoenix/`: `hero.ts` (her card: order 39, kit, model, body, shop row, icon stem, pointers; tooltips written from the
+  numbers), `numbers.ts`, `trait.ts`, `parts.ts`, `icons.ts` (the canvas icons and portrait, exported as `portrait`, `icons.Q`...),
+  `spells/*.ts`, `fight.ts` (`spells`).
+- `src/heroes/framework/`: `card.ts` (the `HeroCard` type), `blocks.ts` (the vocabulary), `spell.ts` (the runner `Cast` and `spell()`).
+- `src/heroes/index.ts` (the cards: `HERO_CARDS`, `CARD_BY_FOLDER`; in dev it checks each card's shop row against the server's
+  `HERO_SHOP`), `src/heroes/traits.ts` (`FOLDER_TRAITS`), `src/heroes/spells.ts` (`FOLDER_SPELLS`). Kept apart so that a tool which
+  imports `src/heroes.ts` for the roster does not pull in every spell; `./heroes` from `src/` still resolves to the file `heroes.ts`,
+  so the folder is imported as `./heroes/index`.
+- Facades: `src/heroes.ts` puts each card's kit at its `order` and fills the other places with the listed kits in their order (two
+  cards wanting one place stop the page); `HERO_BODIES` takes the cards' bodies; `useVcIcons` takes the cards' icon stems (Anka left
+  the `DRAWN` list; `make.py` no longer writes a stem a card names). `src/traits/index.ts` adds `FOLDER_TRAITS` at the end of
+  `TRAITS` (nothing iterates it). `src/spells/targeted/index.ts` is the tool page's list: its own 141, then the game's.
+- `src/spells/targeted/game.ts`: what the game registers (`src/game/main.ts`), the 160 spells of the heroes not moved yet and the
+  Climb ruler's `burrow`, then `FOLDER_SPELLS`. The 141 left out: 129 that no kit, passive, boss, floor or kept spell names or
+  imports (by label in single, double or back quotes, and by import path; checked inside the kept spell files too: none), and the
+  12 test spells of `src/kits/test.ts`, which only the tool page imports. The design counted 126; the difference is the tests and
+  how they were counted, not a spell the game uses: the page's roster snapshot (below) finds every label the 40 kits name.
+- Tools that found her by path read the folder: `anka-shots.js` and the four `hero-gate5/*.js` import `src/heroes/phoenix/trait.ts`
+  (a second module instance would have its own empty embers); `sim-cells.py`, `kits20.py`, `lore-page.py` also glob
+  `src/heroes/*/hero.ts`. `hero-gate5/srv.py` takes `GATE5_PORT` (its 5193 was another agent's).
+
+**The blocks as built** (only what Anka needs; the next heroes add theirs): a `bolt` (released at `windup` along the aim; stops in
+an enemy, at a wall or at its reach, a step short), `circle` (centres given at the cast, a fuse `delay`, `still` to put some out at
+the impact, every enemy inside one that still burns hit once from the first it stands in, on live positions), `lane` (swept by a
+front from the release over the move's `seconds`, `front` to change it, `late` seconds of grace), and a `move` of the caster at
+`play` or at the `release`. Hooks: `on.cast`, `on.release`, `on.stop`, `on.impact`. A hit is `{ damage, knock, color }`; the damage is
+the spell's `settings.damage` (the tool page's slider and the Rust export's key, as before). The danger zones come from the shape:
+`warn` (default 0.04 s) to the impact, a bolt's until its reach is flown, a lane's until the move ends.
+
+**The runner's order inside one frame** is each old file's, so no dice move: the look's `tick` (particles age), the clock, the end,
+the release (rules, then the look's `released`), a bolt's stop, the look's `frame`, circles' impact (hits, `on.impact`, the look's
+`impact`), a lane's sweep (the look's `struck` per hit), then the look's `after`. The runner makes no three.js object: the effect's
+group first, then the look makes its objects in the old field order. Shake and the screen effect belong to the look.
+
+**Things found on the way** (none changes play):
+- Fan the Flames' rings must be copies of the embers' places at the cast (an ember the other screen's `lay` note moves later did
+  not move the old ring), while Ember Flight hits where its ember lies when she lands (the live record). The runner keeps both.
+- Ember Flight takes no cast number (`castNo`); a runner that numbered every cast would have shifted her ember ids on both screens.
+- Ember Quill's no-bolt branch never ran (every cast context has a bolt, the Climb's other players too) and is gone.
+- The shared engine files: `src/game/main.ts` changed two lines (it registers `gameModules`); `duel.ts`, `arena.ts`, `heroMode.ts`
+  and `runtime.ts` are untouched.
+- For the next heroes: `guard.py` still finds a ported hero under `src/kits`, `src/traits` and `src/spells/targeted` (and the runner
+  is not in its `CORE` yet): teach it the folders before Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger or Barry move. The icon
+  stems from the cards are keyed by hero name, so Pim and Pom (two stems, `pim` and `pom`) need the card to name both.
+- `src/runtime.ts:72` still says the game registers `targetedModules`: left, because `runtime.ts` is in the Rust guard's core list.
+
+**The checks** (all on 2026-11-16, the frozen code before the move in a scratch worktree at 4da4503d):
+- Fight prints: Anka's two the same after each of the six commits; all 40 heroes against both foes the same after 3b and again on
+  the finished code (80 of 80). Her prints cast every spell (Isolde set Q 16, W 5, E 5, R 2; Brannoc set 16, 5, 3, 3); her rise is not
+  in them, and its code did not change.
+- The roster as the game page sees it (taken again on the finished code) (a script that reads `HERO_KITS` field by field, `HERO_BODIES`, `TRAITS`, every spell's
+  targeting, bloom and settings): identical to the old code; every label a kit names is in the game's list.
+- The tool page's self test of her four spells (shake, zones, durations, impact times, no errors): identical before and after.
+- `sim.py hero Anka --fights 32`: 52.1% ±7.1 (the old code the same day: 49.5% ±7.1; her last result, 2026-11-11: 54.2% ±10).
+- `guard.py`: the same 18 lines before and after (10 engine files, Brannoc's four, Kaia's, Sirix's, Mr. Ledger's and Barry's kits);
+  none of Anka's (she is not ported).
+- Perf prints (desktop): the 12 scenes of `prints.json` (menu, two duels, two raids, the Tower, six Climb floors) play the same fights as the old code
+  measured the same day (`fw-before-*.json` against `fw-after-*.json` in `docs/perf/data/`). `world-5` played another fight once while
+  the 40-hero prints ran beside it; run again alone it was the same on both codes (636b681b, twice on the old). The saved baseline
+  `prints.json` is already out of date for `world-1` and `world-5` on the old code too (later Climb work): compare with a fresh run.
+- Online: `hero-gate5/online.py` (two headless screens, bots through the dev server's real hub, Anka against Kaia, `GATE5_PORT=5194`), twice.
+  All spells: no errors, the same embers in 99% of 492 paired moments, ember places at most 0.3 m apart, her rise at the same spot on
+  both. Kaia keeping away and sidestepping: 98.1% of 421, the nest more than 1 m apart in 2 moments (before the `lay` note arrives),
+  both rises at the same spots. Gate 5 measured 99% on the old code. The bots' accounts were removed.
+- The game's first download (`npm run build`, `game` and `runtime` chunks): 7,576 KB -> 6,065 KB (2,098 KB -> 1,645 KB compressed), a fifth less. The tool page's own chunk grew
+  (509 KB -> 2,017 KB): the 141 spells moved there.
+- `npx tsc --noEmit -p .`, `npm run build`: pass. `npm run test:server`: 364 checks pass, first run.

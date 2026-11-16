@@ -10,7 +10,7 @@ const { BOSSES } = await import('/src/raid/bosses.ts');
 const { LocalLink } = await import('/src/raid/link.ts');
 const { RunUpgrades } = await import('/src/raid/upgrades.ts');
 const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
-const ph = await import('/src/traits/phoenix.ts');
+const ph = await import('/src/heroes/phoenix/trait.ts');
 vfx.view.paused = true;
 if (!d.on) vfx.setDuel(true, 'run');
 d.pilotLevel = CPU_BALANCE;

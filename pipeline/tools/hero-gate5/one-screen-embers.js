@@ -7,7 +7,7 @@ const errors = [];
 const logError = console.error;
 console.error = (...a) => { if (errors.length < 30) errors.push(a.map((x) => String(x?.stack ?? x)).join(' ').slice(0, 400)); logError(...a); };
 const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
-const ph = await import('/src/traits/phoenix.ts');
+const ph = await import('/src/heroes/phoenix/trait.ts');
 vfx.view.paused = true;
 if (!d.on) vfx.setDuel(true, 'run');
 d.cpuLevel = CPU_BALANCE;

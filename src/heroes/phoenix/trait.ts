@@ -1,7 +1,11 @@
 import * as THREE from 'three';
-import { PHOENIX_CSS, ashesLook, eggLook, emberLook, emberPuffLook, nestLook } from '../effects/parts/phoenix';
-import { addGroundWiper } from './ground';
-import type { GroundMark, Trait, TraitView } from './types';
+import { addGroundWiper } from '../../traits/ground';
+import type { GroundMark, Trait, TraitView } from '../../traits/types';
+import { PHOENIX_CSS, ashesLook, eggLook, emberLook, emberPuffLook, nestLook } from './parts';
+import {
+  ASH_SECONDS, BIRD_LENGTH, EMBER_FRESH, EMBER_LIFE, FLARE_RADIUS, FLIGHT_RADIUS, FLIGHT_RANGE, MAX_EMBERS, RISE_DAMAGE, RISE_KNOCK,
+  RISE_RADIUS, RISE_SHARE, STAMP_R, STAMP_S,
+} from './numbers';
 
 /**
  * Anka, the Firebird (mage, ranged; pipeline/designs/kit-phoenix.md). Everything she does lays embers on the floor or
@@ -47,46 +51,6 @@ import type { GroundMark, Trait, TraitView } from './types';
  * moves that ember there when it lies more than half a metre off (`peerNote`). Without it a dodged quill left her nest 2 to 7 m
  * apart on the two screens, and the egg of her rising was shown where she did not rise.
  */
-
-export const EMBER_LIFE = 12;
-export const MAX_EMBERS = 3;
-export const STAMP_R = 1;
-/** Seconds an enemy must stand on an ember to stamp it out, and the seconds a new ember is too hot to stamp at all. */
-export const STAMP_S = 1.0;
-export const EMBER_FRESH = 1.0;
-
-/** Ember Quill (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m). */
-export const QUILL_DAMAGE = 54;
-export const QUILL_RANGE = 10;
-export const QUILL_SPEED = 22;
-export const QUILL_WIND = 0.3;
-export const QUILL_RADIUS = 0.3;
-
-/** Fan the Flames (W): the wait (s), each ring's radius (m), damage (once per cast, however many rings). */
-export const FLARE_WIND = 0.8;
-export const FLARE_RADIUS = 2.2;
-export const FLARE_DAMAGE = 54;
-
-/** Ember Flight (E): reach to the ember (m), seconds before she leaves, seconds in the air, the landing's radius and damage. */
-export const FLIGHT_RANGE = 12;
-export const FLIGHT_GO = 0.25;
-export const FLIGHT_AIR = 0.45;
-export const FLIGHT_RADIUS = 1.8;
-export const FLIGHT_DAMAGE = 40;
-
-/** Firebird (R): the wind-up (s), the lane's length and width (m), seconds in the air, damage. */
-export const BIRD_WIND = 1.0;
-export const BIRD_LENGTH = 12;
-export const BIRD_WIDTH = 3;
-export const BIRD_AIR = 0.5;
-export const BIRD_DAMAGE = 120;
-
-/** Ashborn: seconds as ash, the share of her HP she rises with, the flare's radius, damage and push. */
-export const ASH_SECONDS = 1.2;
-export const RISE_SHARE = 0.25;
-export const RISE_RADIUS = 2.2;
-export const RISE_DAMAGE = 40;
-export const RISE_KNOCK = 8;
 
 const PUFF_LIFE = 0.6;
 const NEAR_EMBER_R = 3;
@@ -485,3 +449,5 @@ addGroundWiper((owner, x, z, r) => {
   const b = books.get(owner);
   if (b) b.embers = b.embers.filter((e) => Math.hypot(e.x - x, e.z - z) > r);
 });
+
+export default phoenixTrait;

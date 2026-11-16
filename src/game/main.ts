@@ -6,7 +6,7 @@
  */
 import './game.css';
 import { createRuntime, type GameApi } from '../runtime';
-import { targetedModules } from '../spells/targeted';
+import { gameModules } from '../spells/targeted/game';
 import type { HeroKit } from '../heroes';
 import { NetClient, type LiveDuel, type LobbyState, type Profile, type RaidRow, type TowerRow } from '../net/client';
 import { HERO_KINDS, HERO_SHOP, RAID_RANKS, SHOP, STARTERS, heroPrice, isoWeek as shopWeek, shopRotation } from '../../server/protocol.mjs';
@@ -36,7 +36,7 @@ type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'c
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
-const gameApi: GameApi = createRuntime({ modules: targetedModules, background: true });
+const gameApi: GameApi = createRuntime({ modules: gameModules, background: true });
 
 const kits = gameApi.kits;
 const net = new NetClient();
