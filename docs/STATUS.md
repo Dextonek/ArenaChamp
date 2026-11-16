@@ -1,5 +1,20 @@
 # Status
 
+## STOPPED by the user (2026-11-16): "let's just finish what we've done for now and stop all agents"
+
+Nothing is running: no agents, no loops, no servers. Everything finished is merged into `feat/particle-editor` (not pushed, not
+live). Three jobs were stopped mid-work; each one's work is saved as a "Paused mid-work" commit on its own branch (unfinished,
+unchecked, NOT merged), in its worktree (`git worktree list`; each has a `node_modules` junction to the main folder):
+- `t3/climb-stage3-doors-together` (5a2b7de3): open world stage 3, doors and bosses together. Hub, protocol, door table and
+  `src/tower/world/together.ts` started; no tests or two-tab run yet.
+- `t3/hero-touches-underwear-portraits` (81d4e8cd): the sixteen touches and the underwear cover. Build files of most of the sixteen
+  changed and the TextureCraft scripts brought over; models not known to be rebuilt or checked; portraits not started.
+- `t3/vectorcraft-hero-spell-icons` (b9f173c4): spell icons for all 40 heroes; 10 commits of batches (see its `docs/icons/batch-*`),
+  the rest not drawn; its loading hook replaces the sample's `?icons=vc`.
+Not started: the hero framework (the user said yes; brief `docs/pipeline/hero-framework-brief.md`), which waits for the icon job.
+To resume: a new agent per branch in its worktree, told to finish and check from that commit (the briefs are in this session's
+transcript; the aims are in the entries below).
+
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
 
 The three agents below were restarted in their own threads from their saved commits and are running again; the deep lore starts when one finishes (three at most).
@@ -39,7 +54,7 @@ The three agents below were restarted in their own threads from their saved comm
   enemies' line-ups accepted as built; the twenty unreleased heroes stay out of the game's Codex (story book included) until each
   ships; open world stage 2 accepted, **stage 3 next** when a slot frees; push and deploy once the revamps and the story land (ask
   the user then: a deploy drops live connections).
-- **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
+- **Stopped, saved on its branch (see the top) (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
   built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
 - **Next, the user said yes (2026-11-16): the hero framework.** One folder per hero (kit, spells, passive, weapon, look, icons, lore
   entry; found by the game on its own), spell building blocks (bolt, dash, ground zone, shield, summon, status) so a spell is mostly a
@@ -48,7 +63,7 @@ The three agents below were restarted in their own threads from their saved comm
   small size, model size, lore). Anka converted first as the sample, then the other 39 in batches, each checked in the simulator so
   none plays differently; the twenty new heroes built the new way. Starts when the icon agent lands (it edits `src/heroes.ts` and
   the kits). Brief: `docs/pipeline/hero-framework-brief.md`.
-- **Running (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
+- **Stopped, saved on its branch (see the top) (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
   `docs/tower/openworld/stage3/`): friends go through a door together, the boss runs the Raid's way (one brain, revives, hand-over).
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
   words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
@@ -66,7 +81,7 @@ The three agents below were restarted in their own threads from their saved comm
   aren't body). Known: faces too small to read from the duel camera (Ledger reads by robes and quill there); four are over the
   gate's ~25,000 triangles; the 2D portraits still show the old looks (remade in the next round). Pictures again:
   `python pipeline/tools/revamp-shots.py after --port 5263`.
-- **Running (2026-11-16): the sixteen touches, the underwear cover and the portraits** (one Blender agent; page
+- **Stopped, saved on its branch (see the top) (2026-11-16): the sixteen touches, the underwear cover and the portraits** (one Blender agent; page
   `docs/heroes/touch/index.html`).
 - **Done, NOT merged (samples on their branches), waiting on the user (2026-11-15): the ArtCraft apps** (the user: "use the art
   craft tools"; `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums
