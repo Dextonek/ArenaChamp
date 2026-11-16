@@ -20,8 +20,9 @@ the roads and the waystones are where they were. The hub's pack table re-written
 
 The route bot plays the floor through: cleared with four stars, no fall, no console error, 1083 s of game time.
 
-Before, in this check the east and north packs were not at their homes at all (no unit within 12 m of the standard when woken);
-after, all three sites show their six soldiers round the standard. Left: before; right: after (west, east, north):
+Woken at home, before: each site's six soldiers crowd onto and round the foot (the game pushes them out of the cover, to its edge);
+after: they stand behind the standard, clear of it. Left: before; right: after (west, east, north; each "before" taken with that site
+visited first, since in this check only the first site visited shows its pack at home):
 
 ![floor 41: west, east, north, before and after](f41-sheet.jpg)
 
@@ -50,9 +51,11 @@ Every enemy bolt left at 1.1 m whatever the hand. Now a bolt can leave higher an
 **The rulers: nothing to change.** A ruler fires no bolt from its hand. Its stand-in hero's basic attack is never used in a ruler's
 fight (logged through 30 s of the route bot's fight with the Prism Mother on floor 31: no bolt, no attack missile), and its moves are zones on the
 floor except two: the "Fan of Light" (the Deep's floors 32 to 40 and floor 23), whose beams already start at 1.4 m times the ruler's size
-(3.58 m for the Lamp Warden at x2.56, about its hands' height; `fan` in `src/tower/moves.ts`), and the "Volley", fired by its sentries
+(3.58 m for the Lamp Warden at x2.56: its right hand is at 3.17 m and its raised left at 5.1 m at that moment; `fan` in `src/tower/moves.ts`), and the "Volley", fired by its sentries
 (cannons, lamps, standards on the floor), not by the ruler. So nothing in `src/duel.ts` or `src/arena.ts` was touched. (Round 2 had
-expected the ranged rulers' bolts at 1.1 m; they have none.)
+expected the ranged rulers' bolts at 1.1 m; they have none.) How far this was checked: every bolt is made in one place
+(`arena.ts`, the projectile system's `spawn`), and one ruler fight was logged with it hooked (30 s, floor 31); the fan and the volley
+were read in the code, and the fan was seen in a fight (floor 33, below). Not every ranged ruler's fight was logged.
 
 **The hit is the same:** `python pipeline/tools/hero-prints.py check Anka,Kaia,Sefu --port 5192` SAME before and after (bae036d3,
 cf160412, bfb83e68); the perf prints (desktop, my own before-run against the after-run, `perf-show.py shots-before shots-after`):
@@ -69,9 +72,8 @@ From the side, a moment after the shot (top: the bowman; bottom: the slinger; le
 | Slinger, side | ![](before-side-slinger.jpg) | ![](after-side-slinger.jpg) |
 | Slinger, game camera | ![](before-game-slinger.jpg) | ![](after-game-slinger.jpg) |
 
-The Lamp Warden's Fan of Light (floor 33, the route bot's fight), unchanged: from the side and from the game's camera. The beams
-start 3.58 m up. In this bot run the ruler's own model was not drawn at that moment, so the picture shows where the beams start but
-not the body; the hero (Sefu) stands in front.
+The Lamp Warden's Fan of Light (floor 33, a fight in play mode with its model loaded), unchanged: from the side and from the game's
+camera. The beams leave 3.58 m up, from its outstretched arm; the hero (Sefu) stands in front of it.
 
 ![the fan from the side](fan-lamp-warden-side.jpg)
 ![the fan from the game camera](fan-lamp-warden-game.jpg)

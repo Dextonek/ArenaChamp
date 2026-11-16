@@ -14,7 +14,10 @@ rules floors 1 and 2, and the model is the Admiral's. Renamed in the game's stri
   (`src/tower/world/floors/gen/harbour-big.ts`, 4 lines; the floor list unchanged).
 - comments that named him (zone.ts, gen/sea.ts, pieces/rulerModels.ts) and the film tool's label (pipeline/tools/world-film.js).
 
-"The Captain's Key" (the quest's key, guarded by the Mate) keeps its name: it is a captain's key, not the ruler's.
+Left for you: "The Captain's Key" (the quest's key, guarded by the Mate) keeps its name, and the keeper still says the Admiral sits
+behind a chain "only the captain's key will lift". Whose captain that is now reads less clearly; rename the key (for example "The
+Admiral's Key") or keep it?
+
 Nothing keys off the name (motion styles, seeds, server, sims checked). The News page's older text and the lore's note
 ("once called the Drowned Captain in the floor's oldest code") are left as they are.
 
@@ -30,10 +33,11 @@ The box with the hero's portrait and passive (the touch HUD's plate, built in `s
 passive's name (14 px and a 4 px gap), so its frame ran 18 px below its contents, down to the floor's panel. For a hero with a resource
 bar (Brannoc's Heat, Cantor's, Vesper's) the plate is taller still and ran 24 px over the panel.
 
-Fixed on the Climb only, without touching heroMode.ts: the minimap's rule (`src/tower/world/map.ts`) hides the plate's buff row while
-it is empty, and puts the floor panel 6 px under the plate when the plate is taller than the room left for it; the plate's height comes
-from `src/tower/world/hud.ts` (a ResizeObserver on the plate, phones only). A desktop has no plate and is unchanged (the panel's
-place and the pictures' HUD are the same before and after).
+Fixed on the Climb only, without touching heroMode.ts. While the Climb's panel shows (`src/tower/world/hud.ts` puts `world-hud-on` on
+the page), the plate's buff row is hidden while it is empty, and the panel keeps 6 px under the plate when the plate is taller than
+the room above the panel: its own top, and the minimap's rule (`src/tower/world/map.ts`) while the minimap shows. The plate's height
+comes from hud.ts (a ResizeObserver on the plate, phones only). Inside a set piece the panel is hidden and the plate is as in any
+duel. A desktop has no plate and is unchanged (the panel's place and the pictures' HUD are the same before and after).
 
 | | plate (px, top + height) | floor panel top |
 |---|---|---|
@@ -41,12 +45,14 @@ place and the pictures' HUD are the same before and after).
 | Lyra, after | 190 + 82 | 294 |
 | Brannoc, floor 21, before | 190 + 128 | 294 (24 px under the plate) |
 | Brannoc, after | 190 + 110 | 306 |
+| Brannoc, floor 21, the first moments (before the minimap shows), before | 78 + 128 | 182 (24 px under the plate) |
+| Brannoc, the first moments, after | 78 + 110 | 194 |
 | Desktop, floors 1, 21, 41 | no plate | 312, before and after |
 
 A buff on the hero shows the row again (the plate grows by 18 px while it lasts; for a hero with a resource bar the panel steps
 down with it).
 
-![Before and after, crops: floor 1, 21, 41 (Lyra) and floor 21 (Brannoc)](plate-sheet.jpg)
+![Before and after, crops: floor 1, 21, 41 (Lyra), floor 21 (Brannoc), and Brannoc in the floor's first moments](plate-sheet.jpg)
 
 | | before | after |
 |---|---|---|
@@ -54,6 +60,7 @@ down with it).
 | Phone, floor 21 | ![](before-phone-f21.jpg) | ![](after-phone-f21.jpg) |
 | Phone, floor 41 | ![](before-phone-f41.jpg) | ![](after-phone-f41.jpg) |
 | Phone, floor 21, Brannoc | ![](before-brannoc-phone-f21.jpg) | ![](after-brannoc-phone-f21.jpg) |
+| Phone, floor 21, Brannoc, the first moments | ![](before-brannoc-phone-f21-first.jpg) | ![](after-brannoc-phone-f21-first.jpg) |
 | Desktop, floor 1 | ![](before-desk-f01.jpg) | ![](after-desk-f01.jpg) |
 | Desktop, floor 21 | ![](before-desk-f21.jpg) | ![](after-desk-f21.jpg) |
 | Desktop, floor 41 | ![](before-desk-f41.jpg) | ![](after-desk-f41.jpg) |
