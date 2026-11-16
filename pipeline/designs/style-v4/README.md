@@ -20,10 +20,10 @@ duel on the tool page against another, both on their new models: 39 fights, no e
 **Not checked:** a person playing; a phone; the game page's own camera for every hero; each hero's every cast style.
 
 **Known, for later:** one face per sex (the free pack), so faces repeat: heroes differ by skin tone, hair, build and
-what covers the face. The 2D portraits and the catalog pages still describe the older models. `HERO_BODIES` (hit sizes)
+what covers the face. The catalog pages still describe the older models (the 2D portraits of the 22 revamped and touched heroes were redrawn on 2026-11-16). `HERO_BODIES` (hit sizes)
 are unchanged. Kit notes from the batches: a held staff's length is scaled by depth, not height (the batch helpers
 correct it); `R.cape` and `R.ring` near the neck are unreliable on the male body; `Hair_Long` and `Hair_Buns` do not fit
-the male head; the skin texture has painted underwear (cover it); `flat=True` on `R.mat` does not reach pieces.
+the male head; the skin texture has painted underwear (covered by the kit since 2026-11-16, `Real._cover_underwear`; only Big Yoko showed it); `flat=True` on `R.mat` does not reach pieces.
 
 The user: "as you can see heroes have different style, let's make one better". The 39 heroes come from three
 generations: A, the 12 oldest (`hero_figures.py`: slim, small heads, plain robes: Lyra, Vitriol, Nyx, Fenna, Marin,
