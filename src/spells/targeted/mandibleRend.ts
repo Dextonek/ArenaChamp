@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { ClawSlash, HIVE, HIVE_CSS, HoneySplash, Swarm } from '../../effects/parts/hive';
+import { ClawSlash, HIVE, HIVE_CSS, HoneySplash, Swarm } from '../../heroes/hive/parts';
 import { insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';

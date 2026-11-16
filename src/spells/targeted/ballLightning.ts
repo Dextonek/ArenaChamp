@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
-import { LightningTree, Sparks, STORM, STORM_CSS } from '../../effects/parts/storm';
+import { LightningTree, Sparks, STORM, STORM_CSS } from '../../heroes/storm/parts';
 import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { stormOrbs, type StormOrb } from '../../traits/storm';
+import { stormOrbs, type StormOrb } from '../../heroes/storm/trait';
 
 /**
  * Ball Lightning (storm kit, W: slow orb, recast to blink). She flicks the staff and a crackling blue-white orb leaves

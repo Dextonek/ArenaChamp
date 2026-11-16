@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
-import { Afterimage, CHRONO, CHRONO_CSS, Dial, Hand } from '../../effects/parts/chrono';
+import { Afterimage, CHRONO, CHRONO_CSS, Dial, Hand } from '../../heroes/chrono/parts';
 import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';

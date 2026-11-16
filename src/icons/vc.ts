@@ -10,46 +10,6 @@ import type { HeroKit, HeroSpell } from '../heroes';
  * kit's own canvas icon is drawn, and the file's picture replaces it in that canvas once it has decoded.
  */
 const DRAWN = new Set<string>([
-  'ada',
-  'auriel',
-  'barry-cloudsley',
-  'big-yoko',
-  'bo',
-  'bram',
-  'brannoc',
-  'cantor',
-  'fenna',
-  'grandma-ironknit',
-  'gus',
-  'hank',
-  'isolde',
-  'kaia',
-  'lyra',
-  'mabel',
-  'madame-cleaver',
-  'marin',
-  'mortis',
-  'mr-ledger',
-  'mum',
-  'nyx',
-  'oblivion',
-  'opaline',
-  'pim',
-  'pip',
-  'pom',
-  'professor-puff',
-  'referee-whistler',
-  'sefu',
-  'shiori',
-  'silvane',
-  'sir-whiskers',
-  'sirix',
-  'tempo',
-  'the-great-zambini',
-  'vesper',
-  'vitriol',
-  'wick',
-  'zephyr',
 ]);
 
 /** A hero's file stem: its name in lower case with dashes (`Big Yoko` -> `big-yoko`); the twins are `pim` and `pom`. */
@@ -108,12 +68,13 @@ function paint(g: CanvasRenderingContext2D, img: HTMLImageElement, size: number)
  * Puts the VectorCraft icons on the heroes that have them (src/heroes.ts calls this once, in the browser). `cards`: the stems
  * the folders' cards name, by hero name (src/heroes/<theme>/hero.ts `icons`).
  */
-export function useVcIcons(kits: HeroKit[], cards: Record<string, string> = {}) {
+export function useVcIcons(kits: HeroKit[], cards: Record<string, string | [string, string]> = {}) {
   if (typeof document === 'undefined') return;
   for (const k of kits) {
     for (const kit of k.alt ? [k, k.alt] : [k]) {
       const carded = Object.hasOwn(cards, kit.name);
-      const stem = carded ? cards[kit.name] : heroStem(kit);
+      const named = cards[kit.name];
+      const stem = !carded ? heroStem(kit) : typeof named === 'string' ? named : named[kit.base ? 1 : 0];
       if (!carded && !DRAWN.has(stem)) continue;
       const urls = kit.spells.map((s) => `/icons/spells/${stem}-${s.key.toLowerCase()}.svg${version}`);
       kit.spells.forEach((spell, i) => {

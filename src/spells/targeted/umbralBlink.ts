@@ -4,7 +4,7 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import {
   Afterimage, CutFlash, CutShape, CutShards, SHADOW, SHADOW_CSS, ShadowPool, facing, forward, shadowEaseOut,
-} from '../../effects/parts/shadow';
+} from '../../heroes/shadow/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

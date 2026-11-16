@@ -9,8 +9,9 @@ updated: 2026-11-16
 Steps 1 and 2 of `docs/pipeline/hero-framework-brief.md` (the user's yes, 2026-11-16): what the 40 heroes are made of today,
 how one hero will live in one folder, the spell building blocks, what must keep working, the risks, and Anka's move planned
 file by file. The fight prints that prove a move changes nothing are taken (section 7). **Step 3 is done: Anka is moved
-(section 10; the page [hero-framework/anka.html](hero-framework/anka.html)); no other hero is.** The page for the user:
-[hero-framework/index.html](hero-framework/index.html).
+(section 10; the page [hero-framework/anka.html](hero-framework/anka.html)). Step 4's folder move (4a) is done: the other 39 are in folders too,
+their spells as they were, none on the blocks yet (section 11; the page [hero-framework/progress.html](hero-framework/progress.html)).** The page for
+the user: [hero-framework/index.html](hero-framework/index.html).
 
 ## 1. In short
 
@@ -481,3 +482,69 @@ group first, then the look makes its objects in the old field order. Shake and t
 - The game's first download (`npm run build`, `game` and `runtime` chunks): 7,576 KB -> 6,065 KB (2,098 KB -> 1,645 KB compressed), a fifth less. The tool page's own chunk grew
   (509 KB -> 2,017 KB): the 141 spells moved there.
 - `npx tsc --noEmit -p .`, `npm run build`: pass. `npm run test:server`: 364 checks pass, first run.
+
+## 11. Step 4a done: the other 39 moved into folders, their spells not yet on the blocks (2026-11-16)
+
+The page for the user: [hero-framework/progress.html](hero-framework/progress.html) (per batch the heroes, their lines before
+and after, the checks, the start size). Five batches, each its own commit after all its checks: 1 Vesper, Lyra, Vitriol, Sefu,
+Nyx, Fenna, Marin, Zephyr (77347871); 2 Mortis, Ada, Opaline, Cantor, Oblivion, Shiori, Tempo, Silvane (ff959f7e); 3 Bram, Hank,
+Professor Puff, Sir Whiskers, Big Yoko, Mum, Referee Whistler, Madame Cleaver (d2fdd7db); 4 Pip, Gus, Mabel, Grandma Ironknit, Bo,
+the Great Zambini, Wick, Pim and Pom (a1fc8891); 5 the Rust-ported Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger, Barry
+Cloudsley (adb0510d), after the guard learned the folders (b53ca76c).
+
+**What a move is** (Anka's 3a, by a script, in the session's notes): the kit becomes the card `hero.ts` (order, the kit literal as
+it was, model, body, shop row, icon stem) and `icons.ts` (the rest of the kit file, its drawings now `portrait` and `icons.Q` ...);
+the passive moves to `trait.ts` (plus a default export), the look parts to `parts.ts`, the four spells to `spells/` unchanged but
+for their imports; `fight.ts` lists the spells. Every relative import of a moved file in `src/` and `pipeline/` was rewritten (the
+tool page's showcases and the Climb ruler's burrow use heroes' parts and passives; `src/effects/parts/index.ts` re-exports
+Vesper's blood kit; Sirix's Swarm Surge uses Marin's `shapeMove`; `heroMode.ts` imports Mum's `isOwnWall`, one line).
+- **Nothing names a hero by hand any more:** `src/heroes.ts` builds `HERO_KITS`, `HERO_BODIES` and the models from the cards (two
+  cards on one place or a gap stop the page), `src/traits/index.ts` is `FOLDER_TRAITS`, the game's spell list is the Climb ruler's
+  `burrow` and `FOLDER_SPELLS`, and the icon list `DRAWN` in `src/icons/vc.ts` is empty (every card names its stem).
+- **Pim and Pom:** their card was written by hand: Pim's kit with Pom's as `alt` and the one Tag Out they share (one object, so the
+  icon hook wraps it once). A card may name two icon stems, one a half (`icons: ['pim', 'pom']`; `HeroCard`, `useVcIcons`, `make.py`).
+- **The pointers** (lore entry, model build, design) are no longer on the card but beside it (`export const pointers`): the game
+  imports only the card, so the build leaves the text out (it was 6 KB of the start). Anka's card too.
+- **Spells on the blocks: none besides Anka's four.** The move kept every spell file as it was; the blocks conversion of the other
+  155 spells is still to do, a spell at a time with its hero's two prints (the dice order of each look must be kept: the runner
+  releases before the look's frame, where several old spells did their look first; bolts need status, pull and `from` in `Hit`).
+  The Rust-ported heroes' spells should stay as they are until the port is graded again (`export.js` reads their `settings` keys).
+
+**The checks, per batch** (now `sh pipeline/tools/hero-checks.sh <ref> <out>`): `npx tsc`; the roster as the game page sees it
+(`python pipeline/tools/hero-roster.py take` and `diff`: every kit field by field, tooltips letter for letter, models, bodies,
+passives' fields, a pixel hash of every canvas icon and portrait, the SVGs each hero asks for, every registered spell's targeting,
+bloom, settings and length) identical to the code before step 4; the tool page's self test of the never-cast spells (Sefu E, Tempo
+E, Mr. Ledger E and R, Pip R: `hero-roster.py selftest`) identical; all 80 fight prints the same (`hero-prints.py check` and
+`check --foe Brannoc`); the Rust guard; `npm run build`. Every batch passed every check (batch 3's Brannoc set was run again: its
+first page load timed out before any fight). The main branch was merged three times on the way (before batches 4 and 5 and at the
+end); before batch 5 its merge was checked alone (80 of 80).
+
+**After the last batch:**
+- The simulator, mine against the main branch without my moves, 32 fights a foe, through `heavy.py`: Sefu 44.3% against 47.4%,
+  Mum 41.7% against 39.6%, Kaia 33.1% against 33.1% (each about ±7).
+- The Rust guard (`guard.py`, taught the folders and `--moved`): the 18 lines of the morning, plus `src/effects/projectile.ts` from
+  the merged shot heights (another job's change; 19). The 42 moved files of the ported heroes and Swarm Surge's import are in
+  `pipeline/rustfull/data/moved.json` (and the seven cards again after the pointers left them: only that changed); `--stamp` empties it when the port is graded again. The Rust files' comments still name the
+  old paths.
+- Online (`pipeline/tools/hero-gate5/online_pair.py Sefu Mum`, two headless screens through the dev server's hub): no errors, three
+  rounds; Sefu's HP the same on both screens in 96% of 612 paired moments (the main branch: 99.5% of 444), Mum's in 94% (94%), both
+  heroes' places 0 m apart at the median. Sefu cast Scarab Stride (never cast in the prints) six times. The bots' accounts removed.
+- Perf prints (desktop, the 12 scenes): the same fights as the main branch without my moves (`hm-after.json`, `hm-base.json`); world-1
+  played another fight once on the main branch's run and the same one when both ran again alone (twice each). Against the morning's
+  before-runs (`hm-before*.json`) only world-5 moved: the merged Climb work changed floor 41.
+- The game's first download (`game` and `runtime`): the main branch alone 6,117 KB (1,664 KB packed); with the 39 moved 6,123 KB
+  (1,671 KB), the cards and their files, 0.1% (12 KB before the pointers left the cards).
+- `SMOKE_SLOW=2 npm run test:server`: 364 checks pass.
+- The built game (`vite preview` of `dist`, `/game.html`): 40 heroes in the roster's order, every spell label, no page or console
+  error. The fight prints cannot run there (the scene imports source modules); all other checks ran on the dev server.
+- The tools that find heroes by path see all 40: `sim-cells.py` (max HP), `kits20.py` (names taken), `lore-page.py` (names in the
+  game), `make.py` (41 icon stems named by the cards, none listed by hand). The icon drawings' `draw/*.py` name `src/kits/` only in
+  their head comments. The online check was one run each (mine and the main branch's).
+- **For other branches:** a kit edited on a branch made before these moves now conflicts (its file was split into `hero.ts` and
+  `icons.ts` and moved): redo the edit in the hero's folder.
+
+**Found on the way** (nothing changed; for the list in section 8):
+- `src/effects/parts/index.ts` (the shared parts kit) re-exports Vesper's blood parts, so the shared kit now imports a hero folder.
+- `src/icons/vc.ts` keeps `heroStem` and the empty `DRAWN` for heroes without a card; there are none now.
+- `pipeline/tools/kits20.py` still writes `src/kits/` and `src/traits/` paths into the designs it makes (step 5's command replaces it).
+

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { AshMotes, Crackle, Rift, Shards, VOID, VOID_CSS } from '../../effects/parts/void';
+import { AshMotes, Crackle, Rift, Shards, VOID, VOID_CSS } from '../../heroes/void/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

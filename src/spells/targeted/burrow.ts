@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { SAND, SAND_CSS, Dust, SandPool, SandRibbon, SandWave, SandstoneBlocks } from '../../effects/parts/sand';
+import { SAND, SAND_CSS, Dust, SandPool, SandRibbon, SandWave, SandstoneBlocks } from '../../heroes/sand/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { TelegraphShape } from '../../effects/telegraph';
 import type { Effect, EffectModule } from '../../effects/types';
-import { BURROW_SECONDS } from '../../traits/sand';
+import { BURROW_SECONDS } from '../../heroes/sand/trait';
 
 /**
  * Burrow (sand kit, E: a dive and a tunnel). Sefu crouches and the sand under his feet swirls open (0.25 s), he

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { LightningTree, Puddles, Sparks, STORM, STORM_CSS } from '../../effects/parts/storm';
+import { LightningTree, Puddles, Sparks, STORM, STORM_CSS } from '../../heroes/storm/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import type { TelegraphSpec } from '../../effects/telegraph';

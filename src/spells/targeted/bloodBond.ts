@@ -7,7 +7,7 @@ import {
 } from '../../effects/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { BOND_RIPEN, BOND_WINDOW, bloodBonds, type BloodBond } from '../../traits/blood';
+import { BOND_RIPEN, BOND_WINDOW, bloodBonds, type BloodBond } from '../../heroes/blood/trait';
 
 /**
  * Blood Bond (blood kit, R: mark, then pop). A thread of blood shoots from Vesper's palm to the enemy and a bone sigil

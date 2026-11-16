@@ -1,0 +1,212 @@
+{
+ "src/heroes/dawn/spells/dawnward.ts": {
+  "from": "src/spells/targeted/dawnward.ts",
+  "was": "913479937a880248",
+  "now": "767f717dccf6326c"
+ },
+ "src/heroes/dawn/spells/firstLight.ts": {
+  "from": "src/spells/targeted/firstLight.ts",
+  "was": "63f4c6b0fdbd6927",
+  "now": "0f4de0c21586164e"
+ },
+ "src/heroes/dawn/spells/oathbrand.ts": {
+  "from": "src/spells/targeted/oathbrand.ts",
+  "was": "cdac0c7eb3306022",
+  "now": "df401acb80f6eeb6"
+ },
+ "src/heroes/dawn/spells/sunrise.ts": {
+  "from": "src/spells/targeted/sunrise.ts",
+  "was": "ee9f7b13ad62967f",
+  "now": "d5b42cc58f0cd421"
+ },
+ "src/heroes/dawn/trait.ts": {
+  "from": "src/traits/dawn.ts",
+  "was": "24a0f4c7ceeeef13",
+  "now": "4e99fbdc9c05c864"
+ },
+ "src/heroes/forge/spells/chainHammer.ts": {
+  "from": "src/spells/targeted/chainHammer.ts",
+  "was": "d94e829b02a12bb4",
+  "now": "23891e0fa3e71490"
+ },
+ "src/heroes/forge/spells/forgeRoar.ts": {
+  "from": "src/spells/targeted/forgeRoar.ts",
+  "was": "5e569181ef03ab8d",
+  "now": "822638c7bb9d985d"
+ },
+ "src/heroes/forge/spells/moltenCore.ts": {
+  "from": "src/spells/targeted/moltenCore.ts",
+  "was": "29134cef1aa34f87",
+  "now": "50aba231476f3681"
+ },
+ "src/heroes/forge/spells/redHotRivet.ts": {
+  "from": "src/spells/targeted/redHotRivet.ts",
+  "was": "8e7b6a59fe42b371",
+  "now": "2ab82ea25ef4600e"
+ },
+ "src/heroes/forge/trait.ts": {
+  "from": "src/traits/forge.ts",
+  "was": "ec7601610a09f190",
+  "now": "df062e88ddfa82f8"
+ },
+ "src/heroes/frost/spells/hoarfrost.ts": {
+  "from": "src/spells/targeted/hoarfrost.ts",
+  "was": "a3108e29ed6fd28c",
+  "now": "02299222d2d01bd1"
+ },
+ "src/heroes/frost/spells/icicle.ts": {
+  "from": "src/spells/targeted/icicle.ts",
+  "was": "fe0e3956c1e0b4e7",
+  "now": "f13735999bd4f14e"
+ },
+ "src/heroes/frost/spells/rimeArmour.ts": {
+  "from": "src/spells/targeted/rimeArmour.ts",
+  "was": "ede1e990240e4ba0",
+  "now": "cd30a9d65852d70e"
+ },
+ "src/heroes/frost/spells/wintersShatter.ts": {
+  "from": "src/spells/targeted/wintersShatter.ts",
+  "was": "7d662acc8ac35df7",
+  "now": "55ec0028e636beff"
+ },
+ "src/heroes/frost/trait.ts": {
+  "from": "src/traits/frost.ts",
+  "was": "3a7cb341946ccd7a",
+  "now": "688e74e8f739ae1c"
+ },
+ "src/heroes/hive/spells/barbedStinger.ts": {
+  "from": "src/spells/targeted/barbedStinger.ts",
+  "was": "cbc505e69605cd83",
+  "now": "bcb21146758cd396"
+ },
+ "src/heroes/hive/spells/hiveShell.ts": {
+  "from": "src/spells/targeted/hiveShell.ts",
+  "was": "b8778a67adb6c051",
+  "now": "af598b3230049736"
+ },
+ "src/heroes/hive/spells/swarmCloud.ts": {
+  "from": "src/spells/targeted/swarmCloud.ts",
+  "was": "2b29dd46160a6ae0",
+  "now": "52f62387d3471c62"
+ },
+ "src/heroes/hive/spells/swarmSurge.ts": {
+  "from": "src/spells/targeted/swarmSurge.ts",
+  "was": "0d208c616d5d341b",
+  "now": "7b1d9ccb257931d9"
+ },
+ "src/heroes/hive/trait.ts": {
+  "from": "src/traits/hive.ts",
+  "was": "b1b52eb69add297b",
+  "now": "0cb8057771123fe1"
+ },
+ "src/heroes/ledger/spells/callItIn.ts": {
+  "from": "src/spells/targeted/callItIn.ts",
+  "was": "d9ac58a6a3c66164",
+  "now": "63cc58540a936804"
+ },
+ "src/heroes/ledger/spells/foreclosure.ts": {
+  "from": "src/spells/targeted/foreclosure.ts",
+  "was": "5a8c2142090f71ee",
+  "now": "68aee092aa08badc"
+ },
+ "src/heroes/ledger/spells/invoice.ts": {
+  "from": "src/spells/targeted/invoice.ts",
+  "was": "fc9179f1e861f19f",
+  "now": "8de911fbcd9f90fb"
+ },
+ "src/heroes/ledger/spells/lateFee.ts": {
+  "from": "src/spells/targeted/lateFee.ts",
+  "was": "d80b675befcfbb00",
+  "now": "ea6185c128d3869c"
+ },
+ "src/heroes/ledger/trait.ts": {
+  "from": "src/traits/ledger.ts",
+  "was": "e2c549a61d8e6a27",
+  "now": "08ab23438151a518"
+ },
+ "src/heroes/storm/spells/polarity.ts": {
+  "from": "src/spells/targeted/polarity.ts",
+  "was": "3487b356135c1b2e",
+  "now": "23e8fc3c31058956"
+ },
+ "src/heroes/storm/spells/skyStrike.ts": {
+  "from": "src/spells/targeted/skyStrike.ts",
+  "was": "95561b78214288c7",
+  "now": "8dab86a0a1ef919a"
+ },
+ "src/heroes/storm/spells/supercellStorm.ts": {
+  "from": "src/spells/targeted/supercellStorm.ts",
+  "was": "1969c7567b12607e",
+  "now": "991b0742b71b4bf5"
+ },
+ "src/heroes/storm/spells/thunderRod.ts": {
+  "from": "src/spells/targeted/thunderRod.ts",
+  "was": "c907db58a6811cae",
+  "now": "422b56e66e090735"
+ },
+ "src/heroes/storm/trait.ts": {
+  "from": "src/traits/storm.ts",
+  "was": "70b18950e2c9c149",
+  "now": "71430562a88a40e7"
+ },
+ "src/heroes/weather/spells/coldFront.ts": {
+  "from": "src/spells/targeted/coldFront.ts",
+  "was": "50ccc83a81e53b31",
+  "now": "f5d3332cae64a1ea"
+ },
+ "src/heroes/weather/spells/forecastUpdate.ts": {
+  "from": "src/spells/targeted/forecastUpdate.ts",
+  "was": "75466d9be610c9a7",
+  "now": "958817c799d61b6e"
+ },
+ "src/heroes/weather/spells/lightningRisk.ts": {
+  "from": "src/spells/targeted/lightningRisk.ts",
+  "was": "ee2d6a1d475e0d05",
+  "now": "0b75dfd9ad660948"
+ },
+ "src/heroes/weather/spells/severeWarning.ts": {
+  "from": "src/spells/targeted/severeWarning.ts",
+  "was": "9905dac8e9b4f634",
+  "now": "4f93b2061095b07b"
+ },
+ "src/heroes/weather/trait.ts": {
+  "from": "src/traits/weather.ts",
+  "was": "7a4fff94acc2daf1",
+  "now": "2129af995a50d930"
+ },
+ "src/heroes/forge/hero.ts": {
+  "from": "src/kits/forge.ts",
+  "was": "0120adf881fd3dd4",
+  "now": "75b74904d09d528a"
+ },
+ "src/heroes/frost/hero.ts": {
+  "from": "src/kits/frost.ts",
+  "was": "ab65d85e798f5326",
+  "now": "de5d44b9b8b38d05"
+ },
+ "src/heroes/storm/hero.ts": {
+  "from": "src/kits/storm.ts",
+  "was": "4eb6fc6c30dc3ba6",
+  "now": "c30a7e1ac0324c14"
+ },
+ "src/heroes/dawn/hero.ts": {
+  "from": "src/kits/dawn.ts",
+  "was": "a2b7d862737e6440",
+  "now": "3698e2295d9e1b43"
+ },
+ "src/heroes/hive/hero.ts": {
+  "from": "src/kits/hive.ts",
+  "was": "0c9b83c2bc4eb188",
+  "now": "bd45ea0de4a2205a"
+ },
+ "src/heroes/ledger/hero.ts": {
+  "from": "src/kits/ledger.ts",
+  "was": "f7673b8143950def",
+  "now": "3454d3150cff864b"
+ },
+ "src/heroes/weather/hero.ts": {
+  "from": "src/kits/weather.ts",
+  "was": "5eb428764c39ec47",
+  "now": "6871c6bf90cbea07"
+ }
+}

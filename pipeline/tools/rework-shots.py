@@ -61,7 +61,7 @@ SCENES = {
     }"""),
     # A clean chord on the pulse with the Crescendo climbing.
     "cantor": ("Cantor", "Sefu", """async () => {
-      const bard = await import('/src/traits/bard.ts');
+      const bard = await import('/src/heroes/bard/trait.ts');
       const a = T.until((rt, d) => rt.res >= 3 && bard.inTune(d.time) && rt.mem.beatCast === Math.round(d.time / bard.BEAT) + 1, 60);
       T.step(0.2);
       return a;

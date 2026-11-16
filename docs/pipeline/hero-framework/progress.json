@@ -1,0 +1,382 @@
+{
+ "batches": [
+  {
+   "title": "Batch 1: Vesper, Lyra, Vitriol, Sefu, Nyx, Fenna, Marin, Zephyr",
+   "when": "2026-11-16",
+   "base": "b53ca76c",
+   "commit": "77347871",
+   "heroes": [
+    {
+     "name": "Vesper",
+     "theme": "blood"
+    },
+    {
+     "name": "Lyra",
+     "theme": "astral"
+    },
+    {
+     "name": "Vitriol",
+     "theme": "alchemy"
+    },
+    {
+     "name": "Sefu",
+     "theme": "sand"
+    },
+    {
+     "name": "Nyx",
+     "theme": "shadow"
+    },
+    {
+     "name": "Fenna",
+     "theme": "grove"
+    },
+    {
+     "name": "Marin",
+     "theme": "tide"
+    },
+    {
+     "name": "Zephyr",
+     "theme": "sky"
+    }
+   ],
+   "checks": [
+    {
+     "name": "Fight prints",
+     "ok": true,
+     "result": "80 of 80 the same (40 against Isolde, 40 against Brannoc)"
+    },
+    {
+     "name": "The roster the game sees",
+     "ok": true,
+     "result": "identical: every kit field, tooltip, model, body, passive, icon and portrait pixel, spell setting"
+    },
+    {
+     "name": "Spells the prints never cast",
+     "ok": true,
+     "result": "self test identical (Sefu's Scarab Stride moved here)"
+    },
+    {
+     "name": "Rust guard",
+     "ok": true,
+     "result": "the same 18 lines (Sirix's Swarm Surge changed only an import: recorded)"
+    },
+    {
+     "name": "Type check and build",
+     "ok": true,
+     "result": "pass"
+    }
+   ]
+  },
+  {
+   "title": "Batch 2: Mortis, Ada, Opaline, Cantor, Oblivion, Shiori, Tempo, Silvane",
+   "when": "2026-11-16",
+   "base": "77347871",
+   "commit": "ff959f7e",
+   "heroes": [
+    {
+     "name": "Mortis",
+     "theme": "bone"
+    },
+    {
+     "name": "Ada",
+     "theme": "clockwork"
+    },
+    {
+     "name": "Opaline",
+     "theme": "prism"
+    },
+    {
+     "name": "Cantor",
+     "theme": "bard"
+    },
+    {
+     "name": "Oblivion",
+     "theme": "void"
+    },
+    {
+     "name": "Shiori",
+     "theme": "ink"
+    },
+    {
+     "name": "Tempo",
+     "theme": "chrono"
+    },
+    {
+     "name": "Silvane",
+     "theme": "mirror"
+    }
+   ],
+   "checks": [
+    {
+     "name": "Fight prints",
+     "ok": true,
+     "result": "80 of 80 the same"
+    },
+    {
+     "name": "The roster the game sees",
+     "ok": true,
+     "result": "identical"
+    },
+    {
+     "name": "Spells the prints never cast",
+     "ok": true,
+     "result": "self test identical (Tempo's Time Skip moved here)"
+    },
+    {
+     "name": "Rust guard",
+     "ok": true,
+     "result": "the same 18 lines"
+    },
+    {
+     "name": "Type check and build",
+     "ok": true,
+     "result": "pass"
+    }
+   ]
+  },
+  {
+   "title": "Batch 3: Bram, Hank, Professor Puff, Sir Whiskers, Big Yoko, Mum, Referee Whistler, Madame Cleaver",
+   "when": "2026-11-16",
+   "base": "ff959f7e",
+   "commit": "d2fdd7db",
+   "heroes": [
+    {
+     "name": "Bram",
+     "theme": "mason"
+    },
+    {
+     "name": "Hank",
+     "theme": "timber"
+    },
+    {
+     "name": "Professor Puff",
+     "theme": "balloon"
+    },
+    {
+     "name": "Sir Whiskers",
+     "theme": "cat"
+    },
+    {
+     "name": "Big Yoko",
+     "theme": "sumo"
+    },
+    {
+     "name": "Mum",
+     "theme": "mime"
+    },
+    {
+     "name": "Referee Whistler",
+     "theme": "referee"
+    },
+    {
+     "name": "Madame Cleaver",
+     "theme": "chef"
+    }
+   ],
+   "checks": [
+    {
+     "name": "Fight prints",
+     "ok": true,
+     "result": "80 of 80 the same (the Brannoc set run again: its first page load timed out before any fight)"
+    },
+    {
+     "name": "The roster the game sees",
+     "ok": true,
+     "result": "identical"
+    },
+    {
+     "name": "Spells the prints never cast",
+     "ok": true,
+     "result": "self test identical"
+    },
+    {
+     "name": "Rust guard",
+     "ok": true,
+     "result": "the same 18 lines"
+    },
+    {
+     "name": "Type check and build",
+     "ok": true,
+     "result": "pass"
+    }
+   ],
+   "note": "The Shove stays hand-written, as planned. One line of the shared engine changed: heroMode.ts imports Mum's walls from her folder."
+  },
+  {
+   "title": "Batch 4: Pip, Gus, Mabel, Grandma Ironknit, Bo, the Great Zambini, Wick, Pim and Pom",
+   "when": "2026-11-16",
+   "base": "fe92b73a",
+   "commit": "a1fc8891",
+   "heroes": [
+    {
+     "name": "Pip",
+     "theme": "courier"
+    },
+    {
+     "name": "Gus",
+     "theme": "janitor"
+    },
+    {
+     "name": "Mabel",
+     "theme": "mole"
+    },
+    {
+     "name": "Grandma Ironknit",
+     "theme": "yarn"
+    },
+    {
+     "name": "Bo",
+     "theme": "sheep"
+    },
+    {
+     "name": "The Great Zambini",
+     "theme": "magic"
+    },
+    {
+     "name": "Wick",
+     "theme": "door"
+    },
+    {
+     "name": "Pim and Pom",
+     "theme": "twins"
+    }
+   ],
+   "checks": [
+    {
+     "name": "Fight prints",
+     "ok": true,
+     "result": "80 of 80 the same"
+    },
+    {
+     "name": "The roster the game sees",
+     "ok": true,
+     "result": "identical (Pim's and Pom's icons each from their own files, as before)"
+    },
+    {
+     "name": "Spells the prints never cast",
+     "ok": true,
+     "result": "self test identical (Pip's Final Delivery moved here)"
+    },
+    {
+     "name": "Rust guard",
+     "ok": true,
+     "result": "the same 18 lines"
+    },
+    {
+     "name": "Type check and build",
+     "ok": true,
+     "result": "pass"
+    }
+   ],
+   "note": "Final Delivery, Cast On, Hat Trick, Wick Door and Grand Lobby stay hand-written, as planned. Pim and Pom's card was written by hand: two halves share one Tag Out, and each half keeps its own icons."
+  },
+  {
+   "title": "Batch 5: the heroes the Rust simulator plays: Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger, Barry Cloudsley",
+   "when": "2026-11-16",
+   "base": "a1fc8891",
+   "commit": "adb0510d",
+   "heroes": [
+    {
+     "name": "Brannoc",
+     "theme": "forge"
+    },
+    {
+     "name": "Isolde",
+     "theme": "frost"
+    },
+    {
+     "name": "Kaia",
+     "theme": "storm"
+    },
+    {
+     "name": "Auriel",
+     "theme": "dawn"
+    },
+    {
+     "name": "Sirix",
+     "theme": "hive"
+    },
+    {
+     "name": "Mr. Ledger",
+     "theme": "ledger"
+    },
+    {
+     "name": "Barry Cloudsley",
+     "theme": "weather"
+    }
+   ],
+   "checks": [
+    {
+     "name": "Fight prints",
+     "ok": true,
+     "result": "80 of 80 the same (and on the merged main branch alone, before this batch)"
+    },
+    {
+     "name": "The roster the game sees",
+     "ok": true,
+     "result": "identical"
+    },
+    {
+     "name": "Spells the prints never cast",
+     "ok": true,
+     "result": "self test identical (Mr. Ledger's Call It In and Foreclosure moved here)"
+    },
+    {
+     "name": "Rust guard",
+     "ok": true,
+     "result": "the same lines as before the batch: it was taught the folders first, and each moved file is remembered"
+    },
+    {
+     "name": "Type check and build",
+     "ok": true,
+     "result": "pass"
+    }
+   ],
+   "note": "Their spells stay exactly as they were: the Rust simulator was written from them. With this batch no list in the game names a hero by hand any more."
+  }
+ ],
+ "size": [
+  {
+   "when": "before step 4",
+   "kb": 6112,
+   "gz": 1662
+  },
+  {
+   "when": "after batch 1",
+   "kb": 6114,
+   "gz": 1665
+  },
+  {
+   "when": "after batch 2",
+   "kb": 6117,
+   "gz": 1666
+  },
+  {
+   "when": "after batch 3",
+   "kb": 6119,
+   "gz": 1668
+  },
+  {
+   "when": "after batch 4",
+   "kb": 6122,
+   "gz": 1671
+  },
+  {
+   "when": "the main branch alone, same day",
+   "kb": 6117,
+   "gz": 1664
+  },
+  {
+   "when": "all 40 moved, the pointers off the cards",
+   "kb": 6123,
+   "gz": 1671
+  }
+ ],
+ "found": [
+  "The moves changed no spell: the spells onto the shared blocks is the next step (only Anka's four are on them).",
+  "The cards add about 6 KB to the game's first download (0.1 %): the 39 cards and their files. Their pointers (lore, model, design) were taken off the cards, which saved another 6 KB.",
+  "The shared parts kit (src/effects/parts/index.ts) re-exports Vesper's blood parts, so it now reaches into her folder.",
+  "The Rust guard lists one line more than this morning (19): the merged enemy shot heights changed src/effects/projectile.ts. Not from the moves.",
+  "pipeline/tools/kits20.py still writes the old src/kits/ and src/traits/ paths into the kit designs it makes."
+ ]
+}

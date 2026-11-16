@@ -5,7 +5,7 @@ import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameA
 import {
   DAWN, DAWN_CSS, HaloRing, LightBeams, LightPanels, Sigil, SunEmblems, SunRays, dawnEaseOutBack, dawnFacing, dawnForward, dawnOrient,
   dawnPanelNormal, dawnView, type PanelShape,
-} from '../../effects/parts/dawn';
+} from '../../heroes/dawn/parts';
 import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';

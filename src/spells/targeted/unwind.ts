@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { Afterimage, CHRONO_CSS, Dial, FrozenMotes } from '../../effects/parts/chrono';
+import { Afterimage, CHRONO_CSS, Dial, FrozenMotes } from '../../heroes/chrono/parts';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { unwindDest } from '../../traits/chrono';
+import { unwindDest } from '../../heroes/chrono/trait';
 
 /**
  * Unwind (chrono kit, R: a rewind). The trait (`src/traits/chrono.ts`) has already sent Tempo back to where he stood

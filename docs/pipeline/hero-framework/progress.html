@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heroes into folders</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef; --card: #fffdf8; --ink: #1d1b17; --ink2: #57534b; --muted: #8a857a; --line: #e2ddd2;
+  --old: #b9b2a3; --new: #2a78d6; --ok: #1f8a4c; --okbg: #e3f3e8; --warn: #b5530c; --warnbg: #fbeadc; --code: #f1ede3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+    --old: #5c574c; --new: #3987e5; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416; --code: #26241e;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+  --old: #5c574c; --new: #3987e5; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416; --code: #26241e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 20px; margin: 0 0 4px; }
+h3 { font-size: 16px; margin: 16px 0 6px; }
+p { color: var(--ink2); margin: 6px 0 10px; }
+.sub { color: var(--muted); font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 14px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 14px 0; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 28px; line-height: 1.1; }
+.tile span { color: var(--ink2); font-size: 14px; }
+.dots { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; background: var(--line); display: inline-block; }
+.dots i.on { background: var(--new); }
+.heroes { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.hero { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.hname { font-weight: 600; }
+.hname small { color: var(--muted); font-weight: 400; }
+.bar { height: 8px; margin: 4px 0; }
+.bar span { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+.b0 { background: var(--old); }
+.b1 { background: var(--new); }
+.nums { display: flex; justify-content: space-between; gap: 6px; font-size: 12.5px; color: var(--ink2); flex-wrap: wrap; }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+ul.fl { margin: 4px 0; padding-left: 16px; font-size: 12.5px; }
+ul.fl code { font-size: 12px; }
+ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+ul.checks li { padding: 6px 10px; border-radius: 8px; font-size: 14px; }
+ul.checks li.ok { background: var(--okbg); }
+ul.checks li.ok b { color: var(--ok); }
+ul.checks li.bad { background: var(--warnbg); }
+ul.checks li.bad b { color: var(--warn); }
+.legend { font-size: 13px; color: var(--ink2); display: flex; gap: 14px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.srow { display: grid; grid-template-columns: minmax(90px, 30%) 1fr auto; gap: 8px; align-items: center; font-size: 14px; margin: 4px 0; }
+.srow small { grid-column: 3; color: var(--muted); font-size: 12px; text-align: right; }
+.strack span { display: block; height: 14px; background: var(--new); border-radius: 0 4px 4px 0; }
+code { background: var(--code); border-radius: 4px; padding: 0 3px; }
+ul.found li { color: var(--ink2); margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="index.html">The hero framework</a> &middot; <a href="anka.html">Anka, the sample</a></p>
+<h1>Heroes into folders</h1>
+<p>Each hero now lives in one folder (<code>src/heroes/&lt;name&gt;/</code>): its card, its passive, its four spells, its look parts and
+its icons. The game finds the folders by itself. Moved in batches; after every batch all 80 fight prints must be the same.
+The moves change no spell: each spell file moved as it was, so a hero's lines stay about the same (its card adds about 40).
+The next step puts the spells onto the shared blocks, a spell at a time; that is where they get shorter.</p>
+
+<div class="tiles">
+  <div class="tile"><b>40 of 40</b><span>heroes in folders</span></div>
+  <div class="tile"><b>5</b><span>batches done</span></div>
+  <div class="tile"><b>0</b><span>spells moved onto the blocks (besides Anka's 4)</span></div>
+</div>
+<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+
+<div class="legend"><span><i style="background:var(--old)"></i>lines before (spread over many folders)</span><span><i style="background:var(--new)"></i>lines after (one folder)</span></div>
+
+<section class="card">
+  <h2>Batch 1: Vesper, Lyra, Vitriol, Sefu, Nyx, Fenna, Marin, Zephyr</h2>
+  <p class="sub">2026-11-16 &middot; commit <code>77347871</code></p>
+  <div class="heroes">
+<div class="hero">
+  <div class="hname">Vesper <small>blood/</small></div>
+  <div class="bar"><span class="b0" style="width:87%"></span></div>
+  <div class="bar"><span class="b1" style="width:89%"></span></div>
+  <div class="nums"><span>before 2,882 lines in 7 files</span><span>after 2,927 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 140</li><li><code>parts.ts</code> 1238</li><li><code>spells/hemocurse.ts</code> 263</li><li><code>spells/lancet.ts</code> 366</li><li><code>spells/mistWaltz.ts</code> 215</li><li><code>spells/sanguineFeast.ts</code> 284</li><li><code>trait.ts</code> 357</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Lyra <small>astral/</small></div>
+  <div class="bar"><span class="b0" style="width:71%"></span></div>
+  <div class="bar"><span class="b1" style="width:72%"></span></div>
+  <div class="nums"><span>before 2,327 lines in 7 files</span><span>after 2,372 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 137</li><li><code>parts.ts</code> 928</li><li><code>spells/meteorMark.ts</code> 380</li><li><code>spells/pinningArrow.ts</code> 288</li><li><code>spells/starfallArrow.ts</code> 305</li><li><code>spells/twinStars.ts</code> 181</li><li><code>trait.ts</code> 89</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Vitriol <small>alchemy/</small></div>
+  <div class="bar"><span class="b0" style="width:97%"></span></div>
+  <div class="bar"><span class="b1" style="width:98%"></span></div>
+  <div class="nums"><span>before 3,195 lines in 7 files</span><span>after 3,240 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 277</li><li><code>parts.ts</code> 1429</li><li><code>spells/acidSplash.ts</code> 296</li><li><code>spells/fireVial.ts</code> 283</li><li><code>spells/homunculus.ts</code> 381</li><li><code>spells/toxinDart.ts</code> 393</li><li><code>trait.ts</code> 118</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Sefu <small>sand/</small></div>
+  <div class="bar"><span class="b0" style="width:88%"></span></div>
+  <div class="bar"><span class="b1" style="width:90%"></span></div>
+  <div class="nums"><span>before 2,914 lines in 7 files</span><span>after 2,959 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 267</li><li><code>parts.ts</code> 1539</li><li><code>spells/cobraSpit.ts</code> 223</li><li><code>spells/sarcophagus.ts</code> 274</li><li><code>spells/scarabStride.ts</code> 269</li><li><code>spells/shepherdsCrook.ts</code> 272</li><li><code>trait.ts</code> 51</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Nyx <small>shadow/</small></div>
+  <div class="bar"><span class="b0" style="width:61%"></span></div>
+  <div class="bar"><span class="b1" style="width:63%"></span></div>
+  <div class="nums"><span>before 2,018 lines in 7 files</span><span>after 2,063 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 166</li><li><code>parts.ts</code> 902</li><li><code>spells/nightfall.ts</code> 165</li><li><code>spells/shadowDouble.ts</code> 184</li><li><code>spells/smokeVeil.ts</code> 187</li><li><code>spells/umbralCut.ts</code> 216</li><li><code>trait.ts</code> 179</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Fenna <small>grove/</small></div>
+  <div class="bar"><span class="b0" style="width:86%"></span></div>
+  <div class="bar"><span class="b1" style="width:88%"></span></div>
+  <div class="nums"><span>before 2,844 lines in 7 files</span><span>after 2,889 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 303</li><li><code>parts.ts</code> 1086</li><li><code>spells/pollenGlide.ts</code> 203</li><li><code>spells/seedShot.ts</code> 274</li><li><code>spells/strangleVine.ts</code> 251</li><li><code>spells/worldTree.ts</code> 409</li><li><code>trait.ts</code> 300</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Marin <small>tide/</small></div>
+  <div class="bar"><span class="b0" style="width:84%"></span></div>
+  <div class="bar"><span class="b1" style="width:86%"></span></div>
+  <div class="nums"><span>before 2,778 lines in 7 files</span><span>after 2,823 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 267</li><li><code>parts.ts</code> 1107</li><li><code>spells/coralSpire.ts</code> 284</li><li><code>spells/mistForm.ts</code> 261</li><li><code>spells/moonPull.ts</code> 339</li><li><code>spells/waveDisc.ts</code> 331</li><li><code>trait.ts</code> 171</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Zephyr <small>sky/</small></div>
+  <div class="bar"><span class="b0" style="width:75%"></span></div>
+  <div class="bar"><span class="b1" style="width:76%"></span></div>
+  <div class="nums"><span>before 2,462 lines in 7 files</span><span>after 2,507 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 264</li><li><code>parts.ts</code> 766</li><li><code>spells/crosswind.ts</code> 264</li><li><code>spells/featherStep.ts</code> 188</li><li><code>spells/skyRend.ts</code> 443</li><li><code>spells/skyward.ts</code> 375</li><li><code>trait.ts</code> 143</li></ul></details>
+</div></div>
+  <h3>The proof</h3>
+  <ul class="checks"><li class="ok"><b>Fight prints</b> 80 of 80 the same (40 against Isolde, 40 against Brannoc)</li><li class="ok"><b>The roster the game sees</b> identical: every kit field, tooltip, model, body, passive, icon and portrait pixel, spell setting</li><li class="ok"><b>Spells the prints never cast</b> self test identical (Sefu&#x27;s Scarab Stride moved here)</li><li class="ok"><b>Rust guard</b> the same 18 lines (Sirix&#x27;s Swarm Surge changed only an import: recorded)</li><li class="ok"><b>Type check and build</b> pass</li></ul>
+  
+</section>
+<section class="card">
+  <h2>Batch 2: Mortis, Ada, Opaline, Cantor, Oblivion, Shiori, Tempo, Silvane</h2>
+  <p class="sub">2026-11-16 &middot; commit <code>ff959f7e</code></p>
+  <div class="heroes">
+<div class="hero">
+  <div class="hname">Mortis <small>bone/</small></div>
+  <div class="bar"><span class="b0" style="width:94%"></span></div>
+  <div class="bar"><span class="b1" style="width:96%"></span></div>
+  <div class="nums"><span>before 3,114 lines in 7 files</span><span>after 3,159 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 346</li><li><code>parts.ts</code> 1478</li><li><code>spells/boneArmour.ts</code> 266</li><li><code>spells/boneFan.ts</code> 293</li><li><code>spells/graveGrasp.ts</code> 385</li><li><code>spells/raiseDead.ts</code> 231</li><li><code>trait.ts</code> 97</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Ada <small>clockwork/</small></div>
+  <div class="bar"><span class="b0" style="width:89%"></span></div>
+  <div class="bar"><span class="b1" style="width:90%"></span></div>
+  <div class="nums"><span>before 2,921 lines in 7 files</span><span>after 2,966 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 350</li><li><code>parts.ts</code> 1316</li><li><code>spells/deployTurret.ts</code> 226</li><li><code>spells/grappleHook.ts</code> 335</li><li><code>spells/homingDrone.ts</code> 225</li><li><code>spells/siegeMode.ts</code> 321</li><li><code>trait.ts</code> 130</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Opaline <small>prism/</small></div>
+  <div class="bar"><span class="b0" style="width:68%"></span></div>
+  <div class="bar"><span class="b1" style="width:70%"></span></div>
+  <div class="nums"><span>before 2,257 lines in 7 files</span><span>after 2,302 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 266</li><li><code>parts.ts</code> 667</li><li><code>spells/blindingFlare.ts</code> 263</li><li><code>spells/crystalPillar.ts</code> 343</li><li><code>spells/ricochetLight.ts</code> 304</li><li><code>spells/shatterlight.ts</code> 356</li><li><code>trait.ts</code> 40</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Cantor <small>bard/</small></div>
+  <div class="bar"><span class="b0" style="width:75%"></span></div>
+  <div class="bar"><span class="b1" style="width:77%"></span></div>
+  <div class="nums"><span>before 2,483 lines in 7 files</span><span>after 2,528 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 342</li><li><code>parts.ts</code> 954</li><li><code>spells/duet.ts</code> 256</li><li><code>spells/resoundingChord.ts</code> 209</li><li><code>spells/risingChorus.ts</code> 202</li><li><code>spells/sirenSong.ts</code> 251</li><li><code>trait.ts</code> 251</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Oblivion <small>void/</small></div>
+  <div class="bar"><span class="b0" style="width:78%"></span></div>
+  <div class="bar"><span class="b1" style="width:79%"></span></div>
+  <div class="nums"><span>before 2,563 lines in 7 files</span><span>after 2,608 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 390</li><li><code>parts.ts</code> 844</li><li><code>spells/blackHole.ts</code> 441</li><li><code>spells/gravitySlam.ts</code> 185</li><li><code>spells/nullZone.ts</code> 274</li><li><code>spells/phaseStep.ts</code> 248</li><li><code>trait.ts</code> 162</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Shiori <small>ink/</small></div>
+  <div class="bar"><span class="b0" style="width:78%"></span></div>
+  <div class="bar"><span class="b1" style="width:80%"></span></div>
+  <div class="nums"><span>before 2,586 lines in 7 files</span><span>after 2,631 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 334</li><li><code>parts.ts</code> 978</li><li><code>spells/flowingScript.ts</code> 177</li><li><code>spells/inkLash.ts</code> 266</li><li><code>spells/sealOfBinding.ts</code> 164</li><li><code>spells/theLastCharacter.ts</code> 239</li><li><code>trait.ts</code> 410</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Tempo <small>chrono/</small></div>
+  <div class="bar"><span class="b0" style="width:82%"></span></div>
+  <div class="bar"><span class="b1" style="width:83%"></span></div>
+  <div class="nums"><span>before 2,696 lines in 7 files</span><span>after 2,741 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 297</li><li><code>parts.ts</code> 1079</li><li><code>spells/slowTime.ts</code> 262</li><li><code>spells/stolenHour.ts</code> 289</li><li><code>spells/tickBolt.ts</code> 346</li><li><code>spells/timeSkip.ts</code> 256</li><li><code>trait.ts</code> 149</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Silvane <small>mirror/</small></div>
+  <div class="bar"><span class="b0" style="width:73%"></span></div>
+  <div class="bar"><span class="b1" style="width:75%"></span></div>
+  <div class="nums"><span>before 2,421 lines in 7 files</span><span>after 2,466 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 337</li><li><code>parts.ts</code> 596</li><li><code>spells/hallOfMirrors.ts</code> 412</li><li><code>spells/handMirror.ts</code> 339</li><li><code>spells/throughTheGlass.ts</code> 197</li><li><code>spells/vanityStand.ts</code> 311</li><li><code>trait.ts</code> 211</li></ul></details>
+</div></div>
+  <h3>The proof</h3>
+  <ul class="checks"><li class="ok"><b>Fight prints</b> 80 of 80 the same</li><li class="ok"><b>The roster the game sees</b> identical</li><li class="ok"><b>Spells the prints never cast</b> self test identical (Tempo&#x27;s Time Skip moved here)</li><li class="ok"><b>Rust guard</b> the same 18 lines</li><li class="ok"><b>Type check and build</b> pass</li></ul>
+  
+</section>
+<section class="card">
+  <h2>Batch 3: Bram, Hank, Professor Puff, Sir Whiskers, Big Yoko, Mum, Referee Whistler, Madame Cleaver</h2>
+  <p class="sub">2026-11-16 &middot; commit <code>d2fdd7db</code></p>
+  <div class="heroes">
+<div class="hero">
+  <div class="hname">Bram <small>mason/</small></div>
+  <div class="bar"><span class="b0" style="width:68%"></span></div>
+  <div class="bar"><span class="b1" style="width:70%"></span></div>
+  <div class="nums"><span>before 2,255 lines in 7 files</span><span>after 2,300 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 316</li><li><code>parts.ts</code> 547</li><li><code>spells/aGoodLean.ts</code> 181</li><li><code>spells/geraldNo.ts</code> 272</li><li><code>spells/raiseGerald.ts</code> 215</li><li><code>spells/theShove.ts</code> 347</li><li><code>trait.ts</code> 358</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Hank <small>timber/</small></div>
+  <div class="bar"><span class="b0" style="width:82%"></span></div>
+  <div class="bar"><span class="b1" style="width:83%"></span></div>
+  <div class="nums"><span>before 2,692 lines in 7 files</span><span>after 2,737 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 324</li><li><code>parts.ts</code> 799</li><li><code>spells/axeSwing.ts</code> 263</li><li><code>spells/caberToss.ts</code> 269</li><li><code>spells/fastGrowth.ts</code> 228</li><li><code>spells/timberCall.ts</code> 341</li><li><code>trait.ts</code> 449</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Professor Puff <small>balloon/</small></div>
+  <div class="bar"><span class="b0" style="width:69%"></span></div>
+  <div class="bar"><span class="b1" style="width:71%"></span></div>
+  <div class="nums"><span>before 2,292 lines in 7 files</span><span>after 2,337 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 353</li><li><code>parts.ts</code> 661</li><li><code>spells/airHose.ts</code> 266</li><li><code>spells/heliumBomb.ts</code> 232</li><li><code>spells/hotAir.ts</code> 304</li><li><code>spells/popPin.ts</code> 307</li><li><code>trait.ts</code> 151</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Sir Whiskers <small>cat/</small></div>
+  <div class="bar"><span class="b0" style="width:67%"></span></div>
+  <div class="bar"><span class="b1" style="width:68%"></span></div>
+  <div class="nums"><span>before 2,199 lines in 7 files</span><span>after 2,244 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 58</li><li><code>icons.ts</code> 393</li><li><code>parts.ts</code> 833</li><li><code>spells/knockItOver.ts</code> 202</li><li><code>spells/landOnMyFeet.ts</code> 188</li><li><code>spells/pounce.ts</code> 202</li><li><code>spells/scratch.ts</code> 155</li><li><code>trait.ts</code> 206</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Big Yoko <small>sumo/</small></div>
+  <div class="bar"><span class="b0" style="width:57%"></span></div>
+  <div class="bar"><span class="b1" style="width:58%"></span></div>
+  <div class="nums"><span>before 1,877 lines in 7 files</span><span>after 1,922 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 324</li><li><code>parts.ts</code> 445</li><li><code>spells/palmStrike.ts</code> 209</li><li><code>spells/saltThrow.ts</code> 223</li><li><code>spells/stomp.ts</code> 180</li><li><code>spells/sumoCharge.ts</code> 275</li><li><code>trait.ts</code> 202</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Mum <small>mime/</small></div>
+  <div class="bar"><span class="b0" style="width:58%"></span></div>
+  <div class="bar"><span class="b1" style="width:59%"></span></div>
+  <div class="nums"><span>before 1,902 lines in 7 files</span><span>after 1,947 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 254</li><li><code>parts.ts</code> 391</li><li><code>spells/invisibleBall.ts</code> 243</li><li><code>spells/mimeWall.ts</code> 188</li><li><code>spells/ropeTrick.ts</code> 259</li><li><code>spells/theBox.ts</code> 213</li><li><code>trait.ts</code> 336</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Referee Whistler <small>referee/</small></div>
+  <div class="bar"><span class="b0" style="width:56%"></span></div>
+  <div class="bar"><span class="b1" style="width:58%"></span></div>
+  <div class="nums"><span>before 1,864 lines in 7 files</span><span>after 1,909 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 215</li><li><code>parts.ts</code> 550</li><li><code>spells/noCasting.ts</code> 40</li><li><code>spells/noRunning.ts</code> 214</li><li><code>spells/showTheCard.ts</code> 268</li><li><code>spells/whistleBlast.ts</code> 266</li><li><code>trait.ts</code> 293</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Madame Cleaver <small>chef/</small></div>
+  <div class="bar"><span class="b0" style="width:79%"></span></div>
+  <div class="bar"><span class="b1" style="width:80%"></span></div>
+  <div class="nums"><span>before 2,607 lines in 7 files</span><span>after 2,652 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 476</li><li><code>parts.ts</code> 542</li><li><code>spells/burntOffering.ts</code> 204</li><li><code>spells/dinnerIsServed.ts</code> 390</li><li><code>spells/hotSoup.ts</code> 319</li><li><code>spells/thrownCleaver.ts</code> 293</li><li><code>trait.ts</code> 365</li></ul></details>
+</div></div>
+  <h3>The proof</h3>
+  <ul class="checks"><li class="ok"><b>Fight prints</b> 80 of 80 the same (the Brannoc set run again: its first page load timed out before any fight)</li><li class="ok"><b>The roster the game sees</b> identical</li><li class="ok"><b>Spells the prints never cast</b> self test identical</li><li class="ok"><b>Rust guard</b> the same 18 lines</li><li class="ok"><b>Type check and build</b> pass</li></ul>
+  <p>The Shove stays hand-written, as planned. One line of the shared engine changed: heroMode.ts imports Mum&#x27;s walls from her folder.</p>
+</section>
+<section class="card">
+  <h2>Batch 4: Pip, Gus, Mabel, Grandma Ironknit, Bo, the Great Zambini, Wick, Pim and Pom</h2>
+  <p class="sub">2026-11-16 &middot; commit <code>a1fc8891</code></p>
+  <div class="heroes">
+<div class="hero">
+  <div class="hname">Pip <small>courier/</small></div>
+  <div class="bar"><span class="b0" style="width:66%"></span></div>
+  <div class="bar"><span class="b1" style="width:68%"></span></div>
+  <div class="nums"><span>before 2,192 lines in 7 files</span><span>after 2,237 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 344</li><li><code>parts.ts</code> 426</li><li><code>spells/expressLetter.ts</code> 288</li><li><code>spells/finalDelivery.ts</code> 263</li><li><code>spells/fragile.ts</code> 260</li><li><code>spells/shortcut.ts</code> 239</li><li><code>trait.ts</code> 354</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Gus <small>janitor/</small></div>
+  <div class="bar"><span class="b0" style="width:70%"></span></div>
+  <div class="bar"><span class="b1" style="width:71%"></span></div>
+  <div class="nums"><span>before 2,301 lines in 7 files</span><span>after 2,346 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 338</li><li><code>parts.ts</code> 555</li><li><code>spells/bigMop.ts</code> 242</li><li><code>spells/flood.ts</code> 218</li><li><code>spells/mopBucket.ts</code> 285</li><li><code>spells/wetFloorSign.ts</code> 336</li><li><code>trait.ts</code> 308</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Mabel <small>mole/</small></div>
+  <div class="bar"><span class="b0" style="width:62%"></span></div>
+  <div class="bar"><span class="b1" style="width:63%"></span></div>
+  <div class="nums"><span>before 2,049 lines in 7 files</span><span>after 2,094 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 343</li><li><code>parts.ts</code> 647</li><li><code>spells/moleClaw.ts</code> 171</li><li><code>spells/moleDig.ts</code> 165</li><li><code>spells/moleTunnel.ts</code> 269</li><li><code>spells/sinkhole.ts</code> 250</li><li><code>trait.ts</code> 185</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Grandma Ironknit <small>yarn/</small></div>
+  <div class="bar"><span class="b0" style="width:70%"></span></div>
+  <div class="bar"><span class="b1" style="width:72%"></span></div>
+  <div class="nums"><span>before 2,321 lines in 7 files</span><span>after 2,366 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 286</li><li><code>parts.ts</code> 701</li><li><code>spells/castOn.ts</code> 202</li><li><code>spells/knittingNeedle.ts</code> 268</li><li><code>spells/mrBiscuit.ts</code> 245</li><li><code>spells/sweater.ts</code> 215</li><li><code>trait.ts</code> 386</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Bo <small>sheep/</small></div>
+  <div class="bar"><span class="b0" style="width:55%"></span></div>
+  <div class="bar"><span class="b1" style="width:56%"></span></div>
+  <div class="nums"><span>before 1,818 lines in 7 files</span><span>after 1,863 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 318</li><li><code>parts.ts</code> 375</li><li><code>spells/crookWhack.ts</code> 209</li><li><code>spells/shear.ts</code> 264</li><li><code>spells/spareSheep.ts</code> 183</li><li><code>spells/stampede.ts</code> 248</li><li><code>trait.ts</code> 203</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">The Great Zambini <small>magic/</small></div>
+  <div class="bar"><span class="b0" style="width:70%"></span></div>
+  <div class="bar"><span class="b1" style="width:72%"></span></div>
+  <div class="nums"><span>before 2,326 lines in 7 files</span><span>after 2,371 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 294</li><li><code>parts.ts</code> 701</li><li><code>spells/cardSpray.ts</code> 217</li><li><code>spells/grandFinale.ts</code> 353</li><li><code>spells/hatTrick.ts</code> 348</li><li><code>spells/sawnInHalf.ts</code> 194</li><li><code>trait.ts</code> 201</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Wick <small>door/</small></div>
+  <div class="bar"><span class="b0" style="width:78%"></span></div>
+  <div class="bar"><span class="b1" style="width:80%"></span></div>
+  <div class="nums"><span>before 2,586 lines in 7 files</span><span>after 2,631 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 336</li><li><code>parts.ts</code> 557</li><li><code>spells/doorSlam.ts</code> 238</li><li><code>spells/grandLobby.ts</code> 308</li><li><code>spells/keyToss.ts</code> 360</li><li><code>spells/wickDoor.ts</code> 268</li><li><code>trait.ts</code> 501</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Pim and Pom <small>twins/</small></div>
+  <div class="bar"><span class="b0" style="width:83%"></span></div>
+  <div class="bar"><span class="b1" style="width:85%"></span></div>
+  <div class="nums"><span>before 2,746 lines in 10 files</span><span>after 2,802 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 10</li><li><code>hero.ts</code> 100</li><li><code>icons.ts</code> 485</li><li><code>parts.ts</code> 578</li><li><code>spells/pimBonk.ts</code> 209</li><li><code>spells/pimCharge.ts</code> 213</li><li><code>spells/pimShieldUp.ts</code> 169</li><li><code>spells/pomBackflip.ts</code> 200</li><li><code>spells/pomPebble.ts</code> 240</li><li><code>spells/pomSnare.ts</code> 188</li><li><code>spells/tagOut.ts</code> 204</li><li><code>trait.ts</code> 206</li></ul></details>
+</div></div>
+  <h3>The proof</h3>
+  <ul class="checks"><li class="ok"><b>Fight prints</b> 80 of 80 the same</li><li class="ok"><b>The roster the game sees</b> identical (Pim&#x27;s and Pom&#x27;s icons each from their own files, as before)</li><li class="ok"><b>Spells the prints never cast</b> self test identical (Pip&#x27;s Final Delivery moved here)</li><li class="ok"><b>Rust guard</b> the same 18 lines</li><li class="ok"><b>Type check and build</b> pass</li></ul>
+  <p>Final Delivery, Cast On, Hat Trick, Wick Door and Grand Lobby stay hand-written, as planned. Pim and Pom&#x27;s card was written by hand: two halves share one Tag Out, and each half keeps its own icons.</p>
+</section>
+<section class="card">
+  <h2>Batch 5: the heroes the Rust simulator plays: Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger, Barry Cloudsley</h2>
+  <p class="sub">2026-11-16 &middot; commit <code>adb0510d</code></p>
+  <div class="heroes">
+<div class="hero">
+  <div class="hname">Brannoc <small>forge/</small></div>
+  <div class="bar"><span class="b0" style="width:95%"></span></div>
+  <div class="bar"><span class="b1" style="width:96%"></span></div>
+  <div class="nums"><span>before 3,139 lines in 7 files</span><span>after 3,184 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 58</li><li><code>icons.ts</code> 229</li><li><code>parts.ts</code> 1552</li><li><code>spells/chainHammer.ts</code> 286</li><li><code>spells/forgeRoar.ts</code> 194</li><li><code>spells/moltenCore.ts</code> 392</li><li><code>spells/redHotRivet.ts</code> 217</li><li><code>trait.ts</code> 249</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Isolde <small>frost/</small></div>
+  <div class="bar"><span class="b0" style="width:81%"></span></div>
+  <div class="bar"><span class="b1" style="width:82%"></span></div>
+  <div class="nums"><span>before 2,667 lines in 7 files</span><span>after 2,712 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 199</li><li><code>parts.ts</code> 1238</li><li><code>spells/hoarfrost.ts</code> 214</li><li><code>spells/icicle.ts</code> 355</li><li><code>spells/rimeArmour.ts</code> 192</li><li><code>spells/wintersShatter.ts</code> 287</li><li><code>trait.ts</code> 164</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Kaia <small>storm/</small></div>
+  <div class="bar"><span class="b0" style="width:88%"></span></div>
+  <div class="bar"><span class="b1" style="width:90%"></span></div>
+  <div class="nums"><span>before 2,917 lines in 7 files</span><span>after 2,962 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 290</li><li><code>parts.ts</code> 1022</li><li><code>spells/polarity.ts</code> 307</li><li><code>spells/skyStrike.ts</code> 253</li><li><code>spells/supercellStorm.ts</code> 313</li><li><code>spells/thunderRod.ts</code> 401</li><li><code>trait.ts</code> 313</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Auriel <small>dawn/</small></div>
+  <div class="bar"><span class="b0" style="width:81%"></span></div>
+  <div class="bar"><span class="b1" style="width:83%"></span></div>
+  <div class="nums"><span>before 2,684 lines in 7 files</span><span>after 2,729 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 196</li><li><code>parts.ts</code> 916</li><li><code>spells/dawnward.ts</code> 269</li><li><code>spells/firstLight.ts</code> 411</li><li><code>spells/oathbrand.ts</code> 294</li><li><code>spells/sunrise.ts</code> 394</li><li><code>trait.ts</code> 186</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Sirix <small>hive/</small></div>
+  <div class="bar"><span class="b0" style="width:81%"></span></div>
+  <div class="bar"><span class="b1" style="width:83%"></span></div>
+  <div class="nums"><span>before 2,685 lines in 7 files</span><span>after 2,730 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 57</li><li><code>icons.ts</code> 364</li><li><code>parts.ts</code> 1058</li><li><code>spells/barbedStinger.ts</code> 406</li><li><code>spells/hiveShell.ts</code> 170</li><li><code>spells/swarmCloud.ts</code> 222</li><li><code>spells/swarmSurge.ts</code> 237</li><li><code>trait.ts</code> 209</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Mr. Ledger <small>ledger/</small></div>
+  <div class="bar"><span class="b0" style="width:64%"></span></div>
+  <div class="bar"><span class="b1" style="width:65%"></span></div>
+  <div class="nums"><span>before 2,099 lines in 7 files</span><span>after 2,144 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 398</li><li><code>parts.ts</code> 601</li><li><code>spells/callItIn.ts</code> 177</li><li><code>spells/foreclosure.ts</code> 226</li><li><code>spells/invoice.ts</code> 259</li><li><code>spells/lateFee.ts</code> 208</li><li><code>trait.ts</code> 212</li></ul></details>
+</div>
+<div class="hero">
+  <div class="hname">Barry Cloudsley <small>weather/</small></div>
+  <div class="bar"><span class="b0" style="width:73%"></span></div>
+  <div class="bar"><span class="b1" style="width:74%"></span></div>
+  <div class="nums"><span>before 2,412 lines in 7 files</span><span>after 2,457 lines in one folder</span></div>
+  <div class="nums"><span>spells on the blocks: <b>0 of 4</b></span></div>
+  <details><summary>the folder</summary><ul class="fl"><li><code>fight.ts</code> 7</li><li><code>hero.ts</code> 56</li><li><code>icons.ts</code> 293</li><li><code>parts.ts</code> 930</li><li><code>spells/coldFront.ts</code> 228</li><li><code>spells/forecastUpdate.ts</code> 160</li><li><code>spells/lightningRisk.ts</code> 193</li><li><code>spells/severeWarning.ts</code> 234</li><li><code>trait.ts</code> 356</li></ul></details>
+</div></div>
+  <h3>The proof</h3>
+  <ul class="checks"><li class="ok"><b>Fight prints</b> 80 of 80 the same (and on the merged main branch alone, before this batch)</li><li class="ok"><b>The roster the game sees</b> identical</li><li class="ok"><b>Spells the prints never cast</b> self test identical (Mr. Ledger&#x27;s Call It In and Foreclosure moved here)</li><li class="ok"><b>Rust guard</b> the same lines as before the batch: it was taught the folders first, and each moved file is remembered</li><li class="ok"><b>Type check and build</b> pass</li></ul>
+  <p>Their spells stay exactly as they were: the Rust simulator was written from them. With this batch no list in the game names a hero by hand any more.</p>
+</section>
+
+<section class="card">
+  <h2>The game's first download</h2>
+  <p>The script a player waits for before the first picture. It must not grow.</p>
+  <div class="srow"><span>before step 4</span><div class="strack"><span style="width:76%"></span></div><b>6,112 KB</b><small>1,662 KB packed</small></div><div class="srow"><span>after batch 1</span><div class="strack"><span style="width:76%"></span></div><b>6,114 KB</b><small>1,665 KB packed</small></div><div class="srow"><span>after batch 2</span><div class="strack"><span style="width:76%"></span></div><b>6,117 KB</b><small>1,666 KB packed</small></div><div class="srow"><span>after batch 3</span><div class="strack"><span style="width:76%"></span></div><b>6,119 KB</b><small>1,668 KB packed</small></div><div class="srow"><span>after batch 4</span><div class="strack"><span style="width:77%"></span></div><b>6,122 KB</b><small>1,671 KB packed</small></div><div class="srow"><span>the main branch alone, same day</span><div class="strack"><span style="width:76%"></span></div><b>6,117 KB</b><small>1,664 KB packed</small></div><div class="srow"><span>all 40 moved, the pointers off the cards</span><div class="strack"><span style="width:77%"></span></div><b>6,123 KB</b><small>1,671 KB packed</small></div>
+</section>
+
+<section class="card"><h2>Found on the way</h2><p>Not changed (the moves change nothing); for later.</p><ul class="found"><li>The moves changed no spell: the spells onto the shared blocks is the next step (only Anka&#x27;s four are on them).</li><li>The cards add about 6 KB to the game&#x27;s first download (0.1 %): the 39 cards and their files. Their pointers (lore, model, design) were taken off the cards, which saved another 6 KB.</li><li>The shared parts kit (src/effects/parts/index.ts) re-exports Vesper&#x27;s blood parts, so it now reaches into her folder.</li><li>The Rust guard lists one line more than this morning (19): the merged enemy shot heights changed src/effects/projectile.ts. Not from the moves.</li><li>pipeline/tools/kits20.py still writes the old src/kits/ and src/traits/ paths into the kit designs it makes.</li></ul></section>
+</main>
+</body>
+</html>

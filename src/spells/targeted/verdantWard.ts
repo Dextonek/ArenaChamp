@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { clearScreenFx, createScreenFx } from '../../effects/parts';
-import { GROVE_CSS, Bloom, Petals, Pollen, RootRing, SpiralVine } from '../../effects/parts/grove';
+import { GROVE_CSS, Bloom, Petals, Pollen, RootRing, SpiralVine } from '../../heroes/grove/parts';
 import { defaultLook, type MinionLook, type MinionPalette, type MinionRig } from '../../effects/parts/minion';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';

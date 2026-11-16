@@ -11,7 +11,7 @@ import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
 import { bankPath, contains, segDist, stopsAtCover, type Obstacle } from './obstacles';
-import { isOwnWall } from './traits/mime';
+import { isOwnWall } from './heroes/mime/trait';
 
 /**
  * How Q W E R cast, League's three (user, 2026-11-12): 'normal' shows the aim and a click fires it; 'quick' fires at the

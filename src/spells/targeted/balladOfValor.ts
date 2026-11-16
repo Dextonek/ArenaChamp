@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
-import { BARD_CSS, Lyre, Notes, SoundRings, Stave } from '../../effects/parts/bard';
+import { BARD_CSS, Lyre, Notes, SoundRings, Stave } from '../../heroes/bard/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

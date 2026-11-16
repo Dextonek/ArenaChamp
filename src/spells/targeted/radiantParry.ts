@@ -4,10 +4,10 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import {
   DAWN, DAWN_CSS, HaloRing, LightPanels, Sigil, SunRays, dawnEaseOut, dawnFacing, dawnForward, dawnOrient,
-} from '../../effects/parts/dawn';
+} from '../../heroes/dawn/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { PARRY_SECONDS, dawnParries, type DawnParry } from '../../traits/dawn';
+import { PARRY_SECONDS, dawnParries, type DawnParry } from '../../heroes/dawn/trait';
 
 /**
  * Radiant Parry (dawn kit, E: a timed counter). Auriel snaps into a sun-shield stance: a kite shield of hard light
