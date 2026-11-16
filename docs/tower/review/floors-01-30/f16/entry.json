@@ -1,0 +1,14 @@
+{
+ "floor": 16,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Pip), the trial, the Briar Witch (own model, tinted) and the gate (Hank) all played. The bot needed six tries at Hank's gate (the most of any floor so far): a balance note, not a fault.",
+ "found": [
+  {"kind": "ok", "title": "Packs and props", "text": "The hounds' den slept through the bot's route; the probe's hits are the Wood's trees, spore motes and the hills past the edge."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Briar Witch"],
+  ["person-rival.jpg", "Pip, the rival"],
+  ["route-gate-1.jpg", "The gate: Hank"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}

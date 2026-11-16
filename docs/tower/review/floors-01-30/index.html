@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>15 floors checked</b> · <b>5 fixed</b> · <b>4 for you</b></div>
+<div class="sum"><b>16 floors checked</b> · <b>5 fixed</b> · <b>4 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -45,6 +45,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="f" href="#f13">13</a>
 <a class="" href="#f14">14</a>
 <a class="" href="#f15">15</a>
+<a class="" href="#f16">16</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -307,6 +308,18 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f15/pack-d.jpg"><img loading="lazy" src="f15/pack-d.jpg" alt="The stag glade and the Stag-Crowned"></a><figcaption>The stag glade and the Stag-Crowned</figcaption></figure>
 <figure><a href="f15/map.jpg"><img loading="lazy" src="f15/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
 <figure><a href="f15/overview.jpg"><img loading="lazy" src="f15/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f16"><h3>Floor 16: Lanternroot</h3><p>Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Pip), the trial, the Briar Witch (own model, tinted) and the gate (Hank) all played. The bot needed six tries at Hank&#x27;s gate (the most of any floor so far): a balance note, not a fault.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The hounds&#x27; den slept through the bot&#x27;s route; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31839 m², 31839 m²; 57 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 66 float, 61 gap, 8 buried, 3120 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1509 game s, every checkpoint reached; 21 kills, 5 falls, stars 1101; ruler tries 1, gate tries 6; page errors 0</li><li>Ruler: The Briar Witch (Every thorn a word), model models/tower/wood_briar_v4.glb, loaded yes after 3760 ms of real time</li><li>Frame check at the busiest spot (-25, -63), 5 units awake: median 8, 5.1, 5.7 ms, p95 18.9, 7.5, 15.9 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f16/ruler-close.jpg"><img loading="lazy" src="f16/ruler-close.jpg" alt="The Briar Witch"></a><figcaption>The Briar Witch</figcaption></figure>
+<figure><a href="f16/person-rival.jpg"><img loading="lazy" src="f16/person-rival.jpg" alt="Pip, the rival"></a><figcaption>Pip, the rival</figcaption></figure>
+<figure><a href="f16/route-gate-1.jpg"><img loading="lazy" src="f16/route-gate-1.jpg" alt="The gate: Hank"></a><figcaption>The gate: Hank</figcaption></figure>
+<figure><a href="f16/overview.jpg"><img loading="lazy" src="f16/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
 </div>
 </section>
 </main></body></html>
