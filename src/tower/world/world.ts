@@ -11,6 +11,7 @@ import type { ZoneCtx } from './ctx';
 import type { DoorDef, FloorDef, PackDef, Spot } from './def';
 import type { WorldHud } from './hud';
 import { buildLaw, type Law } from './law';
+import { buildLife } from './life';
 import { Pack, type PackEnv, type PackState } from './packs';
 import { People } from './people';
 import { prewarmFoes } from './prewarm';
@@ -207,6 +208,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     const quests = (zoneRef.quests = new Quests(c));
     const people = (zoneRef.people = new People(c, quests));
     const scenery = (zoneRef.scenery = new Scenery(c));
+    // The floor's life (life/): birds, smoke, cloth, boats, the shallows. In no fight, under dice of its own.
+    const life = buildLife(c, law);
     // Every enemy kind of the floor compiled with the fight (prewarm.ts): the first pack no longer freezes the game.
     const warm = prewarmFoes(api, floor.enemies);
     scenery.enter = (d) => hooks.door(d);
@@ -265,6 +268,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           scenery.update(dt);
           if (gone) return;
           people.update(dt);
+          life?.update(dt);
           // One place for every slow and quicken: the boons' Long Stride times the flood, the carry and the rest.
           let mul = run.boons.speedMul;
           for (const m of speeds.values()) mul *= m;
@@ -309,6 +313,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           warm.dispose();
           quests.dispose();
           people.dispose();
+          life?.dispose();
           scenery.dispose();
           law?.dispose();
           hud.pointTo(null);

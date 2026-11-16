@@ -23,8 +23,14 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
   for one Blender round later; page `docs/models/review/`). **Running too:** the heroes' review (the one Blender agent; page
   `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
-- **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
-  life, more to see), starting with one chapter shown to the user first; it starts when the stage 3 job is merged (a slot frees).
+- **Done on its branch, waiting on the user's look (2026-11-16): the Climb's life, chapter I, the Sea** (the user: "look at the map and
+  fill it to be more lively"; branch `t3/a2ccf180`, not merged). Page `docs/tower/life/index.html` (before and after on floors 1, 3,
+  5 and 8, three clips, the frame cost, the choices). A layer of its own, `src/tower/world/life/` (core, sea, walkers), hooked by three
+  lines in `world.ts`; no floor file changed. Gulls that sit, lift off near the hero and come down again; smoke from fires and chimneys;
+  washing across the village lanes, pennants, stake nets, sails; boats bobbing, rings and leaping fish; people walking beside the paths
+  (desktop only; a stand-in figure); ankle-high things on the ground. The fights are the same fights (perf prints, life on and off).
+  Waiting on the user: yes or changes; the walkers' model (keep the stand-in or two plain Coast-folk workers in Blender); sound (the
+  game has none). Then chapters II to V the same way. Switch: `?life=0` off, `?life=lite` the phone's set.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
