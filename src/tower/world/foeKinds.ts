@@ -35,7 +35,7 @@ export const FOE_MODELS: Record<string, FoeModel> = {
   // the Deep
   lurker: { id: 'deep_lurker', height: 1.5, strike: 'claw', barY: 1.65 },
   thief: { id: 'deep_thief', height: 1.85, strike: 'blade', barY: 1.95 },
-  pale: { id: 'deep_pale', height: 2.8, strike: 'claw', barY: 3.0 },
+  pale: { id: 'deep_pale', height: 2.8, strike: 'claw', legs: 0.3, barY: 3.0 },
   // the War: the crimson and the azure, and those of neither army
   'footman-r': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x8c1e22, barY: 2.0 },
   'footman-b': { id: 'war_footman', height: 1.9, strike: 'thrust', hold: 'shield', livery: 0x1e3c8c, barY: 2.0 },
