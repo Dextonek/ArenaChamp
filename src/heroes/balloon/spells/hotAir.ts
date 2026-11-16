@@ -1,10 +1,9 @@
 import * as THREE from 'three';
-import { Emitter } from '../../../emitter';
 import { smoothstep } from '../../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../../effects/parts';
+import type { Look, P } from '../../framework/blocks';
+import { spell, type Cast } from '../../framework/spell';
 import { BALLOON, BALLOON_CSS, Balloons, Bubbles, PopWords } from '../parts';
-import { frameCast, type CastContext } from '../../../effects/targeting';
-import type { Effect, EffectModule } from '../../../effects/types';
 import { HOT_FLOAT, HOT_GLIDE, HOT_PUSH, HOT_RADIUS, HOT_WIND, KNOCK_PER_M } from '../trait';
 
 /**
@@ -18,38 +17,26 @@ import { HOT_FLOAT, HOT_GLIDE, HOT_PUSH, HOT_RADIUS, HOT_WIND, KNOCK_PER_M } fro
  *
  * The landing spot comes from `sentFrom`, the aim point and the float length alone, so both screens draw the same ring; the balloons follow the
  * live figure. Clean by 2.4 s. See pipeline/designs/kit-balloon.md.
+ *
+ * On the spell blocks (docs/pipeline/hero-framework.md): a zone round him (a circle, a push), then a move away from the aim at
+ * the impact. Which way is away is the hook (`on.cast`).
  */
-export interface HotAirSettings {
-  /** Metres he floats. */
-  distance: number;
-  /** Push in metres on whoever is within the circle where he left. */
-  push: number;
-}
 
-export const defaultHotAir = (): HotAirSettings => ({ distance: HOT_FLOAT, push: HOT_PUSH });
+type Tune = 'distance' | 'push';
+/** Where he will come down (planned at the cast, from `sentFrom` and the aim point), and which way is away. */
+interface Away { landing: P; dir: P }
 
-// Timeline (seconds).
-const DURATION = 2.4;
 const LIFT = 0.9;
 const BUNCH: { dx: number; dy: number; dz: number; tint: 'pink' | 'foil' | 'sky'; s: number }[] = [
   { dx: 0, dy: 2.7, dz: 0, tint: 'pink', s: 1.0 },
   { dx: -0.6, dy: 2.35, dz: 0.15, tint: 'foil', s: 0.75 },
   { dx: 0.6, dy: 2.25, dz: -0.15, tint: 'sky', s: 0.7 },
 ];
+const MIN_S = 1e-3;
 
-export class HotAir implements Effect {
-  readonly group = new THREE.Group();
-  readonly settings: HotAirSettings;
-  readonly emitters: Emitter[] = [];
+class HotAirLook implements Look<Away, Tune> {
   readonly screen = createScreenFx();
-  shake = 0;
-  playing = false;
-
-  /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
-  ctx: CastContext | null = null;
-  /** Where he stood at the cast (the push circle). */
-  readonly origin = new THREE.Vector3();
-  private time = 0;
+  private origin = new THREE.Vector3();
   private flags = { wordSaid: false, burst: false, moved: false, landed: false };
   private ids: number[] = [];
   private landedAt = -1;
@@ -81,56 +68,33 @@ export class HotAir implements Effect {
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
 
-  constructor(settings: HotAirSettings = defaultHotAir()) {
-    this.settings = settings;
+  constructor(group: THREE.Group) {
     this.landDisc.renderOrder = 1;
     this.landRing.renderOrder = 2;
     this.pushRing.renderOrder = 2;
     this.screen.tint.set(BALLOON.dark);
-    this.group.add(this.landDisc, this.landRing, this.pushRing, this.balloons.mesh, this.bubbles.mesh, this.words.mesh, this.star.mesh, this.shock.mesh);
-    this.reset();
+    group.add(this.landDisc, this.landRing, this.pushRing, this.balloons.mesh, this.bubbles.mesh, this.words.mesh, this.star.mesh, this.shock.mesh);
   }
 
-  get duration() {
-    return DURATION;
+  cast(c: Cast<Away, Tune>) {
+    this.origin.copy(c.from);
+    this.dir.set(c.state.dir.x, 0, c.state.dir.z);
+    this.landing.set(c.state.landing.x, 0, c.state.landing.z);
+    this.screen.silhouettes = [c.ctx!.caster.group];
   }
 
-  get impactTime() {
-    return HOT_WIND;
-  }
-
-  cast(ctx: CastContext) {
-    this.ctx = ctx;
-    const s = ctx.sentFrom ?? ctx.from;
-    this.origin.set(s.x, 0, s.z);
-    // He floats away from the aimed spot: pointing at the danger backs him off it.
-    let dx = s.x - ctx.point.x, dz = s.z - ctx.point.z;
-    const len = Math.hypot(dx, dz);
-    if (len < 0.3) { dx = -Math.sin(ctx.aim); dz = -Math.cos(ctx.aim); } else { dx /= len; dz /= len; }
-    this.dir.set(dx, 0, dz);
-    this.landing.set(s.x + dx * this.settings.distance, 0, s.z + dz * this.settings.distance);
-    this.screen.silhouettes = [ctx.caster.group];
-  }
-
-  play() {
-    this.reset();
-    this.playing = true;
-  }
-
-  private setLift(y: number) {
+  private setLift(c: Cast<Away, Tune>, y: number) {
     this.lift = y;
-    this.ctx?.displace(this.ctx.caster, this.lifter.set(0, y, 0));
+    c.ctx?.displace(c.ctx.caster, this.lifter.set(0, y, 0));
   }
 
-  private reset() {
-    this.time = 0;
-    this.shake = 0;
+  reset(c: Cast<Away, Tune>) {
     this.landedAt = -1;
     this.suckT = 0;
     const f = this.flags;
     f.wordSaid = f.burst = f.moved = f.landed = false;
     this.ids = [];
-    if (this.lift !== 0) this.setLift(0);
+    if (this.lift !== 0) this.setLift(c, 0);
     clearScreenFx(this.screen);
     this.screen.tint.set(BALLOON.dark);
     this.balloons.reset();
@@ -143,22 +107,23 @@ export class HotAir implements Effect {
     (this.pushRing.material as THREE.MeshBasicMaterial).opacity = 0;
   }
 
-  update(dt: number) {
-    for (const e of this.emitters) e.update(dt);
+  /** The old file aged its balloons, bubbles and words every frame, playing or not. */
+  tick(dt: number) {
     this.balloons.update(dt);
     this.bubbles.update(dt);
     this.words.update(dt);
-    if (!this.playing) return;
-    this.time += dt;
-    if (this.time >= DURATION) {
-      this.playing = false;
-      this.shake = 0;
-      this.reset();
-      return;
-    }
-    const t = this.time, ctx = this.ctx, f = this.flags;
-    const body = ctx ? ctx.caster.group.position : this.origin;
+  }
 
+  idle(dt: number) {
+    this.tick(dt);
+  }
+
+  private body(c: Cast<Away, Tune>) {
+    return c.ctx ? c.ctx.caster.group.position : this.origin;
+  }
+
+  frame(c: Cast<Away, Tune>, t: number, dt: number) {
+    const f = this.flags, body = this.body(c);
     // --- Wind-up: the bunch is pumped up over his head; air is sucked in toward him; BLOAT. ---
     if (this.ids.length === 0) {
       for (const b of BUNCH) this.ids.push(this.balloons.place(this.v1.set(body.x + b.dx, body.y + b.dy, body.z + b.dz), b.tint, MIN_S));
@@ -194,12 +159,28 @@ export class HotAir implements Effect {
       lr.opacity = 0.9 * (1 - smoothstep(a / 0.4));
       ld.opacity = 0.28 * (1 - smoothstep(a / 0.4));
     }
+  }
 
-    // --- 0.4 The air lets go where he stood: a push, a ring, a star, puffs. ---
-    if (!f.burst && t >= HOT_WIND) {
-      f.burst = true;
-      this.letGo(ctx);
-    }
+  /** 0.4 The air lets go where he stood (after the push): a ring of puffs. */
+  impact(c: Cast<Away, Tune>) {
+    this.flags.burst = true;
+    const o = this.origin;
+    this.v1.set(o.x, 1.0, o.z);
+    this.bubbles.ring(this.v1, 12, 5.5, 0.9, 0.7, BALLOON.hot, 1);
+    this.bubbles.ring(this.v1, 8, 4, 0.35, 0.9, BALLOON.hot, 0);
+    c.shake = 0.18;
+  }
+
+  /** He comes down: a ring of puffs and bubbles at the landing spot. */
+  private touchdown(c: Cast<Away, Tune>) {
+    this.v1.set(this.landing.x, 0.4, this.landing.z);
+    this.bubbles.ring(this.v1, 8, 3, 0.7, 0.6, BALLOON.hot, 1);
+    this.bubbles.ring(this.v1, 6, 2.4, 0.3, 0.8, BALLOON.hot, 0);
+    c.shake = Math.max(c.shake, 0.1);
+  }
+
+  after(c: Cast<Away, Tune>, t: number, dt: number) {
+    const f = this.flags, body = this.body(c);
     if (f.burst) {
       const a = t - HOT_WIND;
       const sp = StarBurst.pop(a, 0.04, 0.16);
@@ -213,19 +194,19 @@ export class HotAir implements Effect {
       pr.opacity = 0.8 * (1 - g);
     }
 
-    // --- The glide: he floats away, a little lifted; the balloons ride above and lean back. ---
+    // --- The glide: he floats away (the rules moved him at the impact), a little lifted; the balloons ride above and lean back. ---
     if (f.burst && !f.moved) {
       f.moved = true;
-      if (ctx?.moveCaster) this.landing.copy(ctx.moveCaster(this.landing, HOT_GLIDE)).setY(0);
+      if (c.moved) this.landing.copy(c.landing);
     }
     if (f.moved && !f.landed) {
       const a = t - HOT_WIND, k = Math.min(1, a / HOT_GLIDE);
-      this.setLift(LIFT * smoothstep(a / 0.18) * (1 - smoothstep((a - (HOT_GLIDE - 0.22)) / 0.22)));
+      this.setLift(c, LIFT * smoothstep(a / 0.18) * (1 - smoothstep((a - (HOT_GLIDE - 0.22)) / 0.22)));
       if (k >= 1) {
         f.landed = true;
         this.landedAt = t;
-        this.setLift(0);
-        this.touchdown();
+        this.setLift(c, 0);
+        this.touchdown(c);
       }
     }
 
@@ -249,56 +230,42 @@ export class HotAir implements Effect {
         }
       }
     }
-    this.shake *= Math.exp(-dt * 10);
-  }
-
-  /** The air lets go where he stood: push whoever is inside now (no damage), and the burst. */
-  private letGo(ctx: CastContext | null) {
-    const o = this.origin;
-    if (ctx) {
-      for (const e of ctx.enemies?.() ?? ctx.targets) {
-        const p = e.group.position;
-        if (Math.hypot(p.x - o.x, p.z - o.z) <= HOT_RADIUS) {
-          ctx.hit(e, { damage: 0, knock: this.settings.push * KNOCK_PER_M, from: this.v2.set(o.x, 0, o.z).clone(), color: BALLOON_CSS.hot });
-        }
-      }
-    }
-    this.v1.set(o.x, 1.0, o.z);
-    this.bubbles.ring(this.v1, 12, 5.5, 0.9, 0.7, BALLOON.hot, 1);
-    this.bubbles.ring(this.v1, 8, 4, 0.35, 0.9, BALLOON.hot, 0);
-    this.shake = 0.18;
-  }
-
-  /** He comes down: a ring of puffs and bubbles at the landing spot. */
-  private touchdown() {
-    this.v1.set(this.landing.x, 0.4, this.landing.z);
-    this.bubbles.ring(this.v1, 8, 3, 0.7, 0.6, BALLOON.hot, 1);
-    this.bubbles.ring(this.v1, 6, 2.4, 0.3, 0.8, BALLOON.hot, 0);
-    this.shake = Math.max(this.shake, 0.1);
+    c.shake *= Math.exp(-dt * 10);
   }
 }
 
-const MIN_S = 1e-3;
-
-export const hotAirModule: EffectModule = {
+export const hotAirModule = spell<Away, Tune>({
   label: 'hot air',
   category: 'hero: balloon',
   targeting: { mode: 'ground', radius: HOT_RADIUS },
-  create: () => new HotAir(),
-  telegraphs(effect) {
-    const e = effect as HotAir;
-    if (!e.ctx) return [];
-    // The circle round him where the air lets go: the push is the only hit. The landing is drawn by the effect (it hits nothing).
-    return [{ shape: { kind: 'circle', x: e.origin.x, z: e.origin.z, radius: HOT_RADIUS }, start: 0, impact: HOT_WIND }];
+  seconds: 2.4,
+  state: () => ({ landing: { x: 0, z: 0 }, dir: { x: 0, z: -1 } }),
+  rules: {
+    windup: HOT_WIND,
+    // The circle round him where the air lets go: the push is the only hit. The landing is drawn by the look (it hits nothing).
+    shape: { kind: 'zone', area: (c) => ({ kind: 'circle', x: c.from.x, z: c.from.z, radius: HOT_RADIUS }) },
+    hit: { damage: 0, knock: (s) => s.push * KNOCK_PER_M, color: BALLOON_CSS.hot },
+    move: { at: 'impact', to: (c) => c.state.landing, seconds: HOT_GLIDE },
+    warn: 0,
+    on: {
+      // He floats away from the aimed spot: pointing at the danger backs him off it.
+      cast: (c) => {
+        const ctx = c.ctx!, s = c.from;
+        let dx = s.x - ctx.point.x, dz = s.z - ctx.point.z;
+        const len = Math.hypot(dx, dz);
+        if (len < 0.3) { dx = -Math.sin(ctx.aim); dz = -Math.cos(ctx.aim); } else { dx /= len; dz /= len; }
+        const d = c.num('distance');
+        c.state.dir = { x: dx, z: dz };
+        c.state.landing = { x: s.x + dx * d, z: s.z + dz * d };
+      },
+    },
   },
+  // Metres he floats; the push in metres on whoever is within the circle where he left.
+  tune: { distance: [HOT_FLOAT, 2, 9, 0.5], push: [HOT_PUSH, 0, 6, 0.5] },
+  noDamage: true,
+  noLoop: true,
+  look: HotAirLook,
   bloom: { enabled: true, strength: 0.35, radius: 0.35, threshold: 0.88 },
-  frameCamera(camera, controls, effect) {
-    const e = effect as HotAir;
-    if (e.ctx) frameCast(camera, controls, e.ctx, 4);
-  },
-  buildGui(f, effect) {
-    const s = (effect as HotAir).settings;
-    f.add(s, 'distance', 2, 9, 0.5);
-    f.add(s, 'push', 0, 6, 0.5);
-  },
-};
+  frame: 4,
+  maxDamage: 0,
+});
