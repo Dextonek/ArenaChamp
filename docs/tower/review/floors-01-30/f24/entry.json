@@ -1,0 +1,14 @@
+{
+ "floor": 24,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Anka), the trial, the Brass Sphinx (own model) and the gate (Lyra) all played.",
+ "found": [
+  {"kind": "ok", "title": "Packs and props", "text": "The mud fort's pack slept through the bot's route; the probe: the lair wall's gold edge where it runs into the dune, crates on the rim's slope, red rocks a little sunk at the canyon foot."}
+ ],
+ "pictures": [
+  ["ruler-close.jpg", "The Brass Sphinx"],
+  ["person-rival.jpg", "Anka, the rival"],
+  ["busy.jpg", "The busiest spot (the frame check)"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
