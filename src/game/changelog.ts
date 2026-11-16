@@ -44,6 +44,13 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Heroes',
+        title: 'New spell icons for every hero',
+        text: 'Every hero’s spell icons are drawn anew, in one family: each sits in a gold-edged medallion, lit from the same side, in its hero’s own colours, with one sign of the hero in all four (Bram’s pillar, Mortis’s grave-light, Shiori’s ink). They read at a glance on a phone, too.',
+        image: '/news/spell-icons.jpg',
+        alt: 'A grid of the new spell icons, each hero’s four side by side.',
+      },
+      {
+        tag: 'Heroes',
         title: 'Every hero has a story',
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },
