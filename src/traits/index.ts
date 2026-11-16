@@ -4,15 +4,7 @@ import { dawnTrait } from './dawn';
 import { forgeTrait } from './forge';
 import { hiveTrait } from './hive';
 import { frostTrait } from './frost';
-import { masonTrait } from './mason';
-import { timberTrait } from './timber';
-import { balloonTrait } from './balloon';
-import { catTrait } from './cat';
 import { ledgerTrait } from './ledger';
-import { sumoTrait } from './sumo';
-import { mimeTrait } from './mime';
-import { refereeTrait } from './referee';
-import { chefTrait } from './chef';
 import { courierTrait } from './courier';
 import { janitorTrait } from './janitor';
 import { moleTrait } from './mole';
@@ -37,15 +29,7 @@ export const TRAITS: Record<string, Trait> = {
   Brannoc: forgeTrait,
   Sirix: hiveTrait,
   Isolde: frostTrait,
-  Bram: masonTrait,
-  Hank: timberTrait,
-  'Professor Puff': balloonTrait,
-  'Sir Whiskers': catTrait,
   'Mr. Ledger': ledgerTrait,
-  'Big Yoko': sumoTrait,
-  Mum: mimeTrait,
-  'Referee Whistler': refereeTrait,
-  'Madame Cleaver': chefTrait,
   Pip: courierTrait,
   Gus: janitorTrait,
   Mabel: moleTrait,

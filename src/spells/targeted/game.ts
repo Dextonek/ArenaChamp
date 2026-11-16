@@ -38,42 +38,10 @@ import { finalDeliveryModule } from './finalDelivery';
 import { shortcutModule } from './shortcut';
 import { fragileModule } from './fragile';
 import { expressLetterModule } from './expressLetter';
-import { dinnerIsServedModule } from './dinnerIsServed';
-import { burntOfferingModule } from './burntOffering';
-import { hotSoupModule } from './hotSoup';
-import { thrownCleaverModule } from './thrownCleaver';
-import { showTheCardModule } from './showTheCard';
-import { noCastingModule } from './noCasting';
-import { noRunningModule } from './noRunning';
-import { whistleBlastModule } from './whistleBlast';
-import { theBoxModule } from './theBox';
-import { ropeTrickModule } from './ropeTrick';
-import { mimeWallModule } from './mimeWall';
-import { invisibleBallModule } from './invisibleBall';
-import { saltThrowModule } from './saltThrow';
-import { sumoChargeModule } from './sumoCharge';
-import { stompModule } from './stomp';
-import { palmStrikeModule } from './palmStrike';
 import { foreclosureModule } from './foreclosure';
 import { callItInModule } from './callItIn';
 import { lateFeeModule } from './lateFee';
 import { invoiceModule } from './invoice';
-import { landOnMyFeetModule } from './landOnMyFeet';
-import { pounceModule } from './pounce';
-import { knockItOverModule } from './knockItOver';
-import { scratchModule } from './scratch';
-import { popPinModule } from './popPin';
-import { hotAirModule } from './hotAir';
-import { heliumBombModule } from './heliumBomb';
-import { airHoseModule } from './airHose';
-import { timberCallModule } from './timberCall';
-import { caberTossModule } from './caberToss';
-import { fastGrowthModule } from './fastGrowth';
-import { axeSwingModule } from './axeSwing';
-import { geraldNoModule } from './geraldNo';
-import { aGoodLeanModule } from './aGoodLean';
-import { theShoveModule } from './theShove';
-import { raiseGeraldModule } from './raiseGerald';
 import { firstLightModule } from './firstLight';
 import { dawnwardModule } from './dawnward';
 import { oathbrandModule } from './oathbrand';
@@ -146,42 +114,10 @@ export const gameModules: EffectModule[] = [
   shortcutModule,
   fragileModule,
   expressLetterModule,
-  dinnerIsServedModule,
-  burntOfferingModule,
-  hotSoupModule,
-  thrownCleaverModule,
-  showTheCardModule,
-  noCastingModule,
-  noRunningModule,
-  whistleBlastModule,
-  theBoxModule,
-  ropeTrickModule,
-  mimeWallModule,
-  invisibleBallModule,
-  saltThrowModule,
-  sumoChargeModule,
-  stompModule,
-  palmStrikeModule,
   foreclosureModule,
   callItInModule,
   lateFeeModule,
   invoiceModule,
-  landOnMyFeetModule,
-  pounceModule,
-  knockItOverModule,
-  scratchModule,
-  popPinModule,
-  hotAirModule,
-  heliumBombModule,
-  airHoseModule,
-  timberCallModule,
-  caberTossModule,
-  fastGrowthModule,
-  axeSwingModule,
-  geraldNoModule,
-  aGoodLeanModule,
-  theShoveModule,
-  raiseGeraldModule,
   firstLightModule,
   dawnwardModule,
   oathbrandModule,

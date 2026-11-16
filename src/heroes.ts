@@ -14,15 +14,7 @@ import { hiveKit } from './kits/hive';
 import { stormKit } from './kits/storm';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
-import { masonKit } from './kits/mason';
-import { timberKit } from './kits/timber';
-import { balloonKit } from './kits/balloon';
-import { catKit } from './kits/cat';
 import { ledgerKit } from './kits/ledger';
-import { sumoKit } from './kits/sumo';
-import { mimeKit } from './kits/mime';
-import { refereeKit } from './kits/referee';
-import { chefKit } from './kits/chef';
 import { courierKit } from './kits/courier';
 import { janitorKit } from './kits/janitor';
 import { moleKit } from './kits/mole';
@@ -139,15 +131,7 @@ const MODELS: Record<string, string> = {
   Kaia: 'models/heroes/storm_v2.glb',
   Auriel: 'models/heroes/dawn_v2.glb',
   Sirix: 'models/heroes/hive.glb',
-  Bram: 'models/heroes/mason_v3.glb',
-  Hank: 'models/heroes/timber_v3.glb',
-  'Professor Puff': 'models/heroes/balloon_v3.glb',
-  'Sir Whiskers': 'models/heroes/cat_v3.glb',
   'Mr. Ledger': 'models/heroes/ledger_v3.glb',
-  'Big Yoko': 'models/heroes/sumo_v3.glb',
-  Mum: 'models/heroes/mime_v3.glb',
-  'Referee Whistler': 'models/heroes/referee_v3.glb',
-  'Madame Cleaver': 'models/heroes/chef_v3.glb',
   Pip: 'models/heroes/courier_v3.glb',
   Gus: 'models/heroes/janitor_v3.glb',
   Mabel: 'models/heroes/mole_v3.glb',
@@ -172,10 +156,8 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Kaia: { radius: 0.47, height: 3.24 },
   Auriel: { radius: 0.47, height: 2.33 },
   Sirix: { radius: 0.44, height: 2.31 },
-  Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
-  'Sir Whiskers': { radius: 0.49, height: 2.33 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.49 }, 'Referee Whistler': { radius: 0.44, height: 2.33 },
-  'Madame Cleaver': { radius: 0.58, height: 2.33 }, Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
+  'Mr. Ledger': { radius: 0.42, height: 2.4 },
+  Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
   Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
   Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
   Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
@@ -184,7 +166,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
 };
 
 /** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
-const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
+const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, ledgerKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
 
 /** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
 function roster(): HeroKit[] {
