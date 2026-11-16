@@ -55,6 +55,12 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): ruler and boss looks** (page `docs/models/review/round3/index.html`): fallen rulers lie on the floor
+  (0-3 cm, was up to 1.6 m under), Ash's feet on the floor in all his casts, the Heart's crown sways instead of turning (rays clear of
+  the floor), the five staff rulers kneel with the staff up (kept for all five, by the parent). Ash on the lava: his charge stops
+  1.4 m inside the floor; his wide body only looks out over the lava from the steep camera; left as it is (the parent: the charge's
+  reach stays). Prints the same (duel, raid solo, party, Ash, Heart, world 1 and 5); heroes unchanged.
+
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
 - Open world stage 3: done and merged (the entry below).
