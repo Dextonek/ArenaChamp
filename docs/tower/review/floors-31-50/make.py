@@ -73,7 +73,7 @@ body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,serif
 main{{max-width:980px;margin:0 auto;padding:12px 16px 60px}}
 nav{{position:sticky;top:0;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);z-index:2;font:14px ui-sans-serif,system-ui}}
 nav a{{color:var(--gold);margin-right:8px;text-decoration:none;display:inline-block;padding:2px 0}}
-section{{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 16px 12px;margin:16px 0}}
+section{{scroll-margin-top:72px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 16px 12px;margin:16px 0}}
 h1,h2,h3{{color:var(--gold);font-weight:600;line-height:1.25}} h2{{font-size:1.35em}} h3{{font-size:1.05em;margin-bottom:4px}}
 code{{font:13px ui-monospace,monospace;color:#d9c79e;word-break:break-word}}
 .pics{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:10px 0}}

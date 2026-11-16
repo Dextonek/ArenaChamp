@@ -34,3 +34,12 @@ Bigger things, things in files another agent is working in, and matters of taste
   horse of smoke, the crimson's Iron Marshal (42) and Black Herald (47) fight "under no banner". What I would do, in the baked floors
   (`floors/gen/war-4x.ts`, one line each) and the generator: 42 and 47 "The last charge"; 43 "The walls come down"; 49 "Under no
   banner" (he deserted); keep 44, 45, 46 and 48.
+- **After beating a ruler the hero is sent to the last waystone**, though the code's own comment says "back in front of the door when
+  it was won" (`src/tower/world/game.ts`, `pieceDone`: `this.enter(d.piece === 'ruler' || d.piece === 'gate' ? undefined : ...)`, which
+  sends a won ruler to `wake()`). If the comment is the intent: `(d.piece === 'ruler' || d.piece === 'gate') && !out.won ? undefined :
+  this.inFront(d)`. Another agent's file this round; and maybe you like the walk back as it is.
+- **A lost trial says "Nothing lost"** while the hero comes out with the health it had left (floor 49: 26 of 520). Lives and the door are
+  kept, health is not. Words: "No life lost: the door stays open for one more try".
+- **The Camp-Mother on the generated War floors** (43, 45, 47, 49) says the generator's trader line, "Both armies buy from me, and both
+  pay", which reads like the Quartermaster; on 41 she says "A cook feeds both armies, and both pay". If you want her own words on
+  every floor: one line a floor in `src/tower/world/folk.ts` `LINES`.
