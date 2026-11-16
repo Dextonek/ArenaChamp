@@ -29,7 +29,7 @@ def feather(f, a, b, width, normal, eye=True, vane="red", n=7):
 
 def build():
     R = Real("phoenix", sex="f", height=1.0, width=0.95, depth=0.95, skin="#c98e66")
-    ember_skin(R)
+    ember_skin(R, strength=0.34, edge_alpha=0.7)
     z = R.z
     R.mat("red", "#c23a22", rough=0.55, double=True)
     R.mat("deep", "#4c1410", rough=0.6)
