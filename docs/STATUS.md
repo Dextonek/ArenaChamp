@@ -32,8 +32,19 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   user (15 % darker, `#cdbf9c`?). The Turncloak's placement on floors 42-43 passed to the floors 31-50 review. For the engine: every
   enemy's shot leaves at 1.1 m (`src/effects/projectile.ts`), the bowman's crossbow is at 1.7 m. Not checked: the Heart of Noon, the
   rulers' flinch, kneel and fall, the older arenas' backdrops.
-  **Running too:** the heroes' review (the one Blender agent; page
-  `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
+- **Done, on branch `t3/1cbb14d0` (not merged, not live) (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`).
+  All 40 measured through every clip (`pipeline/tools/hero-review.js`), a sheet each, a CPU duel each over the nine arenas, three on a
+  Climb floor. Three faults across the roster, fixed in code (`src/motion/real.ts`, two lines in `HeroFigure.followReal`), no model
+  rebuilt: every hero stood 3-12 cm sunk into the floor and big boots rolled up to 13 cm under it in a stride (now raised at load and
+  planted in a stride); hands went into coats and robes (the older figures' push-out now on the fourth style, eased); 16 of the 18
+  left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now upright; Anka's fan and Silvane's mirror left
+  as they were). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
+  **Waiting on the user:** the list on the page (staffs upright: keep?; Professor Puff casts with his empty hand; Sefu's headdress in
+  his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). **Also done on the branch:** the model review's Blender
+  round (the Tide Judge's glaive shortened behind the hand, the harbour's cannons at 0.9: page `docs/heroes/review/blender.html`;
+  the cream bloom still waits on the user). The fixes reach the Climb's 55 figures too (same build): they stood 2-8 cm sunk and now
+  stand on the floor; prints of duel-temple, tower-horde, world-1 and world-3 are the same as on feat/particle-editor
+  (`docs/perf/data/heroreview-climb.json`, `heroreview-pe.json`).
 - **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
   (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
   user's yes before the other four chapters.

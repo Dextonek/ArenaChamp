@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heroes' model review</title>
+<style>
+  :root { --bg: #110f14; --card: #1b1820; --line: #352e3c; --ink: #ece4d6; --dim: #b3a99a; --gold: #d2ae55; --before: #8f8a96; --after: #e8b84a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 700 30px/1.2 Georgia, serif; color: var(--gold); margin: 10px 0 4px; }
+  h2 { font: 700 23px/1.3 Georgia, serif; color: var(--gold); margin: 36px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  p { margin: 8px 0; }
+  .sub, .dim { color: var(--dim); }
+  figure { margin: 10px 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 6px 10px; font-size: 13.5px; color: var(--dim); }
+  figcaption b { color: var(--before); }
+  figure.after figcaption b { color: var(--after); }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+  summary { cursor: pointer; font-size: 16.5px; }
+  .chips span { display: inline-block; font-size: 12.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; margin: 2px 0 2px 6px; }
+  table { border-collapse: collapse; font-size: 14px; margin: 8px 0; width: 100%; }
+  th, td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; }
+  th { color: var(--dim); font-weight: 600; }
+  ol li, ul li { margin: 6px 0; }
+  code { font-size: 13.5px; color: var(--dim); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } table { font-size: 13px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>The heroes' model review</h1>
+<p class="sub">2026-11-16 · all 41 models of the fourth style (Pim and Pom are two) checked through every clip the game plays on them. Not pushed, not deployed.</p>
+
+<h2>What was checked</h2>
+<p>Every hero was posed by the game's own figure code through every clip it plays: standing, walking, running, sprinting, backing off,
+the basic attack, each of its four spells (with the cast style the game picks), a hit, a stun, a knock-up and the fall. In each pose every
+vertex was measured: a held thing (staff, blade, lantern) inside the body, the head, the robe or the cape; a forearm or hand inside the
+chest, hips, legs or cloth; a leg coming out through a skirt; the feet under or above the floor. Every flag over a few centimetres was then
+drawn with the offending points in red and looked at by eye. Each hero also got a sheet of all its clips (close and from the game's
+camera, below in its entry) and a CPU duel on the game page, the 41 spread over all nine arenas, filmed at each cast and attack;
+three on a Climb floor. Tools: <code>pipeline/tools/hero-review.js</code>, <code>hero-review-sheet.js</code>,
+<code>hero-review-duel.js</code>, <code>hero-review-close.js</code>; this page <code>pipeline/tools/hero-review-page.py</code>.</p>
+
+<h2>What was wrong, and is fixed</h2>
+<p>Three faults ran through the whole roster. All three are fixed in the game's code (<code>src/motion/real.ts</code> and two lines in
+<code>HeroFigure.followReal</code>): no model was rebuilt, no clip, timing or spell changed, and the fights are the same fights.</p>
+<h3>1. Every hero stood sunk into the floor (all 41)</h3>
+<p>3 to 12 cm, deepest on Mabel, Professor Puff and Oblivion: the soles and toes were cut off by the floor. The animation pack's own figure
+stands exactly on the floor in its idle; our bodies' ankles sit a little lower in a longer leg, and the boots a little under the sole. Each
+model is now raised as it loads, by just enough that its lowest sole stands on the floor through the idle. In a stride the big boots of the
+heavy heroes rolled their toe or heel up to 13 cm under the floor (the pack's own figure dips 2 to 3): the model now rises by the difference
+while that lasts and settles back after, so no sole goes more than about 4 cm under (measured on every hero walking, running, sprinting and
+backing off).</p>
+<figure><img loading="lazy" src="pair_feet.jpg" alt="Feet of Professor Puff, Mabel, Kaia and Big Yoko, before sunk into the floor, after standing on it"><figcaption><b>before</b> and after: Professor Puff, Mabel, Kaia, Big Yoko</figcaption></figure>
+<h3>2. Hands went into coats, robes and aprons (most of the cloth-wearers)</h3>
+<p>The pack's clips hang the hands close to a slim figure's hips; on a long coat or a flared robe they went inside it (Kaia's storm coat,
+Marin's apron, Shiori's sleeves, Mabel's skirt; up to 15 cm). The older figures have had a fix for this since 2026-11-10 (you accepted it
+then): the arm swings out from the shoulder just enough to clear the body's outline, the elbow keeping its bend. The fourth style now has
+it too, eased so an arm does not flap in and out with each stride. It never acts during a blow, a cast or a knock-up, where the hands go
+where the clip sends them.</p>
+<figure><img loading="lazy" src="pair_coat.jpg" alt="Shiori, Zambini, Mabel and Kaia standing, before and after"><figcaption><b>before</b> and after: Shiori, Zambini, Mabel, Kaia (her right hand was inside the coat)</figcaption></figure>
+<h3>3. Staffs, scepters, lyres and lanterns lay on their side in every cast (16 of the 18 who hold one in the left hand)</h3>
+<p>The pack's push (the clip of every ranged attack and most casts) turns the palm to the front, and what the hand held turned with it:
+every staff lay across the chest, its head at the hero's right shoulder and pointing away from the target; Wick's lantern lay on its side.
+Now the hand keeps it upright through the blow or cast, as it is held standing: a short one (a scepter, a lyre, a lantern, a wand) leans
+toward the target, a long staff stands straight or leans back a little so its foot stays out of the robe. Anka's fan and Silvane's hand mirror
+are left as the clip holds them, held out flat: their face is what shows, and upright turned them edge-on. A dash, a slam or a swing
+carries the item as its clip does (upright, a staff went through the robe of a hero bent deep into a dash).</p>
+<figure><img loading="lazy" src="pair_staff.jpg" alt="Cantor, Vesper, Mortis, Wick, Gus and Kaia at a cast, before and after"><figcaption><b>before</b> and after, at the strike of a cast: Cantor, Vesper, Mortis, Wick, Gus (his attack), Kaia</figcaption></figure>
+
+<h2>For you to decide (not changed)</h2>
+<ol>
+<li><b>The staffs upright in casts</b> (fix 3 above) changes how 16 heroes look while casting. The head pointed away from the target,
+so it is treated as a fault, but it is also a look: if you liked the crosswise thrust better, it is one line to undo (in
+<code>HeroFigure.followReal</code>, the line that calls <code>uprightHeld</code>).</li>
+<li><b>Professor Puff casts with his empty left hand</b> while the brass nozzle hangs in his right (Q W E R and his attack): the pack has
+no right-hand push. A nozzle in the left hand would be a model change (his look), so it is yours to say.</li>
+<li><b>Sefu's headdress</b> cuts into his right shoulder for a moment in Scarab Stride (the pack's dash clip bends the head down): a lower
+headdress or another clip for that spell would change his look or his motion.</li>
+<li><b>Big Yoko's arms</b> now stand out over his rope about 25 degrees (they were inside it). If that reads too wide, the rope could be
+built a little slimmer.</li>
+<li><b>Fenna's staff</b> brushes her antlers and her robe's flare while she walks: a shorter staff or narrower antlers would change her look.</li>
+<li>Small, seen only close and for a moment, left as they are: Kaia's crook through her hair as she falls; Big Yoko's forearm in his belly in
+Charge; Gus's broom foot in his robe while stunned; Shiori's brush foot at her hem in Flowing Script; a claw past Sirix's chest in Barbed
+Stinger; Grandma Ironknit's needle tip at her skirt in Knitting Needle.</li>
+</ol>
+
+<h2>The Blender round</h2>
+<p>The other model review's two rebuilds (the Tide Judge's glaive, the harbour's cannons) are on <a href="blender.html">their own page</a>.</p>
+
+<h2>On a Climb floor</h2>
+<div class="grid"><figure><img loading="lazy" src="climb_bigyoko.jpg" alt="bigyoko on a Climb floor"><figcaption>Bigyoko on floor 4 of the Climb</figcaption></figure><figure><img loading="lazy" src="climb_mabel.jpg" alt="mabel on a Climb floor"><figcaption>Mabel on floor 4 of the Climb</figcaption></figure><figure><img loading="lazy" src="climb_mortis.jpg" alt="mortis on a Climb floor"><figcaption>Mortis on floor 4 of the Climb</figcaption></figure></div>
+
+<h2>Each hero</h2>
+<p class="sub">Tap a name. The numbers are the deepest a part went inside another (cm at the game's size; 2 to 4 cm are skin against cloth
+and can be ignored); "feet" is how far the soles were under the floor standing. The flags left standing (Zambini, Mortis, Marin, Mr. Ledger,
+Referee Whistler, 6 to 14 cm) were drawn and looked at: a fist by a belt, a hand by a robe's front or an apron flap, Marin's hand through her
+water ribbon; none is a hand inside cloth. Of the flags left while walking or sprinting, the six deepest
+(8 to 11 cm by the measure: Zambini, Mortis, Kaia, Shiori, Mr. Ledger, Oblivion) were drawn and looked at: a forearm brushing a wide sleeve, a
+belt, a coat's edge or a hip plate as the arm swings, not a hand inside the body. Vesper, Nyx, Big Yoko and Referee Whistler (6 to 7 cm) are
+in the same range and were not drawn one by one. They stay.</p>
+
+<details id="clockwork"><summary><b>Ada</b> <span class=chips><span>feet 6 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>5</td><td>3</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="clockwork/before.jpg" alt="Ada before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="clockwork/after.jpg" alt="Ada after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="clockwork/duel.jpg" alt="Ada in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="phoenix"><summary><b>Anka</b> <span class=chips><span>feet 5 → 0 cm</span></span></summary>
+<p>Her fan is held out open in casts, its face showing: left as the clip has it (kept upright, as the staffs now are, it turned edge-on).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>9</td><td>7</td><td class=dim>stun</td></tr></table>
+<figure><img loading="lazy" src="phoenix/before.jpg" alt="Anka before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="phoenix/after.jpg" alt="Anka after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="phoenix/duel.jpg" alt="Anka in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="dawn"><summary><b>Auriel</b> <span class=chips><span>feet 6 → 0 cm</span><span>hand in cloth standing 5 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>4</td><td class=dim>E Oathbrand (point)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>5</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="dawn/before.jpg" alt="Auriel before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="dawn/after.jpg" alt="Auriel after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="dawn/duel.jpg" alt="Auriel in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="weather"><summary><b>Barry Cloudsley</b> <span class=chips><span>feet 3 → 0 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>5</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>5</td><td class=dim>stun</td></tr></table>
+<figure><img loading="lazy" src="weather/before.jpg" alt="Barry Cloudsley before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="weather/after.jpg" alt="Barry Cloudsley after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="weather/duel.jpg" alt="Barry Cloudsley in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="sumo"><summary><b>Big Yoko</b> <span class=chips><span>feet 8 → 0 cm</span><span>hand in cloth standing 8 → 4 cm</span></span></summary>
+<p>Arms rested inside the rope and apron: now held over the rope (his arms stand out about 25 degrees, as a wrestler&#x27;s would). Left: in his Charge (a lunge) his left forearm presses into his belly for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>8</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>8</td><td>4</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>10</td><td>7</td><td class=dim>run</td></tr><tr><td>hand in body or cloth, any clip</td><td>13</td><td>13</td><td class=dim>Q Palm Strike (swing)</td></tr><tr><td>held thing in body, blows and casts</td><td>9</td><td>6</td><td class=dim>Q Palm Strike (swing)</td></tr><tr><td>held thing in body, any clip</td><td>9</td><td>6</td><td class=dim>Q Palm Strike (swing)</td></tr></table>
+<figure><img loading="lazy" src="sumo/before.jpg" alt="Big Yoko before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="sumo/after.jpg" alt="Big Yoko after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="sumo/duel.jpg" alt="Big Yoko in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="sheep"><summary><b>Bo</b> <span class=chips><span>feet 5 → 0 cm</span><span>crook upright in casts</span></span></summary>
+<p>Crook on its side in casts: now upright.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>3</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>3</td><td>3</td><td class=dim>idle</td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>3</td><td class=dim>W Spare Sheep (raise)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>6</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="sheep/before.jpg" alt="Bo before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="sheep/after.jpg" alt="Bo after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="sheep/duel.jpg" alt="Bo in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="mason"><summary><b>Bram</b> <span class=chips><span>feet 6 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>3</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="mason/before.jpg" alt="Bram before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="mason/after.jpg" alt="Bram after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="mason/duel.jpg" alt="Bram in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="forge"><summary><b>Brannoc</b> <span class=chips><span>feet 7 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>7</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>3</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>3</td><td>3</td><td class=dim>idle</td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>3</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="forge/before.jpg" alt="Brannoc before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="forge/after.jpg" alt="Brannoc after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="forge/duel.jpg" alt="Brannoc in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="bard"><summary><b>Cantor</b> <span class=chips><span>feet 3 → 0 cm</span><span>lyre upright in casts</span></span></summary>
+<p>The lyre was turned flat like a tray in casts: now upright, strings to the front.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="bard/before.jpg" alt="Cantor before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="bard/after.jpg" alt="Cantor after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="bard/duel.jpg" alt="Cantor in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="grove"><summary><b>Fenna</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 4 → 0 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright. Left: walking and running, the staff&#x27;s flower brushes her antlers and its foot the flaring robe (the pack&#x27;s torch hold, a matter of the staff&#x27;s length).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>4</td><td class=dim>back</td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>4</td><td class=dim>back</td></tr><tr><td>held thing in body, blows and casts</td><td>8</td><td>8</td><td class=dim>E Pollen Glide (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>10</td><td>10</td><td class=dim>run</td></tr></table>
+<figure><img loading="lazy" src="grove/before.jpg" alt="Fenna before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="grove/after.jpg" alt="Fenna after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="grove/duel.jpg" alt="Fenna in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="yarn"><summary><b>Grandma Ironknit</b> <span class=chips><span>feet 6 → 0 cm</span><span>hand in cloth standing 6 → 0 cm</span></span></summary>
+<p>Left: in Knitting Needle the right needle&#x27;s tip passes her skirt.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>5</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>9</td><td>8</td><td class=dim>attack</td></tr><tr><td>held thing in body, any clip</td><td>9</td><td>8</td><td class=dim>attack</td></tr></table>
+<figure><img loading="lazy" src="yarn/before.jpg" alt="Grandma Ironknit before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="yarn/after.jpg" alt="Grandma Ironknit after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="yarn/duel.jpg" alt="Grandma Ironknit in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="janitor"><summary><b>Gus</b> <span class=chips><span>feet 6 → 0 cm</span><span>broom upright in casts</span></span></summary>
+<p>His broom lay across him in his attack (the staff push) and casts: now upright. Left as they were: in Mop Bucket (a dash) and when stunned the broom&#x27;s foot passes through his robe for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>3</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>3</td><td>3</td><td class=dim>idle</td></tr><tr><td>hand in body or cloth, any clip</td><td>4</td><td>5</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>15</td><td>15</td><td class=dim>E Mop Bucket (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>15</td><td>15</td><td class=dim>E Mop Bucket (lunge)</td></tr></table>
+<figure><img loading="lazy" src="janitor/before.jpg" alt="Gus before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="janitor/after.jpg" alt="Gus after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="janitor/duel.jpg" alt="Gus in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="timber"><summary><b>Hank</b> <span class=chips><span>feet 7 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>7</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>4</td><td>4</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>3</td><td>3</td><td class=dim>Q Axe Swing (swing)</td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>3</td><td class=dim>Q Axe Swing (swing)</td></tr></table>
+<figure><img loading="lazy" src="timber/before.jpg" alt="Hank before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="timber/after.jpg" alt="Hank after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="timber/duel.jpg" alt="Hank in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="frost"><summary><b>Isolde</b> <span class=chips><span>feet 5 → 0 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>5</td><td>7</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="frost/before.jpg" alt="Isolde before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="frost/after.jpg" alt="Isolde after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="frost/duel.jpg" alt="Isolde in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="storm"><summary><b>Kaia</b> <span class=chips><span>feet 6 → 0 cm</span><span>hand in cloth standing 10 → 4 cm</span><span>staff upright in casts</span></span></summary>
+<p>Her right hand went 10 cm into the storm coat standing: now outside it (sprinting, and in a cast where the clip has the arms, the forearm still brushes the coat&#x27;s edge). Her staff lay across her chest in every cast, crook at her right shoulder: now upright. Left: as she falls, the crook passes through her hair (death only).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>10</td><td>4</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>10</td><td>8</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>11</td><td>9</td><td class=dim>R Supercell (burst)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="storm/before.jpg" alt="Kaia before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="storm/after.jpg" alt="Kaia after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="storm/duel.jpg" alt="Kaia in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="astral"><summary><b>Lyra</b> <span class=chips><span>feet 6 → 0 cm</span><span>hand in cloth standing 4 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>3</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>3</td><td class=dim>sprint</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="astral/before.jpg" alt="Lyra before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="astral/after.jpg" alt="Lyra after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="astral/duel.jpg" alt="Lyra in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="mole"><summary><b>Mabel</b> <span class=chips><span>feet 12 → 0 cm</span><span>hand in cloth standing 8 → 0 cm</span></span></summary>
+<p>Claws hung inside her skirt standing: now beside it.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>12</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>8</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>8</td><td>3</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>10</td><td>7</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>6</td><td>5</td><td class=dim>Q Claw (swing)</td></tr><tr><td>held thing in body, any clip</td><td>6</td><td>5</td><td class=dim>Q Claw (swing)</td></tr></table>
+<figure><img loading="lazy" src="mole/before.jpg" alt="Mabel before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="mole/after.jpg" alt="Mabel after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="mole/duel.jpg" alt="Mabel in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="chef"><summary><b>Madame Cleaver</b> <span class=chips><span>feet 7 → 0 cm</span><span>hand in cloth standing 6 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>7</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>6</td><td>3</td><td class=dim>walk</td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>3</td><td class=dim>E Burnt Offering (point)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>4</td><td class=dim>stun</td></tr></table>
+<figure><img loading="lazy" src="chef/before.jpg" alt="Madame Cleaver before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="chef/after.jpg" alt="Madame Cleaver after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="chef/duel.jpg" alt="Madame Cleaver in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="tide"><summary><b>Marin</b> <span class=chips><span>feet 4 → 0 cm</span><span>hand in cloth standing 14 → 14 cm</span></span></summary>
+<p>Hands sank into the apron standing and sprinting: now in front of it. The flag left while backing off is her hand passing through her water ribbon (a stream, not cloth).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>14</td><td>14</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>15</td><td>15</td><td class=dim>walk</td></tr><tr><td>hand in body or cloth, any clip</td><td>15</td><td>15</td><td class=dim>walk</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="tide/before.jpg" alt="Marin before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="tide/after.jpg" alt="Marin after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="tide/duel.jpg" alt="Marin in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="bone"><summary><b>Mortis</b> <span class=chips><span>feet 3 → 0 cm</span><span>hand in cloth standing 10 → 10 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright. A hand in the robe while sprinting (10 cm) stays: the robe&#x27;s sleeve, not the body.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>10</td><td>10</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>10</td><td>10</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>10</td><td>10</td><td class=dim>sprint</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="bone/before.jpg" alt="Mortis before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="bone/after.jpg" alt="Mortis after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="bone/duel.jpg" alt="Mortis in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="ledger"><summary><b>Mr. Ledger</b> <span class=chips><span>feet 3 → 0 cm</span><span>hand in cloth standing 7 → 8 cm</span><span>quill upright in casts</span></span></summary>
+<p>Quill on its side in casts: now upright. A flag in the walk is the forearm against the robe&#x27;s front panel.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>7</td><td>8</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>8</td><td>8</td><td class=dim>walk</td></tr><tr><td>hand in body or cloth, any clip</td><td>9</td><td>10</td><td class=dim>hit</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="ledger/before.jpg" alt="Mr. Ledger before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="ledger/after.jpg" alt="Mr. Ledger after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="ledger/duel.jpg" alt="Mr. Ledger in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="mime"><summary><b>Mum</b> <span class=chips><span>feet 4 → 0 cm</span><span>hand in cloth standing 6 → 0 cm</span></span></summary>
+<p>Her stiff ribbon (as built, known) goes under the floor when she lies dead: not seen.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>8</td><td>4</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>8</td><td>5</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="mime/before.jpg" alt="Mum before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="mime/after.jpg" alt="Mum after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="mime/duel.jpg" alt="Mum in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="shadow"><summary><b>Nyx</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 6 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>7</td><td>4</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>5</td><td class=dim>R Nightfall (burst)</td></tr><tr><td>held thing in body, blows and casts</td><td>4</td><td>4</td><td class=dim>attack</td></tr><tr><td>held thing in body, any clip</td><td>6</td><td>4</td><td class=dim>attack</td></tr></table>
+<figure><img loading="lazy" src="shadow/before.jpg" alt="Nyx before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="shadow/after.jpg" alt="Nyx after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="shadow/duel.jpg" alt="Nyx in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="void"><summary><b>Oblivion</b> <span class=chips><span>feet 9 → 0 cm</span><span>hand in cloth standing 6 → 5 cm</span></span></summary>
+<p>Left: in Null Zone the greatsword&#x27;s pommel sits behind his armour skirt (hidden, not seen).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>9</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>5</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>9</td><td>9</td><td class=dim>back</td></tr><tr><td>hand in body or cloth, any clip</td><td>10</td><td>9</td><td class=dim>E Phase Step (lunge)</td></tr><tr><td>held thing in body, blows and casts</td><td>11</td><td>10</td><td class=dim>W Null Zone (burst)</td></tr><tr><td>held thing in body, any clip</td><td>11</td><td>10</td><td class=dim>W Null Zone (burst)</td></tr></table>
+<figure><img loading="lazy" src="void/before.jpg" alt="Oblivion before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="void/after.jpg" alt="Oblivion after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="void/duel.jpg" alt="Oblivion in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="prism"><summary><b>Opaline</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 5 → 0 cm</span><span>wand upright in casts</span></span></summary>
+<p>Wand on its side in casts: now upright. Her right hand hung in the gown: now beside it.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>6</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="prism/before.jpg" alt="Opaline before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="prism/after.jpg" alt="Opaline after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="prism/duel.jpg" alt="Opaline in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="pim"><summary><b>Pim and Pom (Pim)</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 4 → 0 cm</span></span></summary>
+<p>Besides the feet: the deepest flag left is 7 cm, in Q Bonk, for a moment; not drawn one by one.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>7</td><td class=dim>Q Bonk (swing)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>2</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="pim/before.jpg" alt="Pim and Pom (Pim) before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="pim/after.jpg" alt="Pim and Pom (Pim) after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="pim/duel.jpg" alt="Pim and Pom (Pim) in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="pom"><summary><b>Pim and Pom (Pom)</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 4 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>4</td><td>3</td><td class=dim>R Tag Out (burst)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="pom/before.jpg" alt="Pim and Pom (Pom) before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="pom/after.jpg" alt="Pim and Pom (Pom) after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+
+</details>
+<details id="courier"><summary><b>Pip</b> <span class=chips><span>feet 3 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="courier/before.jpg" alt="Pip before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="courier/after.jpg" alt="Pip after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="courier/duel.jpg" alt="Pip in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="balloon"><summary><b>Professor Puff</b> <span class=chips><span>feet 10 → 0 cm</span></span></summary>
+<p>On the list: he casts with his empty left hand (the pack&#x27;s only push) while the brass nozzle in his right hangs down.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>10</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>3</td><td>3</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>3</td><td>3</td><td class=dim>idle</td></tr><tr><td>hand in body or cloth, any clip</td><td>5</td><td>5</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>8</td><td>8</td><td class=dim>hit</td></tr></table>
+<figure><img loading="lazy" src="balloon/before.jpg" alt="Professor Puff before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="balloon/after.jpg" alt="Professor Puff after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="balloon/duel.jpg" alt="Professor Puff in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="referee"><summary><b>Referee Whistler</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 6 → 6 cm</span></span></summary>
+<p>Besides the feet: the deepest flag left is 6 cm, in walk, for a moment; not drawn one by one.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>6</td><td>6</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>6</td><td>6</td><td class=dim>walk</td></tr><tr><td>hand in body or cloth, any clip</td><td>6</td><td>6</td><td class=dim>walk</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="referee/before.jpg" alt="Referee Whistler before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="referee/after.jpg" alt="Referee Whistler after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="referee/duel.jpg" alt="Referee Whistler in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="sand"><summary><b>Sefu</b> <span class=chips><span>feet 3 → 0 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright (a dash keeps the clip&#x27;s hold: upright, the staff went through his apron as he bends). On the list: in Scarab Stride (the dash clip) his tall headdress cuts into his right shoulder for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>12</td><td>12</td><td class=dim>E Scarab Stride (lunge)</td></tr><tr><td>held thing in body, blows and casts</td><td>6</td><td>6</td><td class=dim>E Scarab Stride (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>6</td><td>6</td><td class=dim>E Scarab Stride (lunge)</td></tr></table>
+<figure><img loading="lazy" src="sand/before.jpg" alt="Sefu before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="sand/after.jpg" alt="Sefu after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="sand/duel.jpg" alt="Sefu in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="ink"><summary><b>Shiori</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 10 → 7 cm</span><span>brush upright in casts</span></span></summary>
+<p>Brush on its side in casts: now upright, the ink tip down by her feet. Left: in Flowing Script (a lunge) the brush&#x27;s foot touches her robe&#x27;s hem.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>10</td><td>7</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>10</td><td>8</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>10</td><td>12</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>7</td><td>7</td><td class=dim>E Flowing Script (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>7</td><td>7</td><td class=dim>E Flowing Script (lunge)</td></tr></table>
+<figure><img loading="lazy" src="ink/before.jpg" alt="Shiori before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="ink/after.jpg" alt="Shiori after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="ink/duel.jpg" alt="Shiori in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="mirror"><summary><b>Silvane</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 4 → 0 cm</span></span></summary>
+<p>Her hand mirror is held out flat in casts, its face to the target: left as the clip has it (kept upright, as the staffs now are, it turned edge-on).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>8</td><td class=dim>E Through the Glass (lunge)</td></tr><tr><td>held thing in body, blows and casts</td><td>4</td><td>4</td><td class=dim>E Through the Glass (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>5</td><td>4</td><td class=dim>E Through the Glass (lunge)</td></tr></table>
+<figure><img loading="lazy" src="mirror/before.jpg" alt="Silvane before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="mirror/after.jpg" alt="Silvane after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="mirror/duel.jpg" alt="Silvane in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="cat"><summary><b>Sir Whiskers</b> <span class=chips><span>feet 4 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>4</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>3</td><td class=dim>stun</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="cat/before.jpg" alt="Sir Whiskers before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="cat/after.jpg" alt="Sir Whiskers after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="cat/duel.jpg" alt="Sir Whiskers in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="hive"><summary><b>Sirix</b> <span class=chips><span>feet 6 → 0 cm</span></span></summary>
+<p>Left: in Barbed Stinger (a lunge) a claw passes his chest plate for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>6</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>13</td><td>13</td><td class=dim>Q Barbed Stinger (lunge)</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>3</td><td class=dim>stun</td></tr></table>
+<figure><img loading="lazy" src="hive/before.jpg" alt="Sirix before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="hive/after.jpg" alt="Sirix after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="hive/duel.jpg" alt="Sirix in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="chrono"><summary><b>Tempo</b> <span class=chips><span>feet 3 → 0 cm</span><span>staff upright in casts</span></span></summary>
+<p>Staff on its side in casts: now upright. Left as it was: in Time Skip (a dash) the staff&#x27;s foot passes his coat for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>3</td><td>3</td><td class=dim>E Time Skip (lunge)</td></tr><tr><td>held thing in body, blows and casts</td><td>8</td><td>8</td><td class=dim>E Time Skip (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>8</td><td>8</td><td class=dim>E Time Skip (lunge)</td></tr></table>
+<figure><img loading="lazy" src="chrono/before.jpg" alt="Tempo before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="chrono/after.jpg" alt="Tempo after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="chrono/duel.jpg" alt="Tempo in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="magic"><summary><b>The Great Zambini</b> <span class=chips><span>feet 3 → 0 cm</span><span>hand in cloth standing 10 → 10 cm</span><span>wand upright in casts</span></span></summary>
+<p>Wand on its side in every cast: now upright. The tailcoat flagged at the walk is the forearm brushing the coat&#x27;s side, not inside it (checked by eye).</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>10</td><td>10</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>11</td><td>11</td><td class=dim>walk</td></tr><tr><td>hand in body or cloth, any clip</td><td>11</td><td>12</td><td class=dim>hit</td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="magic/before.jpg" alt="The Great Zambini before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="magic/after.jpg" alt="The Great Zambini after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="magic/duel.jpg" alt="The Great Zambini in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="blood"><summary><b>Vesper</b> <span class=chips><span>feet 5 → 0 cm</span><span>hand in cloth standing 7 → 0 cm</span><span>scepter upright in casts</span></span></summary>
+<p>Scepter on its side in casts: now upright. Left as it was: in Mist Waltz (a dash, which keeps the clip&#x27;s hold) the scepter&#x27;s foot dips into her skirt for a moment.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>5</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>7</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>7</td><td>5</td><td class=dim>sprint</td></tr><tr><td>hand in body or cloth, any clip</td><td>7</td><td>6</td><td class=dim>Q Lancet (point)</td></tr><tr><td>held thing in body, blows and casts</td><td>8</td><td>8</td><td class=dim>W Mist Waltz (lunge)</td></tr><tr><td>held thing in body, any clip</td><td>8</td><td>8</td><td class=dim>W Mist Waltz (lunge)</td></tr></table>
+<figure><img loading="lazy" src="blood/before.jpg" alt="Vesper before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="blood/after.jpg" alt="Vesper after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="blood/duel.jpg" alt="Vesper in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="alchemy"><summary><b>Vitriol</b> <span class=chips><span>feet 3 → 0 cm</span></span></summary>
+<p>Besides the feet, nothing measured over 5 cm in any clip.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="alchemy/before.jpg" alt="Vitriol before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="alchemy/after.jpg" alt="Vitriol after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="alchemy/duel.jpg" alt="Vitriol in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="door"><summary><b>Wick</b> <span class=chips><span>feet 3 → 0 cm</span><span>lantern upright in casts</span></span></summary>
+<p>His lantern lay on its side, flame sideways, in every cast: now it hangs upright.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>3</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="door/before.jpg" alt="Wick before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="door/after.jpg" alt="Wick after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="door/duel.jpg" alt="Wick in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+<details id="sky"><summary><b>Zephyr</b> <span class=chips><span>feet 3 → 0 cm</span></span></summary>
+<p>His stiff scarf (as built, known) goes under the floor when he lies dead: not seen.</p>
+<table><tr><th>measured (cm, the game's size)</th><th>before</th><th>after</th><th>worst in</th></tr><tr><td>feet under the floor, standing</td><td>3</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, standing</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, walking and running</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>hand in body or cloth, any clip</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, blows and casts</td><td>0</td><td>0</td><td class=dim></td></tr><tr><td>held thing in body, any clip</td><td>0</td><td>0</td><td class=dim></td></tr></table>
+<figure><img loading="lazy" src="sky/before.jpg" alt="Zephyr before: every clip"><figcaption><b>before</b>: standing, walking, sprinting, the attack at its hit, Q W E R at their strike, a hit, a stun, the fall; top close from the side, below the game's camera</figcaption></figure>
+<figure class=after><img loading="lazy" src="sky/after.jpg" alt="Zephyr after: every clip"><figcaption><b>after</b>: the same moments</figcaption></figure>
+<figure><img loading="lazy" src="sky/duel.jpg" alt="Zephyr in a CPU duel"><figcaption>a CPU duel on the game page, the game's camera close round the hero at each cast (as it strikes and 0.3 s later) and its attacks</figcaption></figure>
+</details>
+</main>
+</body>
+</html>

@@ -1291,7 +1291,10 @@ export class HeroFigure {
     this.flashV = Math.max(0, this.flashV - dt * 3.2);
     r.setFlash(this.flashV, this.flashTint);
     if (!r.loaded) return;
-    if (this.dying >= 0) return this.poseDeath(r);
+    if (this.dying >= 0) {
+      r.plantFeet(dt, false);
+      return this.poseDeath(r);
+    }
     if (state.held) {
       // Frozen solid: the last pose stays.
       if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
@@ -1375,6 +1378,7 @@ export class HeroFigure {
 
     // a cast
     const cn = this.castNow;
+    let casting = 0, pushing = 0;
     if (cn) {
       cn.t += dt;
       const castW = cn.t < cn.dur ? 1 : 1 - (cn.t - cn.dur) / 0.3;
@@ -1387,6 +1391,8 @@ export class HeroFigure {
         const info = realClipInfo(clip), a = Math.min(0.24, cn.dur * 0.35) * (cn.big ? 1.3 : 1);
         const t = loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
         const w = castW * smooth(0, 0.1, cn.t);
+        casting = w;
+        if (clip.startsWith('Spell_') && !planted) pushing = w;
         over(clip, t, loop, w, w * (1 - this.gait) * info.legs * (this.climbFigure && cn.style !== 'slam' ? CLIMB_LEGS : 1));
         if (planted) keepStaff();
       }
@@ -1394,6 +1400,14 @@ export class HeroFigure {
     if (this.stunW > 0.01) over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);
     if (this.liftW > 0.01) over('Jump_Loop', this.clock, true, this.liftW, this.liftW);
     r.pose(layers);
+    // the hands out of a robe or a coat, but where a blow, a cast or a knock-up sends them
+    r.clearArms((1 - this.attackW) * (1 - casting) * (1 - this.liftW), dt);
+    // a staff, scepter, lyre or lantern stays upright through the pack's push and raise (a ranged attack, most casts); a dash,
+    // a slam or a swing carries it as its clip does
+    const push = m && this.realAttackClip(m.melee) === 'Spell_Simple_Shoot' ? this.attackW : 0;
+    if (this.realStyle.hold === 'torch' && !this.realStyle.keep && !this.climbFigure) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
+    // the soles on the floor through a stride
+    r.plantFeet(dt, true);
   }
 
   /** Falls over (a defeated hero) over `t` 0..1: the knees give, the chest folds, then it tips forward. */

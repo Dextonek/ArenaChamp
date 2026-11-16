@@ -43,6 +43,16 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Arenas',
+        title: 'The harbour’s cannons and the Tide Judge’s glaive',
+        text: 'The two cannons on the Drowned Harbour’s walls are a little smaller, so a hero standing at their back no longer stands inside the gun. On the Climb, the Tide Judge’s glaive no longer runs back through his gown.',
+      },
+      {
+        tag: 'Motion',
+        title: 'Heroes stand on the floor and hold their staffs up',
+        text: 'Every hero now stands and walks with the whole foot on the floor; before, the soles sank a few centimetres in. Hands no longer disappear into long coats, robes and aprons. And the heroes with a staff, scepter, lyre, lantern, quill or broom keep it upright as they cast, instead of laying it sideways across the chest.',
+      },
+      {
         tag: 'Heroes',
         title: 'The Story: why the sun fell, and how it ends',
         text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',
