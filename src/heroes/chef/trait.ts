@@ -326,8 +326,8 @@ export const chefTrait: Trait = {
       if (b.standFoe >= TABLE_STAND) {
         tb.eaten = true;
         b.standFoe = 0;
+        // The enemy gets the damage only: the 50 HP are hers (the tooltip: "and for her 50 HP").
         t.hitEnemy({ damage: 0, knock: 0, color: '#f2efe6', debuff: { kind: 'might', amount: TABLE_MIGHT, seconds: TABLE_MIGHT_SECONDS } });
-        t.healEnemy(TABLE_HEAL);
         t.noteOwner('feast', 1);
       }
     } else b.standFoe = 0;
