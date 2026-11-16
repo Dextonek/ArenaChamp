@@ -19,6 +19,6 @@ the Firefly-Seller's yoke on the shoulders, the Turncloak's shield on the left a
   on floor 42 in the log bench (it runs through his right shin), on floor 43 against the tent's side. Move him about 1.2 m clear,
   toward the fire. ![](people/f42-turncloak-log.jpg) ![](people/war-turncloak-spots.jpg)
 - **A matter of taste, for the user:** the people in cream (`#e2d6b8`: the Sands' Star-Reader, Storm-Counter, Silk-Merchant and
-  Glass-Seller, the War's Camp-Mother and Herald) glow in the Sands' and the War's light: the cream crosses the bloom's threshold,
+  Glass-Seller, Beacon-Keeper, the War's Camp-Mother and Herald) glow in the Sands' and the War's light: the cream crosses the bloom's threshold,
   as Sefu's linen does a little. ![](people/bloom.jpg) If it should go: in Blender, each of those modules' `R.mat("cream",
-  "#e2d6b8", ...)` to `#cdbf9c` (about 15 % darker), then the build command of `docs/tower/models/README.md` for those six.
+  "#e2d6b8", ...)` to `#cdbf9c` (about 15 % darker), then the build command of `docs/tower/models/README.md` for those seven (`war/herald.py` has `#e2d8c0`).
