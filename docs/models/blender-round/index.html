@@ -56,7 +56,7 @@ trader stand-in); Wood 11-20: <code>wood_cutter</code>; Sands 21-30: <code>sands
 <code>folk.ts</code> is untouched).</p>
 <p>Lore: Coast folk have sea-tanned skin, salt-bleached hair and the blue tide lines on their forearms, and read nothing like the Drowned
 docker (warm skin, pale hair, light clothes, no hook). The Woodcutter is unsworn, so he has no horns. The Water-Carrier wears sand
-linen that is darker than the new robe cream, so nothing on her glows. The Ore-Carrier keeps the old colour of the far halls and his
+linen darker than the new robe cream (which no longer glows), though she was not looked at in the Sands' own light. The Ore-Carrier keeps the old colour of the far halls and his
 beard is braided long, as Kilnborn wear it when they do not work the fire. The Gleaner wears an undyed armband that marks her as on
 neither side.</p>
 
@@ -108,8 +108,8 @@ stripes and trims show. Heroes in the same shots are unchanged.</p>
 <img src="robes-war42-pairs.jpg" alt="White Sister and Herald, floor 42, before and after" loading="lazy">
 <p class="cap">Floor 42: the White Sister (still white, the truce's white, but no longer glowing) and the Herald (her skirt no longer
 blooms); then the game's camera.</p>
-<p>From the game's camera: <a href="robes-before-game.jpg">before</a>, <a href="robes-after-game.jpg">after</a>. The darker step was enough;
-none needed to go further.</p>
+<p>From the game's camera: <a href="robes-before-game.jpg">before</a>, <a href="robes-after-game.jpg">after</a>. In every pair looked at
+(floors 21, 22, 41 and 42) the darker step was enough, so none went further.</p>
 
 <h2 id="arenas">3. The arenas</h2>
 <p>Measured with the way <code>pipeline/tools/arena-fit.js</code> measures (a hero's centre is kept 0.5 m off a cover's capsule, so a mesh
@@ -134,12 +134,16 @@ shoulder height, as built. The collision shapes did not change.</p>
 </table></div>
 <p><b>How:</b> the older arenas' builds need sculpt helpers (<code>dao_blender</code>) that are not on this computer, so a full rebuild
 was not possible. <code>blender/arenas/frost_shard_fix.py</code> opens <code>frost_props.glb</code>, finds the shard in the two spire props
-and shrinks it toward its root, and writes the file with the build's own export settings; <code>frost_props.py</code> now builds the shard
-the same size. Checked: the same 15 objects, names, materials and triangles; the exporter split 1 to 6 vertices more per object.
+and shrinks it toward its root, and writes the file with the build's own export settings (a second run leaves it alone); <code>frost_props.py</code>
+is changed to build the shard the same size, but could not be run here to prove it. Checked: the same 15 objects, names, materials and triangles; the exporter split 1 to 6 vertices more per object.
 306 KB (was 305).</p>
-<p class="cap">Also measured, left as built: the drifts' snow reaches 0.67-0.68 m past their thin capsules at their ends and windward foot
-(0.6 m high at most). The drift module is drawn about twice as deep as its capsule by design (<code>frost_props.py</code>), and round 2
-did not flag them.</p>
+<p><b>Also measured, left as built: the drifts.</b> At each drift's end a dark rock (0.6 m high at most) reaches 0.67-0.68 m past the
+drift's thin capsule, about 0.18 m inside where a hero is kept. From the player's camera at the nearest zoom a hero stands against the
+rock, touching it, not in it; the drifts are drawn about twice as deep as their capsules by design (<code>frost_props.py</code>), and
+round 2 did not flag them. If wanted later, the cover's capsule (not the model) is the part to widen. The measure also found two small
+things 4.5 m from any cover at (±0.5, 0): transparent sprite planes (the arena's drifting snow), not props.</p>
+<img src="frost-drifts.jpg" alt="Frost drifts and the sprites at (0.5, 0) from the player's camera" loading="lazy">
+<p class="cap">The hero at a long drift's windward foot, at a short drift's end, beside the sprites; then low views of each.</p>
 
 <h3 class="warn">The Temple: the two lintels are a deliberate ruin; left as they are</h3>
 <p>From the rim (a view no player has) each grand gate's lintel, with its sun disc, reaches past its one whole pylon. That is how the gate
@@ -158,8 +162,10 @@ stand anywhere beyond |x| 13, on the idea that the camera stays on the z axis, b
 wood (and that build cannot run here either), so the smallest change is to keep tall trees off the camera's side of the ring. In
 <code>src/arenas/glade.ts</code>, in the tree loop after <code>if (Math.hypot(x - 16, z - 27) &lt; 9) continue;</code>:</p>
 <pre>      if (z > RING.z + 2 &amp;&amp; Math.abs(x) &lt; 26 &amp;&amp; Math.hypot(x - RING.x, z - RING.z) &lt; 31) continue;</pre>
-<p>Tried in this worktree and reverted (the file is not this round's to commit): the same 21 trees are placed, further out; the west crown
-is gone; the east one is pushed into the corner; the wood still closes in. The Glade duel's fight print stays the same (85a1182f).</p>
+<p>Tried in this worktree and reverted (the file is not this round's to commit): the tree loop still looks for 21 trees and finds
+them further out (not counted one by one); the west crown is gone; the east one is pushed into the corner; the wood still closes in.
+The line changes the arena's dice for everything placed after the trees, so the small mushrooms inside the ring and the other seeded
+dressing land in other places. The Glade duel's fight print stays the same (85a1182f).</p>
 <img src="glade-before-after.jpg" alt="Glade at the widest zoom, before and with the line" loading="lazy">
 <p class="cap">A computer's screen, the hero at the north, east, south and west edges at zoom 1.7. Top: today; bottom: with the line.</p>
 <img src="glade-phone-before-after.jpg" alt="Glade on a phone, before and with the line" loading="lazy">
@@ -181,6 +187,8 @@ untouched it matched.</p>
 <ol>
 <li>The parent: put the six walkers in the life code's model table (the list in section 1).</li>
 <li>The parent: the one line in <code>src/arenas/glade.ts</code> (section 3), if wanted.</li>
+<li>The lore agent: the six walkers' names (the Dockhand, the Fishwife, the Woodcutter, the Water-Carrier, the Ore-Carrier, the Gleaner)
+and the Gleaner's trade (she gleans spent arrows from the furrows and sells them back to both banners) are new and not in the codex.</li>
 <li>Not live: everything here (the robes, Frost's shards, the walkers' models). One News entry is written (the robes and Frost).</li>
 </ol>
 </main></body></html>

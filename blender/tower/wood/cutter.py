@@ -1,6 +1,6 @@
 """The Woodcutter (a walker of the Wood's floors, docs/tower/life/index.html): Wood folk, unsworn, so no horns; he cuts
 the deadfall the walking Wood leaves behind it and carries it to the charcoal stacks. Plainer than the named people: no
-light, no gold. Ruddy and freckled, his fox-red hair and beard. A moss-green
+light, no gold. Ruddy, his fox-red hair and beard. A moss-green
 tunic to the wrists, an open brown leather jerkin, dark trousers with undyed wool wound from ankle to knee, low boots. On
 his back a tall bundle of sticks tied with rope on two straps, his axe slid in under the ropes. The hands are free
 (walkers play the pack's walking clip with both arms). Signature shape: the bundle of sticks above the shoulders."""

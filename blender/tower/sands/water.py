@@ -1,6 +1,6 @@
 """The Water-Carrier (a walker of the Sands' floors, docs/tower/life/index.html): a Dune woman of the last caravan who
 carries water from the cistern to the camp through the storm. Plainer than the named people: no light, no gold. Dark
-bronze skin, long black hair, kohl to the temples. Layered linen in sand (no lighter than the darkened cream: nothing of
+bronze skin, long black hair. Layered linen in sand (no lighter than the darkened cream: nothing of
 hers blooms in the Sands' light) under an ochre overskirt, a turquoise sash, a turquoise collar,
 copper armlets on bare forearms, sandals. On her head, on a cloth ring, a clay water jar with a turquoise band: it is
 bound to the head and rides it. The hands are free (walkers play the pack's walking clip with both arms). Signature

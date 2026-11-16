@@ -6,7 +6,8 @@ are not on every computer: this script makes the same change in the exported fil
 public/models/arenas/frost_props.glb, finds in SpireA__ice and SpireB__ice the one loose piece of ice that lies low and reaches
 furthest from the spire's middle (the toppled shard), shrinks it toward its root by `SCALE` (the root stays where it touches the
 outcrop), and writes the file again with the export settings of frost_props.export(). Nothing else is touched: the script
-prints every object's vertex count before and after.
+prints every object's vertex count before and after. A shard already shorter than 1.5 m (fixed) is left alone, so a second
+run changes nothing.
 
     "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" --background --factory-startup --python blender/arenas/frost_shard_fix.py -- [--dry] [--out <glb>]
 """
@@ -96,6 +97,10 @@ for name in ("SpireA__ice", "SpireB__ice"):
     P = [me.vertices[i].co for i in shard[3]]
     root = min(P, key=lambda p: math.hypot(p.x, p.y)).copy()
     print(f"{name}: the toppled shard: {shard[2]} vertices, reach {shard[0]:.2f} m, top {shard[1]:.2f} m, root at ({root.x:.2f}, {root.y:.2f}, {root.z:.2f})")
+    if shard[0] < 1.5:
+        # done already (it was 2.0 m, 1.19 m after): a second run would shrink it again
+        print(f"{name}: already short ({shard[0]:.2f} m), left as it is")
+        continue
     if not DRY:
         for i in shard[3]:
             v = me.vertices[i]
