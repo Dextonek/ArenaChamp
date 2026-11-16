@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blender round</title>
+<style>
+  :root { --bg: #110f14; --card: #1b1820; --line: #352e3c; --ink: #ece4d6; --dim: #b3a99a; --gold: #d2ae55; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 700 28px/1.2 Georgia, serif; color: var(--gold); margin: 10px 0 4px; }
+  h2 { font: 700 21px/1.3 Georgia, serif; color: var(--gold); margin: 30px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .sub { color: var(--dim); }
+  figure { margin: 10px 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 6px 10px; font-size: 13.5px; color: var(--dim); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  code { font-size: 13.5px; color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+<h1>The Blender round of the model review</h1>
+<p class="sub">2026-11-16 · the two rebuilds the model review of the Climb, the bosses and the arenas listed
+(<code>docs/models/review/blender-list.md</code>), done by the heroes' review as the one Blender agent. The third item (the cream that
+blooms white on seven of the Climb's people) waits on you and was not touched. Not pushed, not deployed.</p>
+
+<h2>1. The Tide Judge's glaive</h2>
+<p>At rest the haft ran 0.6 of its length back past his hand, through the gown behind his right hip. It now starts 0.3 behind the hand
+(<code>blender/tower/sea/judge.py</code>), its bronze end with it; the blade end is as it was. Rebuilt with <code>blender/tower/build.py -- sea.judge</code>:
+the same 19,692 triangles, 11,478 vertices and 65 bones (names, order and bind matrices identical); 403 → 399 KB. The skin texture now
+has the pack's painted shorts covered, as every model built since the touches round does (hidden under his gown either way).</p>
+<figure><img loading="lazy" src="blender/judge.jpg" alt="The Tide Judge standing and walking, before and after: the glaive's haft no longer runs back through his gown"><figcaption>the game's own figure, standing and walking: before above, after below</figcaption></figure>
+
+<h2>2. The harbour's two cannons</h2>
+<p>A 3.2 m gun on a 2.7 m wall: its back stood 0.7 m past the wall 0.9 m up, where a hero stopped by the wall stands in it. Now built at
+0.9 of the old size (<code>blender/arenas/real/harbour.py</code>, <code>cannons()</code>): 0.42 m past the wall at most, and that at
+0.1 m up (the cannonballs on the floor), inside the 0.5 m the game keeps a hero off. Same triangles (92,834), 848 → 847 KB; the walls,
+the cover and the fight are unchanged.</p>
+<figure><img loading="lazy" src="blender/cannon.jpg" alt="The harbour cannon in the arena with Kaia stopped at its back end, before and after"><figcaption>the arena as the game draws it, Kaia where the game stops a hero at the cannon's back: before above, after below</figcaption></figure>
+<div class="pair">
+<figure><img loading="lazy" src="blender/fit5_before.jpg" alt="Top view of the cannon against its cover, before"><figcaption>before: the farthest point 0.70 m past the cover, 0.88 m up (<code>pipeline/tools/arena-fit.js</code>)</figcaption></figure>
+<figure><img loading="lazy" src="blender/fit5_after.jpg" alt="Top view of the cannon against its cover, after"><figcaption>after: 0.42 m, 0.10 m up</figcaption></figure>
+</div>
+</main>
+</body>
+</html>

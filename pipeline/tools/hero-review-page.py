@@ -236,6 +236,9 @@ Charge; Gus's broom foot in his robe while stunned; Shiori's brush foot at her h
 Stinger; Grandma Ironknit's needle tip at her skirt in Knitting Needle.</li>
 </ol>
 
+<h2>The Blender round</h2>
+<p>The other model review's two rebuilds (the Tide Judge's glaive, the harbour's cannons) are on <a href="blender.html">their own page</a>.</p>
+
 <h2>On a Climb floor</h2>
 <div class="grid">{climbs}</div>
 
