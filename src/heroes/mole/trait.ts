@@ -1,5 +1,6 @@
 import type { GroundMark, Trait } from '../../traits/types';
 import { pitLook } from './parts';
+import { fightNow } from '../../fightClock';
 
 /** Claw (Q): reach (m), the cone's full width (degrees), damage, wind-up (s). */
 export const CLAW_REACH = 2.5;
@@ -40,7 +41,7 @@ export const SINK_DELAY = 1.3;
 export const SINK_ROOT = 1;
 export const SINK_DAMAGE = 115;
 
-/** One hole she has dug. `bornAt` / `until`: `performance.now()` ms. `in`: the enemy stands in it now (the visit has been counted). */
+/** One hole she has dug. `bornAt` / `until`: `fightNow()` ms. `in`: the enemy stands in it now (the visit has been counted). */
 export interface Hole { x: number; z: number; bornAt: number; until: number; in: boolean }
 
 /**
@@ -50,7 +51,7 @@ export interface Hole { x: number; z: number; bornAt: number; until: number; in:
 export const moleHoles = new WeakMap<object, Hole[]>();
 
 /** The holes standing now (expired ones are dropped). */
-export function liveHoles(who: object, now = performance.now()): Hole[] {
+export function liveHoles(who: object, now = fightNow()): Hole[] {
   const list = moleHoles.get(who);
   if (!list) return [];
   const live = list.filter((h) => now < h.until);
@@ -59,7 +60,7 @@ export function liveHoles(who: object, now = performance.now()): Hole[] {
 }
 
 /** Opens a hole at (x, z) now. A fourth hole closes the oldest. */
-export function openHole(who: object, x: number, z: number, now = performance.now()): Hole {
+export function openHole(who: object, x: number, z: number, now = fightNow()): Hole {
   const list = liveHoles(who, now);
   const h: Hole = { x, z, bornAt: now, until: now + HOLE_LIFE * 1000, in: false };
   list.push(h);
@@ -168,7 +169,7 @@ export const moleTrait: Trait = {
   },
 
   marks(t) {
-    const now = performance.now(), out: GroundMark[] = [];
+    const now = fightNow(), out: GroundMark[] = [];
     for (const h of liveHoles(t.self(), now)) out.push({ x: h.x, z: h.z, kind: 'hole', age: (now - h.bornAt) / 1000, life: HOLE_LIFE });
     return out;
   },
