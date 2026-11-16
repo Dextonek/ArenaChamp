@@ -19,3 +19,7 @@ Bigger things, things in files another agent is working in, and matters of taste
   "The Black Water / In the light"; floor 36: over the W key). The exact fix, in `src/tower/world/hud.ts` (another agent's file this
   round): the marks' `z-index:7` (line 217) -> `z-index:5`, under every panel and still over the world and the law's flood. The
   minimap was raised over them on floor 32 (`map.ts`). Pictures: floors 34 and 36.
+- **The ruler fights' title box covers the hero's panel** (every ruler and crown, all chapters): the set piece's box ("The Prism Mother /
+  Defeat The Prism Mother") is at the top left, 64 px down, right over the hero's name and health. The exact fix, in
+  `src/tower/world/pieces/hud.ts` (another agent's folder this round): the root's `top:64px` -> under the hero's panel (about `top:160px`
+  on a desktop; on a phone below the minimap's column), or only for the ruler kind, which has no top bar of its own. Picture: floor 40.
