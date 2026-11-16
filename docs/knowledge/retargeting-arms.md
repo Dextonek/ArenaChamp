@@ -87,6 +87,18 @@ stiffly. Not yet checked: every hero walking and running from the game camera, a
 Brannoc, Oblivion and Shiori are modelled with their right hand on +x (facing the other way at rest). Anything that
 pushes "out" must use the side the hand or shoulder is actually on (`Math.sign(S.x)`), not the bone's R or L label.
 
+## The fourth style (2026-11-16)
+
+The heroes of the fourth style play the Universal Animation Library's clips on its own skeleton, so none of the fits above ran on
+them, and the model review (`docs/heroes/review/`) found the same faults again: hands inside long coats and robes (the clips were
+made on a slim figure), and every hero 3 to 12 cm under the floor (the base characters' ankles sit lower in a longer leg than the
+pack's figure). `RealHero` (`src/motion/real.ts`) now measures each model once at load in the pack's idle: it raises the model so
+its lowest sole stands on the floor, and keeps the body's outline for `clearArms`, the push-out above on the new skeleton (an arm
+swung out from the shoulder by the least angle that clears the forearm, wrist and knuckles; never in a blow, a cast or a
+knock-up). `uprightHeld` keeps what the left hand holds upright through a blow or a cast: the pack's push turns the palm forward,
+which laid staffs on their side. The measuring runs on dice of its own (three.js rolls dice for a clip's id), so the perf scenes'
+fights stay the same.
+
 ## The different approach: a source figure that matches (2026-11-10)
 
 After the fits above the user still found the standing pose and the legs wrong ("lets use a different approach") and

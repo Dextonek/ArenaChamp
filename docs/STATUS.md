@@ -21,8 +21,15 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
 - The model review (the user: "look at all models we made and correct them: clipping, bad direction; make them fit the scenes"):
   one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
-  for one Blender round later; page `docs/models/review/`). **Running too:** the heroes' review (the one Blender agent; page
-  `docs/heroes/review/`); it takes the other review's Blender list when that is ready.
+  for one Blender round later; page `docs/models/review/`).
+- **Done, on branch `t3/1cbb14d0` (not merged, not live) (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`).
+  All 40 measured through every clip (`pipeline/tools/hero-review.js`), a sheet each, a CPU duel each over the nine arenas, three on a
+  Climb floor. Three faults across the roster, fixed in code (`src/motion/real.ts`, two lines in `HeroFigure.followReal`), no model
+  rebuilt: every hero stood 3-12 cm sunk into the floor (now raised at load); hands went into coats and robes (the older figures'
+  push-out now on the fourth style); the 18 left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now
+  upright, leaning toward the target). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
+  **Waiting on the user:** the list on the page (staffs upright: keep?; Professor Puff casts with his empty hand; Sefu's headdress in
+  his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). No Blender list from the other review had come.
 - **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
   life, more to see), starting with one chapter shown to the user first; it starts when the stage 3 job is merged (a slot frees).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
