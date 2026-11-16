@@ -44,6 +44,11 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Tower',
+        title: 'The Climb’s rulers, told as you meet them',
+        text: 'The Codex now tells each ruler as the Climb shows them: the Pearl Tyrant is a crowned woman, the Bell Below wears the old bell as his helm, the Elder Root is Fenna’s oak in an old man’s shape. The Climb’s named women are “her”, the gates above each chapter’s first are held by champions the Tower drew to them, a won ruler leaves you in front of its door, and Cantor’s spell icons carry engraved gold notes.',
+      },
+      {
+        tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
       },

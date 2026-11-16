@@ -43,6 +43,21 @@ Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C
 ## Today's entries (2026-11-16)
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
+- **Done, not merged, not live (2026-11-16): the lore follows the floors and the models, the mothers "her", a won ruler at its door,
+  Cantor's icons in gold** (branch `t3/climb-lore-rulers-gates`; decisions 4, 6, 7, 9). Page `docs/lore/changes-2026-11-16.html`.
+  The gates: Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate, the gates above are champions the Tower drew to
+  them (LORE.md, canon 12, the Climb's pages, five heroes' pages). The rulers as drawn: the Pearl Tyrant a woman; the Bell Below, the
+  Lantern Leviathan, the Elder Root (Fenna's oak in an old man's shape), the Hollow Elder, the Lantern Root, the Grey Oak, the Mire
+  Heart, the Scarab Colossus (still the Scarab King's mother: her helm hides the face), the Dune Colossus, the Brass Sphinx, the
+  Glass Serpent, the Prism Mother, Mother of Echoes, the Drowned Lantern described as the people the models are; every event kept
+  (rulers.md, story ch. 6, 8, 9, 13, in-game.md). Floors: the named women "her" (21 lines on 19 floors), and in a commit of its own
+  the Wood keeper's him/her for the four Wood rulers now people and six "It ..." boss titles (droppable). `game.ts` `pieceDone`: a
+  won ruler leaves the hero in front of its door. Cantor's four icons: engraved gold notes on plum lacquer (before:
+  `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
+  changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1 and 21 and all 24
+  floors whose words changed (no errors, no stuck step); the door rule in five cases; tsc, build, server tests. Left for the user:
+  the War Drummer is "a boy" drawn as the Siege Lord's horned giant; the named men stay "it" (Sir Rust, Captain Candle...); floor
+  11's "cut the roots that feed it" stays (the Elder Root is still the oak).
 - Open world stage 3: done and merged (the entry below).
 - **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
   `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
