@@ -14,7 +14,8 @@ Bigger things, things in files another agent is working in, and matters of taste
 - **The rival can be the hero you play**: a player who climbs as Lyra meets "I am Lyra" on floor 32 and duels a Lyra. The same on any
   floor whose rival is the player's hero. What I would do: when the rival is the player's own hero, the floor takes the next hero on a
   fixed list (the floor's packs and doors stay as they are).
-- **People's marks over the floor's panel** (all floors, most on a phone): the floor's panel (name, the law's line, hearts, shards) is
-  on layer 6 and the people's marks on 7, so a person who walks under the panel on screen is drawn over it. The exact fix, in
-  `src/tower/world/hud.ts` (another agent's file this round): the panel's `z-index:6` (line 49) -> `z-index:8`. The minimap got the
-  same on floor 32 (`map.ts`). Picture: floor 34.
+- **People's marks over the HUD** (all floors, most on a phone): the people's marks (the "!" and the name over each person) are on
+  layer 7, over the floor's panel (6) and the spell bar (6), so a person who walks under them on screen is drawn on top (floor 34: over
+  "The Black Water / In the light"; floor 36: over the W key). The exact fix, in `src/tower/world/hud.ts` (another agent's file this
+  round): the marks' `z-index:7` (line 217) -> `z-index:5`, under every panel and still over the world and the law's flood. The
+  minimap was raised over them on floor 32 (`map.ts`). Pictures: floors 34 and 36.
