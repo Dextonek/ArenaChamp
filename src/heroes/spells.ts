@@ -8,7 +8,9 @@ import { CARD_BY_FOLDER } from './index';
  */
 const found = import.meta.glob<EffectModule[]>('./*/fight.ts', { eager: true, import: 'spells' });
 
+// a draft not shown on this page has no card here (src/heroes/index.ts): its spells are left out with it
 export const FOLDER_SPELLS: EffectModule[] = Object.entries(found)
+  .filter(([path]) => CARD_BY_FOLDER[path.split('/')[1]])
   .map(([path, spells]) => ({ order: CARD_BY_FOLDER[path.split('/')[1]].order, spells }))
   .sort((a, b) => a.order - b.order)
   .flatMap((h) => h.spells);

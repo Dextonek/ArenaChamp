@@ -357,7 +357,8 @@ def main():
         word_report()
         return
     lore = lp.read(lp.SRC)
-    errs = lp.check(lore) + lp.check_codex(lore) + check_canon()
+    errs, notes = lp.drafts_apart(lp.check(lore) + lp.check_codex(lore) + check_canon(), lore)
+    lp.print_drafts(notes)
     if errs:
         print('The codex does not check out:')
         for e in errs:

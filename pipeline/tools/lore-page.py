@@ -272,6 +272,28 @@ def check(lore):
             errs.append(f"{t['a']} and {t['b']} are {t['kind']} but of different peoples")
     return errs
 
+def drafts_apart(errs, lore):
+    """A hero still going through its gates (status `draft`, made by pipeline/tools/new-hero.py) may have unfinished lore:
+    what it still lacks is a note, printed but not failing, so the lore checks pass for everyone else meanwhile. An error
+    names a draft by its name or by its codex page (`heroes/<slug>.md`). pipeline/tools/hero-check.py shows a draft's notes."""
+    drafts = [h['name'] for h in lore['heroes'] if h['status'] == 'draft']
+    if not drafts:
+        return errs, []
+    pats = [re.compile(r'(?<![A-Za-z])' + re.escape(n) + r'(?![A-Za-z])') for n in drafts]
+    pats += [re.compile(re.escape(f"heroes/{slug(n)[2:]}.md")) for n in drafts]
+    keep, notes = [], []
+    for e in errs:
+        (notes if any(p.search(e) for p in pats) else keep).append(e)
+    return keep, notes
+
+
+def print_drafts(notes):
+    if notes:
+        print(f'Drafts (pipeline/tools/new-hero.py), still to write, not failing ({len(notes)}):')
+        for n in notes:
+            print('  -', n)
+
+
 # --------------------------------------------------------------------------------------------------------------------------
 # Codex checks (docs/lore/codex/, since 2026-11-15): links, hero pages, ties both ways, names
 
@@ -846,7 +868,8 @@ def codex_html():
 
 def main():
     lore = read(SRC)
-    errs = check(lore) + check_codex(lore)
+    errs, notes = drafts_apart(check(lore) + check_codex(lore), lore)
+    print_drafts(notes)
     if errs:
         print('The lore does not check out:')
         for e in errs:

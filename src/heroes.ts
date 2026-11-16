@@ -143,5 +143,6 @@ export const HERO_KITS: HeroKit[] = roster().map((k) => {
 });
 
 // The spell icons drawn with VectorCraft (src/icons/vc.ts): the heroes that have them draw them wherever a slot icon shows,
-// each hero's files fetched the first time one of its slots is drawn; the kit's own canvas icon is the fallback.
-useVcIcons(HERO_KITS, Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.icons])));
+// each hero's files fetched the first time one of its slots is drawn; the kit's own canvas icon is the fallback. A draft
+// (shown only on the workbench) draws its canvas icons until its release: its SVGs may not be made yet.
+useVcIcons(HERO_KITS, Object.fromEntries(HERO_CARDS.filter((c) => !c.draft).map((c) => [c.kit.name, c.icons])));

@@ -41,8 +41,9 @@ export default defineConfig(({ command }) => ({
   define: { __BUILD__: JSON.stringify(command === 'build' ? BUILD : 'dev') },
   build: {
     rollupOptions: {
-      // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/).
-      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html') },
+      // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/); beside them the hero
+      // workbench (src/workbench/, docs/pipeline/hero-framework.md section 13).
+      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html'), workbench: resolve(__dirname, 'workbench.html') },
     },
   },
 }));

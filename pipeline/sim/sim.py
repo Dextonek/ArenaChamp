@@ -15,7 +15,9 @@ Common options: --arena random|<id> (default random), --events (the arenas' even
 run and every browser it starts have the lowest priority, and half of the processor's threads are never touched,
 `--reserve N`, so the computer stays quick), --out NAME, --open (show the page when done).
 
-It writes pipeline/sim/out/<name>.json and <name>.html (and latest.html beside them) and prints the table. A fight is a
+It writes pipeline/sim/out/<name>.json and <name>.html (and latest.html beside them) and prints the table; a `hero` run also
+writes each hero's row to pipeline/sim/out/last/<Name>.json (the hero workbench and pipeline/tools/hero-check.py read it).
+A hero still going through its gates (`draft: true`, pipeline/tools/new-hero.py) is fought with --drafts. A fight is a
 'run' duel at the balance CPU level: the hero on the player's side, the foe on the opponent's, both played by the CPU, as
 pipeline/tools/kit-balance.js runs them. A kit's target is 40-60% against the benchmark foes.
 
@@ -338,6 +340,15 @@ def write_report(name, data):
     return OUT / f"{name}.html"
 
 
+def write_last(data, page):
+    """Each hero's row of a `hero` run, as its last result: pipeline/sim/out/last/<Name>.json."""
+    (OUT / "last").mkdir(exist_ok=True)
+    for r in data["rows"]:
+        last = {"meta": data["meta"], "row": r, "foes": data["foes"], "errorCount": data["errorCount"], "errors": data["errors"][:5],
+                "page": page.relative_to(ROOT).as_posix()}
+        (OUT / "last" / f"{r['name']}.json").write_text(json.dumps(last, indent=1), encoding="utf-8")
+
+
 def print_table(data):
     print()
     print(f"{'hero':<20}{'win %':>7}{'+-':>6}{'fights':>8}{'secs':>7}{'no winner':>11}   damage a second by source")
@@ -353,7 +364,8 @@ def print_table(data):
 
 async def run(args):
     port = args.port
-    url = f"http://localhost:{port}/"
+    # --drafts: the dev server's ?drafts=1 puts the heroes still going through their gates on the roster (src/heroes/index.ts)
+    url = f"http://localhost:{port}/" + ("?drafts=1" if args.drafts else "")
     # before anything is started, so that all of it inherits the priority
     threads, args.priority_note = be_gentle(args.reserve) if args.priority == "low" else (os.cpu_count() or 4, "normal priority")
     if args.workers <= 0:
@@ -400,6 +412,8 @@ async def run(args):
     stamp = datetime.datetime.now().strftime("%m%d-%H%M")
     name = args.out or f"{args.mode}-{'-'.join(s.replace(' ', '') for s in subjects[:3])}{'-etc' if len(subjects) > 3 else ''}-{stamp}"
     path = write_report(name, data)
+    if args.mode == "hero":
+        write_last(data, path)
     print_table(data)
     print(f"\n{data['meta']['fights']} fights ({data['meta']['simSeconds']} s of fighting) in {data['meta']['wallSeconds']} s")
     print(f"page: {path}")
@@ -423,6 +437,7 @@ def main():
     common.add_argument("--out", default="")
     common.add_argument("--open", action="store_true")
     common.add_argument("--port", type=int, default=5181)
+    common.add_argument("--drafts", action="store_true", help="the heroes still going through their gates on the roster (?drafts=1)")
     common.add_argument("--browser", default="chrome", help="chrome or msedge")
     common.add_argument("--fight-timeout", type=float, default=90, help="real seconds one fight may take")
     common.add_argument("--max-minutes", type=float, default=60)
