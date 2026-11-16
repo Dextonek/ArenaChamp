@@ -9,8 +9,8 @@ updated: 2026-11-16
 Steps 1 and 2 of `docs/pipeline/hero-framework-brief.md` (the user's yes, 2026-11-16): what the 40 heroes are made of today,
 how one hero will live in one folder, the spell building blocks, what must keep working, the risks, and Anka's move planned
 file by file. The fight prints that prove a move changes nothing are taken (section 7). **Step 3 is done: Anka is moved
-(section 10; the page [hero-framework/anka.html](hero-framework/anka.html)). Step 4 is done: the other 39 are in folders too,
-their spells as they were (section 11; the page [hero-framework/progress.html](hero-framework/progress.html)).** The page for
+(section 10; the page [hero-framework/anka.html](hero-framework/anka.html)). Step 4's folder move (4a) is done: the other 39 are in folders too,
+their spells as they were, none on the blocks yet (section 11; the page [hero-framework/progress.html](hero-framework/progress.html)).** The page for
 the user: [hero-framework/index.html](hero-framework/index.html).
 
 ## 1. In short
@@ -483,7 +483,7 @@ group first, then the look makes its objects in the old field order. Shake and t
   (509 KB -> 2,017 KB): the 141 spells moved there.
 - `npx tsc --noEmit -p .`, `npm run build`: pass. `npm run test:server`: 364 checks pass, first run.
 
-## 11. Step 4 done: the other 39 moved (2026-11-16)
+## 11. Step 4a done: the other 39 moved into folders, their spells not yet on the blocks (2026-11-16)
 
 The page for the user: [hero-framework/progress.html](hero-framework/progress.html) (per batch the heroes, their lines before
 and after, the checks, the start size). Five batches, each its own commit after all its checks: 1 Vesper, Lyra, Vitriol, Sefu,
@@ -510,7 +510,7 @@ Vesper's blood kit; Sirix's Swarm Surge uses Marin's `shapeMove`; `heroMode.ts` 
   releases before the look's frame, where several old spells did their look first; bolts need status, pull and `from` in `Hit`).
   The Rust-ported heroes' spells should stay as they are until the port is graded again (`export.js` reads their `settings` keys).
 
-**The checks, per batch** (the script `check.sh` in the session's notes): `npx tsc`; the roster as the game page sees it
+**The checks, per batch** (now `sh pipeline/tools/hero-checks.sh <ref> <out>`): `npx tsc`; the roster as the game page sees it
 (`python pipeline/tools/hero-roster.py take` and `diff`: every kit field by field, tooltips letter for letter, models, bodies,
 passives' fields, a pixel hash of every canvas icon and portrait, the SVGs each hero asks for, every registered spell's targeting,
 bloom, settings and length) identical to the code before step 4; the tool page's self test of the never-cast spells (Sefu E, Tempo
@@ -535,6 +535,13 @@ end); before batch 5 its merge was checked alone (80 of 80).
 - The game's first download (`game` and `runtime`): the main branch alone 6,117 KB (1,664 KB packed); with the 39 moved 6,123 KB
   (1,671 KB), the cards and their files, 0.1% (12 KB before the pointers left the cards).
 - `SMOKE_SLOW=2 npm run test:server`: 364 checks pass.
+- The built game (`vite preview` of `dist`, `/game.html`): 40 heroes in the roster's order, every spell label, no page or console
+  error. The fight prints cannot run there (the scene imports source modules); all other checks ran on the dev server.
+- The tools that find heroes by path see all 40: `sim-cells.py` (max HP), `kits20.py` (names taken), `lore-page.py` (names in the
+  game), `make.py` (41 icon stems named by the cards, none listed by hand). The icon drawings' `draw/*.py` name `src/kits/` only in
+  their head comments. The online check was one run each (mine and the main branch's).
+- **For other branches:** a kit edited on a branch made before these moves now conflicts (its file was split into `hero.ts` and
+  `icons.ts` and moved): redo the edit in the hero's folder.
 
 **Found on the way** (nothing changed; for the list in section 8):
 - `src/effects/parts/index.ts` (the shared parts kit) re-exports Vesper's blood parts, so the shared kit now imports a hero folder.
