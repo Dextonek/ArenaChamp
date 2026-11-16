@@ -143,7 +143,8 @@ export const walkerModel = (chapter: keyof typeof WALKER_MODELS, n: number) => (
 
 /**
  * Walkers' routes beside a floor's trails (offsets from the middle): each trail followed `side` m to its right, cut where `ok` says
- * no (near a pack's fight, the flats...), and the longest runs of at least `min` points (2 m apart) kept, `most` of them.
+ * no (near a pack's fight, the flats...), and the longest runs of at least `min` points (2 m apart) kept, `most` of them, each
+ * 6 m clear of the others.
  */
 export function walkerRoutes(paths: [number, number][][], ok: (x: number, z: number) => boolean, most: number, o: { side?: number; min?: number } = {}) {
   const side = o.side ?? 1.4, runs: { x: number; z: number }[][] = [];
@@ -161,7 +162,15 @@ export function walkerRoutes(paths: [number, number][][], ok: (x: number, z: num
     }
     if (cur.length) runs.push(cur);
   }
-  return runs.filter((r) => r.length >= (o.min ?? 12)).sort((a, b) => b.length - a.length).slice(0, most);
+  // the longest first, each kept only if it keeps 6 m from those already kept (two trails side by side gave two walkers walking
+  // together, the same figure twice)
+  const chosen: { x: number; z: number }[][] = [];
+  for (const r of runs.filter((q) => q.length >= (o.min ?? 12)).sort((a, b) => b.length - a.length)) {
+    if (chosen.length >= most) break;
+    if (chosen.some((c) => r.some((p) => c.some((q) => Math.abs(p.x - q.x) < 6 && Math.abs(p.z - q.z) < 6)))) continue;
+    chosen.push(r);
+  }
+  return chosen;
 }
 
 const turn = (from: number, to: number, k: number) => {
