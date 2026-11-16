@@ -20,7 +20,7 @@ Plays from the camp to the gate with no error and no stuck spot; every person, p
   - ![After](fix-words-after.jpg) After
 - **list: The ruler's name: Captain or Admiral?** The floor calls its ruler “the Drowned Captain” (keeper's line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral's. Renaming floor 1's to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.
   - ![Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”](ruler.jpg) Floor 1's ruler: the Admiral's model under the name “The Drowned Captain”
-- **list: On the map, “The gate up” sits on “The camp”.** The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.
+- **ok: On the map, “The gate up” sat on “The camp”.** Fixed for every floor on floor 2 (names on the M map step aside); this phone picture is from before.
   - ![The M map on a phone](phone-map.jpg) The M map on a phone
 - **ok: The props the probe flagged.** 14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.
   - ![“Float”: pines and oaks past the edge, on their hill](probe-float-1.jpg) “Float”: pines and oaks past the edge, on their hill

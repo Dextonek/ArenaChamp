@@ -29,9 +29,9 @@
    ]
   },
   {
-   "kind": "list",
-   "title": "On the map, “The gate up” sits on “The camp”",
-   "text": "The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.",
+   "kind": "ok",
+   "title": "On the map, “The gate up” sat on “The camp”",
+   "text": "Fixed for every floor on floor 2 (names on the M map step aside); this phone picture is from before.",
    "pics": [
     [
      "phone-map.jpg",
