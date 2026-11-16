@@ -2,7 +2,7 @@
 The heroes' fight prints (docs/pipeline/hero-framework.md, "The fight prints"): one fixed scripted duel per hero, whose
 print must stay the same while heroes are moved into the hero framework.
 
-    python pipeline/tools/hero-prints.py take                 # all 40, each twice: the reference (about 25 min)
+    python pipeline/tools/hero-prints.py take                 # all 40, each twice: the reference (about 10 min)
     python pipeline/tools/hero-prints.py take Anka,Kaia       # only these (added to the reference file)
     python pipeline/tools/hero-prints.py check                # every hero once more, against the reference
     python pipeline/tools/hero-prints.py check Anka           # one hero (about a minute)

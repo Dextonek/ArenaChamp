@@ -18,8 +18,8 @@ the user: [hero-framework/index.html](hero-framework/index.html).
   passive (`trait.ts`), one file per spell (`spells/`), the look parts (`parts.ts`) and the canvas icons (`icons.ts`, now only the
   fallback of the VectorCraft icons). The game finds the folders with `import.meta.glob`; nobody edits a registry.
 - **The page's start gets smaller, not bigger.** Today the game's first download is 7.5 MB of script (2.1 MB compressed), and
-  every one of the 301 spell effects is in it, 122 of them tool-page showcases no hero, boss or floor ever casts (about 18% of
-  that script). The move keeps those on the tool page only, and loads a hero's spells for the fight it is in.
+  every one of the 301 spell effects is in it, 126 of them never needed by the game: 63 tool-page showcases, 60 retired hero
+  spells and 3 tests, which no hero, boss, floor or kept file uses (about 18% of that script). The move keeps those on the tool page only, and loads a hero's spells for the fight it is in.
 - **Blocks for the rules, code for the look.** Of the 163 spells, 55 are plain blocks, 102 are blocks plus a small hook into
   the hero's own passive, and 6 stay code. But the rules are only about an eighth of a spell's lines: the look (particles,
   meshes, timing of the picture) is the rest, and it moves as it is. The blocks make a spell's rules short and in one place, and
@@ -77,6 +77,7 @@ src/heroes/
     spells/emberQuill.ts   one file a spell: its rules (blocks and hooks) and its look (today's drawing code)
     spells/...
     parts.ts               look parts shared by her spells and passive
+    fight.ts               what one fight needs, loaded lazily: `export { spells, parts }` (a line or two)
     icons.ts               the canvas icons and portrait, the fallback behind public/icons/spells/anka-*.svg
 ```
 
@@ -96,7 +97,9 @@ src/heroes/
 - **Icons** (folded in from the merged icon job): the SVGs stay in `public/icons/spells/<stem>-<slot>.svg` (public files are
   served as they are) and their sources in `pipeline/icons/vectorcraft/<stem>/`; the card names its `stem`, so `src/icons/vc.ts`
   can take its `DRAWN` set from the cards instead of the list `make.py` rewrites. The canvas icons move to `icons.ts`, loaded
-  only where an SVG is missing.
+  only where an SVG is missing. The alternative, the SVGs inside the folder (`src/heroes/phoenix/icons/q.svg`, found with
+  `import.meta.glob('./*/icons/*.svg', { query: '?url' })` and hashed by the build), puts the whole hero in one place but moves
+  164 files and the icon tool's output path: worth it only if the user wants the icons in the folder too.
 
 ### The start of the page
 
@@ -108,9 +111,9 @@ What that script is made of (a build of the game page alone, each module's share
 |---|---:|
 | the Climb (`src/tower/`) | 32% |
 | spell effects (`src/spells/targeted/`) | 29% |
-| - of which tool-page showcases no hero, boss or floor casts (122 effects) | 18% |
-| - of which the heroes' 163 spells | 9% |
-| - of which tests and the tool page's own | 1% |
+| - of which the game never needs them (126 files: 63 showcases, 60 retired hero spells, 3 tests) | 18% |
+| - of which the heroes' 163 spells | 10% |
+| - of which other spells the game uses (a Climb ruler's burrow, files the kept ones import) | 1% |
 | three.js | 10% |
 | shared effects and parts (`src/effects/`) | 9% |
 | kits (mostly canvas icons) | 4% |
@@ -118,12 +121,14 @@ What that script is made of (a build of the game page alone, each module's share
 | traits | 2% |
 
 How it stays the same or shrinks, in three steps, each measured with `python pipeline/tools/perf.py load` before and after:
-1. **With the first moved hero:** the game registers only the spells a card, a boss or a floor names; the showcases stay in the
-   tool page's list (`src/effects/index.ts`). About a fifth of the start goes at once, with no lazy loading at all.
+1. **With the first moved hero:** the game registers only the spells a card, a boss or a floor names; the showcases and the
+   retired spells stay in the tool page's list (`src/effects/index.ts`). Counted by label (single or double quotes) and by
+   import: none of the 126 is imported by a kit, a passive, a boss, the Climb or another kept spell. About a fifth of the start goes at once, with no lazy loading at all.
 2. **Spells per fight:** each hero's `fight.ts` (spells, parts) is loaded before the fight's warm-up. Another tenth.
 3. **Icons:** the canvas icons load only where an SVG is missing. A few per cent.
-The traits stay in the start at first (2%): the duel builds a hero's passive in `start()`, before any wait, and the menu reads its
-name and blurb. They can follow once the card holds the menu's part.
+The traits stay in the start at first (2%), and so do the look parts the 24 passives import (part of the 9% of `src/effects/`):
+the duel builds a hero's passive in `start()`, before any wait, and the menu reads its name and blurb. They can follow once the
+card holds the menu's part.
 
 **What lazy spells require (a hook in the shared engine, for step 3, one writer at a time):** the load must be awaited, not raced,
 before `Duel.whenReady` builds the effects (today it races a 12 s timer, `duel.ts:2056`; a spell built after the fight starts rolls
@@ -197,8 +202,8 @@ interface Rules {
 
 `spell({ card, rules, look })` makes the `EffectModule` the engine knows today: the block runner calls `ctx.projectile`,
 `ctx.hit`, `ctx.moveCaster`, `ctx.summon` ... at the moments the rules say, builds the **danger zones from the same shape and
-times** (today each spell writes its own `telegraphs`), builds the online fallbacks every spell repeats today (the quill's stop
-along the aim when no bolt flies on that screen; walls and rings from `sentFrom`), and gives the look a small set of moments:
+times** (today each spell writes its own `telegraphs`), builds walls, rings and lanes from `sentFrom` and `point` so both
+screens agree, and gives the look a small set of moments:
 `cast`, `frame(t)`, `released`, `flying(pos, dir)`, `hit(at)`, `stopped(at)`, `landed(at)`. The card's blurb is written as a
 function of the numbers, so a tooltip can no longer disagree with the hit.
 
@@ -287,9 +292,10 @@ block says it, and it moves into `src/heroes/mason/spells/theShove.ts` as the cl
    code and its order of rolls; effects are still built in the warm-up, in the same label order. When a print does differ, find
    the first frame where the two runs part with the trace option (`--set "{\"trace\": ...}"`, docs/pipeline/performance.md) before
    believing either.
-2. **A model that loads mid-fight changes the fight.** Seen while taking the prints: in a duel that drew a new opponent each
-   round (Isolde against herself is refused, so the duel drew one by lot), the new opponent's model came in during the fight and
-   the two runs parted at 41.5 s. The prints avoid it (both models load before the fight); lazy spells must do the same.
+2. **Something that arrives mid-fight changes the fight.** Seen while taking the prints: in a duel that drew a new opponent each
+   round (Isolde against herself is refused, so the duel drew one by lot), two runs of the same code parted at 41.5 s, in a later
+   round. Most likely the new opponent's model (or its spells, built at their first cast) came in at a moment real time chose; not
+   traced further. The prints avoid it (both heroes and all their spells are ready before the fight); lazy spells must do the same.
 3. **Lazy loading** (section 3): the 12 s race in `whenReady`, the asserted targeting in `heroMode.ts:1040`, the silent empty
    `castAs`, open-world players. The safe order is the one in section 3: showcases out first, spells per fight second.
 4. **The shared engine files** (`heroMode.ts`, `duel.ts`, `arena.ts`, `main.ts`) need small changes for lazy spells and for the
@@ -342,11 +348,13 @@ Checked by me in the code (file and line), unless marked *by reading*: then an a
   Rust: the port should be checked for the same.
 - The CPU's rule that holds spells during Isolde's ice block and Oblivion's maw never fires: no passive writes `iceUntil`,
   `mawCast` or `mawUntil` any more (`duel.ts:2780-2784`).
-- Kit flags: Ember Flight has no `dash`, World Tree and Sinkhole (they root) no `cc`, Shadow Double (it summons) no `summon`,
-  Stampede no `aim: 'line'`; Chain Hammer and Shepherd's Crook have `cc` but only pull and slow. These change what the CPU does.
+- Kit flags that do not match what the spell does (they may be meant: the user decides): Ember Flight has no `dash` (it has its
+  own `aiHold` and ember pick; the flag would hand it to the CPU's gap-closer rule), World Tree and Sinkhole (they root) no `cc`,
+  Shadow Double (it summons) no `summon`, Stampede no `aim: 'line'`; Chain Hammer and Shepherd's Crook have `cc` but only pull and
+  slow. Each changes what the CPU does, so none is touched by the move.
 - Rules timed on the wall clock (`performance.now()`) instead of the round's clock, *by reading*: the recasts of Crosswind,
   Barbed Stinger and Oblivion's Collapse, Tempo's Stolen Hour and Slow Time, Big Yoko's ring, and the objects of Gus, Mabel,
-  Grandma Ironknit, Wick and Pip's Final Delivery. 30 spell files and 15 passives read it, some only for their look.
+  Grandma Ironknit, Wick and Pip's Final Delivery. 30 spell files and 22 passives read it, some only for their look.
 
 **Online** (*by reading*)
 - Fenna's Uproot may be recast up to 9.2 s after World Tree (`traits/grove.ts:214`), but the server lets a second R through only
@@ -369,7 +377,10 @@ Checked by me in the code (file and line), unless marked *by reading*: then an a
   these now. `rust-sim.md` says six heroes are ported; there are seven. `heroes.ts:197` says no body is under 2.33 m; five are.
 - Two modules are both exported as `blackHoleModule` (`effects/blackHole.ts:463`, `spells/targeted/blackHole.ts:418`).
 - `pipeline/rustfull/guard.py` already fails today (15 changes since its last stamp).
-- 122 tool-page showcase effects ship in the game's start (section 3).
+- 126 spell files the game never uses ship in its start (section 3).
+- Ember Quill's "no bolt on this screen" branch (`emberQuill.ts`, the `nominalStop` path) never runs in the game: every cast
+  context has `ctx.projectile`, online too (`arena.ts:401`, `922`); a bolt flies on both screens and her passive moves the ember to
+  where the deciding screen says (`noteOwner('lay')`). Its header comment, and the same claim in `targeting.ts`, are out of date.
 - The audit files with every finding (177 entries, most of them stale comments) are kept with this design's working notes in
   the session; the list above is what matters for play.
 
@@ -380,7 +391,7 @@ Checked by me in the code (file and line), unless marked *by reading*: then an a
 | `src/kits/phoenix.ts` (650) | `src/heroes/phoenix/hero.ts` (~90: the card, the four spell cards with blurbs from the numbers) and `icons.ts` (~550, moved as is) | `order: 39`, `model: 'models/heroes/phoenix_v4.glb'`, `body: { radius: 0.4, height: 2.4 }`, `shop: { kind: 'caster', shelf: 3 }`, `icons: 'anka'` |
 | top of `src/traits/phoenix.ts` (the 30 numbers) | `numbers.ts` | read by the card, the spells, the passive and the Rust export |
 | `src/traits/phoenix.ts` (the rest) | `trait.ts` | the ember book and its hooks as they are |
-| `emberQuill.ts` (363) | `spells/emberQuill.ts` | bolt (22 m/s, 10 m, r 0.3, wind-up 0.3), hit 54 and knock 1; `on.stop` lays the ember (`layEmber`) where the quill stops, on the bolt's screen at the hit or the end, on the other along the aim (the runner's online fallback) |
+| `emberQuill.ts` (363) | `spells/emberQuill.ts` | bolt (22 m/s, 10 m, r 0.3, wind-up 0.3), hit 54 and knock 1; `on.stop` lays the ember (`layEmber`) where the quill stops (the hit, a wall or its full reach); the passive's `lay` note keeps both screens' ember in one place, as today. The dead no-bolt branch is not carried over (or kept as is, if the print says it matters) |
 | `fanTheFlames.ts` (307) | `spells/fanTheFlames.ts` | circles at her embers (`at: (c) => embers`, r 2.2), delay 0.8, one hit of 54 however many rings, live positions; `on.end` burns the embers out (`burnOut`) |
 | `emberFlight.ts` (288) | `spells/emberFlight.ts` | `move: dash` to the chosen ember (a hook: the CPU's pick or the one nearest the aim), 0.25 + 0.45 s; circle r 1.8 at the landing, hit 40; `on.land` spends the ember. Gains the missing `dash` flag only if the user says so (it changes the CPU) |
 | `firebird.ts` (341) | `spells/firebird.ts` | wind-up 1.0 (rooted), lane 12 x 3, `move: dash` along it in 0.5 s, hit 120 as the bird's front passes; `on.release` lays the take-off ember |

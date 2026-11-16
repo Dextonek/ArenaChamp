@@ -105,6 +105,7 @@ td.r { text-align: right; font-variant-numeric: tabular-nums; }
     emberFlight.ts
     firebird.ts
   parts.ts         <em>feathers, nest, egg</em>
+  fight.ts         <em>what a fight loads: her spells and parts</em>
   icons.ts         <em>the old canvas icons, only where an SVG is missing</em>
 <em>public/icons/spells/anka-q.svg ... stay where they are</em>
 <em>The game finds the folder by itself: no list to edit.</em></div>
@@ -186,7 +187,7 @@ telegraphs() { /* the same line again */ }
   <p>Today 7.5 MB of script loads before the first picture (2.1 MB compressed). What it is made of:</p>
   <div class="stack" id="start"></div>
   <div class="legend" id="start-l"></div>
-  <p>The orange part, effects of the tool page that no hero, boss or floor casts, leaves the game with the first move. The hero
+  <p>The orange part, spells the game never uses (tool-page showcases, retired hero spells, tests), leaves the game with the first move. The hero
     spells then load per fight. The start gets smaller, never bigger.</p>
 
   <h2>The fight prints</h2>
@@ -201,12 +202,13 @@ telegraphs() { /* the same line again */ }
     <li><b>Madame Cleaver's table heals the enemy 50 too</b>; the tooltip says the 50 is for her.</li>
     <li><b>Gus's Flood bonus does nothing:</b> the mop's flood damage equals its normal damage.</li>
     <li><b>Late Fee, Foreclosure, Lightning Risk</b> only hit who stood in the circle at the cast, not who walks in.</li>
-    <li><b>Six kit flags are wrong or missing</b> (Ember Flight is a dash without the flag ...): the CPU uses them.</li>
+    <li><b>Six kit flags do not match their spell</b> (Ember Flight is a dash without the flag ...). They may be meant, and the CPU
+      reads them: yours to decide; the move leaves them as they are.</li>
     <li><b>Some rules run on the computer's clock</b> instead of the fight's (recasts of Crosswind, Barbed Stinger, Collapse ...).</li>
     <li><b>Online:</b> a late Uproot and a quick second Tag Out are dropped by the server; old hits make the HP drift.</li>
     <li><b>A dead CPU rule</b> (Isolde's ice block, Oblivion's maw) never fires.</li>
     <li><b>About 80 spell comments give old numbers</b>; the tooltips are right (but for 3).</li>
-    <li><b>122 showcase effects</b> no hero casts ship in the game's start.</li>
+    <li><b>126 spell files the game never uses</b> (showcases, retired hero spells, tests) ship in its start.</li>
   </ul>
   <p class="sub">The full list with files and lines is in section 8 of the design.</p>
 </main>
@@ -247,8 +249,8 @@ const stack = (id, parts) => {
   document.getElementById(id + '-l').innerHTML = parts.map(([k, v, c]) => `<span><i style="background:${c}"></i>${k} ${v}%</span>`).join('');
 };
 stack('fit', [['plain blocks', 34, '#1baf7a'], ['blocks + a small hook', 63, '#2a78d6'], ['stay code', 4, '#eb6834']]);
-stack('start', [['the Climb', 32, '#6250d6'], ['tool showcases no hero casts', 18, '#eb6834'], ['hero spells', 9, '#2a78d6'], ['three.js', 10, '#7d7a72'],
-  ['effects and parts', 9, '#1baf7a'], ['kits (icons)', 4, '#eda100'], ['arenas, Raid, motion', 9, '#e87ba4'], ['the rest', 9, '#a8a397']]);
+stack('start', [['the Climb', 32, '#6250d6'], ['spells the game never uses', 18, '#eb6834'], ['hero spells', 10, '#2a78d6'], ['three.js', 10, '#7d7a72'],
+  ['effects and parts', 9, '#1baf7a'], ['kits (icons)', 4, '#eda100'], ['arenas, Raid, motion', 9, '#e87ba4'], ['the rest', 8, '#a8a397']]);
 const pr = document.getElementById('prints');
 pr.innerHTML = PRINTS.map((p) => `<div class="print${p.ok ? '' : ' bad'}"><b>${p.name}</b><code>${p.a || 'differs'} · ${p.b || 'differs'}</code></div>`).join('') || '<p>not taken</p>';
 const missing = PRINTS.filter((p) => p.never && p.never.length);

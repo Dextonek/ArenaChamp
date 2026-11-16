@@ -11,8 +11,11 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
   W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
   cartoon (redraw as engraved gold?). Not tried on Safari.
-- The hero framework, steps 1 and 2 only (the audit and design `docs/pipeline/hero-framework.md`, all 40 fight prints on today's
-  code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
+- **Done on `t3/hero-framework-audit-prints`, not merged (2026-11-16): the hero framework, steps 1 and 2.** The design
+  `docs/pipeline/hero-framework.md`, its page `docs/pipeline/hero-framework/index.html`. Two fight prints per hero, all 40 repeat:
+  `python pipeline/tools/hero-prints.py check` and `check --foe Brannoc` (references `docs/perf/data/hero-prints*.json`). Not proven
+  by the prints: Sefu E, Tempo E, Mr. Ledger E and R, Pip R (never cast in them). Waiting on the user: the design's yes, and the
+  "found broken" list (section 8: the table that heals the enemy, the Flood bonus, six kit flags...). Step 3 (move Anka) next.
 - The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
   floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
