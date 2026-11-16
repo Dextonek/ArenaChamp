@@ -1,4 +1,4 @@
-import { HERO_SHOP } from '../../server/protocol.mjs';
+import { HERO_SHOP, rTiming } from '../../server/protocol.mjs';
 import type { HeroCard } from './framework/card';
 
 /**
@@ -27,5 +27,8 @@ if (import.meta.env.DEV) {
     if (!row || row.kind !== c.shop.kind || row.shelf !== c.shop.shelf) {
       console.error(`${c.kit.name}: the card's shop row ${JSON.stringify(c.shop)} is not the server's (HERO_SHOP in server/protocol.mjs: ${JSON.stringify(row)})`);
     }
+    // The hub drops an R that comes sooner than its gap for the hero: the other screen would never see it.
+    const r = c.kit.spells[3], gap = rTiming(c.kit.name).gapMs;
+    if (r && r.cooldown * 1000 < gap) console.error(`${c.kit.name}: R comes back after ${r.cooldown} s, but the hub lets an R through only every ${gap / 1000} s (R_TIMING in server/protocol.mjs)`);
   }
 }

@@ -15,6 +15,7 @@
 //   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
 //   node server/smoke-test.mjs --world                 (only the Climb's open world: a few seconds)
 //   node server/smoke-test.mjs --social                (only the leaderboards and clans: about 45 s)
+//   node server/smoke-test.mjs --relay                 (only the late R casts some heroes send: about 15 s)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server with the shop off, e.g. `npm run cf:dev` with
 //                                                       SHOP "off"; unique names per run; the shop's cases are left out)
 import { createServer } from 'node:http';
@@ -35,6 +36,7 @@ const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_B
 const onlyShop = process.argv.includes('--shop');
 const onlyWorld = process.argv.includes('--world');
 const onlySocial = process.argv.includes('--social');
+const onlyRelay = process.argv.includes('--relay');
 const target = process.argv.slice(2).find((x) => !x.startsWith('--'));
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
@@ -1170,8 +1172,67 @@ async function socialCases() {
   return lines;
 }
 
+/**
+ * The R casts the hub must let through for the heroes whose R does not fit its defaults (docs/pipeline/hero-framework.md,
+ * section 8): Fenna's Uproot, recast up to 9.2 s after World Tree, and Pim and Pom's Tag Out, whose cooldown is 8 s. On a server
+ * of its own (it waits about 9 s), beside the rest; its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function relayCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} relay: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-relay.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  try {
+    const x = await client(to), y = await client(to);
+    for (const [c, name] of /** @type {[any, string][]} */ ([[x, 'relay_fenna'], [y, 'relay_twins']])) {
+      c.send({ t: 'register', name: `${name}${tag}`, password: 'pw1234' });
+      await c.next('session');
+    }
+    x.send({ t: 'lobby_create' });
+    y.send({ t: 'lobby_join', code: (await x.next('lobby')).lobby.code });
+    await y.next('lobby');
+    x.send({ t: 'lobby_pick', hero: 'Fenna' }); x.send({ t: 'lobby_ready', ready: true });
+    await pause(150);
+    y.send({ t: 'lobby_pick', hero: 'Pim and Pom' }); y.send({ t: 'lobby_ready', ready: true });
+    await x.next('match_start'); await y.next('match_start');
+    x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+    await x.next('match_fight'); await y.next('match_fight');
+    await pause(3200);
+    // Both R now; Fenna's Uproot 5 s later (World Tree's recast is open 9.2 s), Pim and Pom's second Tag Out 8.1 s later.
+    x.send({ t: 'cast', id: 1, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    y.send({ t: 'cast', id: 1, slot: 3, x: 0, z: 13, fx: 0, fz: 13, enemy: false });
+    await Promise.all([y.next('peer_cast'), x.next('peer_cast')]);
+    await pause(5000);
+    x.send({ t: 'cast', id: 2, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    await pause(3100);
+    y.send({ t: 'cast', id: 2, slot: 3, x: 0, z: 13, fx: 0, fz: 13, enemy: false });
+    const late = await y.next('peer_cast', 3000).catch(() => null);
+    ok(late?.id === 2 && late.slot === 3, 'a late Uproot (5 s after World Tree) reaches the other screen');
+    const tag2 = await x.next('peer_cast', 3000).catch(() => null);
+    ok(tag2?.id === 2 && tag2.slot === 3, "Pim and Pom's second Tag Out 8.1 s after the first reaches the other screen");
+    // Still one free second R only: a third R of Fenna's within the gap is dropped.
+    x.send({ t: 'cast', id: 3, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    ok(!(await y.next('peer_cast', 1500).catch(() => null)), "a third R of Fenna's within the gap is still dropped");
+    x.close(); y.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+  }
+  server.close();
+  return lines;
+}
+
 // The shop's cases, the world's and the social ones run beside the rest, on their own servers.
-const only = onlyShop || onlyWorld || onlySocial;
+const only = onlyShop || onlyWorld || onlySocial || onlyRelay;
+const relayRun = target || (only && !onlyRelay) ? null : relayCases();
 const shopRun = target || (only && !onlyShop) ? null : shopCases();
 const worldRun = target || (only && !onlyWorld) ? null : Promise.all([worldCases(), packCases(), doorCases()]).then((l) => l.flat());
 const socialRun = target || (only && !onlySocial) ? null : socialCases();
@@ -2451,6 +2512,7 @@ if (!only) try {
 } catch (e) {
   check(false, String(e));
 }
+if (relayRun) for (const line of await relayRun) console.log(line);
 if (shopRun) for (const line of await shopRun) console.log(line);
 else console.log('     the shop, the ranks and the boards were not played: they need servers of their own');
 if (worldRun) for (const line of await worldRun) console.log(line);

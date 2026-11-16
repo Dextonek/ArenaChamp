@@ -206,6 +206,24 @@ export const SHOP = {
   newest: { hero: 'Anka', price: 1500, until: '2026-12-10' },
 };
 
+/**
+ * How soon the hub lets a hero's R through again (it keeps no kits, so it cannot know a cooldown). `gapMs`: the least time between
+ * two R casts; `recastMs`: one free second R (a recast that plays an effect, `Trait.recast` with `replay` on) may follow the first
+ * this soon after it, once. A hero not named here has `R_TIMING.default`. A row is needed where a kit's R does not fit the default:
+ * Pim and Pom's Tag Out comes back after 8 s, and Fenna's Uproot may be recast up to 9.2 s after World Tree (Hank's Timber 4 s
+ * after the row, the default's very edge). src/heroes/index.ts checks the cards' R cooldowns against `gapMs` in development.
+ */
+export const R_TIMING = {
+  default: { gapMs: 10000, recastMs: 4500 },
+  Fenna: { gapMs: 10000, recastMs: 9700 },
+  'Pim and Pom': { gapMs: 7500, recastMs: 4500 },
+};
+
+/** The R timing the hub applies to `hero`. @param {string | null | undefined} hero */
+export function rTiming(hero) {
+  return (hero && Object.hasOwn(R_TIMING, hero) ? R_TIMING[hero] : null) ?? R_TIMING.default;
+}
+
 /** The starter roster: free for everyone, with or without an account. */
 export const STARTERS = Object.keys(HERO_SHOP).filter((h) => HERO_SHOP[h].shelf === 0);
 
