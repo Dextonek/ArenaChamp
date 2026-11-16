@@ -61,7 +61,10 @@ export function buildLife(c: ZoneCtx, law: Law | null): Life | null {
           const mesh = o as THREE.SkinnedMesh;
           if (!mesh.isMesh) return;
           if (mesh.isSkinnedMesh) { for (const mt of [mesh.material].flat()) mt.dispose(); mesh.skeleton?.dispose(); }
-          else mesh.geometry.dispose();
+          else {
+            mesh.geometry.dispose();
+            if ((o as THREE.InstancedMesh).isInstancedMesh) (o as THREE.InstancedMesh).dispose(); // its instance buffers
+          }
         });
       });
     },

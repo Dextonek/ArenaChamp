@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../../arenas/common';
 import type { FloorDef } from '../def';
 import { floorKeep } from '../keep';
@@ -95,6 +96,9 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
     return t;
   })();
   const nets = new Cloth(env, 24, { map: netTex, alphaTest: 0.5 });
+  /** Where some things went (the tools: pipeline pictures look at them). */
+  const where: Record<string, { x: number; z: number }[]> = { nets: [], boats: [], walkers: [] };
+  env.group.userData.where = where;
   const mtx = (x: number, y: number, z: number, yaw: number) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(1, 1, 1));
   /** A pennant at (x, y, z) on a staff, flying downwind. */
   const pennant = (x: number, y: number, z: number, w: number, h: number, color: number) => cloth.add(mtx(x, y, z, downwind + (rnd() - 0.5) * 0.3), w, h, color, 0);
@@ -171,6 +175,7 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
     }
     kit.add(mats.wood, new THREE.CylinderGeometry(0.045, 0.045, 3.45, 6).rotateZ(Math.PI / 2), p.x, top - 0.05, p.z, yaw);
     for (let k = -2; k <= 2; k++) kit.add(mats.glass, new THREE.SphereGeometry(0.11, 8, 6), p.x + ux * k * 0.62, top - 0.17, p.z + uz * k * 0.62);
+    where.nets.push({ x: p.x, z: p.z });
     nets.add(mtx(p.x - ux * 1.55, top - 0.05, p.z - uz * 1.55, yaw).multiply(new THREE.Matrix4().makeTranslation(0, -1.8, 0)), 3.1, 1.8, PAL.rope, 1, 0.6);
   }
   counts.nets = nets.count;
@@ -277,7 +282,7 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
     for (const [s, side] of [[5, 2.55], [9.5, -2.55]] as const) {
       if (lite && s > 6) continue;
       const x = RING.x + ux * (r0 + s) - uz * side, z = RING.z + uz * (r0 + s) + ux * side;
-      if (wet(x, z)) rowing.add(x, WATER + 0.16, z, jy + (rnd() - 0.5) * 0.15, 0.8);
+      if (wet(x, z)) { rowing.add(x, WATER + 0.3, z, jy + (rnd() - 0.5) * 0.15, 0.8); where.boats.push({ x, z }); }
     }
   }
   const nSail = lite ? 2 : 3;
@@ -286,7 +291,7 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
     let ok = true;
     for (let i = 0; i < 10 && ok; i++) ok = wet(cx + Math.cos(i * 0.63) * (rr + 4), cz + Math.sin(i * 0.63) * (rr + 4));
     if (!ok) continue;
-    const it = sailing.add(cx, WATER + 0.22, cz, 0, 1.2, { r: rr, w: (rnd() < 0.5 ? 1 : -1) * (0.035 + rnd() * 0.02), cx, cz });
+    const it = sailing.add(cx, WATER + 0.36, cz, 0, 1.2, { r: rr, w: (rnd() < 0.5 ? 1 : -1) * (0.035 + rnd() * 0.02), cx, cz });
     // the sail: held on the mast, out over the stern; a pennant at the mast's head
     sailing.sail(it, new THREE.Matrix4().makeRotationY(Math.PI / 2).premultiply(new THREE.Matrix4().makeTranslation(0, 1.1, 0.35)), 2.3, 3.5, PAL.cream);
     sailing.sail(it, new THREE.Matrix4().makeRotationY(downwind).premultiply(new THREE.Matrix4().makeTranslation(0, 5.0, 0.35)), 0.9, 0.3, PAL.wine, 0);
@@ -294,11 +299,11 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
   }
   {
     const hull = (sx: number, sy: number, sz: number) => new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(sx, sy, sz);
-    const paintMat = palMat(env, 0xffffff, { roughness: 0.6 }), goldMat = goldOf(env), plankMat = palMat(env, PAL.plank), woodMat = palMat(env, PAL.wood);
+    const paintMat = palMat(env, 0xffffff, { roughness: 0.6, side: THREE.DoubleSide }), goldMat = goldOf(env), plankMat = palMat(env, PAL.plank), woodMat = palMat(env, PAL.wood);
     rowing.build([
       { geo: hull(0.72, 0.42, 1.75), mat: paintMat, paint: [PAL.wine, PAL.teal, PAL.lacquer, PAL.teal] },
       { geo: torus(1, 0.035).scale(0.72, 1, 1.75), mat: goldMat },
-      { geo: new THREE.BoxGeometry(1.3, 0.06, 0.28).translate(0, -0.05, 0.4).toNonIndexed(), mat: plankMat },
+      { geo: mergeGeometries([new THREE.BoxGeometry(1.3, 0.06, 0.28).translate(0, -0.05, 0.4), new THREE.BoxGeometry(0.9, 0.05, 2.6).translate(0, -0.3, 0), new THREE.BoxGeometry(1.3, 0.06, 0.28).translate(0, -0.05, -0.7)])!, mat: plankMat },
     ]);
     sailing.build([
       { geo: hull(1.05, 0.6, 2.6), mat: paintMat, paint: [PAL.teal, PAL.wine, PAL.lacquer] },
@@ -365,6 +370,7 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
     const chosen = runs.filter((r) => r.length >= 12).sort((a, b) => b.length - a.length).slice(0, area > 2 ? 3 : 2);
     const stand = `models/tower/${def.n % 2 === 1 ? 'sea_pedlar' : 'sea_trader'}_v4.glb`;
     walkers = new Walkers(env, chosen, () => stand, inp.danger);
+    for (const r of chosen) where.walkers.push(r[Math.floor(r.length / 2)]);
   }
   counts.walkers = walkers?.count ?? 0;
 

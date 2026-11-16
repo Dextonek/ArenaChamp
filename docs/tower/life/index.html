@@ -119,6 +119,16 @@ before (checked: the same fight to the last number, life on or off).</p>
   <figure class="after"><img src="f8-beacon-after.jpg" alt="Floor 8: the beacon, after: smoke, gulls" loading="lazy"><figcaption><b>After:</b> smoke, gulls</figcaption></figure>
 </div>
 
+<h3>Floor 1: at the water, from low on the shore (the game's camera seldom looks this way; this is to see the boats)</h3>
+<div class="pair">
+  <figure><img src="water-before.jpg" alt="A jetty and the sea, before" loading="lazy"><figcaption><b>Before</b> (the pale patches are the sea's own foam)</figcaption></figure>
+  <figure class="after"><img src="water-after.jpg" alt="The jetty with two rowing boats moored, a pole with a pennant, rings on the water, sails off shore" loading="lazy"><figcaption><b>After:</b> two rowing boats moored at the jetty, a marker pole with its pennant, rings on the water, fishing boats under sail off shore</figcaption></figure>
+</div>
+<div class="pair" style="margin-top:10px">
+  <figure class="after"><img src="water-net.jpg" alt="Nets drying on stakes in the shallows, glass floats along the top" loading="lazy"><figcaption><b>After:</b> nets drying on stakes in the shallows, glass floats along their tops</figcaption></figure>
+  <figure class="after"><video src="walker.mp4" poster="walker.jpg" controls muted loop playsinline preload="none"></video><figcaption><b>A walker</b> (floor 5), from close by: the stand-in figure on the game's own walking clip</figcaption></figure>
+</div>
+
 <h2>On a phone</h2>
 <p>Phones get a lighter set: 20 gulls instead of 44, no walking people, no leaping fish, fewer rings and boats. Smoke, cloth and the
 small things stay (they cost almost nothing).</p>
@@ -139,10 +149,13 @@ several milliseconds on the slowed phone). The middle frame, in milliseconds:</p
   <li><b>Computer:</b> about 0.3 ms on floor 1 and about 1 ms on floor 5, most of it the walking people (three skinned figures).
     Sure of this within a few tenths.</li>
   <li><b>Phone:</b> somewhere between 2 and 5 ms of about 30 (the second pair, measured when the computer was quieter, says about 2.5).
-    Sure of the direction, not of the size: the slowed processor is the limit there and each extra draw costs it. If that is too much,
-    the boats can become one draw instead of six and the small things fewer, which would take about half of it back.</li>
+    Sure of the direction, not of the size: two runs under the same condition differ by as much as the cost itself. The slowed
+    processor is the limit there and each extra draw costs it; if it is too much, the boats can be drawn with fewer draws and the small
+    things made fewer (how much that saves is not measured), or the life can be switched off on phones.</li>
   <li><b>The fights are the same fights:</b> every run, life on or off, printed the same fight (floor 1 <code>98b0044a</code>, floor 5
-    <code>635120e1</code>).</li>
+    <code>635120e1</code>). The speed tool's saved fights (<code>docs/perf/data/prints.json</code>) are older than today's code (floor 1 printed
+    <code>98b0044a</code> today with no life code at all, against <code>d862aa08</code> there), so the check is life off against life on, on
+    today's code.</li>
 </ul>
 
 
@@ -154,6 +167,7 @@ to mend, carrying a load); they would be added to the game's clip file with them
 <div class="note ask"><b>2. Sound.</b> The game has no sound at all yet, so I added none. Gulls, surf and a bell would suit the Sea well,
 but it is a new system for the whole game: your call.</div>
 <div class="note ask"><b>3. How much.</b> More gulls, fewer? Smoke stronger or as it is (I kept it soft so it never reads as a glow)?</div>
+<div class="note ask"><b>4. Phones.</b> Keep the lighter set on phones (it costs a few milliseconds there), or switch the life off on phones.</div>
 <div class="note"><b>For another agent's file (not changed by me).</b> The land's own boats, sails and the town's houses past the edge are
 drawn in <code>src/tower/world/land.ts</code>, which I may not touch. To let their sails move and their chimneys smoke, and to keep my
 moored boats off its boats for sure, land.ts would only need to leave what it drew where the life can read it:
