@@ -5,6 +5,7 @@ import type { SummonUnit } from '../../effects/summon';
 import type { BoltWall } from '../../effects/projectile';
 import type { CastContext } from '../../effects/targeting';
 import type { MinionLook } from '../../effects/parts/minion';
+import { fightNow } from '../../fightClock';
 
 /** Knitting Needle (Q): damage, reach (m), speed (m/s), wind-up (s) and the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
 export const NEEDLE_DAMAGE = 62;
@@ -55,7 +56,7 @@ export const BISCUIT_NEAR = 4;
 export const BISCUIT_PLAY = 1;
 export const BISCUIT_AI_MAX = 9;
 
-/** One line of yarn. `x1,z1`: her end. `x2,z2`: the far end, tied to cover (`tied`) or to nothing, 9 m out. Times are `performance.now()` milliseconds. */
+/** One line of yarn. `x1,z1`: her end. `x2,z2`: the far end, tied to cover (`tied`) or to nothing, 9 m out. Times are `fightNow()` milliseconds. */
 export interface YarnLine {
   /** Unique per figure, the same on both screens (a count of lines made at the casts, wrapping at 900: a `show` value is capped at 999): the cut message names it. */
   id: number;
@@ -114,7 +115,7 @@ export function newLine(b: YarnBook, x1: number, z1: number, x2: number, z2: num
     hitAt: -99, ctx: null, unit: null, bw: null, book: b,
   };
   // Forget what ended long ago.
-  const now = performance.now();
+  const now = fightNow();
   b.lines = b.lines.filter((k) => !k.gone || now - k.goneAt < 1500);
   b.lines.push(l);
   return l;
@@ -128,7 +129,7 @@ export function dropLine(l: YarnLine, cut: boolean) {
   if (l.gone) return;
   l.gone = true;
   l.cut = cut;
-  l.goneAt = performance.now();
+  l.goneAt = fightNow();
   l.bw?.end();
   l.bw = null;
   if (l.unit?.alive) l.unit.left = 0;
@@ -188,7 +189,7 @@ function attachUnit(ctx: CastContext, l: YarnLine) {
 export function raiseLine(ctx: CastContext, l: YarnLine) {
   l.raised = true;
   l.ctx = ctx;
-  l.bornAt = performance.now();
+  l.bornAt = fightNow();
   attachUnit(ctx, l);
   l.bw = ctx.boltWall?.({
     a: new THREE.Vector3(l.x1, 0, l.z1), b: new THREE.Vector3(l.x2, 0, l.z2), halfWidth: LINE_HALF, seconds: LINE_SECONDS,
@@ -229,7 +230,7 @@ export interface CatPlay { seen: number; x: number; z: number; until: number; pl
  * of it, then it stays about `BISCUIT_PLAY` s playing with it. Null: its usual run. `out` is reused.
  */
 export function catGoal(b: YarnBook, st: CatPlay, pos: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 | null {
-  const now = performance.now();
+  const now = fightNow();
   for (const c of b.cuts) {
     if (c.at <= st.seen) continue;
     st.seen = c.at;
@@ -289,7 +290,7 @@ export const yarnTrait: Trait = {
     fresh(t);
     const b = yarnBooks.get(t.self());
     if (!b || b.lines.length === 0) return [];
-    const now = performance.now(), out: GroundMark[] = [];
+    const now = fightNow(), out: GroundMark[] = [];
     for (const l of b.lines) {
       if (!l.raised) continue;
       const len = Math.hypot(l.x2 - l.x1, l.z2 - l.z1), yaw = Math.atan2(l.x2 - l.x1, l.z2 - l.z1);
@@ -307,7 +308,7 @@ export const yarnTrait: Trait = {
   enemyLabel(t) {
     const b = yarnBooks.get(t.self());
     if (!b) return null;
-    const now = performance.now(), s = b.sweater;
+    const now = fightNow(), s = b.sweater;
     if (s && now < s.at + SWEATER_SLOW * 1000) return { text: 'KEEP WARM', color: YARN_CSS.hot };
     if (now - b.tangleAt < 1400) return { text: 'TANGLED', color: YARN_CSS.hot };
     return null;
@@ -342,7 +343,7 @@ export const yarnTrait: Trait = {
       // The crossing: the enemy's way since the last frame against the line. Only the enemy hero is caught.
       if (step > 1e-6 && step < CROSS_STEP && t.time - l.hitAt >= CROSS_GUARD && segCross(lx, lz, p.x, p.z, l.x1, l.z1, l.x2, l.z2)) {
         l.hitAt = t.time;
-        b.tangleAt = performance.now();
+        b.tangleAt = fightNow();
         t.hitEnemy({ damage: 0, knock: 0, color: YARN_CSS.pink, status: { kind: 'root', seconds: CROSS_ROOT } });
         t.hitEnemy({ damage: 0, knock: 0, color: YARN_CSS.pink, status: { kind: 'slow', seconds: CROSS_ROOT + CROSS_SLOW } });
         t.noteOwner('tangle', 1);
@@ -366,7 +367,7 @@ export const yarnTrait: Trait = {
   peerNote(t, name, n) {
     const b = yarnBooks.get(t.self());
     if (!b) return;
-    if (name === 'tangle') { b.tangleAt = performance.now(); return; }
+    if (name === 'tangle') { b.tangleAt = fightNow(); return; }
     if (name !== 'cut') return;
     const l = b.lines.find((k) => k.id === n);
     if (l) { l.told = true; dropLine(l, true); }

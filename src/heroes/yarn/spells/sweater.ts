@@ -7,6 +7,7 @@ import type { Enemy } from '../../../effects/common';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 import { SWEATER_DAMAGE, SWEATER_RADIUS, SWEATER_RANGE, SWEATER_SLOW, SWEATER_WIND, bookOf } from '../trait';
+import { fightNow } from '../../../fightClock';
 
 /**
  * Sweater (yarn kit v5, E: a thrown gift). A click on the enemy (7 m): Grandma holds up a knitted sweater and throws it, folded and
@@ -132,7 +133,7 @@ export class SweaterFx implements Effect {
       const sees = !!p && stillSees(ctx, p);
       if (e && near && sees) {
         f.hit = true;
-        bookOf(ctx.caster).sweater = { at: performance.now() };
+        bookOf(ctx.caster).sweater = { at: fightNow() };
         // `projectile: true`: it touched them, which is the check (a thrown thing aimed at one hero, as Sky Rend's cuts).
         ctx.hit(e, { damage: 0, knock: 0, color: YARN_CSS.pink, projectile: true, status: { kind: 'slow', seconds: this.settings.slow } });
         this.v1.set(p!.x, WORN_Y, p!.z);
