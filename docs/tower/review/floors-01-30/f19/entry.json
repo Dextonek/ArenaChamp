@@ -1,0 +1,15 @@
+{
+ "floor": 19,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Fenna), the trial, the Mire Heart (in the Thorn Mother's figure: a bog in the Codex, see floor 7's item) and the gate (Kaia) all played.",
+ "found": [
+  {"kind": "ok", "title": "The bot stood still 45 s on its way to a cache: not a stuck spot", "text": "The trial's door (the Hollow Stump) stands in the grass on the straight line from the camp's cache to cache c2, so the bot walked into it and the trial began (a door starts its piece when walked into, on every floor); its pause came after, while its goal was stale. Walked again from five spots round the door in both states of the paths, the hero reaches the cache in 13 to 31 s with no stop."},
+  {"kind": "ok", "title": "Packs and props", "text": "Every pack fought and cleared; the probe's hits are the Wood's trees, spore motes and the hills past the edge."}
+ ],
+ "pictures": [
+  ["door-trial.jpg", "The trial's door in the grass"],
+  ["map.jpg", "The M map"],
+  ["ruler-close.jpg", "The Mire Heart"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
