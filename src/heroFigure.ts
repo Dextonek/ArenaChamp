@@ -1417,7 +1417,8 @@ export class HeroFigure {
     if (this.realStyle.hold === 'torch' && !this.realStyle.keep && !this.climbFigure) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
     // a Climb figure with a staff upright keeps it standing on the floor while it kneels, planted in front, leaning back to the
     // shoulder: the pack's slump let the Crow King's hang head-down to the floor (model review round 3)
-    if (this.realStyle.hold === 'torch' && this.climbFigure) r.plantHeld(this.stunW * (1 - this.liftW));
+    // (in full from the first frame: the arm is in its hold at once, and a turn eased in with the kneel let the foot dip 0.2-0.4 m)
+    if (this.realStyle.hold === 'torch' && this.climbFigure && this.stunW > 0.01) r.plantHeld(1 - this.liftW);
     // the soles on the floor through a stride
     r.plantFeet(dt, true);
   }
@@ -1455,6 +1456,8 @@ export class HeroFigure {
   }
 
   private reset() {
+    // a fallen Climb figure stands at its own height again (the lift that laid it on the floor, `restOnFloor`)
+    for (const r of this.reals.values()) r.clearRest();
     this.dying = -1;
     this.castNow = null;
     this.hitA = this.hitV = 0;

@@ -144,6 +144,8 @@ const HELD_LEAN = 0.6, HELD_BACK = -0.45, HELD_STEP = 0.06;
  * A staff held while kneeling (`plantHeld`): its head leans back this much at least (rad), at most this much to keep its foot on the
  * floor, and its foot stays this far over the floor (model units).
  */
+/** How many points of each mesh `restOnFloor` measures (a fallen body's lowest point to a few cm, a few ms a frame of the fall). */
+const REST_POINTS = 900;
 const PLANT_LEAN = 0.12, PLANT_MOST = 1.25, PLANT_CLEAR = 0.01;
 /**
  * How fast the arms' push-out and the held item's lean follow what they should be (1/s): an arm swings out quickly and
@@ -402,7 +404,7 @@ export class RealHero {
         const mesh = o as THREE.SkinnedMesh;
         if (!mesh.isMesh) return;
         for (let q: THREE.Object3D | null = mesh; q && q !== this.root; q = q.parent) if (!q.visible) return;
-        const P = mesh.geometry.attributes.position, every = Math.max(1, Math.floor(P.count / 4000));
+        const P = mesh.geometry.attributes.position, every = Math.max(1, Math.floor(P.count / REST_POINTS));
         for (let k = 0; k < P.count; k += every) {
           if (mesh.isSkinnedMesh) mesh.getVertexPosition(k, v);
           else v.fromBufferAttribute(P, k);
@@ -416,6 +418,14 @@ export class RealHero {
     // exactly what the pose needs, both ways (not the soles' slow ease back down: as the Crow King tips, his cloak swings under him
     // and lifts him, then he lands, and an eased lift left him hanging in the air)
     m.position.y = Math.max(this.baseLift, this.restLift);
+  }
+
+  /** Puts back what `restOnFloor` lifted (a figure standing up again, or shown anew); nothing for one it never lifted. */
+  clearRest() {
+    if (!Number.isFinite(this.restLift)) return;
+    if (this.model) this.model.position.y = this.baseLift;
+    this.restPose = NaN;
+    this.restLift = -Infinity;
   }
 
   private restPose = NaN;

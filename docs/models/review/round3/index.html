@@ -51,7 +51,8 @@ too (below). Heroes are not touched: every change is for the Climb's own figures
 <p>When you win a ruler's door fight, it plays the animation pack's death clip, which lays a figure on its back. On the big rulers what is
 thick at the back went through the floor. Now a fallen Climb figure is lifted by exactly what its pose needs, every frame of the fall.
 (A first try eased the lift down slowly, and the Crow King hung in the air for a moment as his cloak swung under him. It now follows the
-pose exactly: he tips, lifts on his cloak and lands.)</p>
+pose exactly: he tips, lifts on his cloak and lands.) A ruler that stands up again stands at its own height (feet 0.00 to 0.01 m). The
+measuring costs 3 to 8 ms in a frame of the fall on this computer, for the 0.6 s the fall lasts, and nothing once the body lies still.</p>
 <h3>The Scarab Colossus, its door fight on floor 21</h3>
 <p class="cap">Each pair: the game's camera, then from the side. Kneeling, then falling at 0.3, 0.6, 0.9 and 1.2 s. Before (lowest at the end
 -1.57 m):</p>
@@ -94,8 +95,10 @@ planted in front.</p>
 <a href="rulers/crow-kneel-fight.jpg"><img src="rulers/crow-kneel-fight.jpg" alt="The Crow King kneeling, staff head-down before, head up after" loading="lazy"></a>
 <p class="cap">The five staff rulers, 1.5 s into the kneel, three views (the game's camera, the side, the front); each: before | after:</p>
 <a href="rulers/kneel-staffs.jpg"><img src="rulers/kneel-staffs.jpg" alt="Five staff rulers kneeling, before and after" loading="lazy"></a>
-<p>None of the five staffs is under the floor; the lowest point of each kneel is its gown or cloak, as before (the Crow King's cloak -0.27 m,
-as in round 2). Worth your eye: all five now kneel with the staff up, not only the Crow King. That was the simplest rule to keep alike.</p>
+<p>None of the five staffs is under the floor at any moment of the kneel: the staff's own lowest point (what the hand holds) is
++0.05 to +0.37 m at 0.1, 0.25, 0.5 and 1.5 s. (A first version eased the turn in with the kneel while the arm went to its hold at once, and
+the staffs dipped 0.2 to 0.4 m for a moment: fixed.) The lowest point of each kneel is still its gown or cloak, as before (the Prism Mother's
+gown -0.17 m, the Crow King's cloak -0.33 m, as in round 2). Worth your eye: all five now kneel with the staff up, not only the Crow King. That was the simplest rule to keep alike.</p>
 
 <h2>3. Ash's feet on the floor</h2>
 <p>His legs are rigid blocks hanging from his torso. When a cast crouched him, they went down with it. Now each leg is lifted straight up just
@@ -112,6 +115,9 @@ pictured at its wind-up and its strike. Lowest point of his legs (m):</p>
 <tr><td>Fallen</td><td>-2.02, -2.34</td><td>0.00, 0.00</td></tr>
 <tr><td>A real fight, 17 s (the lowest)</td><td>-1.28 (Charge)</td><td>0.00</td></tr>
 </table></div>
+<p class="cap">From behind him and above, where his legs are (he walks on his knuckles): the legs on the floor in every cast, kneeling
+like knees on the floor, lying out behind him in the fall; nothing comes out of his back.</p>
+<a href="ash/poses-after-behind.jpg"><img src="ash/poses-after-behind.jpg" alt="Ash from behind and above, after" loading="lazy"></a>
 <p>His fists still strike into the floor in the slam and the quake, as the Sun Warden's do (round 2 found that right), and in the fall his
 body still sinks as it folds forward.</p>
 <p class="cap">The real fight, the Charge's wind-up (above before, below after; left the game's camera, right from the side at floor height):</p>
@@ -133,8 +139,10 @@ way, quicker in the Crown of Rays.</p>
 <div class="tw"><table><tr><th>Lowest point of the crown (m)</th><th>Before</th><th>After</th></tr>
 <tr><td>Two minutes of the last phase, the lowest</td><td>-1.09 (70 s in)</td><td>+0.81</td></tr>
 <tr><td>Crown of Rays (wind-up, strike, after)</td><td>+1.29, +2.20, +1.66</td><td>+1.60, +2.03, +1.71</td></tr>
-<tr><td>Kneeling</td><td>+0.66 (the turn stood where it was; 1.7 m under in round 2)</td><td>+1.78</td></tr>
+<tr><td>Kneeling</td><td>+0.66 (the turn stood where it was; 1.7 m under in round 2)</td><td>+1.77</td></tr>
 </table></div>
+<p>Turned by hand either way while it kneels, the crown clears the floor from about 0.75 rad one way to 0.5 rad the other, wider than the
+sway's 0.35. Over two minutes of the phase the lowest is +0.82 m (a second run).</p>
 <p class="cap">60 s into the last phase, a Crown of Rays (above before: the long ray down at the left; below after: the long rays up):</p>
 <a href="heart/clip-compare.jpg"><img src="heart/clip-compare.jpg" alt="The Heart's crown before and after" loading="lazy"></a>
 <div class="two">
@@ -152,7 +160,9 @@ way, quicker in the Crown of Rays.</p>
 through you to the edge and stops 1.4 m short of it (the rule in <code>src/raid/ashEmber.ts</code>, <code>chargeEnd</code>; the move ends in
 a skid "up against the lip"). His body is about 1.8 m wide from its middle (his hit circle), so his shoulders and plates hang 0.4 m and more
 over the stone lip ring. From the steep game camera his 5.8 m-tall body is drawn out over the lava beyond, and that is what the picture
-showed. A player standing at the edge in his way sees the same, and nothing else happens: he does not leave the floor.</p>
+showed. Then the hero was held right at the edge (15.7 m from the middle) in two more fights of 45 s, from two sides: his middle went no
+further than 14.66 and 14.83 m. A player standing at the edge in his way sees the same, and nothing else happens: he does not leave the
+floor.</p>
 <a href="ash/charge-end.jpg"><img src="ash/charge-end.jpg" alt="Ash at the end of his Charge, at the floor's edge, from the game camera and from above" loading="lazy"></a>
 <p>The smallest change, if you want him fully on the floor: stop the Charge 1.8 m short instead of 1.4 m. That shortens the deadly run by
 0.4 m at the edge, which is a fight rule, so it is not done; it waits for a yes. (The Twin Forge and the party rooms were not measured.)</p>
@@ -168,7 +178,8 @@ showed. A player standing at the edge in his way sees the same, and nothing else
 <tr><td>world-1 (the Climb, floor 1)</td><td>98b0044a</td><td>98b0044a</td></tr>
 <tr><td>world-5 (the Climb, floor 41)</td><td>b2403b4c</td><td>b2403b4c</td></tr>
 </table></div>
-<p>Hero fight prints (<code>hero-prints.py check Anka,Kaia,Sefu</code>): 3 of 3 the same (Anka bae036d3, Kaia cf160412, Sefu bfb83e68).</p>
+<p>Hero fight prints (<code>hero-prints.py check Anka,Kaia,Sefu</code>): 3 of 3 the same (Anka bae036d3, Kaia cf160412, Sefu bfb83e68).
+Taken again on the final code with raid-ash, world-5 and duel-temple: all the same.</p>
 
 <h2>What changed in the code</h2>
 <ul>

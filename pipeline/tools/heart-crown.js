@@ -1,6 +1,6 @@
 // The model review, round 3 (docs/models/review/round3/): the Heart of Noon's crown of rays against the floor in its last phase (Noon Falls),
 // in its own room (the Sunken Heart, a raid of one), the brain held, the body in phase 3.
-// 1. `sweep`: how low the crown reaches when it is turned by more about its front, standing and kneeling (to know how far it may turn).
+// 1. `sweep`: how low the crown reaches when it is turned by more about its front, either way, standing and kneeling (to know how far it may turn).
 // 2. Two minutes of the last phase at rest, the crown's lowest point every 0.1 s, a picture every 15 s (the game's camera and the side at
 //    its middle's height); then the Crown of Rays cast and the kneel, pictured.
 // 3. A clip of 10 s at 60 s into the phase (where the old turn had brought the long rays round underneath): a Crown of Rays, the game's
@@ -85,10 +85,10 @@ try {
   // 1. the crown turned by more about its front: its lowest point
   const sweep = { standing: [], kneeling: [] };
   const turn = (ang) => { const c = crown(); c.rotateZ(ang); return lowOf(c); };
-  for (let k = 0; k <= 16; k++) { step1(); sweep.standing.push([+(k * 0.2).toFixed(1), turn(k * 0.2)]); }
+  for (let k = -8; k <= 16; k++) { step1(); sweep.standing.push([+(k * 0.2).toFixed(1), turn(k * 0.2)]); }
   a.statusOf(d.foe).hold(3);
   step(1.5);
-  for (let k = 0; k <= 16; k++) { step1(); sweep.kneeling.push([+(k * 0.2).toFixed(1), turn(k * 0.2)]); }
+  for (let k = -8; k <= 16; k++) { step1(); sweep.kneeling.push([+(k * 0.2).toFixed(1), turn(k * 0.2)]); }
   step(3);
   out.sweep = sweep;
   // 2. two minutes of the last phase at rest (the clip, 3., is taken inside it at 60 s)

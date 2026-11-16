@@ -6,7 +6,7 @@
 //    game's camera beside the side view. And where the Charge ends against the floor's edge (`edge`): his distance from the middle.
 //   python -I pipeline/tools/page-shots.py pipeline/tools/ash-legs.js <out folder> --port 5182 --json ash.json --timeout 520
 //   then: ffmpeg -framerate 15 -i <out>/clip_%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 28 ash.mp4
-// `window._part = 'poses' | 'clip'` for one part only.
+// `window._part = 'poses' | 'clip'` for one part only; `window._side = 'behind'`: the second view from behind him and above.
 const { ASH_AND_EMBER: def } = await import('/src/raid/ashEmber.ts');
 const { LocalLink } = await import('/src/raid/link.ts');
 const { PIT_R } = await import('/src/arenas/cinderpit.ts');
@@ -72,9 +72,12 @@ const twoViews = (w, h, label) => {
   const game = grab(w, h, label, 0.8, 0.45);
   const cam = hm.host.camera, b = d.foe.group.position, yaw = d.foe.group.rotation.y;
   const sx = Math.cos(yaw), sz = -Math.sin(yaw);
-  cam.position.set(b.x + sx * 13, 0.5, b.z + sz * 13); cam.lookAt(b.x, 2.0, b.z); cam.updateMatrixWorld();
+  // `window._side = 'behind'`: from behind him and above, where his legs are (he walks on his knuckles, the legs at his back)
+  if (window._side === 'behind') { cam.position.set(b.x - Math.sin(yaw) * 9 + sx * 4, 6, b.z - Math.cos(yaw) * 9 + sz * 4); cam.lookAt(b.x, 1.2, b.z); }
+  else { cam.position.set(b.x + sx * 13, 0.5, b.z + sz * 13); cam.lookAt(b.x, 2.0, b.z); }
+  cam.updateMatrixWorld();
   vfx.render();
-  const side = grab(w, h, label ? label + ' (side, floor height)' : '', 0.8, 0.5);
+  const side = grab(w, h, label ? label + (window._side === 'behind' ? ' (behind, above)' : ' (side, floor height)') : '', 0.8, 0.5);
   return [game, side];
 };
 try {
