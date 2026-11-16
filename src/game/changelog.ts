@@ -56,6 +56,13 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Heroes',
+        title: 'Sixteen more heroes show their people',
+        text: 'Wick and Tempo have the umber skin and jaw star lines of the Northerners, and Shiori has hers inked on her hands; Silvane and Vesper the blue-grey skin and shining eyes of the Gloaming folk; Bram, Ada and Referee Whistler the ash-grey skin and amber eyes of the Kilnborn; Madame Cleaver the deep brown skin, kohl and henna of the Dune folk; Barry, Zephyr and Marin the tan, tide lines and sea-glass of the Coast; Cantor and Pip the golden-brown skin and gold thread of Aubade; The Great Zambini’s pointed ears show under his hat; and Anka’s skin glows like the ember she is. Hero portraits now show the new looks too. Spells and numbers are unchanged.',
+        image: '/news/heroes-touches.jpg',
+        alt: 'Sixteen hero faces in two rows: dark-skinned Wick and Tempo with white hair, pale Shiori, blue-grey Silvane and Vesper with shining eyes, grey-skinned Bram, Ada and Referee Whistler with amber eyes, deep brown Madame Cleaver in her crimson headwrap, sea-tanned Barry, masked Zephyr and green-haired Marin, golden-brown Cantor and freckled Pip, The Great Zambini with pointed ears under a top hat, and warm-skinned Anka with her feather crest.',
+      },
+      {
+        tag: 'Heroes',
         title: 'Every hero has a story',
         text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
       },

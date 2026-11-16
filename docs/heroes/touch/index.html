@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sixteen heroes touched</title>
+<style>
+  :root { --bg: #110f14; --card: #1b1820; --line: #352e3c; --ink: #ece4d6; --dim: #b3a99a; --gold: #d2ae55; --before: #8f8a96; --after: #e8b84a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 700 30px/1.2 Georgia, serif; color: var(--gold); margin: 10px 0 4px; }
+  h2 { font: 700 23px/1.3 Georgia, serif; color: var(--gold); margin: 40px 0 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  h3 { font: 600 15px/1.3 system-ui, sans-serif; color: var(--dim); margin: 18px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  p { margin: 8px 0; }
+  .sub { color: var(--dim); }
+  .people { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; font-size: 13.5px; color: var(--ink); background: var(--card); margin-left: 6px; vertical-align: 3px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  figure { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 6px 10px; font-size: 13.5px; color: var(--dim); }
+  figcaption b { color: var(--before); font-weight: 700; }
+  figure.after figcaption b { color: var(--after); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  nav a { color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 4px 10px; font-size: 14.5px; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code { font-size: 13.5px; color: var(--dim); }
+  details { margin: 10px 0; }
+  summary { cursor: pointer; color: var(--dim); font-size: 14.5px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Sixteen heroes touched to show their peoples</h1>
+<p class="sub">2026-11-16 · the sixteen touches of the lore's plan (<code>docs/lore/codex/revamp.md</code>), the painted underwear covered, and the portraits of
+everyone whose look changed. A touch is a small change of skin, eyes or a people's mark; each hero keeps its kit, title, clothes, colours and weapon.
+Every picture is the game's own figure in the hero stand's light, or the game page in a CPU duel against Sefu on the same arena, before and after.
+Not pushed, not deployed.</p>
+<nav id="nav"></nav>
+
+<h2 id="portraits">Portraits</h2>
+<p>The 2D portraits on the hero bar, the cards and the boards are drawn in code (each hero's <code>portrait</code> in <code>src/kits/</code>). Redrawn for
+the six revamps and fourteen of the touches; Vesper's portrait is a crescent and a drop of blood, and Shiori's shows no hands, so neither changed.
+Zephyr's portrait also gets the mask his model always wore.</p>
+<h3>The six revamps (old above, new below)</h3>
+<figure><img loading="lazy" src="portraits_revamp.jpg" alt="Portraits of Opaline, Mr. Ledger, Kaia, Brannoc, Hank and Grandma Ironknit, old above new"></figure>
+<h3>The touches (each pair: before, after)</h3>
+<figure><img loading="lazy" src="portraits_touch.jpg" alt="Portraits of fifteen heroes, each old beside new"></figure>
+
+<div id="heroes"></div>
+
+<h2 id="underwear">The painted underwear</h2>
+<p>The pack's skin texture has grey shorts painted on it (and a grey band and briefs on the female body). Every one of the 40 models was drawn with that
+paint shown white and everything else black, from eight sides, standing, walking and at the attack, from the stand's camera and the game's: only
+<b>Big Yoko</b> showed it (185 pixels at most; Opaline 7 and Sefu 1, specks at a seam). It is now covered in the kit itself
+(<code>blender/heroes/realkit.py</code>, <code>_cover_underwear</code>): where the pack's texture is grey, each pixel takes the average of the skin round it,
+after the skin's tone and before any painted mark. No contact shadow, no gold edges, no size (Yoko 507 → 503 KB). It is the same mask the TextureCraft
+sample used (its scripts are in <code>pipeline/textures/texturecraft/</code>); done in the build, every hero built from now on is covered, the sixteen above
+included. Big Yoko is in the hero list above (his after pictures and a close-up of the hips).</p>
+
+<h2>What is left, and what to look at</h2>
+<ul>
+  <li><b>From the duel camera</b> the faces are small: the skin colours carry (umber, ash-grey, blue-grey, sea-tan, golden-brown), the jaw lines, kohl,
+    henna, tide lines and freckles only from close (the hero stand, the Heroes screen).</li>
+  <li><b>Two small costume changes</b> were needed to show the marks: Barry's flared sleeves now end below the elbow, Zephyr's bracers cover only the
+    wrist half. Marin's slippers are gone; she is barefoot, as her page always said.</li>
+  <li><b>Anka's glow</b> is her skin's own texture as a faint emission (0.34), brighter at the jaw, hairline and fingertips; it makes her skin look lighter
+    and warmer than before. Brannoc's seams are 0.7, Ada's knuckles 0.45.</li>
+  <li><b>Vesper's</b> change is the smallest: she was already pale; now cooler, with a crimson-violet shine in the eyes.</li>
+  <li><b>Wick's braids</b> are the kit's bead braids (as Marin's and Auriel's); close up they read as beads more than plaits.</li>
+</ul>
+</main>
+<script>
+const HEROES = [
+  { dir: 'wick', name: 'Wick, the Doorwarden', people: 'Northerners', kb: '488 → 514 KB', tris: '26,913 → 33,513',
+    line: 'Deep umber skin; his white hair in thin braids to the collar, two behind the ears and four at the back; the star lines of his birth hour in indigo along the jaw, with a star at each bend. The oxblood coat, gold braid, keys and lantern stay.' },
+  { dir: 'tempo', name: 'Tempo, the Unwound Hour', people: 'Northerners', kb: '503 → 480 KB', tris: '24,367 → 24,367',
+    line: 'Umber skin, his white hair kept; the star lines along his jaw drawn as a clock’s ticks. Monocle, coat, halo and minute-hand staff stay.' },
+  { dir: 'shiori', name: 'Shiori, the Last Brush', people: 'Northerners', kb: '498 → 495 KB', tris: '22,762 → 22,762',
+    line: 'The star lines of her birth hour inked on the backs of her hands: three lines from the wrist toward the knuckles, with stars. Her skin stays pale (the lore’s line asks only for the hands).' },
+  { dir: 'silvane', name: 'Silvane, the Mirror Duchess', people: 'Gloaming folk', kb: '462 → 456 KB', tris: '21,993 → 21,993',
+    line: 'Silver eyeshine (0.5), skin cooled to blue-grey, dark lips. Nothing else changes, so that her sister’s revamp sets the two apart.' },
+  { dir: 'vesper', name: 'Vesper, the Crimson Countess', people: 'Gloaming folk', kb: '521 → 515 KB', tris: '26,340 → 26,340',
+    line: 'Crimson-violet eyeshine (0.45) and blue-grey skin; her crown, gown and collar of blades unchanged.' },
+  { dir: 'bram', name: 'Bram, the Stonewright', people: 'Kilnborn', kb: '476 → 462 KB', tris: '24,082 → 24,082',
+    line: 'Ash-grey skin, a little lighter and warmer than Brannoc’s; pale amber eyes. Gerald unchanged.' },
+  { dir: 'ada', name: 'Ada, the Artificer', people: 'Kilnborn', kb: '552 → 543 KB', tris: '28,396 → 28,580',
+    line: 'Ash-grey skin, pale amber eyes, and dim ember seams across the knuckles of both hands (0.45). The copper coat and goggles unchanged.' },
+  { dir: 'referee-whistler', name: 'Referee Whistler, the Arbiter', people: 'Kilnborn', kb: '503 → 491 KB', tris: '26,654 → 26,654',
+    line: 'Ash-grey skin under the black helm, pale amber eyes. The tabard, helm and horn unchanged.' },
+  { dir: 'madame-cleaver', name: 'Madame Cleaver, the Feastmistress', people: 'Dune folk', kb: '552 → 534 KB', tris: '31,194 → 31,194',
+    line: 'Deep brown skin; kohl round the eyes drawn out to the temples; henna on the backs of her hands (a vine with small leaves, dots across the wrist). The crimson headwrap unchanged.' },
+  { dir: 'barry-cloudsley', name: 'Barry Cloudsley, the Sky Augur', people: 'Coast folk', kb: '523 → 519 KB', tris: '30,357 → 30,301',
+    line: 'Sea-tanned skin and seven tide lines round each forearm. To show them, his flared sleeves now end below the elbow.' },
+  { dir: 'zephyr', name: 'Zephyr, the Wind Blade', people: 'Coast folk', kb: '491 → 489 KB', tris: '24,767 → 25,007',
+    line: 'Sea-tanned skin, sea-glass in his left ear on a small gold ring, six tide lines above bracers that now cover only the wrist half.' },
+  { dir: 'marin', name: 'Marin, the Tide Dancer', people: 'Coast folk', kb: '516 → 520 KB', tris: '27,028 → 26,684',
+    line: 'Nine tide lines round her forearms, sea-glass in her buns and braid, and barefoot: the slippers are gone, the gold anklets stay.' },
+  { dir: 'cantor', name: 'Cantor, the Last Verse', people: 'Aubade folk', kb: '552 → 547 KB', tris: '27,960 → 29,312',
+    line: 'Golden-brown skin; the dawn line in gold from the brow down the bridge of the nose; gold thread wound round the locks by his face and at his nape.' },
+  { dir: 'pip', name: 'Pip, the Wingfoot', people: 'Aubade folk', kb: '524 → 519 KB', tris: '28,533 → 29,169',
+    line: 'Golden-brown skin with his freckles (they were only in the portrait before; now on the model too); his hair bound at the nape in a short tail with gold thread.' },
+  { dir: 'the-great-zambini', name: 'The Great Zambini, the Illusionist', people: 'Briarkin', kb: '495 → 490 KB', tris: '27,026 → 27,146',
+    line: 'Pointed ears under the hat, swept back (the twins’ and Grandma Ironknit’s kind, shorter); eyes violet from lid to lid.' },
+  { dir: 'anka', name: 'Anka, the Firebird', people: 'an Ember', kb: '586 → 584 KB', tris: '35,646 → 35,646',
+    line: 'Her skin lit faintly from within by its own texture (no extra picture in the file), warmest and golden at the jaw, the hairline and the fingertips. Kept under the floor’s glow.' },
+  { dir: 'big-yoko', name: 'Big Yoko, the Mountain', people: 'Aubade folk', kb: '507 → 503 KB', tris: '28,818 → 28,818',
+    line: 'Not a touch: the one hero whose skin showed the pack’s painted grey shorts, now covered by the skin round them (see the underwear part below).' },
+];
+const VIEWS = [
+  ['Sheet: front, three-quarter, back, face', 'sheet'],
+  ['The face', 'face'],
+  ['Line-up: Sefu, the hero, Kaia, and the hero it was most like', 'lineup'],
+  ['The line-up in grey (the silhouette and value)', 'lineup_grey'],
+  ['The line-up from the game’s camera', 'lineup_cam'],
+  ['Moving: walking, a cast at its strike, the attack at its hit, the game’s camera', 'motion'],
+  ['In a CPU duel, close (game page, game camera)', 'duel_close'],
+];
+const nav = document.getElementById('nav'), root = document.getElementById('heroes');
+for (const [href, t] of [['#portraits', 'Portraits'], ['#underwear', 'Underwear']]) {
+  const a = document.createElement('a');
+  a.href = href; a.textContent = t;
+  nav.append(a);
+}
+for (const h of HEROES) {
+  const a = document.createElement('a');
+  a.href = '#' + h.dir; a.textContent = h.name.split(',')[0];
+  nav.append(a);
+  const sec = document.createElement('section');
+  sec.id = h.dir;
+  const pair = (t, k) => `<h3>${t}</h3><div class="pair">` +
+    ['before', 'after'].map((w) => `<figure class="${w}"><img loading="lazy" src="${h.dir}/${w}_${k}.jpg" alt="${h.name.split(',')[0]}, ${w}: ${t}"><figcaption><b>${w}</b></figcaption></figure>`).join('') + '</div>';
+  sec.innerHTML = `<h2>${h.name}<span class="people">${h.people}</span></h2><p>${h.line}</p><p class="sub">Model ${h.kb}, triangles ${h.tris}; the same 65 bones.</p>` +
+    `<h3>Close-up of the marks (after)</h3><figure class="after"><img loading="lazy" src="${h.dir}/after_close.jpg" alt="${h.name.split(',')[0]}, close-up"><figcaption><b>after</b></figcaption></figure>` +
+    pair(...VIEWS[0]) + pair(...VIEWS[1]) +
+    `<details><summary>Line-ups, motion and the duel</summary>${VIEWS.slice(2).map((v) => pair(...v)).join('')}<h3>In a CPU duel, the whole screen</h3><div class="pair">` +
+    ['before', 'after'].map((w) => `<figure class="${w}"><img loading="lazy" src="${h.dir}/${w}_duel.jpg" alt="${h.name.split(',')[0]}, ${w}: duel"><figcaption><b>${w}</b></figcaption></figure>`).join('') + '</div></details>';
+  root.append(sec);
+}
+</script>
+</body>
+</html>
