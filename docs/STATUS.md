@@ -41,8 +41,21 @@ The three agents below were restarted in their own threads from their saved comm
   the user then: a deploy drops live connections).
 - **Running (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
   built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
-- **Running (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
-  `docs/tower/openworld/stage3/`): friends go through a door together, the boss runs the Raid's way (one brain, revives, hand-over).
+- **Done, NOT merged, not live (2026-11-16): the Climb's open world stage 3, doors together** (branch
+  `t3/climb-stage3-doors-together`, PROTOCOL 19; `pipeline/designs/climb-open-world.md`, multiplayer.md "stage 3", pictures and numbers
+  `docs/tower/openworld/stage3/`). **Only a ruler's lair** (and a crown floor's Raid boss) is fought together; gates, trials and rivals
+  stay alone (the gate and rival are CPU duels, not on the boss path). Walking into a lair with another player of the shard within 30 m
+  holds the door 6 s (a line with "Go in now" for the first; the others near are invited to walk in); whoever walks in fights the ruler
+  on the Raid's machinery (one brain, `NetLink`, revives, hand-over), set for the party (health and gauge x(1+0.75 per extra), blows
+  x(1+0.15)); seats stay in the shard; all come out side by side in front of the door; the clear counts for whoever hit, nothing for one
+  who never did, all down is a life each. Nothing on the accounts. Checked: server tests 362 (33 new), type check, build, a two-tab run
+  (A Kaia, B Lyra, floor 1 then 2): both see the same ruler (its place within 0.05 m p95 after the 100 ms play-back delay, health within
+  0.1 % p95), B struck down and got up by A's autopilot in 4.3 s, A's tab frozen 5.5 s: B took the brain in 4.7 s; A's tab closed: B took
+  it in 0.37 s and won alone; the clear counted on both (lair won, 40 shards), both back side by side in shard 1.1. Route bot (not
+  signed in) clears 1, 11, 21, 31, 41; perf prints the same (duel-temple 90b1abaa, raid-party 9c4a9c48). Known: the ruler's sentries,
+  guard and called keepers are each screen's own (each hero clears its own); a crown's Raid boss keeps its own blows; nobody joins a
+  fight once it began. After any change to a floor's doors or ruler: `node pipeline/tools/climb-packs.mjs`. Waiting on the user's look,
+  then merge into `feat/particle-editor`.
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
   words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
   Senmere, by the vault-keeper Iselm (now the Sun Warden) to keep his dying daughter at her hour, collects worlds; it took the sun's
