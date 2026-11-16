@@ -126,6 +126,7 @@ export const stompModule = spell<null, 'slow'>({
   },
   // Seconds of slow.
   tune: { slow: [STOMP_SLOW, 0, 3, 0.1] },
+  noScreen: true,
   look: StompLook,
   bloom: { enabled: true, strength: 0.3, radius: 0.35, threshold: 0.88 },
   frame: 3,

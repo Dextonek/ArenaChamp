@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spell blocks trial</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef; --card: #fffdf8; --ink: #1d1b17; --ink2: #57534b; --muted: #8a857a; --line: #e2ddd2;
+  --old: #c23a22; --new: #1f8a4c; --ok: #1f8a4c; --okbg: #e3f3e8; --warn: #b5530c; --warnbg: #fbeadc;
+  --gold: #b8862b; --code: #f1ede3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+    --old: #ff7b5a; --new: #4cc27c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+    --gold: #e0b55a; --code: #26241e;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+  --old: #ff7b5a; --new: #4cc27c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+  --gold: #e0b55a; --code: #26241e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 34px 0 10px; }
+h3 { font-size: 16px; margin: 0 0 4px; }
+p { margin: 6px 0 10px; color: var(--ink2); }
+.sub { color: var(--muted); font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 28px; line-height: 1.1; }
+.tile span { color: var(--ink2); font-size: 14px; }
+.verdict { border-left: 5px solid var(--gold); }
+.verdict b { color: var(--ink); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+pre { background: var(--code); border-radius: 10px; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 6px 0; }
+pre .c { color: var(--muted); }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 9px; margin-left: 6px; vertical-align: 2px; }
+.tag.plain { background: var(--okbg); color: var(--ok); }
+.tag.hook { background: var(--code); color: var(--gold); }
+.tag.code { background: var(--warnbg); color: var(--warn); }
+.bars .row { display: grid; grid-template-columns: minmax(120px, 34%) 1fr 70px; align-items: center; gap: 8px; margin: 2px 0; font-size: 14px; }
+.bars .track { height: 9px; }
+.bars .fill { height: 100%; border-radius: 0 4px 4px 0; }
+.bars .fill.o { background: var(--old); }
+.bars .fill.n { background: var(--new); }
+.bars .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink2); }
+.bars .spell { margin: 8px 0; }
+.legend { display: flex; gap: 14px; font-size: 13.5px; color: var(--ink2); margin-bottom: 6px; }
+.legend i { display: inline-block; width: 12px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+table { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+td, th { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; vertical-align: top; }
+td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+.checks { list-style: none; padding: 0; margin: 0; }
+.checks li { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--ink2); }
+.checks li b { color: var(--ink); }
+.checks .ok { color: var(--ok); font-weight: 700; }
+ul.found { padding-left: 18px; margin: 6px 0; }
+ul.found li { margin: 6px 0; color: var(--ink2); }
+ul.found li b { color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <h1>The spell blocks: a trial on three heroes</h1>
+  <p class="sub">2026-11-16. Before deciding on the other ~150 spells, twelve spells of three heroes chosen for simple shapes
+    (Sefu, Professor Puff, Big Yoko) were tried on the blocks. Eight went onto them; four stayed code. All of them play exactly
+    as before. The design: <a href="index.html">the framework page</a>, <code>docs/pipeline/hero-framework.md</code> section 12.</p>
+
+  <div class="tiles">
+    <div class="tile"><b>8 of 12</b><span>spells on the blocks; 4 stayed code (they need a block no other spell here uses)</span></div>
+    <div class="tile"><b>&minus;21%</b><span>lines in the eight files (1,917 to 1,520); the drawing code is unchanged</span></div>
+    <div class="tile"><b>20&ndash;47</b><span>lines of rules per spell, in one place at the end of its file</span></div>
+    <div class="tile"><b>80 / 80</b><span>fight prints the same; roster and self test identical</span></div>
+  </div>
+
+  <div class="card verdict">
+    <h3>Recommendation: some shapes only, and no big conversion project</h3>
+    <p><b>Do not convert all ~150.</b> A conversion makes a spell's rules short and in one place, and its danger zone is the
+      hit's own shape. But it saves only about a fifth of the lines, because four fifths of a spell is its look, which moves
+      as it is. A third of the spells chosen as the easiest did not fit. And the prints prove the fight, not the picture.</p>
+    <p><b>Use the blocks where they pay:</b> every new hero's spells; a spell whose hero is being fixed or rebalanced anyway; and
+      the clean shapes when convenient (a bolt, a circle with a fuse, a zone round or in front of the caster, a sure hit). Leave
+      the dashes that bite or carry, the bolts with their own flight, and the spells with a second act as code until a second
+      spell needs the same block.</p>
+  </div>
+
+  <h2>The twelve spells, before and after</h2>
+  <p>Lines per file: <span style="color:var(--old)">before</span> and <span style="color:var(--new)">after</span>. The tag says
+    how it fits: <span class="tag plain">blocks</span> (rules only), <span class="tag hook">blocks + hook</span> (a few lines of
+    the hero's own), <span class="tag code">stayed code</span>.</p>
+  <div class="card bars" id="bars">
+    <div class="legend"><span><i style="background:var(--old)"></i>before</span><span><i style="background:var(--new)"></i>after</span></div>
+  </div>
+
+  <h2>What a spell's rules look like now</h2>
+  <p>Before, the rules were spread through a 200&ndash;300 line class: constants at the top, a flag, the hit in the middle of the
+    frame code, the danger zone written again in <code>telegraphs()</code>, the sliders in <code>buildGui()</code>. After, the class
+    keeps only the drawing, and the rules sit at the end.</p>
+
+  <div class="card">
+    <h3>Cobra Spit <span class="tag plain">blocks</span></h3>
+    <p class="sub">Sefu, Q: a bolt that blinds. 223 to 148 lines.</p>
+    <div class="pair">
+      <div><div class="label">before (the rules, scattered)</div>
+<pre>const WIND_T = 0.25, REACH = 9, SPEED = 20, RADIUS = 0.35;
+<span class="c">// in update(), between the hood and the splash:</span>
+if (!this.fired &amp;&amp; t &gt;= WIND_T) {
+  this.fired = true; ...
+  this.bolt = ctx.projectile({ from, dir, speed: SPEED,
+    range: REACH, radius: RADIUS, hit: { damage, knock: 1,
+    color, status: { kind: 'blind', seconds: s.blind } } });
+}
+<span class="c">// telegraphs(): the same line again, by hand</span>
+<span class="c">// buildGui(): loop, damage 1..150, blind 0..2</span></pre></div>
+      <div><div class="label">after</div>
+<pre>rules: {
+  windup: 0.25,
+  shape: { kind: 'bolt', speed: 20, range: 9, radius: 0.35 },
+  hit: { damage: 62, knock: 1, color: SAND_CSS.body,
+         status: { kind: 'blind', seconds: 'blind' } },
+  warn: 0.02,
+},
+tune: { blind: [1.2, 0, 2, 0.1] },</pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Helium Bomb <span class="tag plain">blocks</span></h3>
+    <p class="sub">Professor Puff, W: a circle at the aim that pops after a second. 232 to 180 lines.</p>
+<pre>rules: {
+  windup: 0,
+  shape: { kind: 'circle', radius: 2.5, at: (c) =&gt; [{ x: c.ctx!.point.x, z: c.ctx!.point.z }] },
+  delay: 1.0,
+  hit: { damage: 50, knock: 5, color: BALLOON_CSS.body },   <span class="c">// pushed out from the centre</span>
+},</pre>
+  </div>
+
+  <div class="card">
+    <h3>Shepherd's Crook <span class="tag plain">blocks</span></h3>
+    <p class="sub">Sefu, W: a sure hit on the chosen enemy that pulls and slows. 272 to 212 lines.</p>
+<pre>rules: {
+  windup: 0.5,
+  shape: { kind: 'target', mark: 1.2 },
+  hit: { damage: 35, knock: 0, pull: 'pull', projectile: true,
+         status: { kind: 'slow', seconds: 'slow' }, color: SAND_CSS.body },
+},
+tune: { pull: [3, 0, 4, 0.5], slow: [0.5, 0, 2, 0.1] },</pre>
+  </div>
+
+  <div class="card">
+    <h3>Stomp, Salt Throw, Palm Strike <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Big Yoko: three areas judged once, a circle round him, a cone and a strip in front of him (the way he faces).
+      The new <code>zone</code> block hands the engine's own shape to both the danger zone and the hit, so they cannot disagree.
+      The hooks are his ring: Stomp lays it (3 lines), Salt Throw shrinks it (9), Palm Strike shoves who it caught over 0.22 s (20).</p>
+<pre>rules: {
+  windup: 0.6, facing: true,
+  shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'cone', x: c.from.x, z: c.from.z,
+           radius: 6, angle: 70, dir: c.yaw }) },
+  hit: { damage: 0, knock: 0, color: SUMO_CSS.core, status: { kind: 'blind', seconds: 'blind' } },
+  on: { impact: (c) =&gt; { <span class="c">/* his ring, if it stands, loses 2 m */</span> } },
+},</pre>
+  </div>
+
+  <div class="card">
+    <h3>Sarcophagus, Hot Air <span class="tag hook">blocks + hook</span></h3>
+    <p class="sub">Sefu's seal is a sure hit that must still find them in the circle (<code>inside: 1.6</code>); the burst a
+      frame after the seal ends is 12 lines of code in a hook. Puff's push round him is a zone, then a move away from the aim
+      at the impact (<code>move: { at: 'impact' }</code>); which way is "away" is a 9-line hook.</p>
+  </div>
+
+  <h2>What stayed code, and why</h2>
+  <ul class="found">
+    <li><b>Scarab Stride</b> (Sefu, E) <span class="tag code">stayed code</span>: the bite is judged each frame on the stretch of the
+      eased dash he just ran, nearest enemy only, then poison in two ticks; no damage slider (bite and poison instead). The lane block
+      judges differently (anyone the front has passed), so it would change who gets bitten.</li>
+    <li><b>Air Hose</b> (Puff, Q) <span class="tag code">stayed code</span>: the bolt leaves 0.8 m ahead of him, aims at the clicked
+      point instead of the aim, ends when its bubbles have cleared (not at a fixed time), draws its own bolt when no real bolt flies,
+      and has no loop switch. Four options for one spell.</li>
+    <li><b>Pop!</b> (Puff, R) <span class="tag code">stayed code</span>: a sure hit, but it fizzles if he lost sight of the enemy or
+      it is beyond 11 m when the pin lands, knocks from where he stands then (not where he cast), and its danger circle follows the
+      enemy. Three options; it would fit the sure hit block with them.</li>
+    <li><b>Sumo Charge</b> (Yoko, E) <span class="tag code">stayed code</span>: a run that catches the first enemy it sweeps over and
+      carries them ahead of him every frame. A "catch and carry" block would serve it and likely Pim's Charge and Bram's Shove;
+      worth building only with them.</li>
+  </ul>
+
+  <h2>What the blocks gained in the trial</h2>
+  <p>Typed and small, each because a shape repeated or a number had to stay a slider. The runner (<code>src/heroes/framework/</code>)
+    grew from 393 to 551 lines; Anka's four spells play as before on it (her prints after every step).</p>
+  <ul class="found">
+    <li><b>A sure hit</b> (<code>target</code>): Shepherd's Crook, Sarcophagus; Pop! with three options.</li>
+    <li><b>A zone judged once</b> (<code>zone</code>, any of the engine's shapes): Stomp, Salt Throw, Palm Strike, Hot Air.</li>
+    <li><b>Sliders</b> (<code>tune</code>): a number of the rules can name a slider, or be worked out from them (Hot Air's push &times; 7).
+      Spells without a damage slider or a loop switch keep their old settings, so the tool page and the Rust export see the same keys.</li>
+    <li><b>A fuller hit</b>: pull, status, <code>projectile</code>, where the knock comes from.</li>
+    <li><b>The look's moments before the rules</b> (<code>releasing</code>, <code>impacting</code>) and its ticking while idle: the old
+      files often drew first and hit second, and the dice (sparks, puffs) must keep their order or the fight changes.</li>
+    <li><b>Facing aim</b>, <b>a move at the impact</b>, <b>a rules hook every frame</b> (a shove, a burst later).</li>
+  </ul>
+
+  <h2>Time and risk, measured and estimated</h2>
+  <div class="card scroll">
+    <table>
+      <tr><th></th><th class="r">this trial</th><th class="r">the other ~150</th></tr>
+      <tr><td>a plain spell (rules only)</td><td class="r">about 10 min</td><td class="r">~45 spells: 8 h</td></tr>
+      <tr><td>a spell with a hook</td><td class="r">15&ndash;20 min</td><td class="r">~50 spells: 15 h</td></tr>
+      <tr><td>a new block (when a shape repeats)</td><td class="r">20&ndash;30 min</td><td class="r">~8 blocks: 4 h</td></tr>
+      <tr><td>checks per hero (two prints, self test)</td><td class="r">~5 min machine</td><td class="r">33 heroes: 3 h</td></tr>
+      <tr><td>stays code (no fit)</td><td class="r">4 of 12</td><td class="r">~45 spells</td></tr>
+      <tr><td><b>in all</b></td><td></td><td class="r"><b>about 30 hours of agent work</b></td></tr>
+    </table>
+  </div>
+  <p>Not included: the seven Rust-ported heroes' 28 spells, which wait for the Rust port to be graded again (it reads their
+    settings by name).</p>
+  <ul class="found">
+    <li><b>Risk to play: low.</b> A rule that changes shows in the two fight prints at once, and every spell cast in them is
+      proven. Spells the prints never cast (Scarab Stride, Time Skip and three others) rest on the tool page's self test only.</li>
+    <li><b>Risk to the look: medium, and unchecked.</b> The prints see health, places and cooldowns, not particles. Each look is
+      copied by hand into a new class; a slip (a wrong point, a lost puff) would play the same fight and look different.
+      A per-spell clip beside the old one would close it, at a few minutes a spell.</li>
+    <li><b>Order traps:</b> the dice must roll in the same order (a puff before or after the hit is another fight); objects must be
+      made in the same order; a file that ages its particles while idle must keep doing so. All three were met in this trial
+      and are now moments of the blocks.</li>
+  </ul>
+
+  <h2>A new hero's spell now</h2>
+  <p>The card's line and the rules, then the look. The danger zone, the hit, the tool page's sliders and the cast's timing all
+    come from the rules; the look is told the moments (cast, frame, impact, after) and draws.</p>
+<pre><span class="c">// src/heroes/&lt;hero&gt;/spells/tidebreak.ts (a sketch, not a real spell)</span>
+export const tidebreakModule = spell&lt;null, 'slow'&gt;({
+  label: 'tidebreak', category: 'hero: tide',
+  targeting: { mode: 'self', radius: 3.6 },
+  seconds: 1.6, state: () =&gt; null,
+  rules: {
+    windup: 0.45, facing: true,
+    shape: { kind: 'zone', area: (c) =&gt; ({ kind: 'cone', x: c.from.x, z: c.from.z, radius: 5, angle: 60, dir: c.yaw }) },
+    hit: { damage: 55, knock: 3, color: TIDE_CSS.foam, status: { kind: 'slow', seconds: 'slow' } },
+  },
+  tune: { slow: [1, 0, 2, 0.1] },
+  look: TidebreakLook,      <span class="c">// the wave: made in its constructor, drawn in frame / impact / after</span>
+  bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 }, frame: 3, maxDamage: 120,
+});</pre>
+
+  <h2>The checks</h2>
+  <ul class="checks" id="checks"></ul>
+</main>
+<script>
+const SPELLS = [
+  ['Cobra Spit', 'Sefu Q', 223, 148, 'plain'],
+  ["Shepherd's Crook", 'Sefu W', 272, 212, 'plain'],
+  ['Scarab Stride', 'Sefu E', 269, 269, 'code'],
+  ['Sarcophagus', 'Sefu R', 274, 232, 'hook'],
+  ['Air Hose', 'Puff Q', 266, 266, 'code'],
+  ['Helium Bomb', 'Puff W', 232, 180, 'plain'],
+  ['Hot Air', 'Puff E', 304, 271, 'hook'],
+  ['Pop!', 'Puff R', 307, 307, 'code'],
+  ['Palm Strike', 'Yoko Q', 209, 160, 'hook'],
+  ['Stomp', 'Yoko W', 180, 133, 'hook'],
+  ['Sumo Charge', 'Yoko E', 275, 275, 'code'],
+  ['Salt Throw', 'Yoko R', 223, 184, 'hook'],
+];
+const TAGS = { plain: 'blocks', hook: 'blocks + hook', code: 'stayed code' };
+const CHECKS = [
+  ['Fight prints, the three heroes', 'Sefu, Professor Puff and Big Yoko against Isolde and against Brannoc: the same after every spell\'s commit (and Anka\'s, after every change to the runner).'],
+  ['All 80 fight prints', 'Every hero against both foes on the finished code: the same (a shared file changed, so all were run).'],
+  ['The roster as the game sees it', 'Kits, tooltips, icons, bodies, passives, and every spell\'s targeting, bloom, settings and length: identical to the code before the trial.'],
+  ['The tool page\'s self test', 'Shake, danger zones, hits, length and errors of the eight moved spells and of the five spells no print casts (Scarab Stride, Time Skip, Call It In, Foreclosure, Final Delivery): identical.'],
+  ['Type check and build', 'npx tsc and npm run build pass.'],
+  ['Rust guard', 'The same lines as before the trial (none of these three heroes is ported).'],
+];
+const el = document.getElementById('bars');
+for (const [name, slot, a, b, kind] of SPELLS) {
+  const box = document.createElement('div');
+  box.className = 'spell';
+  box.innerHTML = '<div style="font-size:14px"><b></b> <span class="sub"></span><span class="tag"></span></div>';
+  box.querySelector('b').textContent = name;
+  box.querySelector('.sub').textContent = slot;
+  const tag = box.querySelector('.tag');
+  tag.classList.add(kind);
+  tag.textContent = TAGS[kind];
+  for (const [n, cls, label] of [[a, 'o', 'before'], [b, 'n', 'after']]) {
+    const r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML = '<span class="sub"></span><div class="track"><div class="fill ' + cls + '"></div></div><span class="n"></span>';
+    r.querySelector('.sub').textContent = label;
+    r.querySelector('.n').textContent = n + ' lines';
+    r.querySelector('.fill').style.width = (100 * n / 320) + '%';
+    box.appendChild(r);
+  }
+  el.appendChild(box);
+}
+const ul = document.getElementById('checks');
+for (const [title, text] of CHECKS) {
+  const li = document.createElement('li');
+  li.innerHTML = '<span class="ok">&#10003;</span><span><b></b> <span></span></span>';
+  li.querySelector('b').textContent = title;
+  li.querySelector('span span').textContent = text;
+  ul.appendChild(li);
+}
+</script>
+</body>
+</html>

@@ -153,6 +153,7 @@ export const palmStrikeModule = spell<Shove, 'push'>({
   },
   // Metres the hit shoves along his facing.
   tune: { push: [PALM_PUSH, 0, 6, 0.1] },
+  noScreen: true,
   look: PalmLook,
   bloom: { enabled: true, strength: 0.3, radius: 0.35, threshold: 0.88 },
   frame: 2,

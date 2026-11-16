@@ -57,6 +57,8 @@ export class Cast<S, K extends string = never> implements Effect {
   /** A move: the spot asked for and then where the engine put her; how far along the aim she got (a lane's or a bolt's length until then). */
   readonly landing = new THREE.Vector3();
   reach = 0;
+  /** The engine moved her this cast (there is no `moveCaster` on the other screen online). */
+  moved = false;
   readonly look: Look<S, K>;
   private endT: number;
   private struck = new Set<Enemy>();
@@ -91,7 +93,8 @@ export class Cast<S, K extends string = never> implements Effect {
 
   /** A number of the rules, now: a plain one, or the tool page's slider of that name. */
   num(v: Num<K>): number {
-    return typeof v === 'number' ? v : (this.settings as Record<K, number>)[v];
+    const tuned = this.settings as Record<K, number>;
+    return typeof v === 'number' ? v : typeof v === 'function' ? v(tuned) : tuned[v];
   }
 
   /** The engine's hit from the rules' `Hit`: only the fields given, `from` the shape's default unless the hit says. */
@@ -104,10 +107,6 @@ export class Cast<S, K extends string = never> implements Effect {
     if (h.status) o.status = { kind: h.status.kind, seconds: this.num(h.status.seconds) };
     if (h.projectile) o.projectile = true;
     return o;
-  }
-
-  get screen() {
-    return this.look.screen;
   }
 
   cast(ctx: CastContext) {
@@ -140,7 +139,7 @@ export class Cast<S, K extends string = never> implements Effect {
     this.time = 0;
     this.shake = 0;
     this.bolt = null;
-    this.released = this.stopped = this.hitSomething = this.impacted = this.landed = false;
+    this.released = this.stopped = this.hitSomething = this.impacted = this.landed = this.moved = false;
     this.caught = [];
     this.lit = [];
     this.struck.clear();
@@ -159,6 +158,7 @@ export class Cast<S, K extends string = never> implements Effect {
       this.landing.set(p.x, 0, p.z);
     }
     this.landing.copy(ctx.moveCaster(this.landing, m.seconds)).setY(0);
+    this.moved = true;
     this.reach = Math.max(0.5, this.landing.distanceTo(this.from));
   }
 
@@ -212,6 +212,7 @@ export class Cast<S, K extends string = never> implements Effect {
     }
     r.on?.impact?.(this, live.length > 0);
     this.look.impact?.(this, lit);
+    if (r.move?.at === 'impact') this.move(r.move);
   }
 
   /** A sure hit lands on the chosen enemy (live), if it still stands inside its circle when the rules ask that. */
@@ -225,6 +226,7 @@ export class Cast<S, K extends string = never> implements Effect {
     if (landed) ctx!.hit(tg!, this.hitOptions());
     r.on?.impact?.(this, landed);
     this.look.impact?.(this, [landed]);
+    if (r.move?.at === 'impact') this.move(r.move);
   }
 
   /** A zone is judged: every enemy inside it now (live) is hit once, from where she stood unless the hit says. */
@@ -241,6 +243,7 @@ export class Cast<S, K extends string = never> implements Effect {
     }
     r.on?.impact?.(this, this.caught.length > 0);
     this.look.impact?.(this, [this.caught.length > 0]);
+    if (r.move?.at === 'impact') this.move(r.move);
   }
 
   /** A lane's front, `t` s after play(): how far along it the hit has reached. */
@@ -329,13 +332,20 @@ export class Cast<S, K extends string = never> implements Effect {
   }
 }
 
+/** A cast whose look has a full-screen effect (the engine reads `screen` every frame; `noScreen` spells have no such field). */
+class ScreenCast<S, K extends string = never> extends Cast<S, K> {
+  get screen() {
+    return this.look.screen;
+  }
+}
+
 /** A spell from its blocks: the `EffectModule` the engine and the tool page know. */
 export function spell<S, K extends string = never>(def: SpellDef<S, K>): EffectModule {
   return {
     label: def.label,
     category: def.category,
     targeting: def.targeting,
-    create: () => new Cast(def),
+    create: () => (def.noScreen ? new Cast(def) : new ScreenCast(def)),
     telegraphs: (effect) => (effect as Cast<S, K>).zones(),
     bloom: def.bloom,
     frameCamera(camera, controls, effect) {

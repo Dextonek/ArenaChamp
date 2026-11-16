@@ -10,7 +10,9 @@ Steps 1 and 2 of `docs/pipeline/hero-framework-brief.md` (the user's yes, 2026-1
 how one hero will live in one folder, the spell building blocks, what must keep working, the risks, and Anka's move planned
 file by file. The fight prints that prove a move changes nothing are taken (section 7). **Step 3 is done: Anka is moved
 (section 10; the page [hero-framework/anka.html](hero-framework/anka.html)). Step 4's folder move (4a) is done: the other 39 are in folders too,
-their spells as they were, none on the blocks yet (section 11; the page [hero-framework/progress.html](hero-framework/progress.html)).** The page for
+their spells as they were, none on the blocks yet (section 11; the page [hero-framework/progress.html](hero-framework/progress.html)).** **The blocks trial (section 12):
+eight spells of Sefu, Professor Puff and Big Yoko on the blocks, four stayed code; recommendation: some shapes only (the page
+[hero-framework/blocks-trial.html](hero-framework/blocks-trial.html)).** The page for
 the user: [hero-framework/index.html](hero-framework/index.html).
 
 ## 1. In short
@@ -548,3 +550,36 @@ end); before batch 5 its merge was checked alone (80 of 80).
 - `src/icons/vc.ts` keeps `heroStem` and the empty `DRAWN` for heroes without a card; there are none now.
 - `pipeline/tools/kits20.py` still writes `src/kits/` and `src/traits/` paths into the designs it makes (step 5's command replaces it).
 
+
+## 12. The blocks trial: three more heroes' spells, to learn the cost (2026-11-16)
+
+The page for the user: [hero-framework/blocks-trial.html](hero-framework/blocks-trial.html). Before deciding on the other ~150
+spells, the twelve spells of three heroes chosen for simple shapes and not ported to Rust (Sefu, Professor Puff, Big Yoko) were
+tried, one commit per step, each with its hero's two prints (and Anka's after every change to the runner).
+
+**Moved (8):** Cobra Spit (a bolt with a blind), Shepherd's Crook (a sure hit: pull, slow), Helium Bomb (a circle at the aim), the
+plain ones; Sarcophagus (a sure hit that must still find them inside 1.6 m; the burst a frame after the seal is a hook, `on.frame`),
+Hot Air (a zone round him, a push, then a move away from the aim at the impact; "away" is an `on.cast` hook), Stomp, Salt Throw,
+Palm Strike (zones judged once: a circle round him, a cone and a strip the way he faces; his ring and the shove are hooks).
+**Stayed code (4):** Scarab Stride (a bite judged on the stretch of the eased dash run this frame, nearest only, poison ticks: the
+lane judges differently), Air Hose (a muzzle 0.8 m ahead, aimed at the point, ends when its bubbles clear, its own drawn bolt
+without `projectile`, no loop switch), Pop! (fizzles without sight or beyond 11 m, knocks from his live spot, its circle follows
+the enemy: three options to the sure hit), Sumo Charge (catch and carry: a block worth building with Pim's Charge and The Shove).
+
+**The blocks gained** (`blocks.ts`, `spell.ts`; 393 -> 551 lines): the `target` shape (a sure hit, `inside`), the `zone` shape (any
+`TelegraphShape`, judged once with the engine's `insideTelegraph`, so the danger zone is the hit's shape; `until`); `tune` sliders
+and `Num` (a number of the rules may name a slider or be worked out from them); a `Hit` with `pull`, `status`, `projectile`,
+`from` and `none`; `facing`; `move.at: 'impact'` and `c.moved`; `on.frame`; `noDamage`, `noLoop`, `noScreen` (settings and the effect's fields keep their old keys: the roster checks
+`'screen' in effect`); and
+the look's `releasing`, `impacting` (before the rules: the old files drew first, and the dice must keep their order) and `idle`
+(files that aged their particles while not playing). `c.landed` is set before `impacting`; `stopped` names whom a bolt hit.
+
+**Counts:** the eight files 1,917 -> 1,520 lines (-21%); their rules blocks 19-47 lines each (the hooks 3-20 of that); the looks
+moved as they were. Time: a plain spell about 10 minutes, one with a hook 15-20, a new block 20-30, the checks about 5 minutes of
+machine time per hero (they run while the next spell is written). Estimate for the rest (~123 not ported): about 30 hours of
+agent work, about a third staying code. **Recommendation: some shapes only** (the user's page says why): new heroes on the blocks,
+a spell converted when its hero is touched anyway, the clean shapes when convenient; no conversion project.
+
+**The checks:** Sefu's, Puff's, Yoko's and Anka's prints the same after every commit; all 80 prints the same on the finished code;
+the roster (`hero-roster.py take` / `diff`) identical; the self test of the eight moved spells and of the five never cast identical
+(Scarab Stride, never cast in the prints, stayed code); `tsc`, `build`; the Rust guard the same lines.

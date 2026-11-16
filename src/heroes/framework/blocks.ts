@@ -27,8 +27,11 @@ import type { Cast } from './spell';
  *   their order where the old file drew first.
  */
 
-/** A number of the rules: a plain number, or the name of one of the spell's `tune` sliders (read at the moment it is used). */
-export type Num<K extends string> = number | K;
+/**
+ * A number of the rules: a plain number, the name of one of the spell's `tune` sliders, or a number worked out from them
+ * (read at the moment it is used).
+ */
+export type Num<K extends string> = number | K | ((s: Readonly<Record<K, number>>) => number);
 
 /** A slider of the tool page: the start value, its least, its most and its step. */
 export type Slider = readonly [value: number, min: number, max: number, step: number];
@@ -96,7 +99,8 @@ export interface Hit<K extends string = never> {
  * ring and out of the walls; where she really lands is `c.landing`, and how far along the aim that is, `c.reach`.
  */
 export interface Move<S, K extends string = never> {
-  at: 'play' | 'release';
+  /** `impact`: right after a zone's, a circle's or a sure hit's impact (a push, then away). */
+  at: 'play' | 'release' | 'impact';
   to: 'end' | ((c: Cast<S, K>) => P | null);
   seconds: number;
 }
@@ -176,6 +180,8 @@ export interface SpellDef<S, K extends string = never> {
   noDamage?: true;
   /** No loop switch (the old file had none). */
   noLoop?: true;
+  /** No `screen` field on the effect (the old file had none; the engine reads an absent one as none). */
+  noScreen?: true;
   look: new (group: import('three').Group, c: Cast<S, K>) => Look<S, K>;
   bloom: BloomSettings;
   /** How far the tool page's camera stands back from the cast (`frameCast`). */
