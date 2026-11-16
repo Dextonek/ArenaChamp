@@ -55,6 +55,10 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
+  41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
+  (every spot against the cover).
+
 - **Done and merged (2026-11-16): the lore and the Climb's words** (branch 8b7a6ecf; page `docs/lore/changes-2026-11-16.html`): the
   gates (Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate; the others are champions the Tower drew), the rulers
   described as drawn (the Pearl Tyrant a woman, the Bell Below's ringer, the Scarab Colossus a giantess in the shell, ...), the six
