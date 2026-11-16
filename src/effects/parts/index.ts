@@ -23,7 +23,7 @@ export { SmokeBall, type SmokeBallOptions } from './smokeBall';
 export {
   BLOOD, BLOOD_CSS, BloodTendril, BloodDrops, BloodSplats, BloodPool, BloodThorns, BloodSigil,
   type BloodTendrilOptions, type BloodDropsOptions, type BloodThornsOptions, type BloodSigilOptions,
-} from '../../heroes/blood/parts';
+} from './blood';
 export { StatusFx, StatusFxPool } from './status';
 export { ShieldFx, ShieldFxPool } from './shield';
 export { MinionFx, MinionPool, defaultLook, type MinionLook, type MinionRig, type MinionPalette, type MinionPose } from './minion';

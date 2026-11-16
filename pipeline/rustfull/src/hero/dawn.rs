@@ -1,5 +1,5 @@
-//! Auriel, the Dawn Paladin. Ports of her passive (`src/traits/dawn.ts`) and of the rules inside her four spells
-//! (`src/spells/targeted/firstLight.ts`, `dawnward.ts`, `oathbrand.ts`, `sunrise.ts`).
+//! Auriel, the Dawn Paladin. Ports of her passive (`src/heroes/dawn/trait.ts`) and of the rules inside her four spells
+//! (`src/heroes/dawn/spells/firstLight.ts`, `dawnward.ts`, `oathbrand.ts`, `sunrise.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -25,7 +25,7 @@ use crate::hero::{self, Hero, Landed, Spell, PLAIN};
 use crate::status::Status;
 use crate::zone::{Shape, Zone};
 
-// src/traits/dawn.ts
+// src/heroes/dawn/trait.ts
 const Q_SHIELD: f64 = 14.0;
 const Q_SHIELD_SECONDS: f64 = 3.0;
 const Q_BURST_RADIUS: f64 = 3.0;
@@ -230,7 +230,7 @@ pub fn tick(w: &mut World, s: Side, _dt: f64) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-// src/spells/targeted/firstLight.ts
+// src/heroes/dawn/spells/firstLight.ts
 const LIGHT_HIT_T: f64 = 0.45;
 const LIGHT_MISS_END: f64 = LIGHT_HIT_T + 1.85;
 const LIGHT_BURST_LIFE: f64 = 0.9;
@@ -355,7 +355,7 @@ impl Spell for FirstLight {
     }
 }
 
-// src/spells/targeted/dawnward.ts
+// src/heroes/dawn/spells/dawnward.ts
 const WARD_STANDALONE: f64 = W_SHIELD_SECONDS + 0.05;
 const WARD_BURST_LIFE: f64 = 0.9;
 const WARD_CAP: f64 = 5.2;
@@ -443,7 +443,7 @@ impl Spell for Dawnward {
     }
 }
 
-// src/spells/targeted/oathbrand.ts
+// src/heroes/dawn/spells/oathbrand.ts
 const BRAND_FALL: f64 = 0.5;
 const BRAND_MARK_R: f64 = 1.2;
 const BRAND_FIZZLE_END: f64 = BRAND_FALL + 0.5;
@@ -496,7 +496,7 @@ impl Spell for Oathbrand {
     }
 }
 
-// src/spells/targeted/sunrise.ts
+// src/heroes/dawn/spells/sunrise.ts
 const SUN_STANDALONE: f64 = R_SHIELD_SECONDS + 0.05;
 const SUN_BURST_LIFE: f64 = 0.9;
 const SUN_CAP: f64 = 9.4;

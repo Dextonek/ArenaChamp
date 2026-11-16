@@ -98,4 +98,4 @@ In the hero's palette: accent heat lilac with a pale sun linen foil beside every
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'glass arrow', 'mirage', 'shimmer step', 'the glass flats'. Files: `src/spells/targeted/glassArrow.ts`, `src/spells/targeted/mirage.ts`, `src/spells/targeted/shimmerStep.ts`, `src/spells/targeted/theGlassFlats.ts`; `src/effects/parts/mirage.ts`, `src/kits/mirage.ts`, `src/traits/mirage.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'glass arrow', 'mirage', 'shimmer step', 'the glass flats'. Files: `src/heroes/mirage/spells/glassArrow.ts`, `src/heroes/mirage/spells/mirage.ts`, `src/heroes/mirage/spells/shimmerStep.ts`, `src/heroes/mirage/spells/theGlassFlats.ts`; in `src/heroes/mirage/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

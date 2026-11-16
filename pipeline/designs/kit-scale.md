@@ -98,4 +98,4 @@ In the hero's palette: accent lapis with a pale papyrus foil beside every dark p
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'verdict', 'weight of the dead', 'feather-light', 'the weighing'. Files: `src/spells/targeted/verdict.ts`, `src/spells/targeted/weightOfTheDead.ts`, `src/spells/targeted/featherLight.ts`, `src/spells/targeted/theWeighing.ts`; `src/effects/parts/scale.ts`, `src/kits/scale.ts`, `src/traits/scale.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'verdict', 'weight of the dead', 'feather-light', 'the weighing'. Files: `src/heroes/scale/spells/verdict.ts`, `src/heroes/scale/spells/weightOfTheDead.ts`, `src/heroes/scale/spells/featherLight.ts`, `src/heroes/scale/spells/theWeighing.ts`; in `src/heroes/scale/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

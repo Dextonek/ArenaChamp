@@ -98,4 +98,4 @@ In the hero's palette: accent noon yellow with a pale white gold foil beside eve
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'sunmace', 'set down', 'dawnstride', 'zenith'. Files: `src/spells/targeted/sunmace.ts`, `src/spells/targeted/setDown.ts`, `src/spells/targeted/dawnstride.ts`, `src/spells/targeted/zenith.ts`; `src/effects/parts/sunbearer.ts`, `src/kits/sunbearer.ts`, `src/traits/sunbearer.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'sunmace', 'set down', 'dawnstride', 'zenith'. Files: `src/heroes/sunbearer/spells/sunmace.ts`, `src/heroes/sunbearer/spells/setDown.ts`, `src/heroes/sunbearer/spells/dawnstride.ts`, `src/heroes/sunbearer/spells/zenith.ts`; in `src/heroes/sunbearer/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

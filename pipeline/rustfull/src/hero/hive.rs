@@ -1,5 +1,5 @@
-//! Sirix, the Swarm Warden. Ports of his passive (`src/traits/hive.ts`) and of the rules inside his four spells
-//! (`src/spells/targeted/barbedStinger.ts`, `hiveShell.ts`, `swarmCloud.ts`, `swarmSurge.ts`).
+//! Sirix, the Swarm Warden. Ports of his passive (`src/heroes/hive/trait.ts`) and of the rules inside his four spells
+//! (`src/heroes/hive/spells/barbedStinger.ts`, `hiveShell.ts`, `swarmCloud.ts`, `swarmSurge.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -24,7 +24,7 @@ use crate::hero::{self, Hero, Landed, Quiet, Spell, PLAIN};
 use crate::status::Status;
 use crate::zone::{Shape, Zone};
 
-// src/traits/hive.ts
+// src/heroes/hive/trait.ts
 const MAX_WASPS: f64 = 6.0;
 const WASP_EVERY: f64 = 2.0;
 const BARB_SECONDS: f64 = 3.0;
@@ -245,7 +245,7 @@ pub fn tick(w: &mut World, s: Side, _dt: f64) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-// src/spells/targeted/barbedStinger.ts
+// src/heroes/hive/spells/barbedStinger.ts
 const RELEASE_T: f64 = 0.25;
 const STING_SPEED: f64 = 20.0;
 const STING_RANGE: f64 = 8.0;
@@ -398,7 +398,7 @@ impl BarbedStinger {
     }
 }
 
-// src/spells/targeted/swarmCloud.ts
+// src/heroes/hive/spells/swarmCloud.ts
 const CLOUD_RANGE: f64 = 9.0;
 const FIRST_TICK: f64 = 1.0;
 const CLOUD_END: f64 = CLOUD_SECONDS;
@@ -464,7 +464,7 @@ impl Spell for SwarmCloud {
     }
 }
 
-// src/spells/targeted/swarmSurge.ts
+// src/heroes/hive/spells/swarmSurge.ts
 const SURGE_RELEASE: f64 = 0.5;
 const SURGE_SPEED: f64 = 12.0;
 const SURGE_LENGTH: f64 = 10.0;

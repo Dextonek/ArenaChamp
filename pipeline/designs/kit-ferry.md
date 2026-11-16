@@ -100,4 +100,4 @@ In the hero's palette: accent lantern green-gold with a pale fog grey foil besid
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'pole sweep', 'river of souls', 'toll mark', 'the last crossing'. Files: `src/spells/targeted/poleSweep.ts`, `src/spells/targeted/riverOfSouls.ts`, `src/spells/targeted/tollMark.ts`, `src/spells/targeted/theLastCrossing.ts`; `src/effects/parts/ferry.ts`, `src/kits/ferry.ts`, `src/traits/ferry.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'pole sweep', 'river of souls', 'toll mark', 'the last crossing'. Files: `src/heroes/ferry/spells/poleSweep.ts`, `src/heroes/ferry/spells/riverOfSouls.ts`, `src/heroes/ferry/spells/tollMark.ts`, `src/heroes/ferry/spells/theLastCrossing.ts`; in `src/heroes/ferry/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

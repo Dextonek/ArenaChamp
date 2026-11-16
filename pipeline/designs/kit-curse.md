@@ -98,4 +98,4 @@ In the hero's palette: accent wine with a pale tarnished gold foil beside every 
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'exile's blade', 'royal decree', 'usurp', 'the crown falls'. Files: `src/spells/targeted/exilesBlade.ts`, `src/spells/targeted/royalDecree.ts`, `src/spells/targeted/usurp.ts`, `src/spells/targeted/theCrownFalls.ts`; `src/effects/parts/curse.ts`, `src/kits/curse.ts`, `src/traits/curse.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'exile's blade', 'royal decree', 'usurp', 'the crown falls'. Files: `src/heroes/curse/spells/exilesBlade.ts`, `src/heroes/curse/spells/royalDecree.ts`, `src/heroes/curse/spells/usurp.ts`, `src/heroes/curse/spells/theCrownFalls.ts`; in `src/heroes/curse/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

@@ -1,5 +1,5 @@
-//! Barry Cloudsley, the Sky Augur. Ports of his passive And Now the Weather (`src/traits/weather.ts`) and of the rules
-//! inside his four spells (`src/spells/targeted/coldFront.ts`, `lightningRisk.ts`, `forecastUpdate.ts`,
+//! Barry Cloudsley, the Sky Augur. Ports of his passive And Now the Weather (`src/heroes/weather/trait.ts`) and of the rules
+//! inside his four spells (`src/heroes/weather/spells/coldFront.ts`, `lightningRisk.ts`, `forecastUpdate.ts`,
 //! `severeWarning.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
@@ -28,7 +28,7 @@ use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::{Buff, Status};
 use crate::zone::{Shape, Zone};
 
-// src/traits/weather.ts
+// src/heroes/weather/trait.ts
 const RAIN: u8 = 0;
 const SUN: u8 = 1;
 const ARENA_X: f64 = 0.0;
@@ -332,7 +332,7 @@ fn enemy_listed(w: &World, c: &Ctx) -> bool {
     c.side == Side::Opponent || w.hp(Side::Opponent) > 0.0
 }
 
-// src/spells/targeted/coldFront.ts
+// src/heroes/weather/spells/coldFront.ts
 const MUZZLE: f64 = 0.8;
 const COLD_MAX_T: f64 = 2.2;
 const FLIGHT: f64 = COLD_RANGE - MUZZLE;
@@ -390,7 +390,7 @@ impl Spell for ColdFront {
     }
 }
 
-// src/spells/targeted/lightningRisk.ts
+// src/heroes/weather/spells/lightningRisk.ts
 const BOLT_DURATION: f64 = 2.0;
 const BOLT_KNOCK: f64 = 3.0;
 
@@ -431,7 +431,7 @@ impl Spell for LightningRisk {
     }
 }
 
-// src/spells/targeted/severeWarning.ts
+// src/heroes/weather/spells/severeWarning.ts
 const WALK_END: f64 = TORNADO_WARN + TORNADO_WALK;
 const FADE: f64 = 0.7;
 const TORNADO_DURATION: f64 = WALK_END + FADE + 0.1;

@@ -101,4 +101,4 @@ In the hero's palette: accent bronze with a pale pale patina foil beside every d
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'clapper', 'cast a bell', 'toll', 'the great bell'. Files: `src/spells/targeted/clapper.ts`, `src/spells/targeted/castABell.ts`, `src/spells/targeted/toll.ts`, `src/spells/targeted/theGreatBell.ts`; `src/effects/parts/bell.ts`, `src/kits/bell.ts`, `src/traits/bell.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'clapper', 'cast a bell', 'toll', 'the great bell'. Files: `src/heroes/bell/spells/clapper.ts`, `src/heroes/bell/spells/castABell.ts`, `src/heroes/bell/spells/toll.ts`, `src/heroes/bell/spells/theGreatBell.ts`; in `src/heroes/bell/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

@@ -98,4 +98,4 @@ In the hero's palette: accent olive with a pale antler cream foil beside every d
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'broadhead', 'snare line', 'run them down', 'the hunt rides'. Files: `src/spells/targeted/broadhead.ts`, `src/spells/targeted/snareLine.ts`, `src/spells/targeted/runThemDown.ts`, `src/spells/targeted/theHuntRides.ts`; `src/effects/parts/hunt.ts`, `src/kits/hunt.ts`, `src/traits/hunt.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'broadhead', 'snare line', 'run them down', 'the hunt rides'. Files: `src/heroes/hunt/spells/broadhead.ts`, `src/heroes/hunt/spells/snareLine.ts`, `src/heroes/hunt/spells/runThemDown.ts`, `src/heroes/hunt/spells/theHuntRides.ts`; in `src/heroes/hunt/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

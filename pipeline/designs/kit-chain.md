@@ -101,4 +101,4 @@ In the hero's palette: accent tarnished copper with a pale pale steel foil besid
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'shackle', 'bulwark of links', 'exchange', 'the iron post'. Files: `src/spells/targeted/shackle.ts`, `src/spells/targeted/bulwarkOfLinks.ts`, `src/spells/targeted/exchange.ts`, `src/spells/targeted/theIronPost.ts`; `src/effects/parts/chain.ts`, `src/kits/chain.ts`, `src/traits/chain.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'shackle', 'bulwark of links', 'exchange', 'the iron post'. Files: `src/heroes/chain/spells/shackle.ts`, `src/heroes/chain/spells/bulwarkOfLinks.ts`, `src/heroes/chain/spells/exchange.ts`, `src/heroes/chain/spells/theIronPost.ts`; in `src/heroes/chain/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

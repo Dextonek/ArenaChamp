@@ -98,4 +98,4 @@ In the hero's palette: accent orchid with a pale silver thread foil beside every
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'needle', 'stitch', 'darn', 'close the seam'. Files: `src/spells/targeted/needle.ts`, `src/spells/targeted/stitch.ts`, `src/spells/targeted/darn.ts`, `src/spells/targeted/closeTheSeam.ts`; `src/effects/parts/stitch.ts`, `src/kits/stitch.ts`, `src/traits/stitch.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'needle', 'stitch', 'darn', 'close the seam'. Files: `src/heroes/stitch/spells/needle.ts`, `src/heroes/stitch/spells/stitch.ts`, `src/heroes/stitch/spells/darn.ts`, `src/heroes/stitch/spells/closeTheSeam.ts`; in `src/heroes/stitch/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

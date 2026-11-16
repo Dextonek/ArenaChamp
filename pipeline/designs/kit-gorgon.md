@@ -101,4 +101,4 @@ In the hero's palette: accent verdigris with a pale marble foil beside every dar
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'serpent strike', 'garden of statues', 'coil', 'unveiling'. Files: `src/spells/targeted/serpentStrike.ts`, `src/spells/targeted/gardenOfStatues.ts`, `src/spells/targeted/coil.ts`, `src/spells/targeted/unveiling.ts`; `src/effects/parts/gorgon.ts`, `src/kits/gorgon.ts`, `src/traits/gorgon.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'serpent strike', 'garden of statues', 'coil', 'unveiling'. Files: `src/heroes/gorgon/spells/serpentStrike.ts`, `src/heroes/gorgon/spells/gardenOfStatues.ts`, `src/heroes/gorgon/spells/coil.ts`, `src/heroes/gorgon/spells/unveiling.ts`; in `src/heroes/gorgon/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.

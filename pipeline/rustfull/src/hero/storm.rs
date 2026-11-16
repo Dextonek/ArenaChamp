@@ -1,5 +1,5 @@
-//! Kaia, the Tempest Caller. Ports of her passive (`src/traits/storm.ts`) and of the rules inside her four spells
-//! (`src/spells/targeted/skyStrike.ts`, `thunderRod.ts`, `polarity.ts`, `supercellStorm.ts`).
+//! Kaia, the Tempest Caller. Ports of her passive (`src/heroes/storm/trait.ts`) and of the rules inside her four spells
+//! (`src/heroes/storm/spells/skyStrike.ts`, `thunderRod.ts`, `polarity.ts`, `supercellStorm.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -19,7 +19,7 @@ use crate::hero::{self, Hero, Spell, PLAIN};
 use crate::status::Status;
 use crate::zone::{Shape, Zone};
 
-// src/traits/storm.ts
+// src/heroes/storm/trait.ts
 const ROD_MAX: usize = 3;
 const ROD_LIFE: f64 = 6.0;
 const GREAT_LIFE: f64 = 3.0;
@@ -123,7 +123,7 @@ fn nearest_rod(w: &World, s: Side, p: V2, within: f64) -> Option<V2> {
     best
 }
 
-/// Big Mop wipes the ground (`addGroundWiper` at the end of `src/traits/storm.ts`): her rods within `r` of the spot
+/// Big Mop wipes the ground (`addGroundWiper` at the end of `src/heroes/storm/trait.ts`): her rods within `r` of the spot
 /// go. Nothing calls this yet: the port of the hero with Big Mop must.
 pub fn wipe(w: &mut World, s: Side, x: f64, z: f64, r: f64) {
     st_mut(w, s).rods.retain(|rod| (rod.x - x).hypot(rod.z - z) > r);
@@ -222,7 +222,7 @@ fn enemy_listed(w: &World, c: &Ctx) -> bool {
     c.side == Side::Opponent || w.hp(Side::Opponent) > 0.0
 }
 
-// src/spells/targeted/skyStrike.ts
+// src/heroes/storm/spells/skyStrike.ts
 const STRIKE_T: f64 = 0.35;
 const STRIKE_DURATION: f64 = 1.4;
 const STRIKE_MARK_R: f64 = 1.2;
@@ -282,7 +282,7 @@ impl Spell for SkyStrike {
     }
 }
 
-// src/spells/targeted/thunderRod.ts
+// src/heroes/storm/spells/thunderRod.ts
 const PLANT_T: f64 = 0.25;
 const ROD_TICKS: [f64; 2] = [1.2, 2.2];
 const ROD_DURATION: f64 = 3.4;
@@ -421,7 +421,7 @@ impl Spell for ThunderRod {
     }
 }
 
-// src/spells/targeted/polarity.ts
+// src/heroes/storm/spells/polarity.ts
 const POL_HIT_T: f64 = 0.25;
 const POL_PULL_T: f64 = 1.0;
 const POL_DURATION: f64 = 1.8;
@@ -490,7 +490,7 @@ impl Spell for Polarity {
     }
 }
 
-// src/spells/targeted/supercellStorm.ts
+// src/heroes/storm/spells/supercellStorm.ts
 const CELL_DURATION: f64 = 6.6;
 const CELL_EVERY: f64 = 0.8;
 const CELL_CHECKS: u32 = 6;

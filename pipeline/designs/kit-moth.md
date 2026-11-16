@@ -102,4 +102,4 @@ In the hero's palette: accent luna green with a pale powder ivory foil beside ev
 
 ### Names and files (checked free on 2026-11-14)
 
-Labels: 'dream dust', 'moonlit lantern', 'flutter', 'lullaby of wings'. Files: `src/spells/targeted/dreamDust.ts`, `src/spells/targeted/moonlitLantern.ts`, `src/spells/targeted/flutter.ts`, `src/spells/targeted/lullabyOfWings.ts`; `src/effects/parts/moth.ts`, `src/kits/moth.ts`, `src/traits/moth.ts`. Checked against `src/kits/` and the labels and file names in `src/spells/targeted/` by the script.
+Labels: 'dream dust', 'moonlit lantern', 'flutter', 'lullaby of wings'. Files: `src/heroes/moth/spells/dreamDust.ts`, `src/heroes/moth/spells/moonlitLantern.ts`, `src/heroes/moth/spells/flutter.ts`, `src/heroes/moth/spells/lullabyOfWings.ts`; in `src/heroes/moth/` also `hero.ts` (the card), `icons.ts`, `trait.ts` and `parts.ts`. Checked against the cards (`src/heroes/*/hero.ts`) and the labels and file names in `src/heroes/*/spells/` and `src/spells/targeted/` by the script.
