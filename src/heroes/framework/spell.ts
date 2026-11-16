@@ -339,9 +339,17 @@ class ScreenCast<S, K extends string = never> extends Cast<S, K> {
   }
 }
 
+/** Each spell on the blocks' description, by its module (the hero workbench edits its numbers live: src/workbench/). */
+const DEFS = new WeakMap<EffectModule, SpellDef<unknown, string>>();
+
+/** The blocks' description of a spell (its rules, sliders and length), or undefined for a spell written as its own code. */
+export function spellDef(module: EffectModule): SpellDef<unknown, string> | undefined {
+  return DEFS.get(module);
+}
+
 /** A spell from its blocks: the `EffectModule` the engine and the tool page know. */
 export function spell<S, K extends string = never>(def: SpellDef<S, K>): EffectModule {
-  return {
+  const module: EffectModule = {
     label: def.label,
     category: def.category,
     targeting: def.targeting,
@@ -362,4 +370,6 @@ export function spell<S, K extends string = never>(def: SpellDef<S, K>): EffectM
       }
     },
   };
+  DEFS.set(module, def as unknown as SpellDef<unknown, string>);
+  return module;
 }

@@ -590,3 +590,118 @@ a dust puff raised 1 cm on purpose was caught at frame 16. About 10 s a spell.
 the roster (`hero-roster.py take` / `diff`) identical; the self test of the eight moved spells and of the five never cast identical
 (Scarab Stride, never cast in the prints, stayed code); the looks frame by frame the same; `tsc`, `build`; the Rust guard the
 same lines.
+
+
+## 13. Step 5: the new-hero command, the workbench, the check command (2026-11-16)
+
+The page for the user: [hero-framework/new-hero-tools.html](hero-framework/new-hero-tools.html). The decision before it (the
+parent, from the blocks trial's recommendation): new heroes are built on the blocks; an old hero's fitting spells move to the
+blocks only when that hero is opened for a fix or a rebalance; no mass conversion. The rules for creating a hero
+([new-hero.md](new-hero.md)) keep their ten rules and six gates; their part 3 is now these three tools.
+
+**A draft** (`draft?: true` on `HeroCard`, `src/heroes/framework/card.ts`): a hero going through its gates. `src/heroes/index.ts`
+leaves it out of `CARD_BY_FOLDER` and `HERO_CARDS` unless the page shows drafts (`SHOW_DRAFTS`: the workbench's page, the tool page
+`/` with `?bench` (never the game's page: `/game.html?bench` keeps 40), or any dev-server page with `?drafts=1`), and `traits.ts` and `spells.ts` leave its passive and spells out with it,
+so it is not on the roster, in the shop, among the CPU's picks, in the game's list of spells or in the Codex (its LORE.md status is
+`draft`, which `lore-game.py` and the Codex leave out). Where drafts show, each takes the next place after the released heroes. A
+draft draws its canvas icons (`src/heroes.ts` gives only released cards' stems to `useVcIcons`: its SVGs may not exist), and the
+server's shop-row check in dev skips it. Its files are still loaded with the game's (the globs are eager): 7.6 KB of `runtime` for
+the throwaway's four sketched spells, gone with the draft; so a draft's files make no three.js object at the top of a file.
+
+**The command** (`pipeline/tools/new-hero.py`, Python, ASCII output, PowerShell 5.1): the card (`draft: true`, the next order, a
+plain Coast-folk worker of the Climb as the stand-in body until gate 2, the shop row's kind from the role), `numbers.ts` (colours
+and every number; the tooltips are template strings of them), four spells on the blocks with the sketch look, `fight.ts`, the
+passive's stub, canvas stand-in icons and portrait, the icon command-file stub (`draw/<stem>.py`, `ICONS` of four stand-ins), the
+model's `build()` stub (`Real(theme, sex)`, fitted tunic, leggings, boots, a band), the kit sheet's stub, the lore stub (entry,
+faction member, origin) and the codex page's stub, and the checklist `docs/heroes/new/<theme>.md` (the six gates for this hero and
+the list of what was made, which `--remove --yes` reads; it also takes away what `make.py` wrote from the icon stub). For a hero planned in LORE.md (`next10`, `next20`) it reads the entry
+and the kit sheet (`| Q | **Name** | SHAPE | cd | range | size | damage | rule |`, `**620 HP**`, the accent and foil): the sheet's
+shape words map to blocks (LINE a bolt, ZONE/GROUND/TRAP/LOB a circle at the aim, SELF/NOVA a zone round the hero, CONE/QUICK a
+cone the way it faces, TGT/HOOK/LINK a sure hit, DASH/LEAP/BLINK/CARRY a lane with a move); the rest (WALL, TERRAIN, TRAIL,
+SUMMON, GLOBAL, FUSE) get a circle and a note. A dash in the Q slot gets no `dash` flag: the CPU casts a `dash` only when the
+enemy is out of Q's reach, so a Q that is the dash would never be cast (Kohaku's Foxfire Bite showed it). Starting numbers pass rule 4 (a circle's fuse at least 0.25 + r/4). Labels are
+checked against every `label:` in `src/`. Morwen, `--dry`: Iron Nail a bolt, Salt Circle a circle, Hex Bundle a sure hit, The
+Boundary (a WALL) a circle with the note.
+
+**The sketch** (`src/heroes/framework/sketch.ts`): the look a spell has until gate 4: the game's plain bolt for a bolt, and at the
+impact a flat flash of the hit's own shape (circle, cone, strip, the sure hit's mark) in the accent, fading in 0.4 s. Its objects
+are made in the constructor.
+
+**The workbench** (`src/workbench/`: `index.ts` the one entry `mountWorkbench(rt, gui, { ownPanel? })`, `floor.ts` the floor
+layer, `panel.ts` the overlay, `main.ts` its own page `workbench.html`, a third input of the build): pick a hero (drafts marked);
+fight the CPU, let the CPU play it against the CPU, or the training dummies in hero mode; opponent, CPU level, the arena's
+hazards. On the floor: a dashed ring a spell for its reach, and each spell's last cast as the danger zones the engine judged it
+with (`rt.zones` at the `played` hook: the same for spells on the blocks and spells of their own code). The overlay: each spell's
+moments on a time line (zone shown, hit, lasting, the effect's length; from the rules before its first cast), the balance block
+(the two commands, and the last results it can read: `pipeline/sim/out/last/<Name>.json`, which `sim.py hero` now writes for every
+hero of a run, and `pipeline/sim/out/check/<Name>.json`), and the numbers changed. The panel edits live: the card (HP, each
+spell's cooldown and range: `heroMode` reads them at each cast) and a spell on the blocks through `spellDef(module)` (a new
+`WeakMap` in `spell.ts`, so the module's shape is unchanged): the hit's damage, wind-up, delay, warning, the shape's numbers, the
+move's seconds, the effect's length, its `tune` sliders (as the start value of every new cast, and on the instance already
+built). A zone's or circles' area is a function: "in the file". A spell of its own code shows its own sliders (on its instance; a
+recast while it plays makes a fresh one). It chains the runtime's `played`, `afterStep` and `kitChanged` hooks after the page's.
+On a phone both panels start folded.
+
+**The hook for the tool page** (`src/tool/main.ts`, not edited here: the hero bugs agent writes the shared files), two lines at
+the end of the file, after `window.vfx`:
+
+```ts
+// The hero workbench (src/workbench/, docs/pipeline/hero-framework.md section 13): only with ?bench, loaded on demand.
+if (new URLSearchParams(location.search).has('bench')) void import('../workbench').then((w) => w.mountWorkbench(rt, gui));
+```
+
+Tried with a temporary, uncommitted edit: `/` unchanged (40 heroes, no workbench folder, no overlay), `/?bench` the workbench
+folder, the overlay and the draft in the hero list (41), no errors.
+
+**The check command** (`pipeline/tools/hero-check.py <Name>`, `--only`, `--skip`, `--fights`, `--partner`): the two prints
+(`hero-prints.py check <Name>` and `--foe Brannoc`), the simulator through `heavy.py` (`--drafts` for a draft; read back from
+`out/last/`), the online pair (`hero-gate5/online_pair.py` with `GATE5_PORT`; the bots' `v5bot...` accounts made during the run are
+removed from `server/data/accounts.json`), the icons drawn at 32 and 64 px into a picture, the model (`glb_stats`: size, triangles
+of every primitive, the brightest emissive) against the other heroes' models, and the lore scripts with the lines that name the
+hero. Every tool gets a free port of its own (5230-5299, none answering) and a time limit (10 minutes at most, the heavy lock's
+wait included). It writes `pipeline/sim/out/check/<Name>.json` and `.html` (git-ignored). A draft skips the prints and the online
+check, with the reason.
+
+**The lore scripts and drafts** (`lore-page.py`: `drafts_apart`, `print_drafts`; `lore-codex.py` uses them): an error that names a
+hero of status `draft` (or its codex page) is listed as a note and does not fail the run. With no draft, the output is identical to
+before (compared).
+
+**`sim.py`:** `--drafts` (the page with `?drafts=1`), and `out/last/<Name>.json` after a `hero` run.
+
+**The checks** (2026-11-16, a throwaway draft "Wisp Trial" made with the command and deleted again with `--remove --yes`;
+never committed):
+- With the throwaway present: the roster as the game page sees it (`hero-roster.py take` / `diff`) identical to before any change
+  (40 heroes, 164 spells); all 80 fight prints the same (`hero-prints.py check` 40 of 40, `check --foe Brannoc` 40 of 40; the first
+  Brannoc run lost a browser that took over 60 s to start under the machine's load, and was run again whole); `lore-game.py` and
+  `lore-codex.py` wrote the game's files unchanged; `lore-page.py --check` passed with the draft's five gaps as notes; `tsc`; build.
+- The workbench (`workbench.html` on my own dev server): the draft and every hero picked, a CPU fight, CPU against CPU, the dummies,
+  three numbers changed live (Q range, Q damage, R's delay) and listed; desktop and phone pictures; no page errors. The tool page
+  with the hook (a temporary edit, reverted): `/` unchanged, `/?bench` the workbench.
+- `hero-check.py Sefu`: all six pass in 592 s (prints the same; 53.1% +-10.0 over 96 fights; online 98% and 95% of 757 moments the
+  same HP, places 0 m apart; icons; model 469 KB, 24,434 triangles; lore); 2 bot accounts removed. `hero-check.py "Wisp Trial"`:
+  prints, online, icons and model skipped with their reasons, lore 10 lines to write, the simulator with `--drafts` 5.2% (its
+  spells hit: Q 8.3, W 4.5, R 4.6 damage a second; its dash, like Sefu's, deals nothing: the CPU casts a dash to close in).
+- After deleting the draft: `git status` shows only this step's files; LORE.md byte for byte as before; the lore check's output as
+  before; `tsc`; build. The game's first download (`game` + `runtime`): 6,119.4 KB before, 6,120.2 KB after (1,671.8 -> 1,672.3 KB
+  packed: the draft filter and `spellDef`); with the draft present `runtime` was 7.6 KB more. The tool page's own chunk is 29 KB
+  smaller (lil-gui now has a chunk of its own, shared with the workbench's 15.7 KB).
+- Four heroes planned in LORE.md made from their kit sheets and removed again (Ostrel, Kohaku, Itzel, Morwen: every block shape;
+  LORE.md untouched, as they had entries): `tsc`; the tool page's self test (`vfx.selfTest`, `/?drafts=1`) of all 16 spells ok,
+  each with its danger zone, the two dashes moving the caster 4 and 6 m; `/game.html` and `/game.html?bench` 40 heroes,
+  `/game.html?drafts=1` 44. In CPU fights (`sim.py hero Kohaku Itzel --drafts --fights 3`, no errors) every shape dealt damage:
+  Itzel's cone Q 7.9, bolt W 4.8, dash E 2.6, nova R 2.8 a second; Kohaku's Q dash none (it was never cast: the Q-dash rule
+  above). `make.py kohaku --json-only` imported the icon stub and wrote its four command files; the model stub uses only
+  `Real`, `mat`, `hair`, `fitted` and `band` as `astral.py` does (Blender not run), and `real_build.py` builds only the names
+  it is given, so a stub is never built by accident.
+- The Rust guard (`guard.py`): the same lines as before this step.
+- The final code (after the `?bench` rule was narrowed to the tool page): `tsc`, build (`game` + `runtime` 6,120.3 KB), the
+  roster identical, all 80 fight prints the same (40 of 40 against each foe).
+
+**Found** (for the list in section 8; nothing changed): new-hero.md's "about 25,000 triangles at most" was below 25 of the 41
+accepted models (median 26,654; Anka the heaviest at 35,646; the style guide itself fixes only 300-600 KB and emissive at most 1):
+the check now warns only above the heaviest hero already in the game, and `hero-check.py Anka --only model` says she is that one.
+CLAUDE.md names `src/main.ts` as a shared engine file; the tool page's entry is `src/tool/main.ts`.
+A dev server started from a worktree with the repo's own config (`vite.config.ts`; also `hero-gate5/srv.py`, which the online
+check uses) keeps its dependency cache in the linked, shared `node_modules/.vite`, and re-optimises it when the config differs
+(the workbench's input did): other agents' open dev servers may then reload. The prints', simulator's and sheet tools' configs
+have caches of their own; `srv.py` could get one too.

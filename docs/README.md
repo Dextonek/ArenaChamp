@@ -58,7 +58,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 ### Pipeline (how effects are made)
 | Page | What it answers |
 |---|---|
-| [Rules for creating a hero](pipeline/new-hero.md) | The ten rules, the six gates (each ends in a picture and the user's yes) and the checklist of every file, from the idea to the deploy |
+| [Rules for creating a hero](pipeline/new-hero.md) | The ten rules, the six gates (each ends in a picture and the user's yes), and the tools: `new-hero.py` makes a draft hero's files, the workbench (`/workbench.html`) plays it, `hero-check.py` checks it ([the page](pipeline/hero-framework/new-hero-tools.html)) |
 | [Performance tool](pipeline/performance.md) | `python pipeline/tools/perf.py`: fixed scenes of the real game timed frame by frame with the real graphics card, loading, where a frame's time goes; what was found, the rules that keep the game fast, the Graphics setting. The results: [perf/performance.html](perf/performance.html) |
 | [Fight simulator](pipeline/simulator.md) | `python pipeline/sim/sim.py`: CPU duels on the game's own code in many hidden browsers at once, the results as a page (win rates, who beats whom, where the damage comes from) |
 | [Rough Rust model](pipeline/rust-model.md) | `rustsim whatif "Anka" hp=480`: a quick estimate from sheets fitted to the real simulator's fights; how close it is, what it cannot see, how to refresh it |

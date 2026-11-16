@@ -55,9 +55,8 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 **Running now (2026-11-16, late):** the Climb life II-V; the hero bugs (design section 8 and 11, one commit per item, each changed
-hero through the simulator; page `docs/pipeline/hero-framework/bugs.html`); a blocks trial (2-3 heroes' spells onto the blocks, the
-cost per spell and a recommendation; page `docs/pipeline/hero-framework/blocks-trial.html`). Then: step 5 (the new-hero command, the
-workbench, `new-hero.md`).
+hero through the simulator; page `docs/pipeline/hero-framework/bugs.html`). Done since: the blocks trial and step 5 (the new-hero
+command, the workbench, the check command; entries below).
 
 - **Done and merged (2026-11-16): the spell blocks trial** (page `docs/pipeline/hero-framework/blocks-trial.html`, design section 12):
   Sefu, Professor Puff, Big Yoko, 8 of 12 spells on the blocks (-21 % lines; drawing code unchanged, four fifths of a spell), 4 stay
@@ -68,6 +67,21 @@ workbench, `new-hero.md`).
 
 ## Today's entries (2026-11-16)
 - **Done and merged, not live (2026-11-16): the spell blocks trial** (page
+- **Done and merged, not live (2026-11-16): hero framework step 5: the new-hero command, the
+  workbench, the check command** (page `docs/pipeline/hero-framework/new-hero-tools.html`; design section 13; `new-hero.md` part 3
+  rewritten, its ten rules and six gates kept). `python pipeline/tools/new-hero.py <Name>` makes a hero's 14 files as a **draft**
+  (card with `draft: true`, `numbers.ts`, four spells on the blocks with a sketch look, passive, stand-in icons, icon and model
+  stubs, kit sheet, lore entry and codex stubs, the checklist `docs/heroes/new/<theme>.md`); a draft is off the roster, shop, CPU
+  picks and Codex, and shows on the workbench and with `?drafts=1` on the dev server. The workbench `/workbench.html` (its own
+  page; on the tool page with `/?bench` once the hook is in) plays any hero against the CPU or the dummies, draws each spell's
+  reach and last cast on the floor and its timing in a panel, edits numbers and blocks live and lists the changes to copy back,
+  and shows the balance commands and their last results. `python pipeline/tools/hero-check.py <Name>` runs prints, simulator,
+  online pair, icons at 32 px, model and lore, and writes a page. Tested with a throwaway hero (deleted, not committed): roster
+  identical, all 80 fight prints the same, game lore and Codex files unchanged, tsc, build. `hero-check.py Sefu`: six of six pass (53.1% in the simulator); the game's first download the same within 1 KB.
+  **Waiting on the parent:** the two-line hook in `src/tool/main.ts` (section 13), after the hero bugs agent is merged.
+  **Found:** the model rule "about 25,000 triangles at most" was below 25 of the 41 accepted models (median 26,654; Anka the
+  heaviest, 35,646); the check now compares with the other heroes instead.
+- **Done, on branch `t3/c4b07aea` (not merged, not live) (2026-11-16): the spell blocks trial** (page
   `docs/pipeline/hero-framework/blocks-trial.html`; design section 12). Twelve spells of Sefu, Professor Puff and Big Yoko tried on
   the blocks: eight moved (Cobra Spit, Shepherd's Crook, Sarcophagus, Helium Bomb, Hot Air, Stomp, Salt Throw, Palm Strike), four
   stayed code (Scarab Stride, Air Hose, Pop!, Sumo Charge: each needs a block no other spell here uses). New blocks: a sure hit

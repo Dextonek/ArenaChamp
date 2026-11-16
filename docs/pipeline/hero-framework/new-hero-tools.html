@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New hero tools</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef; --card: #fffdf8; --ink: #1d1b17; --ink2: #57534b; --muted: #8a857a; --line: #e2ddd2;
+  --ok: #1f8a4c; --okbg: #e3f3e8; --warn: #b5530c; --warnbg: #fbeadc; --gold: #b8862b; --code: #f1ede3;
+  --q: #2a9fd6; --w: #4f9e2c; --e: #c89a12; --r: #c43c9a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+    --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416; --gold: #e0b55a; --code: #26241e;
+    --q: #6fd3ff; --w: #9be86b; --e: #ffd25e; --r: #ff7ad1;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+  --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416; --gold: #e0b55a; --code: #26241e;
+  --q: #6fd3ff; --w: #9be86b; --e: #ffd25e; --r: #ff7ad1;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 34px 0 10px; }
+p { margin: 6px 0 10px; color: var(--ink2); }
+.sub { color: var(--muted); font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 26px; line-height: 1.1; }
+.tile span { color: var(--ink2); font-size: 14px; }
+code, pre { font: 13px/1.45 ui-monospace, Consolas, monospace; background: var(--code); border-radius: 6px; }
+code { padding: 1px 5px; }
+pre { padding: 10px 12px; overflow-x: auto; margin: 8px 0; }
+img { max-width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.shots { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+figure { margin: 0; }
+figcaption { font-size: 14px; color: var(--ink2); margin-top: 4px; }
+.tree { font: 14px/1.7 ui-monospace, Consolas, monospace; }
+.tree .d { color: var(--gold); font-weight: 600; }
+.tree .n { color: var(--muted); font-family: system-ui, sans-serif; font-size: 13px; }
+.tree div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k { display: inline-block; min-width: 20px; text-align: center; border-radius: 4px; color: #111; font-weight: 700; padding: 0 4px; }
+.ok { color: var(--ok); font-weight: 600; } .warn { color: var(--warn); font-weight: 600; }
+ol li, ul li { margin: 4px 0; color: var(--ink2); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+td, th { border-bottom: 1px solid var(--line); padding: 6px 6px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+<h1>New heroes: one command, a workbench, one check</h1>
+<div class="sub">Hero framework, step 5 · 2026-11-16 · not pushed, not live</div>
+<p>A new hero used to mean about 16 files written by hand in the right order. Now one command writes them all as a
+<b>draft</b>, the <b>workbench</b> lets you play it and change its numbers while you watch, and one command runs every check
+and gives a short page. The six gates and your yes at each stay exactly as before.</p>
+
+<div class="tiles">
+  <div class="tile"><b>14</b><span>files made by one command (plus the lore entry)</span></div>
+  <div class="tile"><b>0</b><span>changes to the game while a draft exists: roster, Codex and all 80 fight prints the same</span></div>
+  <div class="tile"><b>6</b><span>checks in one command: prints, simulator, online, icons, model, lore</span></div>
+</div>
+
+<h2>1. One command makes the hero</h2>
+<pre>python pipeline/tools/new-hero.py "Wisp Trial"</pre>
+<p>Here a throwaway test hero (deleted again afterwards). What it made:</p>
+<div class="card tree">
+  <div class="d">src/heroes/wisp/</div>
+  <div>&nbsp; hero.ts <span class="n">the card, marked draft: off the roster, shop, CPU picks and Codex</span></div>
+  <div>&nbsp; numbers.ts <span class="n">colours and every number; the tooltips are written from them</span></div>
+  <div>&nbsp; spells/ <span class="n">four spells on the building blocks:</span></div>
+  <div>&nbsp;&nbsp;&nbsp; <span class="k" style="background:var(--q)">Q</span> a bolt &nbsp;<span class="k" style="background:var(--w)">W</span> a circle with a fuse &nbsp;<span class="k" style="background:var(--e)">E</span> a dash &nbsp;<span class="k" style="background:var(--r)">R</span> a big circle</div>
+  <div>&nbsp; trait.ts <span class="n">the passive, to write</span></div>
+  <div>&nbsp; icons.ts <span class="n">stand-in icons and portrait in its colours</span></div>
+  <div>&nbsp; fight.ts <span class="n">its spells for the game</span></div>
+  <div class="d">pipeline/icons/vectorcraft/draw/wisp_trial.py <span class="n">the icon drawings to fill</span></div>
+  <div class="d">blender/heroes/real/wisp.py <span class="n">the model's build, to fill (gate 2)</span></div>
+  <div class="d">pipeline/designs/kit-wisp.md <span class="n">the kit sheet: the card (gate 1), the table (gate 3)</span></div>
+  <div class="d">docs/lore/LORE.md <span class="n">its lore entry, faction and origin (rule 0: the lore first)</span></div>
+  <div class="d">docs/lore/codex/heroes/wisp-trial.md <span class="n">its codex page, to write</span></div>
+  <div class="d">docs/heroes/new/wisp.md <span class="n">the checklist: the six gates, for this hero</span></div>
+</div>
+<p>For a hero already planned in the lore (Morwen, Kohaku and the others), it reads the lore entry and the kit sheet: Morwen
+comes out with Iron Nail as a bolt, Salt Circle as a circle, Hex Bundle as a sure hit, and The Boundary (a wall: no building
+block fits it yet) as a stand-in circle with a note. Until its model is built the hero borrows a plain Coast-folk worker's body.</p>
+<p>Tried on four planned heroes (Ostrel, Kohaku, Itzel and Morwen, removed again): all 16 spells play without errors, each
+shows its danger zone, and in CPU fights every kind of spell lands (cone, bolt, circle, sure hit, dash, the circle round the
+hero).</p>
+
+<h2>2. The workbench: play it, change it, see it</h2>
+<p>Open <code>/workbench.html</code> on the dev server. Pick any hero (drafts included), fight the CPU, let the CPU play it, or
+try it on the dummies. Each spell's reach is a dashed ring on the floor (<span class="k" style="background:var(--q)">Q</span>
+<span class="k" style="background:var(--w)">W</span> <span class="k" style="background:var(--e)">E</span>
+<span class="k" style="background:var(--r)">R</span>), and each spell's last cast stays on the floor as the shape that was
+hit. The panel on the left shows each spell's timing; the panel on the right changes any number live.</p>
+<div class="shots">
+  <figure><img src="new-hero-tools/bench-desktop-fight.jpg" alt="The workbench in a CPU fight" loading="lazy">
+    <figcaption>A CPU fight on the workbench: reach rings round the hero, the timing of each spell on the left.</figcaption></figure>
+  <figure><img src="new-hero-tools/bench-desktop-edit.jpg" alt="Numbers changed on the workbench" loading="lazy">
+    <figcaption>Three numbers changed live (Q range 10 to 12, Q damage 52 to 70, R delay 1.2 to 1.5): the list at the bottom
+    left is what to copy into the hero's file. Nothing is saved by the page.</figcaption></figure>
+</div>
+<div class="phones">
+  <figure><img src="new-hero-tools/bench-phone.jpg" alt="Workbench on a phone, panels folded" loading="lazy">
+    <figcaption>Phone: both panels start folded, so the fight shows.</figcaption></figure>
+  <figure><img src="new-hero-tools/bench-phone-open.jpg" alt="Workbench on a phone, timing open" loading="lazy">
+    <figcaption>Phone: the timing panel opened.</figcaption></figure>
+</div>
+<p>The same workbench can also open on the tool page with <code>/?bench</code>, once one line is added there (the parent adds it
+after the hero bugs agent's work is merged).</p>
+
+<h2>3. One command checks it</h2>
+<pre>python pipeline/tools/hero-check.py Sefu</pre>
+<p>It runs the hero's fight prints, the simulator, two screens online, its icons at 32 px, its model's size and weight, and the
+lore checks, and writes a short page (the workbench shows the last result too).</p>
+<div class="shots">
+  <figure><img src="new-hero-tools/check-sefu.jpg" alt="The check page for Sefu" loading="lazy">
+    <figcaption>Sefu, a released hero: all six pass. The same fights as before, 53% in the simulator (the target is 40-60%),
+    both screens agree online, its icons at 32 and 64 px, its model as light as the others, its lore complete. 10 minutes.</figcaption></figure>
+  <figure><img src="new-hero-tools/check-draft.jpg" alt="The check page for the test draft" loading="lazy">
+    <figcaption>The test draft: what is not made yet says so (no icons, no model, no prints until its release), the lore lists
+    what is still to write, and its stand-in kit wins only 5%: that is what gate 3's numbers are for. 4 minutes.</figcaption></figure>
+</div>
+
+<h2>4. A draft stays out of the game</h2>
+<table>
+  <tr><th>Check, with the test hero present</th><th>Result</th></tr>
+  <tr><td>The roster as the game sees it (every kit, tooltip, icon, passive, spell)</td><td class="ok">identical: 40 heroes, 164 spells</td></tr>
+  <tr><td>All 80 fight prints (against Isolde and Brannoc)</td><td><span class="ok">80 of 80 the same</span></td></tr>
+  <tr><td>The game's lore and Codex files</td><td class="ok">unchanged</td></tr>
+  <tr><td>The lore check</td><td class="ok">passes; the draft's 5 missing pieces listed as notes</td></tr>
+  <tr><td>The game's first download</td><td><span class="ok">the same within 1 KB of 6,119 KB</span> (the workbench is a page of its own, 16 KB)</td></tr>
+</table>
+
+<h2>What you do</h2>
+<ol>
+  <li>Nothing now. The next new hero starts with <code>python pipeline/tools/new-hero.py "Name"</code>, and goes through the same
+  six gates as Anka, with a picture and your yes at each.</li>
+  <li>When you want to try the workbench: on the dev server, open <code>http://localhost:5173/workbench.html</code>.</li>
+</ol>
+<p class="sub">Details: docs/pipeline/new-hero.md (part 3) and docs/pipeline/hero-framework.md (section 13).</p>
+</main>
+</body>
+</html>

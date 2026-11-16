@@ -26,7 +26,7 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
 - **Agents:** up to 6 subagents at once, counting ones that subagents start themselves (the user lifted the old limit of 3 on
   2026-11-16: "you can make more agents, not just 3"). Blender (MCP): one agent at a
   time. One writer at a time on the shared engine files (`src/heroMode.ts`, `src/arena.ts`, `src/duel.ts`,
-  `src/main.ts`).
+  `src/game/main.ts`, `src/tool/main.ts`).
 - **Load on this computer (2026-11-16; the user: "make adjustments so there will be not that much load and agents can work well").**
   The agents think in the cloud; their builds, dev servers, hidden browsers, Blender and measurements run here (Ryzen 7 5700X,
   32 GB, RX 6700 XT). Six agents is fine for code, lore, models and checks. What does not mix:

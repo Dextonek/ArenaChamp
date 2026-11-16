@@ -24,6 +24,13 @@ export interface HeroCard {
    * (Pim and Pom) names one stem a half: the kit's, then its `alt`'s.
    */
   icons: string | [string, string];
+  /**
+   * A hero still going through its gates (docs/pipeline/new-hero.md; its checklist docs/heroes/new/<theme>.md): kept off the
+   * roster, the shop, the CPU's picks and the Codex. It shows only on the hero workbench (`/workbench.html`), and, on the dev
+   * server, on any page opened with `?drafts=1` (the tools' way to fight it: `sim.py --drafts`). Its `order` is the place it
+   * asks for; while it is a draft it is put after every released hero. Released at gate 6: the line is deleted.
+   */
+  draft?: true;
 }
 
 /**
