@@ -53,6 +53,15 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   branch had 364 passing. Re-run `npm run test:server` when the machine is quiet; if one keeps failing, fix it (the shop's leave
   should wait for its `lobby` null instead of a 100 ms pause).
 - Stray: `C:\c` (261 MB of misplaced scratch copies, an agent's wrong path) could not be removed (safety check); the user may delete it.
+- **Done and merged, not live (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`): every hero stood 3-12 cm
+  sunk (now on the floor), hands went into long coats (arms now clear), staffs and lanterns lay crosswise in casts (now upright for 16
+  of 18; one line to undo: `uprightHeld` in `HeroFigure.followReal`); the Climb's 55 figures on the floor too; the Tide Judge's glaive
+  and the Harbour's cannons rebuilt in Blender. Prints unchanged. For the user: the upright staffs; Anka's fan and Silvane's mirror
+  left flat; Professor Puff casts with his empty hand; Sefu's headdress in Scarab Stride; Big Yoko's arms 25 degrees out; Fenna's
+  staff brushes her antlers.
+- **Running: model review round 2** (what both rounds left: the Heart of Noon and the bosses in the game, the rulers' flinch, kneel
+  and fall, the 16 health bars, the older arenas' backdrops, the heroes on Climb floors, a line-up of all 40, the 1.1 m shot height;
+  page `docs/models/review/round2/`; the one Blender agent).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
