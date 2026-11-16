@@ -36,9 +36,10 @@ waystone, lore stone, door, patrol point and quest spot is more than 1 m clear (
   foot's edge, the knights in the standard's pole). **After**: they stand between the standard and the shields or catapults, 1.4 to
   4.6 m from its middle; one or two of the six rest at the foot's edge, as on floor 41 after its fix (measured the same: 1.4 to 4.6 m).
 - **Played through** by the route bot as Lyra, every floor cleared: no error in the page, no step left, nothing unreachable on paper
-  (`_worldCheck`), at most 6 units near one spot. Four stars on 42, 43, 44, 46, 48, 50. On 45 a first run fell once on the
-  way, a second run did not (the bot's runs differ). On 47 and 49 every fall was a lost duel in the gate's own room (the gatekeeper
-  at CPU level 3; the floor's soldiers play no part there), so the "no fall" star was missed. 980 to 1163 s of game time.
+  (`_worldCheck`), at most 6 units near one spot. Four stars on 42, 43, 44, 46, 48, 50. On 45, 47 and 49 the "no fall" star was
+  missed in some runs (45: in three of four, 47 and 49: in each): every fall whose place was logged (eight, in five runs) was a lost
+  duel in the gate's own room (the gatekeeper at CPU level 3), where the floor's soldiers play no part; none on the field. (45's
+  first run, one fall, did not log where.) 971 to 1163 s of game time.
 - **The fights**: the perf prints on desktop, before and after on this worktree's own server (port 5187): world-5 (floor 41,
   not changed) the same fight, 216f3d58, before and after. gen-43 and gen-48 another fight (ff324ac2 -> 37ea4135,
   738e5fe2 -> 6fa7fa09), as expected: those scenes set the hero down beside each pack at its home, and the homes moved. The times
