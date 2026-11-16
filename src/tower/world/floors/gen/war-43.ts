@@ -3007,7 +3007,7 @@ export const WAR_43: GenFloor = {
      ]
     },
     {
-     "name": "Alone on a horse of smoke",
+     "name": "The walls come down",
      "at": 0.33,
      "moves": [
       "cleave",
