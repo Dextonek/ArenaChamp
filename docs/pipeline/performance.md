@@ -13,6 +13,10 @@ with it on 2026-11-13, and the rules that keep the game fast.
 
 Needs: `pip install playwright pillow`, Chrome or Edge (`--browser chrome|msedge`; the default is whichever is installed).
 
+
+**With other agents running:** a run that measures frame times goes through the machine's lock, so only one such run happens at a
+time across all worktrees: `python pipeline/tools/heavy.py run -- python pipeline/tools/perf.py ...` (`heavy.py status` shows who
+holds it). Fight prints need no lock: they are the same however busy the machine is.
 ## The commands
 
 | Command | What it answers | Time |

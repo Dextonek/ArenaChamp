@@ -46,6 +46,14 @@ Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C
   stays). Work clips (kneel, harvest, carry) not added: +366 KB (+30 %) on the animation file every player loads.
 **Queued:** the hero bugs (design section 8), after the 39 are moved.
 
+**Load and disk (2026-11-16; the user: "lets clean up some worktrees and make adjustments so there will be not that much load"):**
+58 worktrees of merged jobs removed (their `node_modules` links unlinked first; the main `node_modules` intact): C: free 16 -> 42 GB.
+Kept: the running agents' five and six with work never merged (`t3/tune-cantor-brannoc-vesper-1`, `t3/texturecraft-hero-sample`,
+`t3/twin-forge-party-fight`, `t3/twin-flames-party-boss-room` (changes not committed), a scratch `dry` copy, a `.claude/worktrees` one).
+New: `pipeline/tools/heavy.py` (one timing run at a time across worktrees), `SMOKE_SLOW=2` for the server tests under load (and the
+shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's own config): the `rea` MCP server in `~/.claude.json`
+starts with every agent session (about 90 MB each, and it often fails to connect here).
+
 ## Today's entries (2026-11-16)
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
