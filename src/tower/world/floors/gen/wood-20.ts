@@ -4219,7 +4219,7 @@ export const WOOD_20: GenFloor = {
     "name": "Grandmother Thorn",
     "giver": "keeper",
     "intro": [
-     "Grandmother Thorn walks round the old oak. Fell it and the wood grows calmer."
+     "Grandmother Thorn walks round the old oak. Fell her and the wood grows calmer."
     ],
     "steps": [
      {

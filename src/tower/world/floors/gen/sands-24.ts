@@ -2868,7 +2868,7 @@ export const SANDS_24: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "She goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Lyra",
@@ -3456,7 +3456,7 @@ export const SANDS_24: GenFloor = {
     "name": "Mother Mirage",
     "giver": "keeper",
     "intro": [
-     "Mother Mirage rides the walls’ side. Nobody goes to the caravanserai while it does."
+     "Mother Mirage rides the walls’ side. Nobody goes to the caravanserai while she does."
     ],
     "steps": [
      {

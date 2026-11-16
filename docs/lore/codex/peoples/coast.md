@@ -79,7 +79,7 @@ itself. A Coast fighter wins by being somewhere else when the blow lands.
 - **In the game:** [Marin](../heroes/marin.md), [Kaia](../heroes/kaia.md), [Zephyr](../heroes/zephyr.md),
   [Barry Cloudsley](../heroes/barry-cloudsley.md), [Professor Puff](../heroes/professor-puff.md), [Gus](../heroes/gus.md).
 - **New:** [Morwen](../heroes/morwen.md), [Lian](../heroes/lian.md).
-- **On the Climb:** the Sea's five, the Bell-Warden, the Net-Father, the Lamp-Bearer, the Tide-Broker and the Coral-Pedlar; and the
+- **On the Climb:** the Sea's five, the Bell-Warden, the Net-Father, the Lamp-Bearer, the Tide-Broker and the Coral-Pedlar; the Dockhand and the Fishwife at their work on every floor; and the
   drowned dockers and their kin, who were Coast folk the morning the water came ([the Sea](../climb/sea.md)).
 
 ## Ties to other peoples

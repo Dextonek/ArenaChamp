@@ -3670,7 +3670,7 @@ export const DEEP_36: GenFloor = {
     "name": "Quartz Annie",
     "giver": "keeper",
     "intro": [
-     "Quartz Annie walks the west of the Deep. Nobody goes to the old bunks while it does."
+     "Quartz Annie walks the west of the Deep. Nobody goes to the old bunks while she does."
     ],
     "steps": [
      {

@@ -26,7 +26,7 @@ the **Dry Floor**, and it is why the temple still stands in the Drowned Harbour 
 in her hands, into ribbons of water: thick, smooth bands of clear blue water with a white foam crest. They have never turned back.
 
 She has danced the tide ever since. It turns every few seconds in her hands now: high, it pushes; low, it pulls. She is the Windward's tide dancer, and the
-Drowned Harbour's, and she keeps the harbour lights with them and the boats off the drowned streets. She holds the gate of the Climb's Sea, where the
+Drowned Harbour's, and she keeps the harbour lights with them and the boats off the drowned streets. She holds the first gate of the Climb's Sea, where the
 Tower holds Sallowmouth on the morning the water came, and in the Tower, as on that day, she decides when the tide goes out.
 
 [Gus](gus.md) keeps her temple, and has kept it clean for forty years against the sea, the salt and everyone who walks in: she danced the water out of it,

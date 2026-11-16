@@ -236,15 +236,15 @@
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffffff"
+      "color": "#f2e6d0"
      },
      {
-      "offset": 0.45,
-      "color": "#ffb8e6"
+      "offset": 0.4,
+      "color": "#c58aa8"
      },
      {
       "offset": 1,
-      "color": "#e04aa8"
+      "color": "#5a1a48"
      }
     ],
     "angle": -50
@@ -310,15 +310,15 @@
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffffff"
+      "color": "#f2e6d0"
      },
      {
-      "offset": 0.45,
-      "color": "#ffb8e6"
+      "offset": 0.4,
+      "color": "#c58aa8"
      },
      {
       "offset": 1,
-      "color": "#e04aa8"
+      "color": "#5a1a48"
      }
     ],
     "angle": -50
@@ -384,15 +384,15 @@
     "stops": [
      {
       "offset": 0.0,
-      "color": "#ffffff"
+      "color": "#f2e6d0"
      },
      {
-      "offset": 0.45,
-      "color": "#ffb8e6"
+      "offset": 0.4,
+      "color": "#c58aa8"
      },
      {
       "offset": 1,
-      "color": "#e04aa8"
+      "color": "#5a1a48"
      }
     ],
     "angle": -50
@@ -903,7 +903,7 @@
    "ids": [
     "$83.id"
    ],
-   "color": "#ffd24a"
+   "color": "#c9a24a"
   }
  },
  {
@@ -930,7 +930,7 @@
    "ids": [
     "$86.id"
    ],
-   "color": "#ffd24a"
+   "color": "#c9a24a"
   }
  },
  {
@@ -957,7 +957,7 @@
    "ids": [
     "$89.id"
    ],
-   "color": "#ffd24a"
+   "color": "#c9a24a"
   }
  },
  {
@@ -984,7 +984,7 @@
    "ids": [
     "$92.id"
    ],
-   "color": "#7a1a5a"
+   "color": "#5a1a48"
   }
  },
  {
@@ -1011,7 +1011,7 @@
    "ids": [
     "$95.id"
    ],
-   "color": "#7a1a5a"
+   "color": "#5a1a48"
   }
  },
  {

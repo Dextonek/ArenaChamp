@@ -2808,7 +2808,7 @@ export const SEA_07: GenFloor = {
   "hard": 1.07,
   "ruler": {
    "name": "The Bell Below",
-   "title": "It rings the sea in",
+   "title": "He rings the sea in",
    "stand": "Marin",
    "tint": "#3f8f8a",
    "scale": 2.49,
@@ -3639,7 +3639,7 @@ export const SEA_07: GenFloor = {
     "name": "Barnacle Bess",
     "giver": "keeper",
     "intro": [
-     "Barnacle Bess walks the middle of the harbour. Fell it and the sea quietens a little."
+     "Barnacle Bess walks the middle of the harbour. Fell her and the sea quietens a little."
     ],
     "steps": [
      {
@@ -3661,7 +3661,7 @@ export const SEA_07: GenFloor = {
     "name": "The Brine Widow",
     "giver": "keeper",
     "intro": [
-     "The Brine Widow walks the land side. Nobody goes to the old village while it does."
+     "The Brine Widow walks the land side. Nobody goes to the old village while she does."
     ],
     "steps": [
      {

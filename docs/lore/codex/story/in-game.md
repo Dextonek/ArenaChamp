@@ -85,37 +85,37 @@ Shown on a ruler's first fall, under its name. Floors 10, 20, 30, 40 and 50 are 
 | 3 | The Salt King | He cheated every buyer by a fingertip. The sea made him its own, and he weighs climbers now. |
 | 4 | Mother of Wrecks | She lit false lights the night before the water came, and lights them still. |
 | 5 | The Tide Judge | He set the tide as the drowned debtors' sentence. Now the tide is his. |
-| 6 | The Pearl Tyrant | He drowned holding the strongbox, and the pale diver serves him still. |
-| 7 | The Bell Below | The harbour's old cracked bell, ringing underwater. What answers it is the new bell, above. |
-| 8 | The Lantern Leviathan | It followed the lamps into the harbour on the morning the water rose. |
+| 6 | The Pearl Tyrant | She drowned holding the strongbox, and the pale diver serves her still. |
+| 7 | The Bell Below | The old bell's ringer, who went into the sea with it. What answers him is the new bell, above. |
+| 8 | The Lantern Leviathan | A diver named for the great fish. He followed the lamps into the harbour on the morning the water rose. |
 | 9 | The Gull Queen | She fed the gulls from her hand for forty years. They would not leave her. |
-| 11 | The Elder Root | A girl planted this oak at twelve. The Tower drew it here and set it to drink from its root. |
+| 11 | The Elder Root | A girl planted this oak at twelve. The Tower drew it here, set it to drink from its root, and gave it an old man's shape. |
 | 12 | The Moss Warden | The Moot's first warden. In the Tower he guards the Wood from everyone. |
 | 13 | The Thorn Mother | She wove hedges to keep the folk out. In the Tower she weaves them round everything. |
 | 14 | The Antler King | He leads the bark hounds, and the hunt has not ended in a hundred years. |
-| 15 | The Hollow Elder | The oldest walking tree, with a light inside it that is not a fire. |
+| 15 | The Hollow Elder | The oldest of the Moot's elders, hollowed by lightning, with a light inside him that is not a fire. |
 | 16 | The Briar Witch | She sold curses at the Wood's edge, and her own briars took her in the first year. |
-| 17 | The Lantern Root | Its amber light lures the lost, and the Wood had a great many lost that year. |
-| 18 | The Grey Oak | The Moot's oath-tree before the Fall. It would not fall, so it walks. |
-| 19 | The Mire Heart | A bog that woke with the Wood and swallows what walks across it. |
+| 17 | The Lantern Root | His amber light lures the lost, and the Wood had a great many lost that year. |
+| 18 | The Grey Oak | He kept the Moot's oath-tree before the Fall. It died standing; he would not fall, so he walks. |
+| 19 | The Mire Heart | She drowned in her bog when the Wood woke, and came up with its heart beating in her. |
 | 21 | The Scarab Colossus | The Dune folk say she rolled the sun across the sky once. She has a right to be angry it is gone. |
 | 22 | The Scarab King | Her son, gilded, worshipped by raiders who are still waiting for a caravan. |
-| 23 | The Dune Colossus | Made by the first king to guard the Brass Road. It walks with the dunes. |
+| 23 | The Dune Colossus | The first king made him a giant to guard the Brass Road. He walks with the dunes. |
 | 24 | The Brass Sphinx | Her riddle: what holds the noon and has no hands? The answer is the Tower, and it has one. |
-| 25 | The Glass Serpent | Born the day the sun's heat struck the sand. |
+| 25 | The Glass Serpent | A raider of the Flats, born again in glass the day the sun's heat struck the sand. |
 | 26 | The Mirage Lord | A prince who walked onto the Glass Flats to be alone, and became a mirage of himself. |
 | 27 | The Sand Tyrant | He sold water by the cup in a drought, and drowned in sand. |
 | 28 | The Red Jackal | He rode for the crimson banner and took his share of the sun. |
 | 29 | The Sun-Eater | He tried to swallow a piece of the fallen sun to become it, and burns from inside. |
-| 31 | The Prism Mother | What the Deep's light becomes with nowhere to go. |
+| 31 | The Prism Mother | She kept the greatest crystal; its light went into her. What the Deep's light becomes with nowhere to go. |
 | 32 | The Hollow Queen | An Old Mother of the mole-folk who dug too deep alone. |
 | 33 | The Lamp Warden | He swore the lamps would never go out, and went out with them. |
 | 34 | The Glass Abbot | He cut his own eyes into crystal to see in the dark. |
-| 35 | Mother of Echoes | She answers every step a third time. |
+| 35 | Mother of Echoes | She called for her lost crew until only her voice was left. She answers every step a third time. |
 | 36 | The Seam King | He worked his miners in the dark until the seam went out. |
 | 37 | The Blind Cantor | One of the choir the Tower took. "She did not drop it," he says. "It took us because we were in step." |
 | 38 | The Gem Tyrant | He hoarded the Deep's light and was buried by it. |
-| 39 | The Drowned Lantern | A lamp that fell into the black water and kept burning under it. |
+| 39 | The Drowned Lantern | A lamplighter who fell into the black water and kept his lamp burning under it. |
 | 41 | The Last Marshal | He led the azure, and the Tower took him from his tent the night before the battle. |
 | 42 | The Iron Marshal | He held the siege line through the Winter of Mud. |
 | 43 | The Siege Lord | He built the crimson's engines for pay, and stayed to see them fire. |

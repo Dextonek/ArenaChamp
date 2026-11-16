@@ -3571,7 +3571,7 @@ export const DEEP_33: GenFloor = {
     "name": "The Glass Widow",
     "giver": "keeper",
     "intro": [
-     "The Glass Widow walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Glass Widow walks the middle of the Deep. She does not need light. Fell her and the dark is a little less."
     ],
     "steps": [
      {
@@ -3593,7 +3593,7 @@ export const DEEP_33: GenFloor = {
     "name": "Mother Seam",
     "giver": "keeper",
     "intro": [
-     "Mother Seam walks the west of the Deep. Nobody goes to the miners’ rest while it does."
+     "Mother Seam walks the west of the Deep. Nobody goes to the miners’ rest while she does."
     ],
     "steps": [
      {

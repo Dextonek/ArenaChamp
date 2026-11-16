@@ -2759,7 +2759,7 @@ export const SANDS_26: GenFloor = {
   "hard": 1.33,
   "ruler": {
    "name": "The Mirage Lord",
-   "title": "Never where it stands",
+   "title": "Never where he stands",
    "stand": "Cantor",
    "tint": "#d0a060",
    "scale": 2.66,
@@ -2868,7 +2868,7 @@ export const SANDS_26: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "He goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Gus",

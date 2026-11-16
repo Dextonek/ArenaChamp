@@ -2835,7 +2835,7 @@ export const SANDS_29: GenFloor = {
   "hard": 1.38,
   "ruler": {
    "name": "The Sun-Eater",
-   "title": "It swallowed noon once",
+   "title": "He swallowed noon once",
    "stand": "Vesper",
    "tint": "#c89858",
    "scale": 2.48,
@@ -2944,7 +2944,7 @@ export const SANDS_29: GenFloor = {
     "name": "The storm",
     "look": "storm"
    },
-   "line": "It goes under the sand and comes up where you stood"
+   "line": "He goes under the sand and comes up where you stood"
   },
   "gate": {
    "hero": "Brannoc",
@@ -3532,7 +3532,7 @@ export const SANDS_29: GenFloor = {
     "name": "The Sun Widow",
     "giver": "keeper",
     "intro": [
-     "The Sun Widow rides the walls’ side. Nobody goes to the travellers’ court while it does."
+     "The Sun Widow rides the walls’ side. Nobody goes to the travellers’ court while she does."
     ],
     "steps": [
      {

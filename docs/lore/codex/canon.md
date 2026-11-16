@@ -76,8 +76,7 @@ and how it ends. The full account of the factions' old beliefs, and how far each
     go. They are wrong (the Story's ending).
 12. **The Ring is the Tower's threshold.** The Truce was sworn at the Tower's foot, in its shadow, and the Aumbry keeps what is sworn
     in its shadow: the fourth clause became its own law. The Hundred Doors under the stands are its doors into the realms. The duels
-    are its trials: it keeps an echo of every champion who fights in the Ring (the echoes of the weekly Tower, the Trials). The hero
-    who "holds the gate" of a Climb chapter (Marin, Fenna, Sefu, Opaline, Oblivion) is such an echo, set there by the Tower. Big Yoko's
+    are its trials: it keeps an echo of every champion who fights in the Ring (the echoes of the weekly Tower, the Trials). The hero who "holds the gate" of a Climb chapter (Marin, Fenna, Sefu, Opaline, Oblivion: the gate at the end of its first floor) is such an echo, set there by the Tower; so are the keepers of the gates above, champions of any realm the Tower drew to its gates (decided 2026-11-16, the floors as they are). Big Yoko's
     circle stands where the Tower's shadow stopped, and holds it there.
 13. **What it means to do.** At noon on the Hundredth Midsummer it means to close its hand on what is left: the Ring and its
     champions, the last of the light, the three untaken realms whole, and to leave by the Tear. Wick saw the Ring after, empty.
@@ -267,6 +266,5 @@ were written; where a people's mark is missing on a figure, the revamp plan list
 
 Some names in the game meet each other on purpose, and the checks allow them: Cantor (the hero) and the Blind Cantor (a ruler
 in the Deep, who sang in the Hymn and went blind at the Fall); Ostrel the Ferryman (a hero) and the Ferryman (a quest giver in
-the Deep, who brings the living back: they do not speak); Itzel the Obsidian Herald and the Herald (the War's keeper); the
-Drowned Admiral (the ruler of floors 1 and 2), once called the Drowned Captain in the floor's oldest code; the Scarab
-Colossus (floor 21) and the Scarab King (floor 22), mother and son.
+the Deep, who brings the living back: they do not speak); Itzel the Obsidian Herald and the Herald (the War's keeper); the Scarab Colossus (floor 21) and the Scarab King (floor 22), mother
+and son. The ruler of floors 1 and 2 has one name, the Drowned Admiral, in the lore and on both floors (settled 2026-11-16).

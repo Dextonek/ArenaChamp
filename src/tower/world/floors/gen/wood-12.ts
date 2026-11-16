@@ -3237,7 +3237,7 @@ export const WOOD_12: GenFloor = {
      "open": 9
     }
    },
-   "line": "Cut the roots that feed it; it stands open when none is left"
+   "line": "Cut the roots that feed him; he stands open when none is left"
   },
   "gate": {
    "hero": "Nyx",
@@ -3978,7 +3978,7 @@ export const WOOD_12: GenFloor = {
     "name": "The Bark Widow",
     "giver": "keeper",
     "intro": [
-     "The Bark Widow walks round the hollow oak. Fell it and the wood grows calmer."
+     "The Bark Widow walks round the hollow oak. Fell her and the wood grows calmer."
     ],
     "steps": [
      {

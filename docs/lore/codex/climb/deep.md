@@ -28,6 +28,10 @@ Kilnborn of the far halls, who kept their old colour because the fire never reac
 - **The Crystal-Seller** (odd floors) sells cut light, one shard at a time.
 - **The Firefly-Seller** (even floors) sells living light in jars on a yoke, the only light in the Deep that is not a crystal.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Ore-Carrier**, a Kilnborn of the far halls with an ore basket on his back and a pick, carries the seam's ore to carts that
+  no longer leave. At his belt hangs a small crystal, too dim to see by: the last one he cut before the lights went out.
+
 ## Its rulers and enemies
 
 The **Prism Mother** rules the thirty-first floor, beams turning in the dark; above her the Hollow Queen, the Lamp Warden, the Glass
@@ -37,9 +41,9 @@ are shard mites, which come in swarms; crystal golems, slow and armoured; and lu
 
 ## The gate and the crown
 
-[Opaline](../heroes/opaline.md), the Lightbreaker, holds the chapter's gate: she breaks light out of crystal, and in the Tower she is
+[Opaline](../heroes/opaline.md), the Lightbreaker, holds the chapter's first gate: she breaks light out of crystal, and in the Tower she is
 the only one who can make the far halls bright; the roof gives way where she fights. At the fortieth floor, the crown, **the Sun
-Warden** waits again: the second time a climber meets him, and he remembers the first.
+Warden** waits again: the second time a climber meets him, and he remembers the first. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 

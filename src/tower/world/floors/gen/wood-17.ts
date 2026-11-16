@@ -3246,7 +3246,7 @@ export const WOOD_17: GenFloor = {
   "hard": 1.2,
   "ruler": {
    "name": "The Lantern Root",
-   "title": "It drinks the light",
+   "title": "He drinks the light",
    "stand": "Oblivion",
    "tint": "#5f8f4a",
    "scale": 2.62,
@@ -3359,7 +3359,7 @@ export const WOOD_17: GenFloor = {
      "open": 9
     }
    },
-   "line": "Cut the roots that feed it; it stands open when none is left"
+   "line": "Cut the roots that feed him; he stands open when none is left"
   },
   "gate": {
    "hero": "Bram",
@@ -3936,7 +3936,7 @@ export const WOOD_17: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Careful, climber. The wood walks. Two wisps are bound in it, and the Lantern Root waits at its heart, far to the north. Free the wisps, cut the roots that feed it, and its door opens."
+     "Careful, climber. The wood walks. Two wisps are bound in it, and the Lantern Root waits at its heart, far to the north. Free the wisps, cut the roots that feed him, and his door opens."
     ],
     "quests": [
      "main",
@@ -4015,7 +4015,7 @@ export const WOOD_17: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the giants’ glade: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Lantern Root, and its door opens."
+     "Clear the bark den, and its wisp follows you: lead it to the heart. Then the giants’ glade: the Stag-Crowned guards the second wisp. Last, cut the three roots that feed the Lantern Root, and his door opens."
     ],
     "steps": [
      {
@@ -4142,7 +4142,7 @@ export const WOOD_17: GenFloor = {
     "name": "The Bark Widow",
     "giver": "keeper",
     "intro": [
-     "The Bark Widow walks the far glades. Nobody lights the lamps while it does."
+     "The Bark Widow walks the far glades. Nobody lights the lamps while she does."
     ],
     "steps": [
      {

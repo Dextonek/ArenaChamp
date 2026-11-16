@@ -3259,7 +3259,7 @@ export const WOOD_14: GenFloor = {
      "open": 9
     }
    },
-   "line": "Cut the roots that feed it; it stands open when none is left"
+   "line": "Cut the roots that feed him; he stands open when none is left"
   },
   "gate": {
    "hero": "Isolde",
@@ -4034,7 +4034,7 @@ export const WOOD_14: GenFloor = {
     "name": "Grandmother Thorn",
     "giver": "keeper",
     "intro": [
-     "Grandmother Thorn walks the far glades. Nobody lights the lamps while it does."
+     "Grandmother Thorn walks the far glades. Nobody lights the lamps while she does."
     ],
     "steps": [
      {

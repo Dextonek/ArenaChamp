@@ -3897,7 +3897,7 @@ export const WAR_49: GenFloor = {
     "name": "The Iron Widow",
     "giver": "keeper",
     "intro": [
-     "The Iron Widow walks the middle of the field, under no banner. Fell it, and let the song close."
+     "The Iron Widow walks the middle of the field, under no banner. Fell her, and let the song close."
     ],
     "steps": [
      {

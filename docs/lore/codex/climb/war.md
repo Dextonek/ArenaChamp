@@ -27,6 +27,10 @@ Harrowmark's children, the last people of the Field, and one Ninefold knight:
 - **The Camp-Mother** (odd floors) feeds both armies from one fire. She learned it, she says, from a cook called Cleaver.
 - **The Quartermaster** (even floors) keeps the stores, and sells them, to whoever pays.
 
+And on every floor the chapter's common folk walk at their work, and do not stop for climbers:
+- **The Gleaner**, a Harrowmark woman, gleans the spent arrows from the furrows and sells them back to both banners. It is the
+  only harvest the Field still gives, she says, and the only one that comes up every morning.
+
 ## Its rulers and enemies
 
 The **Last Marshal** rules the forty-first floor: the knight who led the azure and was never found, guarding both banners now, alone
@@ -36,9 +40,9 @@ crimson and the azure, the ashen soldiers, and the Ash Captain ([bestiary](besti
 
 ## The gate and the crown
 
-[Oblivion](../heroes/oblivion.md), the Unmaker, holds the chapter's gate, because this endless war is the one thing on the Dial it has
+[Oblivion](../heroes/oblivion.md), the Unmaker, holds the chapter's first gate, because this endless war is the one thing on the Dial it has
 truly unmade: nothing it touches can end. At the fiftieth floor, the crown, **Ash and Ember** burn again, the last sparks of the sun,
-at the top of the Climb; and above them, the Noon Seat.
+at the top of the Climb; and above them, the Noon Seat. The gates of the floors above are held by other champions' echoes, of any realm, drawn to the Tower's gates from the Ring.
 
 ## What climbers say
 
