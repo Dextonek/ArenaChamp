@@ -3750,8 +3750,8 @@ export const WAR_48: GenFloor = {
     "name": "Auriel",
     "role": "giver",
     "at": {
-     "x": -5.5,
-     "z": 81.29
+     "x": -4.3,
+     "z": 81.33
     },
     "face": 0.5,
     "greet": [

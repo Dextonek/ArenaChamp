@@ -123,8 +123,9 @@ export const prismKit: HeroKit = {
     }
     beam(g, s * 0.14, s * 0.2, s * 0.2, s * 0.3, s * 0.03);
     glint(g, s * 0.86, s * 0.46, s * 0.05);
-    // Shoulders in a pale lavender robe with white trim and crystal epaulettes.
-    g.fillStyle = '#6f66c4';
+    // Shoulders in deep amethyst over cream (revamped 2026-11-15: Gloaming folk, the Deep's crystal grown into her), crystal
+    // epaulettes.
+    g.fillStyle = '#4b2c7e';
     g.beginPath();
     g.moveTo(s * 0.14, s);
     g.quadraticCurveTo(s * 0.18, s * 0.68, s * 0.34, s * 0.58);
@@ -132,47 +133,53 @@ export const prismKit: HeroKit = {
     g.quadraticCurveTo(s * 0.82, s * 0.68, s * 0.86, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = S.hot;
+    g.strokeStyle = '#efe6d2';
     g.lineWidth = s * 0.022;
     g.stroke();
     shard(g, s * 0.27, s * 0.62, s * 0.08, s * 0.035, -0.5, S.body);
     shard(g, s * 0.73, s * 0.62, s * 0.08, s * 0.035, 0.5, S.body);
     // A crystal brooch at the throat.
     shard(g, s * 0.5, s * 0.72, s * 0.05, s * 0.026, 0, S.hot);
-    // Head: a cool, calm face, long pale hair parted in the middle.
-    g.fillStyle = '#e9d9d6';
+    // Head: a cool, calm Gloaming face, violet-black hair cut at the jaw, parted in the middle.
+    g.fillStyle = '#e4d9e2';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.43, s * 0.115, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#d9d2ff';
+    g.fillStyle = '#24163a';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.36, s * 0.16, s * 0.15, 0, Math.PI, Math.PI * 2);
     g.fill();
     g.beginPath();
     g.moveTo(s * 0.34, s * 0.36);
-    g.quadraticCurveTo(s * 0.3, s * 0.52, s * 0.37, s * 0.64);
-    g.quadraticCurveTo(s * 0.4, s * 0.5, s * 0.42, s * 0.36);
+    g.quadraticCurveTo(s * 0.31, s * 0.48, s * 0.36, s * 0.56);
+    g.lineTo(s * 0.41, s * 0.55);
+    g.quadraticCurveTo(s * 0.4, s * 0.45, s * 0.42, s * 0.36);
     g.moveTo(s * 0.66, s * 0.36);
-    g.quadraticCurveTo(s * 0.7, s * 0.52, s * 0.63, s * 0.64);
-    g.quadraticCurveTo(s * 0.6, s * 0.5, s * 0.58, s * 0.36);
+    g.quadraticCurveTo(s * 0.69, s * 0.48, s * 0.64, s * 0.56);
+    g.lineTo(s * 0.59, s * 0.55);
+    g.quadraticCurveTo(s * 0.6, s * 0.45, s * 0.58, s * 0.36);
     g.fill();
-    g.strokeStyle = S.dark;
+    g.strokeStyle = '#4b2c7e';
     g.lineWidth = s * 0.008;
     g.beginPath();
     g.moveTo(s * 0.5, s * 0.22);
     g.lineTo(s * 0.46, s * 0.32);
     g.stroke();
-    // Eyes: pale prism-blue with a white glint; a faint spectrum fleck on the cheek.
+    // Eyes: her people's violet eyeshine; small amethyst facets grown out of both cheekbones.
     for (const sx of [0.445, 0.555]) {
       g.fillStyle = S.dark;
       g.fillRect(s * (sx - 0.03), s * 0.425, s * 0.06, s * 0.012);
-      g.fillStyle = S.blue;
+      g.fillStyle = 'rgba(176,128,255,0.35)';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.445, s * 0.032, s * 0.024, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#d6bcff';
       g.beginPath();
       g.ellipse(s * sx, s * 0.445, s * 0.022, s * 0.016, 0, 0, Math.PI * 2);
       g.fill();
     }
-    g.fillStyle = S.gold;
-    g.fillRect(s * 0.6, s * 0.49, s * 0.01, s * 0.01);
+    shard(g, s * 0.41, s * 0.505, s * 0.03, s * 0.012, 0.6, '#9a6ae8');
+    shard(g, s * 0.59, s * 0.505, s * 0.03, s * 0.012, -0.6, '#9a6ae8');
     g.fillStyle = '#b87f86';
     g.fillRect(s * 0.47, s * 0.52, s * 0.06, s * 0.009);
     // The wand: a thin dark staff on the right with a crystal tip.

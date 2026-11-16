@@ -32,6 +32,9 @@ export class WorldHud {
   private card = document.createElement('div');
   private cards = document.createElement('div');
   private result = document.createElement('div');
+  /** The open world's door line (stage 3): a door held for others, or another player's held door to walk into. */
+  private doorEl = document.createElement('div');
+  private doorKey = '';
   private marks = new Map<string, HTMLButtonElement>();
   private bannerLeft = 0;
   private lives = -1;
@@ -70,7 +73,12 @@ export class WorldHud {
     this.card.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;width:min(440px,calc(100vw - 20px));box-sizing:border-box;padding:12px 14px;border-radius:12px;background:rgba(14,11,12,0.95);border:2px solid #8a7a52;box-shadow:0 6px 24px #000c;color:#f2e6c8;font:500 14px/1.4 ui-sans-serif,system-ui;`;
     this.cards.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;gap:8px;width:min(620px,calc(100vw - 12px));box-sizing:border-box;`;
     this.result.style.cssText = 'position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(4,3,6,0.72);';
-    document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result);
+    this.doorEl.className = 'world-door';
+    // Above the hero's spell bar, clear of the banner a door's opening puts up top.
+    this.doorEl.style.cssText = `position:fixed;left:50%;bottom:calc(${TOUCH ? 236 : 168}px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:9;display:none;` +
+      `align-items:center;gap:10px;padding:${s ? '6px 10px' : '8px 14px'};border-radius:10px;background:rgba(12,9,10,0.9);border:1px solid #c9a24a;` +
+      `box-shadow:0 3px 14px #000b;max-width:calc(100vw - 20px);box-sizing:border-box;font:600 ${s ? 12 : 14}px/1.3 ui-sans-serif,system-ui;color:#f2e6c8;`;
+    document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl);
     // The duel's boss bar would say "13 / 13" for the whole floor (the zone's unseen boss has no health to speak of): hidden while a zone is on.
     this.hideBar.id = 'world-hide-bosshud';
     this.hideBar.textContent = 'body > div[style*="z-index: 6"][style*="left: 50%"][style*="width: min("][style*="flex-direction: column"]{display:none !important}';
@@ -157,6 +165,30 @@ export class WorldHud {
     })()] : []));
   }
 
+  /**
+   * The door line (the open world's stage 3): `text` (null hides it) and, for the first in a held door, a button to go in now. Set every
+   * frame; the page changes only when the words do.
+   */
+  door(text: string | null, go?: { label: string; click(): void }) {
+    const key = text === null ? '' : `${text}|${go?.label ?? ''}`;
+    if (key === this.doorKey) return;
+    this.doorKey = key;
+    if (text === null) { this.doorEl.style.display = 'none'; this.doorEl.replaceChildren(); return; }
+    const line = document.createElement('span');
+    line.textContent = text;
+    const parts: HTMLElement[] = [line];
+    if (go) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = go.label;
+      b.style.cssText = 'pointer-events:auto;cursor:pointer;border-radius:8px;border:1px solid #ffd27a;background:#3a2a12;color:#ffd27a;font:700 13px ui-sans-serif,system-ui;padding:5px 10px;white-space:nowrap;';
+      b.addEventListener('click', () => go.click());
+      parts.push(b);
+    }
+    this.doorEl.replaceChildren(...parts);
+    this.doorEl.style.display = 'flex';
+  }
+
   /** Two lines across the screen for a moment. */
   say(title: string, sub = '', seconds = 2.6) {
     const s = small();
@@ -214,7 +246,8 @@ export class WorldHud {
         el = document.createElement('button');
         el.type = 'button';
         el.dataset.mark = m.id;
-        el.style.cssText = 'position:fixed;left:0;top:0;z-index:7;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
+        // Layer 5: under the floor's panel, the spell bar (6) and the minimap (8), over the world and the law's flood (1, 2).
+        el.style.cssText = 'position:fixed;left:0;top:0;z-index:5;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
         el.addEventListener('click', (e) => { e.stopPropagation(); this.marks.get(m.id) && (el as HTMLButtonElement & { act?: () => void }).act?.(); });
         document.body.append(el);
         this.marks.set(m.id, el);
@@ -397,6 +430,6 @@ export class WorldHud {
 
   dispose() {
     this.show(false);
-    for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.hideBar]) e.remove();
+    for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl, this.hideBar]) e.remove();
   }
 }

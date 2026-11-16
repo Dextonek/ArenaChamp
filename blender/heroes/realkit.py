@@ -128,6 +128,8 @@ class Real:
             if tint and ob is self.body:
                 self._tone(tex.image, tint)
                 tint = None
+            if ob is self.body and os.path.exists(light):
+                self._cover_underwear(tex.image, light)
             for name in ("Normal", "Roughness", "Metallic", "Base Color"):
                 for l in list(bsdf.inputs[name].links):
                     nt.links.remove(l)
@@ -159,6 +161,71 @@ class Real:
         px[:, :3] = np.clip(px[:, :3] * (want / np.maximum(mean, 1e-4)), 0, 1)
         img.pixels.foreach_set(px.reshape(-1))
         img.update()
+
+    @staticmethod
+    def _cover_underwear(img, light):
+        """Covers the underwear the pack painted on its skin texture (grey shorts on the male body, grey briefs and a band
+        on the female's), decided 2026-11-16: covered only, no shadow, no gold. The mask is the pack's own PNG where it is
+        grey (no colour, light), grown 2 px, as the TextureCraft sample read it (pipeline/textures/texturecraft/sumo/prep.py);
+        each masked pixel takes the average of the skin round it (the nearest ring of unmasked pixels wide enough to reach),
+        so the band takes the shading of the skin on either side; the edge is softened over 3 px. After the skin's tone,
+        before any painted mark."""
+        import numpy as np
+        W, H = img.size
+        src = bpy.data.images.load(light, check_existing=False)  # the pack's own, not the toned copy the body wears
+        sw, sh = src.size
+        a = np.empty(sw * sh * 4, dtype=np.float32)
+        src.pixels.foreach_get(a)
+        bpy.data.images.remove(src)
+        a = a.reshape(sh, sw, 4)[:, :, :3]
+        grey = (a.max(axis=2) - a.min(axis=2) < 0.07) & (a.max(axis=2) > 0.3)
+        f = sw // W
+        m = grey.reshape(H, f, W, f).max(axis=(1, 3)) if f > 1 else grey
+        for _ in range(2):
+            g = m.copy()
+            g[1:, :] |= m[:-1, :]
+            g[:-1, :] |= m[1:, :]
+            g[:, 1:] |= m[:, :-1]
+            g[:, :-1] |= m[:, 1:]
+            m = g
+        if not m.any():
+            return
+
+        def box(x, r):
+            """Mean over a (2r+1) square, edges clamped."""
+            p = np.pad(x, ((r + 1, r), (r + 1, r)) + ((0, 0),) * (x.ndim - 2), mode="edge")
+            c = p.cumsum(0).cumsum(1)
+            return (c[2 * r + 1:, 2 * r + 1:] - c[:-2 * r - 1, 2 * r + 1:] - c[2 * r + 1:, :-2 * r - 1] + c[:-2 * r - 1, :-2 * r - 1]) / (2 * r + 1) ** 2
+        px = np.empty(W * H * 4, dtype=np.float32)
+        img.pixels.foreach_get(px)
+        px = px.reshape(H, W, 4)
+        known = (~m).astype(np.float64)
+        rgb = px[:, :, :3].astype(np.float64)
+        fill = np.zeros_like(rgb)
+        done = np.zeros((H, W), dtype=bool)
+        for r in (3, 6, 12, 24, 48, 96, 192):
+            wsum = box(known, r)
+            csum = box(rgb * known[..., None], r)
+            ok = (wsum > 0.08) & ~done & m
+            fill[ok] = csum[ok] / wsum[ok][:, None]
+            done |= ok
+        rest = m & ~done
+        if rest.any():
+            fill[rest] = np.median(rgb[~m], axis=0)
+        soft = np.clip(box(m.astype(np.float64), 1) * 1.6, 0, 1)
+        soft = np.maximum(soft, m)
+        out = rgb * (1 - soft[..., None]) + np.where(m[..., None], fill, rgb) * soft[..., None]
+        # the soft rim outside the mask blends toward the band's fill there: use the nearest fill (a small box of it)
+        rim = (soft > 0) & ~m
+        if rim.any():
+            fm = box(np.where(m[..., None], fill, 0), 2)
+            wm = box(m.astype(np.float64), 2)
+            near = fm[rim] / np.maximum(wm[rim], 1e-6)[:, None]
+            out[rim] = rgb[rim] * (1 - soft[rim][:, None] * 0.5) + near * soft[rim][:, None] * 0.5
+        px[:, :, :3] = out.astype(np.float32)
+        img.pixels.foreach_set(px.reshape(-1))
+        img.update()
+        print(f"UNDERWEAR covered: {m.mean() * 100:.1f}% of the skin texture")
 
     def _read(self):
         body = self.body

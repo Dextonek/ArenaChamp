@@ -53,8 +53,7 @@ called that duel. He remembers calling it. He cannot remember who won.
 
 Kilnborn, born in the masons' halls of the Deep before the Fall and grey since his twenties: short, square and solid, ash-grey skin,
 pale amber eyes, a big calm square face. Dark armoured shoulders with gold-edged pauldrons, the black and ivory tabard, the silver horn
-on its gold chain, a red and gold sigil tablet with a glowing sigil, a black helm with a gold band and a red crest. In the
-[revamp plan](../revamp.md) he gets a touch: the ash-grey skin of his people under the helm.
+on its gold chain, a red and gold sigil tablet with a glowing sigil, a black helm with a gold band and a red crest. Touched on 2026-11-16 by the [revamp plan](../revamp.md): the ash-grey skin of his people now shows under the helm.
 
 ## Voice
 

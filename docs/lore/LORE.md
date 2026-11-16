@@ -357,8 +357,7 @@ other way, and he has never once lost the paperwork.
 - age: Looks 70. He was 50 and already keeping doors when the sun fell (Noon-touched).
 > "This way, please. No, the other this way."
 
-Champions come to the Ring from every realm of the Dial, and every one of them comes through a door that Wick keeps. He is the keeper
-of thresholds, old and thin, in a long oxblood coat with gold braid, and his ring of keys opens the Hundred Doors under the Ring's
+Champions come to the Ring from every realm of the Dial, and every one of them comes through a door that Wick keeps. He is the keeper of thresholds, old and thin, umber-skinned, his white hair in braids and star lines on his jaw, in a long oxblood coat with gold braid, and his ring of keys opens the Hundred Doors under the Ring's
 stands: doors to the Sands, the Deep, the white north and back. A door, he says, is a promise that the other side is still there. That
 is why he hates the Tear above the Tower, a hole with no frame and no other side, and the thing that came through it. In the Ring he
 opens his doors in pairs and shows his enemies out, politely, through the one they did not expect.
@@ -679,7 +678,7 @@ politely. She fights in the Ring because a storm needs somewhere to land.
 > "Catch up. I'll wait. No, I won't."
 
 Zephyr was born on the Spires, the broken sky towers that stand in the sea, and learned to walk on the wind before he walked on stone.
-He is lean and quick, in a short teal coat and a very long jade scarf, with a curved blade the Windward's elders forged from a gust.
+He is lean, quick and sea-tanned, sea-glass in one ear, in a short teal coat and a very long jade scarf, with a curved blade the Windward's elders forged from a gust.
 Every dash he makes gives him another gust to spend. He races Pip across the Dial every spring and has lost exactly as often as he
 has won. He races Ramet's lion across the Glass Flats too, and loses less. He races climbers to the lighthouse of the Sea for
 practice. He fights in the Ring because standing still bores him.
@@ -691,7 +690,7 @@ practice. He fights in the Ring because standing still bores him.
 > "And now, the weather. You won't like it."
 
 Barry is the Windward's augur: he reads the sky. Since the Fall that has been the hardest job on the Dial, because the sky no longer
-keeps its own appointments. He stands on the Spires in a long storm-slate coat with a cloud on his shoulders and a weathervane staff
+keeps its own appointments. He stands on the Spires, sea-tanned and tide-lined, in a long storm-slate coat with a cloud on his shoulders and a weathervane staff
 taller than he is, and he calls the forecast every eight seconds, which is as long as any forecast now holds. He is right about the
 weather more often than anyone alive and still mostly wrong, which he blames, loudly, on Kaia. Bo trusts him, and Professor Puff
 flies with him. In the Ring his weather hits both heroes, and he is the only one who knows what is coming.
@@ -749,7 +748,7 @@ Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.
 - age: 26. Born 74 years after the Fall; Brannoc's apprentice until her hammer swung itself.
 > "Give me ten seconds and something to bolt it to."
 
-Ada was Brannoc's apprentice until she built a hammer that swung itself. She is a slim inventor in a copper coat, with a backpack of
+Ada was Brannoc's apprentice until she built a hammer that swung itself. She is a slim, ash-grey inventor with dim ember seams at her knuckles, in a copper coat, with a backpack of
 brass gears and goggles pushed up on her leather cap, and she builds turrets, drones and hooks faster than she can name them. Most of
 the Underforge's lifts, pumps and lamps are hers now. She thinks the Heart of Noon is the finest engine the Dial has ever had, and she
 would like to run the Deep on it. She argues engines with Professor Puff at every Truce dinner, and she has won every argument that
@@ -762,7 +761,7 @@ did not involve flying.
 > "Gerald says hello. Gerald says goodbye."
 
 Bram builds the halls of the Underforge stone by stone, and he has one friend: Gerald, a limestone pillar with a carved face, who goes
-everywhere with him. Bram is broad and calm, with carved limestone pauldrons, a leather apron, a rune-cut maul and a glowing amber rune
+everywhere with him. Bram is broad, calm and ash-grey, with carved limestone pauldrons, a leather apron, a rune-cut maul and a glowing amber rune
 on his chest. He carved the ledge on the Night Temple's eaves where Corbel woke, and they are, oddly, friends. Every year at the Ring's
 opening he pushes the same stone against Big Yoko, and neither has won. Hesk's golems and Tova's powder both offend him: the first
 because it is not stone, the second because it is not building.
@@ -881,7 +880,7 @@ on foot, and he is still a captain.
 
 When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning
 there comes twice. Tempo is what the Hourkeepers call an unwound hour: when the Tower closed its hand on the noon he was a heartbeat behind his
-own clock, and it took half of him, so he has lived every moment twice since. He wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every
+own clock, and it took half of him, so he has lived every moment twice since. Umber-skinned, the star lines on his jaw drawn as a clock's ticks, he wears a long dark coat with a clock-dial halo, carries a staff shaped like a minute hand, and every
 spell he casts plays again. He keeps the great clock at Frostfall, and races the dark through the Deep for practice. He has sworn to
 wind the Dial up again before Oblivion unmakes the hours altogether.
 
@@ -892,7 +891,7 @@ wind the Dial up again before Oblivion unmakes the hours altogether.
 > "Hold still. You are being written."
 
 The Hourkeepers write the Dial down before it changes, and Shiori is the last of their great calligraphers, the one whose writing comes
-true. She wears a rice-paper robe with its hem washed in ink and an indigo sash, long black hair held by a brush-shaped pin, and she
+true. She wears a rice-paper robe with its hem washed in ink and an indigo sash, the star lines of her birth hour inked on her hands, long black hair held by a brush-shaped pin, and she
 carries a brush as tall as she is. Her strokes lie wet on the floor, and where two cross, the ink bursts. She taught Lian to fold
 paper, and Hesk to write the word on a golem's brow. She thinks Mr. Ledger's book is the worst-written history on the Dial, and he
 thinks hers has too many pictures.
@@ -984,7 +983,7 @@ catch Kohaku for longer than either will admit, and she has been letting him.
 > "Pick a hat. Any hat. Wrong."
 
 The Ringside has never known where The Great Zambini comes from, which is how he likes it: out of one of the Hundred Doors, in year
-40, after three hundred years at a revel the Tower kept. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, and he has sworn loyalty to all of them, in writing, more than
+40, after three hundred years at a revel the Tower kept. He has played every court on the Dial under a violet spotlight, in a deep violet cape and a tall top hat with a gold star, his pointed ears under its brim, and he has sworn loyalty to all of them, in writing, more than
 once. He vanishes under hats, saws things in half and pulls the rabbit out last. Referee Whistler has watched every one of his duels
 and has never caught him cheating, which convinces Whistler that he always does. He has tried to hire Sahar for the stage, twice. Pim
 and Pom are his favourite audience and his worst assistants. He fights for the applause.

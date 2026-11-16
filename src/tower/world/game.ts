@@ -6,10 +6,13 @@ import { autoBoon } from '../run';
 import type { FloorDef, Spot, DoorDef } from './def';
 import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
 import { FLOORS, floorAbove, floorAtOrBelow } from './floors';
+import { withRivalFor } from './rival';
 import { WorldHud } from './hud';
 import { WorldMap } from './map';
 import { WorldOthers } from './others';
-import type { WorldPresence } from '../../net/world';
+import type { DoorSink, WorldPresence } from '../../net/world';
+import type { ServerMsg } from '../../net/client';
+import { DoorFight, checkDoorTable, sharedDoors } from './together';
 import { KEYS, LIVES, WorldRun, nextFloor, read, sigils, wipe, write } from './state';
 import { buildZone, offersFor, relicFor, type Zone } from './world';
 
@@ -27,8 +30,13 @@ import { buildZone, offersFor, relicFor, type Zone } from './world';
 
 /** How long a fallen hero lies before the floor begins again with no life left (s). */
 const RESTART_AFTER = 2.2;
+/** A door asked of the hub that it has not answered by then is played alone (s); a held door, this long past its time. */
+const DOOR_ASK_S = 2.5;
 
-export class WorldGame {
+/** One door fight controller a connection (its handlers live as long as the page). */
+const fights = new WeakMap<object, DoorFight>();
+
+export class WorldGame implements DoorSink {
   readonly hud = new WorldHud();
   run!: WorldRun;
   zone: Zone | null = null;
@@ -65,6 +73,17 @@ export class WorldGame {
   /** The minimap in the top-left corner and the big map on M (map.ts); a person's play only. */
   readonly map: WorldMap | null;
   private presence: WorldPresence | null;
+  /**
+   * The open world's stage 3, doors together: the door this hero walked into and asked the hub about (held for others, or waiting for
+   * the answer), the seconds left as the hub said, another player's held door this hero may walk into, the fight the hub began.
+   */
+  private asking: { door: DoorDef; left: number; names: string[]; first: boolean; held: boolean } | null = null;
+  private invite: { door: string; left: number; names: string[] } | null = null;
+  private starting: Extract<ServerMsg, { t: 'door_start' }> | null = null;
+  /** This hero's seat in the party's fight and how many were in it: they come out side by side, not on one spot. */
+  private seat: { side: number; n: number } | null = null;
+  /** The party's fight on this connection (null alone, offline, in the tools). */
+  readonly together: DoorFight | null = null;
   private lastX = NaN;
   private lastZ = NaN;
 
@@ -77,8 +96,20 @@ export class WorldGame {
     this.presence = o.presence ?? null;
     this.others.onCount = (n) => this.hud.setOthers(this.presence?.online || n > 0 ? n : null);
     if (this.presence) this.presence.sink = this.others;
+    if (this.presence) this.presence.doors = this;
+    const net = this.presence?.net;
+    if (net && this.mode === 'play') {
+      let f = fights.get(net);
+      if (!f) fights.set(net, (f = new DoorFight(net, api)));
+      this.together = f;
+    }
     // A floor asked for that does not exist (not made yet) gives the highest one below it that does.
-    this.floor = FLOORS[floorAtOrBelow(o.floor ?? nextFloor())];
+    this.floor = this.asMet(FLOORS[floorAtOrBelow(o.floor ?? nextFloor())]);
+  }
+
+  /** The floor as this hero meets it: a rival who is this hero is the next one on the roster (rival.ts). */
+  private asMet(def: FloorDef): FloorDef {
+    return withRivalFor(def, this.hero, this.api.kits.map((k) => k.name));
   }
 
   /** Begins the floor: from the saved run when `resume` and it is this hero's, else from the camp. */
@@ -86,7 +117,7 @@ export class WorldGame {
     const saved = o.resume ? WorldRun.from(read(KEYS.run)) : null;
     if (saved && saved.hero === this.hero && FLOORS[saved.floor] && !saved.result) {
       this.run = saved;
-      this.floor = FLOORS[saved.floor];
+      this.floor = this.asMet(FLOORS[saved.floor]);
     } else {
       const arrived = { boons: sigils().map((id) => [id, 1] as [string, number]), shards: 0 };
       this.run = WorldRun.begin(this.hero, this.floor.n, arrived);
@@ -126,6 +157,7 @@ export class WorldGame {
     this.zone = buildZone(api, floor, run, this.hud, {
       fell: () => this.fell(),
       door: (d) => this.enterDoor(d),
+      joinable: (d) => this.joinable(d),
       save: () => this.save(),
       offerBoon: (label) => this.offer(label),
       giveRelic: () => this.relic(),
@@ -151,6 +183,7 @@ export class WorldGame {
     };
     const me = api.arena.caster.group.position;
     this.presence?.join(floor.n, run.hero, me.x, me.z, api.arena.caster.group.rotation.y);
+    if (this.together) checkDoorTable(floor);
     if (this.fakeK) this.zone.share?.fake(this.fakeK);
     this.hud.setOthers(this.presence?.online || this.others.count > 0 ? this.others.count : null);
   }
@@ -172,8 +205,13 @@ export class WorldGame {
     return w ? { x: w.at.x + 1.6, z: w.at.z } : this.floor.start;
   }
 
-  private leave() {
-    this.presence?.leave();
+  private leave(away = false) {
+    // Behind a door with others the seat stays in the shard (the hub keeps it): the floor only goes from this screen.
+    if (away) this.presence?.away();
+    else this.presence?.leave();
+    this.asking = null;
+    this.invite = null;
+    this.hud.door(null);
     this.map?.setZone(null, null);
     this.door = null;
     this.handle?.cancel();
@@ -192,11 +230,17 @@ export class WorldGame {
   /** Once a frame while a person plays; the tool calls it between steps. The zone's own work runs inside the duel's frame. */
   tick(dt: number) {
     this.hud.update(dt);
+    if (this.starting) {
+      const m = this.starting;
+      this.starting = null;
+      this.startShared(m);
+    }
     if (this.door) {
       const d = this.door;
       this.door = null;
       this.startPiece(d);
     }
+    this.doorLine(dt);
     this.handle?.pump();
     for (const w of stubWaits.splice(0)) {
       w.left -= dt;
@@ -229,6 +273,7 @@ export class WorldGame {
     this.alive = false;
     cancelAnimationFrame(this.raf);
     this.leave();
+    if (this.presence?.doors === this) this.presence.doors = null;
     this.piece = null;
     if (this.presence?.sink === this.others) this.presence.sink = null;
     this.others.dispose();
@@ -316,12 +361,104 @@ export class WorldGame {
    * (as `TowerRun.later` keeps what waits for the next pump).
    */
   enterDoor(d: DoorDef) {
-    if (this.piece || this.door || !this.zone) return;
+    if (this.piece || this.door || !this.zone || this.starting) return;
+    // Already asked the hub about this door (or another): the zone calls this every frame the hero stands in a doorway.
+    if (this.asking) return;
+    // The open world's stage 3: a ruler's lair walked into with others on the floor is asked of the hub, which holds it for those
+    // near or says to go alone. Alone, offline, a gate, a trial or a rival: as always.
+    const p = this.presence;
+    if (this.together && p?.online && this.others.count > 0 && d.piece === 'ruler' && sharedDoors(this.floor).has(d.id)) {
+      this.asking = { door: d, left: DOOR_ASK_S, names: [], first: true, held: false };
+      p.doorEnter(d.id);
+      return;
+    }
     this.door = d;
+  }
+
+  /** Whether another player holds this door open for others (the zone lets a won lair be walked into then). */
+  joinable(d: DoorDef) {
+    return !!this.invite && this.invite.door === d.id && this.invite.left > 0;
+  }
+
+  // --- the hub's news of doors (DoorSink) --------------------------------------------------------------------------------
+
+  doorGather(m: Extract<ServerMsg, { t: 'door_gather' }>) {
+    const you = this.presence?.you ?? 0, mine = m.ids.includes(you);
+    if (mine && this.asking?.door.id === m.door) {
+      // Held for others: the hub's answer comes when its time is up (door_start or door_solo).
+      Object.assign(this.asking, { left: m.left > 0 ? m.left + DOOR_ASK_S : DOOR_ASK_S, names: m.names, first: m.by === you, held: true });
+      this.invite = null;
+      return;
+    }
+    if (mine) return;
+    this.invite = m.left > 0 ? { door: m.door, left: m.left, names: m.names } : null;
+  }
+
+  doorSolo(door: string) {
+    const a = this.asking;
+    if (!a || a.door.id !== door) return;
+    this.asking = null;
+    this.hud.door(null);
+    if (!this.piece && this.zone) this.door = a.door;
+  }
+
+  doorStart(m: Extract<ServerMsg, { t: 'door_start' }>) {
+    if (this.asking?.door.id === m.door && !this.piece && this.zone) { this.starting = m; return; }
+    // A fight this screen cannot play now (the zone is gone, a piece is on): out of it at once.
+    this.presence?.net?.send({ t: 'match_leave' });
+  }
+
+  doorBusy(m: Extract<ServerMsg, { t: 'door_busy' }>) {
+    if (!this.zone || this.piece || this.mode !== 'play') return;
+    const d = this.floor.doors.find((x) => x.id === m.door);
+    if (d && m.n > 0) this.hud.say(d.name, `${m.names.join(' and ')} ${m.n === 1 ? 'goes' : 'go'} in together`, 2.4);
+  }
+
+  doorEnd(m: Extract<ServerMsg, { t: 'door_end' }>) {
+    this.together?.end(m);
+  }
+
+  /** The door line on the screen, once a frame: a door held for others, or another's held door to walk into. */
+  private doorLine(dt: number) {
+    const a = this.asking, inv = this.invite;
+    if (a) {
+      a.left -= dt;
+      // The hub never answered (an older hub, a lost message): the door is played alone.
+      if (a.left <= 0) { this.doorSolo(a.door.id); return; }
+      if (!a.held) { this.hud.door(null); return; }
+      const shown = Math.max(0, Math.ceil(a.left - DOOR_ASK_S));
+      const others = a.names.length > 1 ? `With ${a.names.filter((_n, i) => i > 0 || !a.first).join(', ')}. ` : '';
+      this.hud.door(`${a.door.name}: held for others near, ${shown} s. ${others}`, a.first ? { label: 'Go in now', click: () => this.presence?.doorGo() } : undefined);
+      return;
+    }
+    if (inv) {
+      inv.left -= dt;
+      const d = this.floor.doors.find((x) => x.id === inv.door);
+      if (inv.left <= 0 || !d || !this.zone || this.piece) { this.invite = null; this.hud.door(null); return; }
+      this.hud.door(`${inv.names.join(' and ')} ${inv.names.length === 1 ? 'waits' : 'wait'} at ${d.name}: walk in within ${Math.ceil(inv.left)} s to fight beside them`);
+      return;
+    }
+    this.hud.door(null);
+  }
+
+  /** The hub began a fight of the party behind a door: as `startPiece`, but the seat stays in the shard and the piece is the party's. */
+  private startShared(m: Extract<ServerMsg, { t: 'door_start' }>) {
+    const d = this.floor.doors.find((x) => x.id === m.door), shared = d && this.zone && !this.piece ? this.together?.begin(m) : null;
+    if (!d || !shared) { this.presence?.net?.send({ t: 'match_leave' }); this.asking = null; return; }
+    const { run, floor } = this;
+    this.piece = d.piece;
+    this.seat = { side: m.side, n: m.n };
+    const input = { floor: floor.n, hero: run.hero, hp: Math.max(0.05, run.hp), boons: run.boons, ally: run.ally, mode: this.mode, shared };
+    this.log.push(`door ${d.id} with ${m.n - 1} others at ${run.clock.toFixed(0)}s`);
+    this.save();
+    this.leave(true);
+    this.hud.show(false);
+    this.handle = pieceStarter()(this.api, d.piece, input, (out) => { this.handle = null; this.pieceDone(d, out); }) ?? null;
   }
 
   private startPiece(d: DoorDef) {
     if (this.piece || !this.zone) return;
+    this.seat = null;
     const { run, floor } = this;
     this.piece = d.piece;
     const input = { floor: floor.n, hero: run.hero, hp: Math.max(0.05, run.hp), boons: run.boons, ally: run.ally, mode: this.mode };
@@ -345,10 +482,19 @@ export class WorldGame {
     run.clock += out.seconds;
     run.hp = Math.max(0.05, Math.min(1, out.hp));
     let after: (() => void) | null = null;
-    this.log.push(`piece ${d.piece} ${out.won ? 'won' : 'lost'} hp ${out.hp.toFixed(2)} ${out.seconds.toFixed(0)}s`);
+    this.log.push(`piece ${d.piece} ${out.none ? 'nothing counted' : out.won ? 'won' : 'lost'} hp ${out.hp.toFixed(2)} ${out.seconds.toFixed(0)}s${out.shared ? ' (with others)' : ''}`);
+    if (out.none) {
+      // A party's fight that does not count for this hero (it never hit the ruler, or the connection went): the door as it was.
+      this.save();
+      this.enter(this.inFront(d));
+      this.hud.say(d.name, 'Nothing counted for you: your hero did not strike it, or the fight was cut off', 3);
+      return;
+    }
     if (out.won) {
-      if (!run.won.includes(d.piece)) run.won.push(d.piece);
-      run.shards += d.piece === 'ruler' ? 40 : d.piece === 'trial' ? 20 : 0;
+      const again = run.won.includes(d.piece);
+      if (!again) run.won.push(d.piece);
+      // A lair this run had already won (helping another player) pays nothing more.
+      if (!again) run.shards += d.piece === 'ruler' ? 40 : d.piece === 'trial' ? 20 : 0;
       after = d.piece === 'trial' ? () => this.relic() : d.piece === 'ruler' ? () => this.hud.say(`${d.name}: its ruler falls`, 'The gate up is unsealed', 3.2) : null;
       if (d.piece === 'rival') { run.rival = 'won'; run.ally = this.floor.rival.hero; after = () => this.offer(`${this.floor.rival.hero}'s boon`); }
     } else if (d.piece === 'ruler' || d.piece === 'gate') {
@@ -359,14 +505,14 @@ export class WorldGame {
       this.pieceFalls.push(`${d.piece}@${run.clock.toFixed(0)}s`);
       if (run.lives <= 0) {
         this.restartIn = RESTART_AFTER;
-        this.enter();
+        this.enter(out.shared ? this.inFront(d) : undefined);
         this.hud.say('No lives left', 'The floor begins again from its camp', RESTART_AFTER);
         return;
       }
       after = () => this.hud.say('Beaten', `A life lost: ${run.lives} left`, 2.6);
     } else if (d.piece === 'trial') {
       run.trialLost++;
-      after = () => this.hud.say('The vault holds', run.trialLost < 2 ? 'Nothing lost: the door stays open for one more try' : 'Nothing lost: the door closes', 3);
+      after = () => this.hud.say('The vault holds', run.trialLost < 2 ? 'No life lost: the door stays open for one more try' : 'No life lost: the door closes', 3);
     } else if (d.piece === 'rival') run.rival = 'lost';
     this.save();
     if (d.piece === 'gate' && out.won) {
@@ -374,15 +520,17 @@ export class WorldGame {
       this.floorCleared();
       return;
     }
-    // Back in front of the door when it was won (or a trial was lost); at the last waystone when a life was lost.
-    this.enter(d.piece === 'ruler' || d.piece === 'gate' ? undefined : this.inFront(d));
+    // Back in front of the door when it was won (or a trial was lost); at the last waystone when a life was lost. A party's fight puts
+    // everyone in front of the door, won or lost: they come out together.
+    this.enter(out.shared || !(d.piece === 'ruler' || d.piece === 'gate') ? this.inFront(d) : undefined);
     after?.();
   }
 
-  /** The hero's place in front of a door, on the ring's side. */
+  /** The hero's place in front of a door, on the ring's side; after a party's fight, side by side by seat (1.6 m apart). */
   private inFront(d: DoorDef): Spot {
-    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z);
-    return { x: d.at.x + Math.sin(away) * 5, z: d.at.z + Math.cos(away) * 5 };
+    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z), seat = this.seat;
+    const across = seat ? (seat.side - (seat.n - 1) / 2) * 1.6 : 0;
+    return { x: d.at.x + Math.sin(away) * 5 + Math.cos(away) * across, z: d.at.z + Math.cos(away) * 5 - Math.sin(away) * across };
   }
 
   /** Falls that happened inside a piece (the zone does not see them), for the tool's report. */

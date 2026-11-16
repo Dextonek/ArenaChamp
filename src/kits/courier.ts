@@ -7,7 +7,7 @@ import type { HeroKit } from '../heroes';
  */
 const K = {
   core: '#fff6dc', paper: '#e6d6ac', cream: '#eee3c4', brown: '#b98a52', brownDark: '#7a5230', string: '#e4d49c', dark: '#141c30',
-  accent: '#ffd24a', foil: '#3a6ac8', blueDark: '#24427e', blueLight: '#8fb0ee', red: '#d9463a', skin: '#f0c8a0',
+  accent: '#ffd24a', foil: '#3a6ac8', blueDark: '#24427e', blueLight: '#8fb0ee', red: '#d9463a', skin: '#bd8b5e',
   // the Wingfoot's pack, cloak, hair and trim (the _v3 model)
   leather: '#6a4424', leatherDark: '#3e2614', cloak: '#1c2c58', hair: '#b0501a', gold: '#d2ae55',
 };
@@ -203,7 +203,7 @@ export const courierKit: HeroKit = {
     g.beginPath();
     g.ellipse(s * 0.68, s * 0.46, s * 0.12, s * 0.15, 0.1, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#c98a62';
+    g.fillStyle = '#6e3a1c';   // // Touched 2026-11-16 (docs/lore/codex/revamp.md): Aubade folk: golden-brown skin, the freckles kept
     for (const [x, y] of [[0.63, 0.5], [0.655, 0.515], [0.64, 0.53], [0.775, 0.505], [0.79, 0.52]]) {
       g.beginPath();
       g.arc(s * x, s * y, s * 0.006, 0, Math.PI * 2);

@@ -4,6 +4,7 @@ face, the line-up beside two others, its motion (pipeline/tools/revamp-shots.js)
 page from the game's own camera. Run it once on the old models ("before") and once on the new ("after").
 
     python pipeline/tools/revamp-shots.py before --only prism,ledger --port 5263
+    python pipeline/tools/revamp-shots.py before --only door,mirror --out docs/heroes/touch --port 5284
 
 It needs a dev server on that port (`node node_modules/vite/bin/vite.js --port 5263 --strictPort`), `pip install
 playwright` and Google Chrome. Errors in the page are printed per hero.
@@ -26,6 +27,25 @@ HEROES = {
     "forge": ("brannoc", "Brannoc", ["Sefu", "Kaia", "Bram"]),
     "timber": ("hank", "Hank", ["Sefu", "Kaia", "Bram"]),
     "yarn": ("grandma-ironknit", "Grandma Ironknit", ["Sefu", "Kaia", "Pip"]),
+    # the sixteen touches (revamp.md, "The touches"; pictures to docs/heroes/touch with --out) and Big Yoko (his painted
+    # underwear covered): beside Sefu, Kaia and the hero it was most like
+    "door": ("wick", "Wick", ["Sefu", "Kaia", "Mr. Ledger"]),
+    "mirror": ("silvane", "Silvane", ["Sefu", "Kaia", "Opaline"]),
+    "mason": ("bram", "Bram", ["Sefu", "Kaia", "Brannoc"]),
+    "chrono": ("tempo", "Tempo", ["Sefu", "Kaia", "Wick"]),
+    "blood": ("vesper", "Vesper", ["Sefu", "Kaia", "Silvane"]),
+    "clockwork": ("ada", "Ada", ["Sefu", "Kaia", "Bram"]),
+    "referee": ("referee-whistler", "Referee Whistler", ["Sefu", "Kaia", "Bram"]),
+    "chef": ("madame-cleaver", "Madame Cleaver", ["Sefu", "Kaia", "Bram"]),
+    "weather": ("barry-cloudsley", "Barry Cloudsley", ["Sefu", "Kaia", "Zephyr"]),
+    "sky": ("zephyr", "Zephyr", ["Sefu", "Kaia", "Barry Cloudsley"]),
+    "tide": ("marin", "Marin", ["Sefu", "Kaia", "Isolde"]),
+    "bard": ("cantor", "Cantor", ["Sefu", "Kaia", "Tempo"]),
+    "courier": ("pip", "Pip", ["Sefu", "Kaia", "Grandma Ironknit"]),
+    "ink": ("shiori", "Shiori", ["Sefu", "Kaia", "Lyra"]),
+    "magic": ("the-great-zambini", "The Great Zambini", ["Sefu", "Kaia", "Wick"]),
+    "phoenix": ("anka", "Anka", ["Sefu", "Kaia", "Auriel"]),
+    "sumo": ("big-yoko", "Big Yoko", ["Sefu", "Kaia", "Auriel"]),
 }
 
 DUEL = """
@@ -63,6 +83,7 @@ def main():
     ap.add_argument("prefix", help="before or after")
     ap.add_argument("--only", default="")
     ap.add_argument("--port", type=int, default=5263)
+    ap.add_argument("--out", default=str(OUT), help="the folder of the hero folders (docs/heroes/touch for the touches)")
     ap.add_argument("--arena", default="temple", help="the CPU duel's arena, the same before and after")
     ap.add_argument("--duel-only", type=float, default=0, help="only a CPU duel of that many seconds, for the error check")
     args = ap.parse_args()
@@ -72,7 +93,7 @@ def main():
         browser = pw.chromium.launch(channel="chrome", headless=True, args=["--mute-audio", "--ignore-gpu-blocklist"])
         for theme in themes:
             folder, hero, beside = HEROES[theme]
-            out = OUT / folder
+            out = Path(args.out).resolve() / folder
             out.mkdir(parents=True, exist_ok=True)
             print(theme, hero)
             for part in (("duel",) if args.duel_only else ("pictures", "duel")):

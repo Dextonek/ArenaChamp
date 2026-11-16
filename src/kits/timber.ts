@@ -155,10 +155,33 @@ export const timberKit: HeroKit = {
     g.lineTo(s * 0.26, s * 0.93);
     g.closePath();
     g.fill();
+    // Revamped 2026-11-15 (Wood folk sworn to the Moot): broad branching antlers, every tip sawn flat and pale.
+    for (const dir of [-1, 1]) {
+      const x = (v: number) => s * (0.5 + dir * v);
+      g.lineCap = 'butt';
+      for (const [w, col] of [[0.05, K.dark], [0.032, '#8a6a48']] as const) {
+        g.strokeStyle = col;
+        g.lineWidth = s * w;
+        g.beginPath();
+        g.moveTo(x(0.17), s * 0.2);
+        g.quadraticCurveTo(x(0.28), s * 0.12, x(0.4), s * 0.03);
+        g.moveTo(x(0.24), s * 0.155);
+        g.lineTo(x(0.25), s * 0.04);
+        g.moveTo(x(0.31), s * 0.1);
+        g.lineTo(x(0.44), s * 0.13);
+        g.stroke();
+      }
+      g.fillStyle = '#e8d8b0';
+      for (const [cx, cy] of [[0.4, 0.03], [0.25, 0.04], [0.44, 0.13]] as const) {
+        g.beginPath();
+        g.arc(x(cx), s * cy, s * 0.015, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
     // The face, brown hair under a leather band, a huge braided beard.
     g.fillStyle = K.dark;
     g.beginPath(); g.ellipse(s * 0.5, s * 0.46, s * 0.25, s * 0.27, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#cf9468';
+    g.fillStyle = '#cf8a68';
     g.beginPath(); g.ellipse(s * 0.5, s * 0.44, s * 0.22, s * 0.24, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = K.dark;
     g.beginPath();
@@ -193,7 +216,7 @@ export const timberKit: HeroKit = {
     for (const sx of [0.4, 0.6]) {
       g.beginPath(); g.ellipse(s * sx, s * 0.43, s * 0.03, s * 0.032, 0, 0, Math.PI * 2); g.fill();
     }
-    g.fillStyle = '#3a2412';
+    g.fillStyle = '#4e6a2a';
     for (const sx of [0.4, 0.6]) {
       g.beginPath(); g.ellipse(s * sx, s * 0.435, s * 0.018, s * 0.024, 0, 0, Math.PI * 2); g.fill();
     }

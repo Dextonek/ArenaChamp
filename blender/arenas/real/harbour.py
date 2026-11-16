@@ -300,7 +300,8 @@ def posts(o, turn):
 def cannons(o, turn):
     ax, az, bx, bz = o["ax"], o["az"], o["bx"], o["bz"]
     yaw = math.atan2(bx - ax, bz - az) + PI      # the muzzle looks from a to b, out to sea
-    A.put("cannon", (ax + bx) / 2, (az + bz) / 2, yaw=yaw, scale=S * 1.05)
+    # 0.9 (was 1.05): at 1.05 its back stood 0.7 m past the wall at a hero's hips (docs/models/review/blender-list.md)
+    A.put("cannon", (ax + bx) / 2, (az + bz) / 2, yaw=yaw, scale=S * 0.9)
 
 
 def skiffs(o, turn):

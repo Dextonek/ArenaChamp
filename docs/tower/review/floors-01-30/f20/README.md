@@ -16,7 +16,7 @@ Clean but for one word: the Wood's crown. Cleared with four stars and no fall, n
 ## Found
 
 - **fixed: “Once Ash and Ember has fallen”.** The gate's lock spoke of the twin crown in the singular. The Wood's maker now says “have” for them (with floor 13's fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed.
-- **list: The same words on floor 50 (the War's crown, not my chapter).** Floor 50 says “Ash and Ember has fallen”, “Ash and Ember is behind” and “Ash and Ember waits behind” (src/tower/world/gen/war.ts, baked in floors/gen/war-50.ts). The fix would be the same as here: a plural verb when the ruler is Ash and Ember, then a re-bake of floors 42 to 50. Left to the agent of floors 31 to 50.
+- **ok: The same words on floor 50: fixed by the floors 31-50 review.** Floor 50 said “Ash and Ember has fallen”; the War's agent fixed it at the same time (merged).
 
 ## Not checked
 

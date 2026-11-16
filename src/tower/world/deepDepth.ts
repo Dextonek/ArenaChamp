@@ -522,9 +522,18 @@ export function buildDeepDepth(o: DeepDepthIn) {
           const q = Q(6.6 + s, 0);
           if (Wt(q.x, q.z) > 0.7 && H(q.x, q.z) < o.waterLevel - 0.3) { len = s + 6; break; }
         }
+        // It starts past the last rock on its line, the ridges too (floor 32's ran through a stone ridge on its way to the water).
+        const onRock = (x: number, z: number) => look.pieces.some(({ o: c }) => {
+          if (c.fixed) return false;
+          const ex = c.bx - c.ax, ez = c.bz - c.az, l2 = ex * ex + ez * ez, k = l2 > 0 ? Math.max(0, Math.min(1, ((x - c.ax) * ex + (z - c.az) * ez) / l2)) : 0;
+          return Math.hypot(x - c.ax - ex * k, z - c.az - ez * k) < c.r + 0.25;
+        });
+        let s0 = 0;
+        for (let s = 0; len && s <= Math.min(len, 44); s += 1.15) if ([-1.17, 0, 1.17].some((t) => { const q = Q(6.6 + s, t); return onRock(q.x, q.z); })) s0 = s + 1.15;
+        if (len && Math.min(len, 44) - s0 < 4) len = 0;
         if (len) {
           len = Math.min(len, 44);
-          for (let s = 0; s <= len; s += 1.15) {
+          for (let s = s0; s <= len; s += 1.15) {
             const q = Q(6.6 + s, 0), y = 0.08;
             batch.put('low', S.unitPlank, q.x, y, q.z, outYaw, 2.3, 0.12, 1.05);
             if (Math.round(s / 1.15) % 2 === 0) for (const sd of [-1.05, 1.05]) {
@@ -532,7 +541,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
               batch.put('low', S.post, pp.x, Math.min(g, o.waterLevel) - 0.2, pp.z, 0, 1, y + 0.45 - Math.min(g, o.waterLevel) + 0.2, 1);
             }
           }
-          const e0 = Q(6.6, -1.17), e1 = Q(6.6 + len, -1.17), f0 = Q(6.6, 1.17), f1 = Q(6.6 + len, 1.17);
+          const e0 = Q(6.6 + s0, -1.17), e1 = Q(6.6 + len, -1.17), f0 = Q(6.6 + s0, 1.17), f1 = Q(6.6 + len, 1.17);
           beam('metal', S.unitGold, e0.x, 0.21, e0.z, e1.x, 0.21, e1.z, 0.05, 0.03);
           beam('metal', S.unitGold, f0.x, 0.21, f0.z, f1.x, 0.21, f1.z, 0.05, 0.03);
           const end = Q(6.6 + len - 0.4, 0.75), lampAt = Q(6.6 + len - 0.4, -0.85);

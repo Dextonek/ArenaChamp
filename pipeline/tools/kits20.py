@@ -175,12 +175,13 @@ def roster_tuples():
 
 def taken_names():
     names, files = set(), set()
-    for f in (ROOT / 'src' / 'spells' / 'targeted').glob('*.ts'):
+    # a hero in a folder of its own (src/heroes/<theme>/): its spells in spells/, its card in hero.ts
+    for f in [*(ROOT / 'src' / 'spells' / 'targeted').glob('*.ts'), *(ROOT / 'src' / 'heroes').glob('*/spells/*.ts')]:
         files.add(f.stem.lower())
         for m in re.finditer(r"label: '([^']+)'", f.read_text(encoding='utf-8')):
             names.add(m.group(1).lower())
-    for f in (ROOT / 'src' / 'kits').glob('*.ts'):
-        files.add(f.stem.lower())
+    for f in [*(ROOT / 'src' / 'kits').glob('*.ts'), *(ROOT / 'src' / 'heroes').glob('*/hero.ts')]:
+        files.add(f.parent.name.lower() if f.name == 'hero.ts' else f.stem.lower())
         for m in re.finditer(r"(?:name|title|label): '([^']+)'", f.read_text(encoding='utf-8')):
             names.add(m.group(1).lower())
     return names, files
@@ -229,7 +230,7 @@ def check(heroes):
     roster = roster_tuples()
     if len(roster) < 30:
         errs.append(f'the roster table gave only {len(roster)} kits')
-    themes = {f.stem for f in (ROOT / 'src' / 'kits').glob('*.ts')}
+    themes = {f.stem for f in (ROOT / 'src' / 'kits').glob('*.ts')} | {f.parent.name for f in (ROOT / 'src' / 'heroes').glob('*/hero.ts')}
     seen_t = {}
     for h in heroes:
         who = h['name']

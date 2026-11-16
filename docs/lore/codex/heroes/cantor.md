@@ -43,9 +43,8 @@ stood in front of the Sun Warden, who looked at him for a long time and then sai
 
 ## People and appearance
 
-Aubade folk of the bell quarter, Noon-touched: thirty at the Fall, he looks fifty, lean and upright, with a pale face and dark hair under a
-plumed hat. A rose and plum coat with a lyre strap, a parchment scarf printed with notes, a golden lyre in the left hand. In the
-[revamp plan](../revamp.md) he gets a touch: the golden-brown skin of his people, the dawn line on his brow, gold thread in his hair.
+Aubade folk of the bell quarter, Noon-touched: thirty at the Fall, he looks fifty, lean and upright, golden-brown, with dark hair under a plumed hat. A rose and plum coat with a lyre strap, a parchment scarf printed with notes, a golden lyre in the left hand. The dawn line runs gold from his brow down the bridge of his nose, and gold
+thread is wound round the locks by his face and at his nape (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before).
 
 ## Voice
 

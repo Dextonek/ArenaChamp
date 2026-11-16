@@ -45,7 +45,22 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'The Climb’s first thirty floors, read again',
-        text: 'On the M map, names that stood close together no longer lie on top of each other (the gate and the camp, a chapel and its signal fire). And the people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
+        text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
+      },
+      {
+        tag: 'Arenas',
+        title: 'The harbour’s cannons and the Tide Judge’s glaive',
+        text: 'The two cannons on the Drowned Harbour’s walls are a little smaller, so a hero standing at their back no longer stands inside the gun. On the Climb, the Tide Judge’s glaive no longer runs back through his gown.',
+      },
+      {
+        tag: 'Motion',
+        title: 'Heroes stand on the floor and hold their staffs up',
+        text: 'Every hero now stands and walks with the whole foot on the floor; before, the soles sank a few centimetres in. Hands no longer disappear into long coats, robes and aprons. And the heroes with a staff, scepter, lyre, lantern, quill or broom keep it upright as they cast, instead of laying it sideways across the chest.',
+      },
+      {
+        tag: 'Menus',
+        title: 'A faster start',
+        text: 'The game’s first download is a fifth smaller: about 140 showcase and test spells that are not in the game no longer come with it. The page opens sooner, most of all on a phone.',
       },
       {
         tag: 'Heroes',
@@ -58,6 +73,25 @@ export const CHANGELOG: Release[] = [
         text: 'Opaline has amethyst grown into her skin and the violet eyes of the Gloaming folk; Mr. Ledger is one of the Long Dead, vellum on bone with embers for eyes; Kaia is a sea-tanned storm caller of the Coast in an oilskin coat, tide lines on her arms; Brannoc’s grey Kilnborn skin is cracked with the light of the forge in his chest; Hank wears the Moot’s antlers, sawn short; and Grandma Ironknit’s pointed fae ears show through her hood. Their spells and numbers are unchanged.',
         image: '/news/heroes-peoples.jpg',
         alt: 'The six heroes side by side: Opaline in deep amethyst with crystal at her shoulders and dark hair; Mr. Ledger in black and oxblood robes with a pale bony face and glowing orange eyes; Kaia sea-tanned in a rain-blue coat with silver hair; Brannoc grey-skinned with orange cracks on his chest and arms; Hank in green and fur with broad antlers; and tiny Grandma Ironknit in her wine hood with long pointed ears.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Sixteen more heroes show their people',
+        text: 'Wick and Tempo have the umber skin and jaw star lines of the Northerners, and Shiori has hers inked on her hands; Silvane and Vesper the blue-grey skin and shining eyes of the Gloaming folk; Bram, Ada and Referee Whistler the ash-grey skin and amber eyes of the Kilnborn; Madame Cleaver the deep brown skin, kohl and henna of the Dune folk; Barry, Zephyr and Marin the tan, tide lines and sea-glass of the Coast; Cantor and Pip the golden-brown skin and gold thread of Aubade; The Great Zambini’s pointed ears show under his hat; and Anka’s skin glows like the ember she is. Hero portraits now show the new looks too. Spells and numbers are unchanged.',
+        image: '/news/heroes-touches.jpg',
+        alt: 'Sixteen hero faces in two rows: dark-skinned Wick and Tempo with white hair, pale Shiori, blue-grey Silvane and Vesper with shining eyes, grey-skinned Bram, Ada and Referee Whistler with amber eyes, deep brown Madame Cleaver in her crimson headwrap, sea-tanned Barry, masked Zephyr and green-haired Marin, golden-brown Cantor and freckled Pip, The Great Zambini with pointed ears under a top hat, and warm-skinned Anka with her feather crest.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'New spell icons for every hero',
+        text: 'Every hero’s spell icons are drawn anew, in one family: each sits in a gold-edged medallion, lit from the same side, in its hero’s own colours, with one sign of the hero in all four (Bram’s pillar, Mortis’s grave-light, Shiori’s ink). They read at a glance on a phone, too.',
+        image: '/news/spell-icons.jpg',
+        alt: 'A grid of the new spell icons, each hero’s four side by side.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s enemies and rulers move better',
+        text: 'The War’s bowmen level their crossbows at you instead of punching with the empty hand; enemies that back away or circle you step the way they go instead of sliding; the rulers with a staff plant it when they shake the ground instead of driving it through the floor, the long gowns and coats of the Pale One and the rulers stay above the ground when they strike, and the tall enemies’ health bars float over their crowns and plumes instead of through them.',
       },
       {
         tag: 'Heroes',
@@ -80,6 +114,11 @@ export const CHANGELOG: Release[] = [
         text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',
       },
       {
+        tag: 'Online',
+        title: 'Face a floor’s ruler together',
+        text: 'Walk into a ruler’s lair while another player stands nearby and the door holds for six seconds: whoever walks in too fights the ruler beside you, and the first one in can go in at once. The ruler grows tougher for each of you, a fallen hero can be got up by standing beside it, and the win counts for everyone who struck it. You all come back out together, in front of the door. Gates, vaults and rivals are still fought alone.',
+      },
+      {
         tag: 'Tower',
         title: 'The Climb’s people are their own',
         text: 'The keepers, quest givers and traders on the Climb are no longer heroes standing in: each chapter has five people of its own, from the Bell-Warden of the Sea to the Herald of the War, and the traders take turns floor by floor. Rivals and gatekeepers are still heroes.',
@@ -97,6 +136,16 @@ export const CHANGELOG: Release[] = [
         tag: 'Tower',
         title: 'A map of the floor',
         text: 'The Climb now has a small round map in the top-left corner that follows your hero, with the enemies, people, doors, waystones and the next step of your quest on it. Press M, or tap the small map, to see the whole floor with the names of its places.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Deep and the War, floor by floor, set right',
+        text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, the Turncloak no longer stands in the camp’s bench, and the last floor speaks of Ash and Ember as the two they are.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Clearer fights and your own rival on the Climb',
+        text: 'People’s marks no longer cover the floor’s panel or your spells, and in a ruler’s or a gatekeeper’s fight the title sits under your portrait instead of over it. A trial room now shows the floor you are on. If a floor’s rival is the hero you are playing, another hero takes the rival’s place, so you never duel yourself. And the War’s rulers, its Camp-Mother and a lost trial say what they should.',
       },
       {
         tag: 'Online',

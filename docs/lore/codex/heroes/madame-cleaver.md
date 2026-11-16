@@ -50,8 +50,8 @@ Her recipes came from nobody. Her temper comes from the fact that champions neve
 
 Dune folk of the caravans, born on the Brass Road: broad and strong, with a round proud face, green eyes (her father's, a caravan guard of
 the Coast) and a braid at her shoulder. A crimson headwrap in the Sands fashion, mail shoulders, a crimson jerkin with a bandolier of small
-knives, and the great dark cleaver with its glowing ember edge. In the [revamp plan](../revamp.md) she gets a touch: the deep brown skin
-of her people, kohl to the temples, henna on the backs of her hands. The headwrap stays.
+knives, and the great dark cleaver with its glowing ember edge. Her skin is the deep brown of her people, with kohl drawn out to the
+temples and henna on the backs of her hands (Touched on 2026-11-16 by the [revamp plan](../revamp.md): the headwrap stays).
 
 ## Voice
 

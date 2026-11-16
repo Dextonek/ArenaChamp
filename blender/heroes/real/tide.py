@@ -1,6 +1,7 @@
 """Marin, the Tide Dancer (ranged): a slim dancer, bare arms and shins. A deep teal sleeveless dress with three layers of
-skirt (teal, sea blue, sea glass), a coral sash knotted at the hip, gold armlets and anklets, soft slippers (she was
-barefoot; bare toes do not carry over), sea-green hair in buns and a long braid with a coral clip, a coral flower at the
+skirt (teal, sea blue, sea glass), a coral sash knotted at the hip, gold armlets and anklets, bare feet (Coast folk dance
+barefoot in the temple; (docs/lore/codex/revamp.md, the touches, 2026-11-16), with tide lines on her forearms and
+sea-glass in her hair), sea-green hair in buns and a long braid with a coral clip, a coral flower at the
 temple, glowing water rings round her wrists and two sashes of water swirling round her."""
 import math
 
@@ -9,6 +10,7 @@ from mathutils import Vector
 from realkit import PI, Real
 from real import parts_a as P
 from real.parts_a import V
+from real.parts_d import tide_lines
 
 
 def build():
@@ -25,7 +27,7 @@ def build():
 
     R.fitted("Dress", ["spine", "pelvis", "clavicle"], "teal")
     R.fitted("Shorts", ["thigh"], "teal", offset=0.003, above=z["knee"] + 0.14)
-    R.boots("teal", top=z["ankle"] + 0.045, toe="glass")
+    tide_lines(R)
     P.arm_band(R, "gold", 0.5, offset=0.006, thick=0.008)
     P.arm_band(R, "glass", 0.58, offset=0.005, thick=0.005)
     for n in "lr":
@@ -95,4 +97,14 @@ def build():
     a_at_arm = turns * 2 * PI * (arm - z0) / (z1 - z0)
     sash(PI - a_at_arm, turns, z0, z1, 0.47, 0.3, 0.042)
     sash(0.6, 1.1, z["knee"] - 0.1, z["chest"] - 0.02, 0.56, 0.42, 0.038)
+
+    # sea-glass in her hair: beads worked into the braid and a few in each bun
+    R.mat("seaglass", "#86e0c8", rough=0.12, metal=0.1, emit="#3fb8a0", strength=0.2)
+    hb = R.piece("Head")
+    for k, (dx, dy, dz) in enumerate(((0.07, 0.03, 0.07), (0.085, 0.005, 0.045), (-0.07, 0.03, 0.07), (-0.085, 0.005, 0.045), (0.0, 0.1, 0.03))):
+        hb.ellipsoid("seaglass", c + V(dx, dy, dz), (0.009, 0.008, 0.011), seg=(8, 6))
+    sb = R.piece("spine_03")
+    for t in (0.3, 0.55, 0.8):
+        q = V(0, cc.y + ryc + 0.05 + 0.012, z["chest"] + 0.04 - (z["chest"] + 0.04 - z["waist"] + 0.02) * t)
+        sb.ellipsoid("seaglass", q, (0.008, 0.007, 0.01), seg=(8, 6))
     return R

@@ -43,8 +43,8 @@ She is the only person who can write down both of his sentences at once, and she
 ## People and appearance
 
 A Northerner of Hearthmere, born after the Fall: thirty, with long black hair held by a brush-shaped pin, a rice-paper white robe with the hem washed in ink, an indigo sash, a
-huge brush in the left hand, and floating paper talismans. In the [revamp plan](../revamp.md) she gets a touch: the star lines of her birth hour drawn in ink on the backs of her
-hands, as every Northerner's are, in her own hand.
+huge brush in the left hand, and floating paper talismans. The star lines of her birth hour are drawn in ink on the backs of her
+hands, as every Northerner's are, in her own hand (Touched on 2026-11-16 by the [revamp plan](../revamp.md): her skin stays pale).
 
 ## Voice
 

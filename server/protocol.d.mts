@@ -54,6 +54,10 @@ export declare const WORLD_PACKS: {
 };
 /** A pack fought by `n` players: its health and its blows, times. */
 export declare const packScale: (n: number) => { hp: number; dmg: number };
+/** The Climb's open world, stage 3: doors together (server/protocol.mjs says what each number is). */
+export declare const WORLD_DOORS: { gatherS: number; nearR: number; enterR: number; hp: number; dmg: number; max: number; entersPerS: number; ring: number };
+/** A ruler fought by `n` players: its health (and gauge) and its blows, times. */
+export declare const doorScale: (n: number) => { hp: number; dmg: number };
 /** The duel rating (Elo): where an account starts and the K factor. */
 export declare const ELO: { start: number; k: number };
 /** How many rows each of the Leaderboards screen's lists holds. */

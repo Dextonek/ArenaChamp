@@ -1,0 +1,227 @@
+{
+ "order": "Weakest current icons first, ranked from today's 32 px sheet (docs/icons/old, sheet.py old): grey on grey, cartoon signs and faces, thin lines that vanish at 32 px. Anka and Mum were the sample.",
+ "1": {
+  "date": "2026-11-16",
+  "stems": [
+   "bram",
+   "bo",
+   "big-yoko",
+   "referee-whistler",
+   "oblivion",
+   "mortis",
+   "gus",
+   "professor-puff"
+  ],
+  "rows": {
+   "bram": "Proposed row Stone / rune (from src/kits/mason.ts): limestone, rune amber accent.",
+   "bo": "Proposed row Fold / bell (src/kits/sheep.ts): fleece to the bell's gold, a meadow green accent; the ground a dusk meadow.",
+   "big-yoko": "Proposed row Ring / shrine (src/kits/sumo.ts): rice paper, peach, his crimson, straw-rope gold.",
+   "referee-whistler": "Proposed row Arbiter (src/kits/referee.ts): ivory, horn silver, the yellow sigil; red for the rule's bar.",
+   "oblivion": "The art bible's Void row.",
+   "mortis": "The art bible's Bone row.",
+   "gus": "Proposed row Temple water (src/kits/janitor.ts): foam, water, the ward's yellow, the deep.",
+   "professor-puff": "Proposed row Aether (src/kits/balloon.ts): rose gas, a sky-blue accent, aubergine, brass."
+  },
+  "bible": {
+   "bram": [
+    "Stone / rune",
+    "Bram; foil: stone `#9a958c`, stone dark `#5b5853`"
+   ],
+   "bo": [
+    "Fold / bell",
+    "Bo; foil: wool `#d3cdbc`, crook wood `#7a5a3a`, horn `#c9b07a`"
+   ],
+   "big-yoko": [
+    "Ring / shrine",
+    "Big Yoko; foil: straw rope `#d2ac5a`, paper `#fffaf0`, lacquer `#7a1a22`"
+   ],
+   "referee-whistler": [
+    "Arbiter",
+    "Referee Whistler; foil: ivory `#e4dfcf`, rule red `#d63a2a`"
+   ],
+   "gus": [
+    "Temple water",
+    "Gus; foil: bronze `#c08a4a`, the deep `#3a6a8a`, paper `#f6f0dc`"
+   ],
+   "professor-puff": [
+    "Aether",
+    "Professor Puff; foil: rose gas `#ff5c9c`, brass `#d9a441`"
+   ]
+  },
+  "notes": [
+   "One sign per hero runs through its four icons: Bram's pillar Gerald with his maker's mark (a square with a dot in its corner, from his lore), Bo's crook, bell and black-faced sheep, Big Yoko's straw rope and paper charms, the Arbiter's silver horn and seals, Oblivion's black void with crimson edges, Mortis's ivory bone in teal grave-light, Gus's temple water and bronze, Puff's glass spheres of rose gas and brass.",
+   "The cartoon signs of today are gone, as the restyle asked: the traffic signs became the Arbiter's struck seals, the yellow wet-floor sign a standing ward with a water drop, the cat-face balloon a glass sphere of gas, the sumo's face a palm, a mountain and a fistful of salt.",
+   "Each hero's four differ in shape at 32 px and in grey (the sheet above), and the lower left stays quiet for the key letter.",
+   "Weakest of the batch: Bo. His sheep read as fleece and a dark face at 64 px, but at 32 px W and R are a cluster of pale curls; better than today's grey dots, not as clear as the others. Professor Puff's W (a sphere about to burst) and E (the same gas floating him away) share their round shape; the gondola and the burst lines tell them apart.",
+   "Redrawn after a first look: the Arbiter's No Running (two chevrons under the red bar read as a hammer; now an arrow), Oblivion's Gravity Slam (a black orb on black read as a ring with a cross under it), Big Yoko's Stomp (dust spikes read as teeth), Gus's Flood (its sea ran square to the corners)."
+  ]
+ },
+ "2": {
+  "date": "2026-11-16",
+  "stems": [
+   "mabel",
+   "madame-cleaver",
+   "pim",
+   "pom",
+   "grandma-ironknit",
+   "sir-whiskers",
+   "mr-ledger",
+   "nyx",
+   "barry-cloudsley"
+  ],
+  "rows": {
+   "mabel": "Proposed row Deep / lantern (src/kits/mole.ts): the lantern crystal's amber, a cave-crystal teal accent; soil foils.",
+   "madame-cleaver": "Proposed row Feast / ember (src/kits/chef.ts): the cleaver's ember edge, her crimson, a herb green.",
+   "pim": "Proposed row Changeling (src/kits/twins.ts): Pim's amber with Pom's blue as the accent, bark and leaf. Tag Out is one spell for both twins: its icon is Pim's.",
+   "pom": "The Changeling row turned round: Pom's blue body, Pim's amber accent. (The spell bar below is Pim's: a duel starts on him.)",
+   "grandma-ironknit": "Proposed row Spindle / rose (src/kits/yarn.ts): rose yarn, the Spindle court's silver as the accent.",
+   "sir-whiskers": "Proposed row Lynx (src/kits/cat.ts): tawny gold, the plume's red, gunmetal foils.",
+   "mr-ledger": "Proposed row Tithe / seal (src/kits/ledger.ts): vellum, the wax seal's red, his ember eyes as the accent.",
+   "nyx": "The art bible's Shadow row, the moon as its foil.",
+   "barry-cloudsley": "Proposed row Augury (src/kits/weather.ts): cloud white, sky blue, the sun's yellow as the accent."
+  },
+  "bible": {
+   "mabel": [
+    "Deep / lantern",
+    "Mabel; foil: soil `#a98258`, dirt `#6b4e33`, claw horn `#e8e0cc`"
+   ],
+   "madame-cleaver": [
+    "Feast / ember",
+    "Madame Cleaver; foil: steel `#c4ccd4`, char `#2c2724`, soup `#e8794a`"
+   ],
+   "pim": [
+    "Changeling",
+    "Pim and Pom; Pom's turns it round: body `#6ac8ff`, accent `#ffb04a`; foil: bark `#6e4a2a`, leaf `#7fbf4a`"
+   ],
+   "grandma-ironknit": [
+    "Spindle / rose",
+    "Grandma Ironknit; foil: wine `#7a2a4c`, spool `#ff5a8a`, cat grey `#9a9aa6`"
+   ],
+   "sir-whiskers": [
+    "Lynx",
+    "Sir Whiskers; foil: plate `#3c4458`, steel `#c4ced8`, clay `#b5653a`"
+   ],
+   "mr-ledger": [
+    "Tithe / seal",
+    "Mr. Ledger; foil: vellum `#efe4c0`, oxblood `#7a2230`"
+   ],
+   "barry-cloudsley": [
+    "Augury",
+    "Barry Cloudsley; foil: storm `#4a5870`, deep `#2f5ea8`"
+   ]
+  },
+  "notes": [
+   "One sign per hero: Mabel's gold-tipped claws and the Deep's soil, the Feastmistress's ember-edged cleaver, iron pot and covered dishes, the twins' bark and leaf (Pim amber, Pom blue), the Weaver's silver needles and glowing rose yarn, the Lynx Duelist's tawny gold and his nine lives as gems, the Tithe-Keeper's vellum and red wax seal, Nyx's dagger and the moon, the Sky Augur's clouds and fronts.",
+   "Cartoon left behind: the sweater is a knit thrown over you, Mr. Biscuit a grey cat springing out of the wool (not a cat face), the referee-style pencil and papers a sealed invoice, a notice and a stamp, the weather-TV sun a front drawn as the augur's chart draws it.",
+   "Weakest: none fails now, but Pom's three icons are only seen after a Tag Out (the bar below is Pim's). Redrawn after the last review (2026-11-16): Mabel's Sinkhole (R) was a second hole like her Dig (W); it is now the floor breaking into the dark, seen from the side. Pim's Charge (W) was his acorn helm and read as an acorn; it is now a wedge of bark driving down the lane. Nyx's Shadow Double (E) was two blocks; the figures now have hoods, shoulders and a ragged hem, and the bright one a dagger.",
+   "Redrawn after a first look: Mabel's Dig (claws over the hole read as horns) and Sinkhole (cracks over the pit read as a broken plate), the Feastmistress's smoke (grey puffs read as stones), the Weaver's Sweater (read as a basket) and Mr. Biscuit (read as a ghost), Sir Whiskers's Scratch (read as a feather), Nyx's Smoke Veil (two eyes in the smoke made a rock monster).",
+   "Pom has three icons: Tag Out is the same spell for both twins and uses Pim's."
+  ]
+ },
+ "3": {
+  "date": "2026-11-16",
+  "stems": [
+   "pip",
+   "kaia",
+   "tempo",
+   "hank",
+   "the-great-zambini",
+   "wick",
+   "lyra",
+   "sefu"
+  ],
+  "rows": {
+   "pip": "Proposed row Wingfoot (src/kits/courier.ts): sun yellow on night blue; paper, string and the red seal as foils.",
+   "kaia": "The art bible's Storm row; iron and copper for her rods.",
+   "tempo": "The art bible's Chrono row, the ivory dial as its foil.",
+   "hank": "Proposed row Moss / rune (src/kits/timber.ts): the axe's rune green, warm wood as the accent.",
+   "the-great-zambini": "Proposed row Illusion (src/kits/magic.ts): violet, the cards' red pips as the accent.",
+   "wick": "Proposed row Threshold (src/kits/door.ts): lamplight through a door, brass, his crimson as the accent.",
+   "lyra": "The art bible's Astral row, the sky chart as its foil.",
+   "sefu": "The art bible's Sand row; gold and lapis for the crook, the cobra and the sarcophagus."
+  },
+  "bible": {
+   "pip": [
+    "Wingfoot",
+    "Pip; foil: paper `#eee3c4`, parcel brown `#b98a52`, night blue `#3a6ac8`, seal red `#d9463a`"
+   ],
+   "hank": [
+    "Moss / rune",
+    "Hank; foil: wood `#b5763a`, bark `#6a4426`, pine `#3f6b3a`, steel `#cfd5d8`"
+   ],
+   "the-great-zambini": [
+    "Illusion",
+    "The Great Zambini; foil: card `#efe8d8`, deep violet `#2a1248`"
+   ],
+   "wick": [
+    "Threshold",
+    "Wick; foil: brass `#b08a4a`, door wood `#5a3321`"
+   ]
+  },
+  "notes": [
+   "One sign per hero: Pip's gold wings on letters, parcels and his wrapped boot, Kaia's iron rods and thick bent lightning, Tempo's clock hands with their pale echo, Hank's rune-edged double axe and his pines, the Illusionist's tall hats and cards, the Doorwarden's arched doors full of lamplight and his brass key, Lyra's star-tipped arrows, Sefu's gold and lapis (cobra, crook, scarab, sarcophagus).",
+   "Cartoon left behind: the postman's yellow mailbox, the stage magician's purple box, the bellhop's doors with a gold star, the lumberjack's TIMBER! board.",
+   "Weakest: Lyra's Q and W are a bow and two arrows: clear at 48 px, thin lines at 32. The Illusionist's E and R both show hats (three in a row, three round a ring with swords). Kaia's Supercell and Barry's Lightning Risk (batch 2) both put lightning under a cloud; hers is a turning storm with three bolts, his one bolt on a mark. Redrawn after the last review (2026-11-16): Sefu's cobra was solid gold (gold is for edges); it is now the desert's colour with gold only on the hood's edge. His Sarcophagus (R) stays gold: the spell is a gold sarcophagus, the one exception.",
+   "Redrawn after a first look: Pip's Shortcut (a blue boot read as a modern sneaker; now a wrapped messenger's boot), Hank's TIMBER! (the fourth tree ran out of the frame), Sefu's Cobra Spit (a cobra seen from the front read as a microphone at 32 px; now from the side) and Scarab Stride (read as a caterpillar)."
+  ]
+ },
+ "4": {
+  "date": "2026-11-16",
+  "stems": [
+   "silvane",
+   "opaline",
+   "zephyr",
+   "fenna",
+   "isolde",
+   "vesper",
+   "sirix",
+   "ada"
+  ],
+  "rows": {
+   "silvane": "Proposed row Mirror (src/kits/mirror.ts): the glass's pale blue, violet as the accent, silver foils.",
+   "opaline": "The art bible's Prism row, its spectrum as the accent; amethyst and cream for her crystals (her revamp's colours).",
+   "zephyr": "The art bible's Sky row, cloud as its foil.",
+   "fenna": "The art bible's Grove row, the bark's cream as its foil.",
+   "isolde": "The art bible's Frost row (rime as its foil).",
+   "vesper": "The art bible's Blood row, drawn as the art bible's blood rules ask (dark rim, one hot line, a pinpoint highlight, bone near it).",
+   "sirix": "The art bible's Hive row, wax as its foil.",
+   "ada": "The art bible's Clockwork row; brass and steel, the cyan spark as the accent."
+  },
+  "bible": {
+   "silvane": [
+    "Mirror",
+    "Silvane; foil: silver `#c6cedb`, glass shade `#8fa8cc`, deep glass `#5a4a98`"
+   ]
+  },
+  "notes": [
+   "Most of this batch had good icons already (Opaline, Isolde, Vesper read well today); the new ones bring them into the family and give each a sign of its own: Silvane's silver-framed mirrors, Opaline's amethyst crystals and split light, Zephyr's wind crescents and feather, Fenna's flowers and vines, Isolde's ice and snowflake, Vesper's blood and gold chalice, Sirix's wasps and honeycomb, Ada's brass gears and cyan-eyed machines.",
+   "Weakest: Silvane's Hand Mirror (Q) is small at 32 px, its bounce line thin. Sirix's Swarm Cloud (E) and Swarm Surge (R) are many small wasps: busy at 32 px, though the ring and the column tell them apart. Redrawn after the last review (2026-11-16): Zephyr's Skyward (W) was a wind arc like his Crosswind (Q); it is now the leap's dashed path and the landing burst. Sirix's Barbed Stinger (Q) read as an ear of wheat; it is now a dark stinger banded in amber with hooked barbs. Vesper's chalice (R) was solid gold; it is now old bone with a gold rim.",
+   "Redrawn after a first look: Isolde's Winter's Shatter (its Chill pips sat in the key letter's corner)."
+  ]
+ },
+ "5": {
+  "date": "2026-11-16",
+  "stems": [
+   "cantor",
+   "marin",
+   "brannoc",
+   "auriel",
+   "vitriol",
+   "shiori"
+  ],
+  "rows": {
+   "cantor": "The art bible's Bard row, parchment as its foil.",
+   "marin": "The art bible's Tide row, foam as its foil, coral as the accent.",
+   "brannoc": "The art bible's Forge row, ash as its foil.",
+   "auriel": "The art bible's Dawn row, ivory as its foil.",
+   "vitriol": "The art bible's Alchemy row, glass as its foil; her three reagents (green toxin, orange fire, violet acid).",
+   "shiori": "The art bible's Ink row, rice paper as its foil, the seal's red as the accent."
+  },
+  "notes": [
+   "The last six, whose icons today were already among the better ones, brought into the family: Cantor's lyre and notes, Marin's sea water, coral and moon, Brannoc's hammer, anvil and Heat, Auriel's sun and dawn shield, Vitriol's flasks of three reagents, Shiori's ink strokes and red seal.",
+   "Shiori's The Last Character is an invented sign (a spiralling stroke, a stroke under it, two dots), not a real character; a first try read as a real one, a second as a prohibition sign.",
+   "A taste call for you, not a fault: Cantor's notes are pink and simple, the nearest of the forty to cartoon; elegant enough at 48 px to my eye, but say if you want them drawn as engraved gold glyphs instead. Weakest: Brannoc's Quench puts ash clouds over a ring of fire, busy at 32 px.",
+   "Redrawn after a first look: Shiori's Flowing Script (an arc like her Ink Lash; now a wave with the brush), The Last Character (twice, see above), Brannoc's Chain Hammer (its chain ran into the key letter's corner)."
+  ]
+ }
+}

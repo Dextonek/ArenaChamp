@@ -15,7 +15,7 @@ Plays clean: cleared, no console error, every spot reachable in both states of t
 
 ## Found
 
-- **list: Meeting yourself as the rival.** The bot played Lyra, and floor 17's rival is Lyra: “Another climber. I am Lyra.” Any hero meets this on the floor whose rival (or gatekeeper) is that same hero. The fight is a mirror duel and works. If it should read better: the rival's line could say so when the hero is the same (people.ts builds the card), or the floor could pick another rival for that hero (a design call).
+- **ok: Meeting yourself as the rival (fixed by the floors 31-50 review).** The bot played Lyra, and floor 17's rival was Lyra: “Another climber. I am Lyra.” The floors 31-50 review has since made a rival who is the player's own hero step aside for the next hero on the roster (merged).
   - ![Lyra meets Lyra](person-rival.jpg) Lyra meets Lyra
 - **ok: The Lantern Root's figure.** The Codex's Lantern Root is a root with an amber lantern; it is drawn with the Antler King's stag-crowned figure (RULER_OF). Listed with the other rulers whose Codex form is not a person (floor 7's item).
 

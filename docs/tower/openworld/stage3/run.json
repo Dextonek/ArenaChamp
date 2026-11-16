@@ -1,0 +1,322 @@
+{
+ "floor": 1,
+ "floor2": 2,
+ "run1_start": {
+  "a": {
+   "shard": "1.1",
+   "you": 1,
+   "won": [],
+   "shards": 0,
+   "lives": 3
+  },
+  "b": {
+   "shard": "1.1",
+   "you": 2,
+   "won": [],
+   "shards": 0,
+   "lives": 3
+  }
+ },
+ "door": {
+  "at": {
+   "x": 0,
+   "z": -105.81
+  },
+  "r": 2.2,
+  "front": {
+   "x": 0,
+   "z": -100.81
+  },
+  "name": "The Drowned Captain\u2019s lair"
+ },
+ "run1_held": true,
+ "run1_started": true,
+ "run1_start_s": 4.13,
+ "run1_fight": {
+  "a": {
+   "zone": false,
+   "piece": "ruler",
+   "you": 1,
+   "shard": "1.1",
+   "others": 0,
+   "asking": null,
+   "invite": null,
+   "boss": true,
+   "live": true,
+   "over": false,
+   "hp": 580,
+   "max": 580,
+   "brain": true,
+   "me": [
+    0,
+    13
+   ],
+   "won": [],
+   "shards": 0,
+   "lives": 3,
+   "log": [
+    "door lair with 1 others at 7s"
+   ],
+   "fightLog": [
+    "15270 door_start side 0 of 2, brain 0, hp 4900"
+   ],
+   "errors": [],
+   "dealt": 0,
+   "finished": false
+  },
+  "b": {
+   "zone": false,
+   "piece": "ruler",
+   "you": 2,
+   "shard": "1.1",
+   "others": 0,
+   "asking": null,
+   "invite": null,
+   "boss": true,
+   "live": true,
+   "over": false,
+   "hp": 520,
+   "max": 520,
+   "brain": false,
+   "me": [
+    0,
+    13
+   ],
+   "won": [],
+   "shards": 0,
+   "lives": 3,
+   "log": [
+    "door lair with 1 others at 4s"
+   ],
+   "fightLog": [
+    "11701 door_start side 1 of 2, brain 0, hp 4900"
+   ],
+   "errors": [],
+   "dealt": 0,
+   "finished": false
+  }
+ },
+ "zone_shot": true,
+ "revive_by": "A's autopilot",
+ "revived": true,
+ "revive_s": 4.3,
+ "quiet": {
+  "b_brain_before": false,
+  "b_took_over": true,
+  "after_ms": 4714,
+  "a_brain_after": false,
+  "b_brain_after": true,
+  "a_log": [
+   "15270 door_start side 0 of 2, brain 0, hp 4900",
+   "38972 brain_moved 1"
+  ],
+  "b_log": [
+   "11701 door_start side 1 of 2, brain 0, hp 4900",
+   "34284 boss_brain 1"
+  ]
+ },
+ "run1_ended": true,
+ "run1_end_s": 8.6,
+ "run1_out": {
+  "back": true,
+  "a": {
+   "zone": true,
+   "piece": null,
+   "you": 1,
+   "shard": "1.1",
+   "others": 1,
+   "asking": null,
+   "invite": null,
+   "boss": true,
+   "live": true,
+   "over": false,
+   "hp": 440,
+   "max": 580,
+   "brain": true,
+   "me": [
+    -0.8,
+    -100.81
+   ],
+   "won": [
+    "ruler"
+   ],
+   "shards": 40,
+   "lives": 3,
+   "log": [
+    "door lair with 1 others at 7s",
+    "piece ruler won hp 0.76 22s (with others)"
+   ],
+   "fightLog": [
+    "15270 door_start side 0 of 2, brain 0, hp 4900",
+    "38972 brain_moved 1",
+    "48133 door_end won hit true"
+   ],
+   "errors": [],
+   "dealt": 604,
+   "finished": false
+  },
+  "b": {
+   "zone": true,
+   "piece": null,
+   "you": 2,
+   "shard": "1.1",
+   "others": 1,
+   "asking": null,
+   "invite": null,
+   "boss": true,
+   "live": true,
+   "over": false,
+   "hp": 233,
+   "max": 520,
+   "brain": true,
+   "me": [
+    0.8,
+    -100.81
+   ],
+   "won": [
+    "ruler"
+   ],
+   "shards": 40,
+   "lives": 3,
+   "log": [
+    "door lair with 1 others at 4s",
+    "piece ruler won hp 0.45 28s (with others)"
+   ],
+   "fightLog": [
+    "11701 door_start side 1 of 2, brain 0, hp 4900",
+    "34284 boss_brain 1",
+    "44554 door_end won hit true"
+   ],
+   "errors": [],
+   "dealt": 762,
+   "finished": false
+  }
+ },
+ "run1_agree": {
+  "pairs": 120,
+  "boss_raw_m": {
+   "n": 120,
+   "median": 0.0,
+   "p95": 0.275,
+   "max": 3.909
+  },
+  "boss_100ms_back_m": {
+   "n": 111,
+   "median": 0.0,
+   "p95": 0.045,
+   "max": 1.253
+  },
+  "hero_raw_m": {
+   "n": 195,
+   "median": 0.0,
+   "p95": 0.611,
+   "max": 1.552
+  },
+  "hero_100ms_back_m": {
+   "n": 177,
+   "median": 0.0,
+   "p95": 0.354,
+   "max": 0.982
+  },
+  "hp_share_apart": {
+   "n": 120,
+   "median": 0.0,
+   "p95": 0.001,
+   "max": 0.013
+  }
+ },
+ "run1_agree_after_quiet": {
+  "pairs": 78,
+  "boss_raw_m": {
+   "n": 78,
+   "median": 0.0,
+   "p95": 0.251,
+   "max": 2.954
+  },
+  "boss_100ms_back_m": {
+   "n": 78,
+   "median": 0.0,
+   "p95": 0.04,
+   "max": 0.791
+  },
+  "hero_raw_m": {
+   "n": 156,
+   "median": 0.181,
+   "p95": 0.43,
+   "max": 0.502
+  },
+  "hero_100ms_back_m": {
+   "n": 154,
+   "median": 0.009,
+   "p95": 0.108,
+   "max": 0.236
+  },
+  "hp_share_apart": {
+   "n": 78,
+   "median": 0.0,
+   "p95": 0.008,
+   "max": 0.016
+  }
+ },
+ "run1_casts": {
+  "a": 10,
+  "b": 10,
+  "both": 9
+ },
+ "run1_dealt": {
+  "a": 604,
+  "b": 762
+ },
+ "run2_started": true,
+ "run2": {
+  "b_brain_before": false,
+  "took_over": true,
+  "after_ms": 369,
+  "largest_step_around_m": 0.272,
+  "largest_step_before_m": 0.241,
+  "ended": true,
+  "back": true,
+  "b": {
+   "zone": true,
+   "piece": null,
+   "you": 4,
+   "shard": "2.1",
+   "others": 0,
+   "asking": null,
+   "invite": null,
+   "boss": true,
+   "live": true,
+   "over": false,
+   "hp": 493,
+   "max": 520,
+   "brain": true,
+   "me": [
+    0.8,
+    -55.43
+   ],
+   "won": [
+    "ruler"
+   ],
+   "shards": 40,
+   "lives": 3,
+   "log": [
+    "door lair with 1 others at 5s",
+    "piece ruler won hp 0.95 20s (with others)"
+   ],
+   "fightLog": [
+    "11701 door_start side 1 of 2, brain 0, hp 4900",
+    "34284 boss_brain 1",
+    "44554 door_end won hit true",
+    "62240 door_start side 1 of 2, brain 0, hp 4988",
+    "74413 boss_brain 1",
+    "86350 door_end won hit true"
+   ],
+   "errors": [],
+   "dealt": 639,
+   "finished": false
+  }
+ },
+ "errors": {
+  "b": []
+ }
+}

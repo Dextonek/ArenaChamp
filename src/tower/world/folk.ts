@@ -81,6 +81,13 @@ const LINES: Record<number, Record<string, string[]>> = {
     mortis: ['I lose things in this wood, and the wood keeps them. Maybe you can bring them back.'],
   },
   21: { pip: ['Another climber. Three wells have gone dry, a caravan is waiting, and the raiders hold the gate in the north. The stars say you will carry what is needed.'] },
+  // Isolde's line ("a cold woman in a cave") from under a crown of lit candles.
+  31: { isolde: ['I lost my lantern, and my satchel with it. My candles light my own face and nothing more. Perhaps you can fetch them.'] },
+  // The Camp-Mother on the generated War floors had the trader's stock line (the Quartermaster's way of speaking); her own, as on 41.
+  43: { trader: ['A cook feeds both armies, and both pay. Shards for what you need.'] },
+  45: { trader: ['A cook feeds both armies, and both pay. Shards for what you need.'] },
+  47: { trader: ['A cook feeds both armies, and both pay. Shards for what you need.'] },
+  49: { trader: ['A cook feeds both armies, and both pay. Shards for what you need.'] },
   41: {
     cantor: ['Hush. Two armies fought here and never stopped, and I speak for both. Take a banner in the camp: its soldiers will march with you. Then take the standards, hold the hill, and break the siege line in the north. The Marshal waits behind it.'],
     whiskers: ['I deserted. Both banners, one after the other, and neither noticed. Do me two small kindnesses and I will call it even.'],

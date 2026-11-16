@@ -1,7 +1,8 @@
 """Ada, the Artificer (ranged, builds turrets): a slim inventor. A copper long coat with brass edges, open over a dark
 vest with steel buttons, its sleeves rolled to the elbow, bare forearms, loose copper-red hair, brass goggles pushed up
 on the forehead, a tool belt, tall leather boots, a brass backpack of meshing brass, copper and steel gears with two
-exhaust pipes, and a spring-loaded brass launcher on the RIGHT wrist with a glowing cyan lens."""
+exhaust pipes, and a spring-loaded brass launcher on the RIGHT wrist with a glowing cyan lens.
+Kilnborn (docs/lore/codex/revamp.md, the touches, 2026-11-16): ash-grey skin, dim ember seams at the knuckles, pale amber eyes."""
 import math
 
 from mathutils import Vector
@@ -9,10 +10,13 @@ from mathutils import Vector
 from realkit import PI, Real
 from real import parts_a as P
 from real.parts_a import V
+from real.parts_d import knuckle_seams
 
 
 def build():
-    R = Real("clockwork", sex="f", height=0.98, width=0.95, skin="#e6c4a2")
+    R = Real("clockwork", sex="f", height=0.98, width=0.95, skin="#8a827c")
+    R.eye_look(color="#ffd08a", emit="#ff9a3a", strength=0.2)
+    knuckle_seams(R)
     z = R.z
     R.mat("coat", "#a85a2a", rough=0.65, double=True)
     R.mat("vest", "#2a1a10", rough=0.6)

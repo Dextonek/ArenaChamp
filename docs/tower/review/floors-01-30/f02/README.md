@@ -15,7 +15,7 @@ Clean: the route bot cleared it with all four stars and no fall, the rival (Hank
 
 ## Found
 
-- **fixed: Names on the M map lay over each other (every floor).** Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door's up, a place's down). Only the map's drawing changed (src/tower/world/map.ts).
+- **fixed: Names on the M map lay over each other (every floor).** Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door's up, a place's down). Only the map's drawing changed (src/tower/world/map.ts). The floors 31-50 review fixed the same thing for all chapters at the same time (its version also keeps a name inside the map's edge); on merging, that version was kept. The pictures are from my version.
   - ![Before](fix-map-before-crop.jpg) Before
   - ![After](fix-map-after-crop.jpg) After
 - **ok: The props the probe flagged.** “Float”: pines on the hills past the edge, boats on the sea, and the slats of a jetty 9 cm over the sand; “gap”: houses on the hillside (they stand on their stone plinths, as set right in the props pass) and pines on the cliff top; one stone 22 cm under the sand. Looked at from low: nothing in the air.

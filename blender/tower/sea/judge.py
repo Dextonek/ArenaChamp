@@ -86,8 +86,8 @@ def build():
     s = P.along(R)
     f, o, d, upv = R.held("r")
     side = upv.cross(d).normalized()
-    f.tube("wood", [o - d * 0.6 * s, o + d * 0.9 * s], 0.024, seg=10)
-    f.ellipsoid("bronze", o - d * 0.61 * s, P.rr(R, 0.03), seg=(10, 8))
+    f.tube("wood", [o - d * 0.3 * s, o + d * 0.9 * s], 0.024, seg=10)
+    f.ellipsoid("bronze", o - d * 0.31 * s, P.rr(R, 0.03), seg=(10, 8))
     sock = o + d * 0.9 * s
     f.tube("bronze", [sock - d * 0.06 * s, sock + d * 0.04 * s], [0.032, 0.026], seg=10)
     PB.blade(f, "bronze", sock + d * 0.03 * s, d, side, 0.42 * s, 0.13, thick=0.022, tip=0.3, waist=(0.35, 1.15), root=0.05)

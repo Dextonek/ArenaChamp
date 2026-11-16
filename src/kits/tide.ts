@@ -126,12 +126,12 @@ export const tideKit: HeroKit = {
     g.strokeStyle = S.foam;
     g.lineWidth = s * 0.016;
     g.stroke();
-    // Head with a swept dark hair line and a coral flower.
-    g.fillStyle = '#e8c9b0';
+    // Head with sea-green hair and a coral flower. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Coast folk: sea-glass worked into her hair.
+    g.fillStyle = '#d4a07e';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.4, s * 0.13, s * 0.16, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.dark;
+    g.fillStyle = '#1f7a6c';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.34, s * 0.15, s * 0.14, 0, Math.PI, Math.PI * 2);
     g.fill();
@@ -140,6 +140,12 @@ export const tideKit: HeroKit = {
     g.quadraticCurveTo(s * 0.3, s * 0.56, s * 0.38, s * 0.7);
     g.quadraticCurveTo(s * 0.4, s * 0.5, s * 0.42, s * 0.34);
     g.fill();
+    g.fillStyle = '#a9e8dc';
+    for (const [x, y] of [[0.4, 0.25], [0.47, 0.215], [0.36, 0.48], [0.355, 0.6]]) {
+      g.beginPath();
+      g.ellipse(s * x, s * y, s * 0.011, s * 0.014, 0.4, 0, Math.PI * 2);
+      g.fill();
+    }
     g.fillStyle = S.body;
     g.fillRect(s * 0.43, s * 0.42, s * 0.04, s * 0.014);
     g.fillRect(s * 0.53, s * 0.42, s * 0.04, s * 0.014);

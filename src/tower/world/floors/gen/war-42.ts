@@ -2973,7 +2973,7 @@ export const WAR_42: GenFloor = {
   "hard": 1.57,
   "ruler": {
    "name": "The Iron Marshal",
-   "title": "Two banners, one sword",
+   "title": "The crimson’s iron hand",
    "stand": "Zephyr",
    "tint": "#8a8a96",
    "scale": 2.47,
@@ -3041,7 +3041,7 @@ export const WAR_42: GenFloor = {
      ]
     },
     {
-     "name": "Under no banner",
+     "name": "The last charge",
      "at": 0.33,
      "moves": [
       "cleave",
@@ -3689,8 +3689,8 @@ export const WAR_42: GenFloor = {
     "name": "Ada",
     "role": "giver",
     "at": {
-     "x": -5.5,
-     "z": 70.9
+     "x": -4.3,
+     "z": 70.94
     },
     "face": 0.5,
     "greet": [

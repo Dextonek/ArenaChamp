@@ -159,8 +159,9 @@ export const skyKit: HeroKit = {
     g.quadraticCurveTo(s * 0.5, s * 0.75, s * 0.36, s * 0.67);
     g.closePath();
     g.fill();
-    // Head with swept white hair and a blossom.
-    g.fillStyle = '#e8c9b0';
+    // Head with swept white hair and a blossom. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Coast folk: sea-tanned, sea-glass in one ear; the
+    // mask of jade-dark cloth over the lower face, as the model has it.
+    g.fillStyle = '#c08a62';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.13, s * 0.16, 0, 0, PI * 2);
     g.fill();
@@ -177,6 +178,17 @@ export const skyKit: HeroKit = {
     g.fillStyle = S.dark;
     g.fillRect(s * 0.43, s * 0.44, s * 0.04, s * 0.014);
     g.fillRect(s * 0.53, s * 0.44, s * 0.04, s * 0.014);
+    g.fillStyle = '#16302c';
+    g.beginPath();
+    g.moveTo(s * 0.375, s * 0.465);
+    g.quadraticCurveTo(s * 0.5, s * 0.49, s * 0.625, s * 0.465);
+    g.quadraticCurveTo(s * 0.62, s * 0.56, s * 0.5, s * 0.585);
+    g.quadraticCurveTo(s * 0.38, s * 0.56, s * 0.375, s * 0.465);
+    g.fill();
+    g.fillStyle = '#86e0c8';
+    g.beginPath();
+    g.ellipse(s * 0.632, s * 0.47, s * 0.01, s * 0.016, 0, 0, PI * 2);
+    g.fill();
     blossom(g, s * 0.37, s * 0.32, s * 0.028);
     leaf(g, s * 0.2, s * 0.2, s * 0.04, 0.6);
     leaf(g, s * 0.84, s * 0.2, s * 0.035, -0.5, S.accent);

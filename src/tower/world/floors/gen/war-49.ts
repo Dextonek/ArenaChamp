@@ -3073,7 +3073,7 @@ export const WAR_49: GenFloor = {
      ]
     },
     {
-     "name": "Alone on a horse of smoke",
+     "name": "Under no banner",
      "at": 0.33,
      "moves": [
       "cleave",
@@ -3758,8 +3758,8 @@ export const WAR_49: GenFloor = {
     "name": "Vesper",
     "role": "giver",
     "at": {
-     "x": 5.5,
-     "z": 76.99
+     "x": 4.3,
+     "z": 77.03
     },
     "face": -0.5,
     "greet": [

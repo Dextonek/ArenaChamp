@@ -537,7 +537,8 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
     if (cave.water(dx, dz) > 0.2 || cave.south(dx, dz) > 0.4) continue;
     const y = cave.height(dx, dz), p = W(dx, dz), s = 0.7 + rnd() * 1.2;
     prism(amethyst, p.x, y - 0.2, p.z, s, 1.6 + rnd() * 2.6, rnd() * 3, (rnd() - 0.5) * 0.6);
-    prism(amethyst, p.x + 0.6, y - 0.2, p.z + 0.4, s * 0.6, 1.2 + rnd() * 1.4, rnd() * 3, (rnd() - 0.5) * 0.8);
+    // the small one beside it on its own ground (at the big one's height it hung off a steep wall, up to 2 m)
+    prism(amethyst, p.x + 0.6, Math.min(y, cave.height(dx + 0.6, dz + 0.4)) - 0.2, p.z + 0.4, s * 0.6, 1.2 + rnd() * 1.4, rnd() * 3, (rnd() - 0.5) * 0.8);
     if (k % 2 === 0) cool.push({ x: p.x, y: y + 1.6, z: p.z, size: 2.6 + s });
   }
   // Tunnel mouths: a timber frame against the wall, black behind it, a track running in.

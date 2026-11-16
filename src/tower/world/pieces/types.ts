@@ -1,5 +1,7 @@
 import type { FloorKind } from '../../week';
 import type { TowerBoons } from '../../boons';
+import type { HeroKit } from '../../../heroes';
+import type { BossDef, RaidLink } from '../../../raid/types';
 
 /**
  * The set pieces behind a floor's doors (pipeline/designs/tower-worlds-pieces.md). The zone enters one through a door and gets
@@ -17,6 +19,25 @@ export interface PieceIn {
   ally?: string;
   /** 'run' is the autopilot's: no fades, no waits, nothing on the page. */
   mode: 'play' | 'run';
+  /** A ruler fought by a party of the floor's shard (the open world's stage 3): how this screen takes part. Alone: none. */
+  shared?: SharedPiece;
+}
+
+/**
+ * This screen's part in a ruler's fight with others (src/tower/world/together.ts makes it from the hub's `door_start`): the link to the
+ * hub for the ruler's def (a Raid `NetLink`), the other heroes by seat, this player's name, how many the ruler is set for and its blows'
+ * factor. `loaded` says the fight is drawn (the hub's countdown follows); `result` is how it ended for this player, once it has.
+ */
+export interface SharedPiece {
+  link(def: BossDef): RaidLink;
+  party: { side: number; kit: HeroKit; name: string }[];
+  name: string;
+  n: number;
+  dmg: number;
+  loaded(maxHp: number): void;
+  result(): { won: boolean; hit: boolean } | null;
+  /** The piece is over on this screen (ended, or the climb left it). */
+  stop(): void;
 }
 
 export interface PieceOut {
@@ -24,6 +45,13 @@ export interface PieceOut {
   /** Health left as a share 0..1. */
   hp: number;
   seconds: number;
+  /**
+   * Nothing counts either way (a party's ruler fell but this screen's hero never hit it; the connection went mid-fight): no win, no life
+   * lost, the door as it was.
+   */
+  none?: boolean;
+  /** It was a party's fight: everyone in it comes out in front of the door. */
+  shared?: boolean;
 }
 
 /** What `startPiece` hands back. The contract says `void`; a caller may ignore this. */

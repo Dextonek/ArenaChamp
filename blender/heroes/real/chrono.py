@@ -1,17 +1,21 @@
 """Tempo, the Unwound Hour (mage): a slim man in a long green-black coat edged in chartreuse over an ivory waistcoat with
 gold buttons and a watch chain, loose white hair, a gold monocle on a chain, an ivory dial plate on the left shoulder,
 a clock-dial halo behind his head whose ticks and hands glow, and a staff shaped like a giant minute hand in the left
-hand, a red second hand at its pivot."""
+hand, a red second hand at its pivot.
+A Northerner (docs/lore/codex/revamp.md, the touches, 2026-11-16): umber skin, his white hair kept, star lines along the jaw drawn as a
+clock's ticks."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real.parts_b import blade, disc, edge_line, flats, lapels, legs_under, on_front, open_front, plate, skirt_rings, staff_back
+from real.parts_d import star_lines
 
 
 def build():
-    R = Real("chrono", sex="m", height=1.02, width=0.88, depth=0.86, skin="#ead2c0")
+    R = Real("chrono", sex="m", height=1.02, width=0.88, depth=0.86, skin="#7a5038")
+    star_lines(R, color="#2c4590", width=0.0032, dots=0.0, ticks=True, seed=5)
     z = R.z
     R.mat("coat", "#1b2416", rough=0.6, double=True)
     R.mat("ivory", "#f4ecd8", rough=0.7, double=True)

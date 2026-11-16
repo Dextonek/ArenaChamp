@@ -1,0 +1,44 @@
+{"open": "baked.tcraft", "steps": [
+ {"id": "textureSet.select", "params": {"ts": 2}},
+
+ {"id": "layer.add.fill", "params": {"name": "crimson", "color": "#8a1f1f", "roughness": 0.55, "metallic": 0.0}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_crimson", "sumo_crimson_plates"]}},
+ {"id": "layer.add.fill", "params": {"name": "rope", "color": "#d2b46a", "roughness": 0.9, "metallic": 0.0}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_rope"]}},
+ {"id": "layer.add.fill", "params": {"name": "twist", "color": "#8a6a2c", "roughness": 0.9, "metallic": 0.0}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_twist"]}},
+ {"id": "layer.add.fill", "params": {"name": "lacquer", "color": "#1e1412", "roughness": 0.35, "metallic": 0.3}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_lacquer"]}},
+ {"id": "layer.add.fill", "params": {"name": "gold", "color": "#d2ac5a", "roughness": 0.32, "metallic": 0.85}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_gold"]}},
+ {"id": "layer.add.fill", "params": {"name": "paper", "color": "#fff8ea", "roughness": 0.8, "metallic": 0.0}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_paper"]}},
+ {"id": "layer.add.fill", "params": {"name": "crest", "color": "#ff5a4a", "roughness": 0.35, "metallic": 0.0}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_crest"]}},
+
+ {"id": "layer.add.fill", "params": {"name": "contact shadow", "color": "#1a0c08"}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_crimson", "sumo_rope"]}},
+ {"id": "layer.blend", "params": {"channel": "baseColor", "opacity": 0.55}},
+ {"id": "mask.add.black", "params": {}},
+ {"id": "effect.add.generator", "params": {"generator": "ambientOcclusion", "invert": true, "level": 0.5, "softness": 1.0, "noise": 0.0}},
+ {"id": "effect.add.filter", "params": {"target": "mask", "filter": "blur", "radius": 2}},
+
+ {"id": "layer.add.fill", "params": {"name": "gold edges", "color": "#d2ac5a", "roughness": 0.32, "metallic": 0.85}},
+ {"id": "layer.set", "params": {"geometryMask": ["sumo_crimson_plates"]}},
+ {"id": "mask.add.black", "params": {}},
+ {"id": "effect.add.generator", "params": {"generator": "curvature", "mode": "edges", "level": 0.9, "softness": 0.05, "noise": 0.0, "sizes": [1, 0, 0, 0, 0, 0, 0]}},
+ {"id": "layer.visible", "params": {"visible": false}},
+
+ {"id": "textureSet.select", "params": {"ts": 1}},
+ {"id": "layer.add.image", "params": {"name": "skin_base.png", "channel": "baseColor", "projection": "uv"}},
+ {"id": "layer.add.fill", "params": {"name": "cover the painted underwear", "color": "#eca87e"}},
+ {"id": "mask.add.colorSelection", "params": {"color": [1, 0, 0], "tolerance": 0.3}},
+ {"id": "effect.add.filter", "params": {"target": "mask", "filter": "blur", "radius": 3}},
+
+ {"id": "file.exportTextures", "params": {"dir": "tex", "ts": 2, "format": "png", "size": 1024, "padding": "dilation", "dilation": 6,
+   "preset": {"name": "AoK costume", "maps": [
+     {"file": "costume_color", "format": "Png", "bit_depth": 8, "channels": [["R", {"Channel": {"channel": "BaseColor", "component": 0}}], ["G", {"Channel": {"channel": "BaseColor", "component": 1}}], ["B", {"Channel": {"channel": "BaseColor", "component": 2}}]]}]}}},
+ {"id": "file.exportTextures", "params": {"dir": "tex", "ts": 1, "format": "png", "size": 1024, "padding": "infinite",
+   "preset": {"name": "AoK skin", "maps": [
+     {"file": "skin_color", "format": "Png", "bit_depth": 8, "channels": [["R", {"Channel": {"channel": "BaseColor", "component": 0}}], ["G", {"Channel": {"channel": "BaseColor", "component": 1}}], ["B", {"Channel": {"channel": "BaseColor", "component": 2}}]]}]}}}
+], "save": "yoko.tcraft"}

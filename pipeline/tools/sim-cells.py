@@ -20,9 +20,10 @@ BENCH = ["Brannoc", "Kaia", "Isolde", "Sirix", "Cantor", "Oblivion"]
 def max_hp():
     """Every hero's max HP, read from the kits (a fight's record keeps the HP left, not the max)."""
     out = {}
-    for f in (ROOT / "src" / "kits").glob("*.ts"):
+    # the listed kits, and the cards of the heroes in folders of their own (src/heroes/<theme>/hero.ts)
+    for f in [*(ROOT / "src" / "kits").glob("*.ts"), *(ROOT / "src" / "heroes").glob("*/hero.ts")]:
         text = f.read_text(encoding="utf-8")
-        for m in re.finditer(r"HeroKit = \{\s*name: '([^']+)'", text):
+        for m in re.finditer(r"(?:HeroKit = \{|kit: \{)\s*name: '([^']+)'", text):
             hp = re.search(r"maxHp: (\d+)", text[m.end():m.end() + 400])
             if hp:
                 out[m.group(1)] = int(hp.group(1))
