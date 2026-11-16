@@ -64,12 +64,16 @@ def acorn_helm(ic, c, s=1.0):
 
 
 def pim_w(ic):
-    """Charge: head down, he runs at the lane."""
+    """Charge: head down, he runs down the lane and bowls over whoever is in it."""
     p = ic.p
     streaks(ic, [(5, 22, 15, 22), (4, 31, 13, 31), (7, 40, 15, 40)], color=p["hot"], weight=2.2)
-    acorn_helm(ic, (33, 30), 1.25)
-    for k, x in enumerate((50, 56)):
-        chevron(ic, (x, 32), 0, 4.2, p["hot"] if k else p["core"], 2.6)
+    lane = ic.add("path.create", d=poly([(14, 25), (44, 25), (44, 37), (14, 37)]))
+    ic.paint(ic.id(lane), fill=ic.grad((0, p["body"], 0), (1, p["body"], 0.35), start=[14, 31], end=[44, 31]), stroke="none")
+    # The charge: a wedge of bark pointed down the lane, its edge in amber, a leaf crest on top.
+    ic.shape(poly([(18, 16), (34, 16), (48, 31), (34, 46), (18, 46), (30, 31)]), bark(ic))
+    ic.line(poly([(34, 16.6), (47.2, 31), (34, 45.4)], closed=False), ic.grad(p["hot"], (1, p["body"])), 2.0, ink=False)
+    leaf(ic, (26, 16), -40, 9, fill=ic.grad("#c8f08a", (1, p["leaf"])))
+    star(ic, 53, 31, 9, 2.4, ic.grad(p["core"], (0.5, p["hot"]), (1, p["body"])), points=4, ink_w=2.6)
 
 
 def pim_e(ic):

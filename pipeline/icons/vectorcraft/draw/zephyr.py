@@ -37,13 +37,15 @@ def feather(ic, back, tip, w):
 def zep_w(ic):
     """Skyward: he leaps into the air, untouchable, and comes down on the spot."""
     p = ic.p
-    ring(ic, 44, 50, 11, 3.2, p["accent"], w=2.0)
-    swoosh(ic, (30, 50), 15, 180, 330, 4.6, wind(ic), ry=36, head=0.8)
-    chevron(ic, (43, 46), 100, 3.6, p["core"], 2.6)
-    feather(ic, (12, 24), (26, 8), 3.6)
-    for x, ang, h in ((37, -130, 7), (51, -50, 7)):
-        ic.shape(curve(place(tongue_pts(h, 3.6, lean=0.1), ang, (x, 50))), ic.grad(p["core"], (1, p["body"])), shadow=False,
+    ring(ic, 42, 48, 13, 3.8, p["accent"], w=2.2)
+    ic.line(curve([(14, 50), (18, 18), (32, 8), (40, 26), (42, 42)], closed=False), p["hot"], 1.8, ink=False, dash=[2.6, 2.2])
+    chevron(ic, (42, 41), 90, 3.6, p["core"], 2.6)
+    star(ic, 42, 47, 11, 2.6, ic.grad(p["core"], (0.5, p["hot"]), (1, p["body"])), points=4, ink_w=2.8)
+    star(ic, 42, 47, 5.5, 1.6, p["core"], points=4, rotation=45, ink_w=0)
+    for x, ang, h in ((30, -150, 8), (54, -30, 8)):
+        ic.shape(curve(place(tongue_pts(h, 3.6, lean=0.1), ang, (x, 47))), ic.grad(p["core"], (1, p["body"])), shadow=False,
                  ink_w=2.2)
+    spark(ic, 32, 8, 3.2, p["core"])
 
 
 def zep_e(ic):

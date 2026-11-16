@@ -38,14 +38,24 @@ def hexagon(ic, c, r, fill, ink_w=2.6):
 def sir_q(ic):
     """Barbed Stinger: a stinger flies; its barb stays in you, and he can leap to it."""
     p = ic.p
-    streaks(ic, [(6, 22, 14, 24), (5, 31, 12, 32)], color=p["hot"], weight=1.8)
-    shard(ic, (12, 30), -14, 40, 3.6, ic.grad("#fff0c0", (0.5, "#c89a40"), (1, "#3a2a10")), back=0.2)
-    for u in (16, 22, 28):
-        for side in (-1, 1):
-            a, b = place([(u, side * 2.4), (u - 4, side * 5.2)], -14, (12, 30))
-            ic.line(poly([a, b], closed=False), "#c89a40", 1.4, ink=True, ink_w=3)
-    ic.line(curve([(46, 22), (52, 30), (48, 40)], closed=False), p["accent"], 1.4, ink=False, dash=[2, 2])
-    chevron(ic, (48, 41), 110, 2.6, p["accent"], 1.8)
+    streaks(ic, [(6, 24, 14, 26), (5, 33, 12, 34)], color=p["hot"], weight=1.8)
+    ang, o, L = -14, (12, 32), 40
+    body = [(0, -4.2), (0.5 * L, -3.4), (L, 0), (0.5 * L, 3.4), (0, 4.2), (-2, 0)]
+    ic.shape(curve(place(body, ang, o), sharp=(2,), k=0.5), ic.grad("#7a6040", (0.5, p["chitin"]), (1, "#0a0602")))
+    for u in (0.12, 0.3):
+        a, b = place([(u * L, -3.9), (u * L, 3.9)], ang, o)
+        ic.line(poly([a, b], closed=False), amber(ic), 2.2, ink=False)
+    # The barbs: hooks along its edge, pointing back.
+    for u in (0.55, 0.68, 0.81):
+        w = 3.4 * (1 - u) / 0.5 + 0.4
+        ic.shape(poly(place([(u * L, -w), (u * L - 5, -w - 3.4), (u * L - 2.6, -w + 0.2)], ang, o)), amber(ic), shadow=False,
+                 ink_w=2)
+        ic.shape(poly(place([(u * L, w), (u * L - 5, w + 3.4), (u * L - 2.6, w - 0.2)], ang, o)), amber(ic), shadow=False,
+                 ink_w=2)
+    tip = place([(L, 0)], ang, o)[0]
+    dot(ic, tip[0] + 2.6, tip[1] + 3.2, 1.6, p["accent"])
+    ic.line(curve([(46, 20), (53, 28), (49, 40)], closed=False), p["accent"], 1.4, ink=False, dash=[2, 2])
+    chevron(ic, (49, 41), 110, 2.6, p["accent"], 1.8)
 
 
 def sir_w(ic):

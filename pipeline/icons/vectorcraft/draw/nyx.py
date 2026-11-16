@@ -45,9 +45,10 @@ def nyx_w(ic):
 
 
 def hooded(ic, c, s, fill, ink=True):
-    """A cloaked figure seen from behind: a pointed hood, a cloak to the floor."""
-    pts = [(0.8, -15), (4, -10.5), (4.2, -6), (7.5, -3.5), (9, 13), (-9, 13), (-7.5, -3.5), (-4.2, -6), (-4, -10.5)]
-    d = curve([(c[0] + x * s, c[1] + y * s) for x, y in pts], sharp=(0, 4, 5), k=0.55)
+    """A cloaked figure: a pointed hood over the head, shoulders, a cloak flaring to a ragged hem."""
+    pts = [(0.5, -16), (4.6, -11), (4.6, -7), (8.5, -4.5), (10, 5), (12.5, 13), (5, 11), (0, 13.5), (-5, 11), (-12.5, 13),
+           (-10, 5), (-8.5, -4.5), (-4.6, -7), (-4.6, -11)]
+    d = curve([(c[0] + x * s, c[1] + y * s) for x, y in pts], sharp=(0, 5, 6, 7, 8, 9), k=0.5)
     if ink:
         return ic.shape(d, fill)
     s2 = ic.add("path.create", d=d)
@@ -58,14 +59,16 @@ def hooded(ic, c, s, fill, ink=True):
 def nyx_e(ic):
     """Shadow Double: she darts away, through cover; a shadow of her stays and walks at you."""
     p = ic.p
-    hooded(ic, (20, 33), 1.15, ic.grad("#3a2458", (1, "#0a0614")))
-    e = ic.add("shape.ellipse", x=13, y=46, width=14, height=3.6)
-    ic.paint(ic.id(e), fill=p["body"], stroke="none")
-    ic.add("object.setProps", ids=[ic.id(e)], opacity=60)
-    for x, y in ((18, 23.5), (22, 23.5)):
+    m = ic.mark()
+    hooded(ic, (18, 32), 1.1, ic.grad("#3a2458", (1, "#0a0614")))
+    ic.add("object.setProps", ids=[ic.group(m)], opacity=85)
+    for x, y in ((16.8, 21.5), (20, 21.5)):
         dot(ic, x, y, 0.9, p["accent"])
-    streaks(ic, [(27, 26, 36, 26), (28, 34, 37, 34), (29, 42, 38, 42)], color=p["hot"], weight=2.0)
-    hooded(ic, (46, 31), 1.25, ic.grad(p["core"], (0.4, p["hot"]), (1, p["body"])))
+    streaks(ic, [(28, 24, 37, 24), (29, 32, 38, 32), (30, 40, 38, 40)], color=p["hot"], weight=2.0)
+    hooded(ic, (47, 31), 1.2, ic.grad(p["core"], (0.4, p["hot"]), (1, p["body"])))
+    face = ic.add("shape.ellipse", x=44.6, y=15.5, width=5, height=5.4)
+    ic.paint(ic.id(face), fill=p["deep"], stroke="none")
+    dagger(ic, (55, 36), -60, 12)
 
 
 def nyx_r(ic):

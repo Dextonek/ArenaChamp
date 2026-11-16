@@ -80,22 +80,21 @@ def mab_e(ic):
 def mab_r(ic):
     """Sinkhole: the ground falls away under you, a pit four metres wide."""
     p = ic.p
-    ring(ic, 32, 37, 27, 13, ic.grad(p["hot"], (1, p["body"])), w=2.2, dash=[3.4, 2.6])
-    pit = [(8, 36), (14, 29), (22, 26.5), (31, 24), (41, 25.5), (50, 28), (56, 34), (53, 41), (45, 46), (33, 48.5),
-           (21, 47), (11, 42)]
-    ic.shape(poly(pit), ic.grad(p["soil"], (1, p["dirt"])), ink_w=4.4)
-    inner = [(13, 36), (19, 31), (30, 28.5), (42, 29.5), (50.5, 34), (48, 40), (40, 43.5), (28, 44.5), (17, 41.5)]
-    ic.path(curve(inner, k=0.6), fill=ic.grad("#000000", (0.6, p["earth"]), (1, p["dirt"]), angle=90), stroke="none")
-    glow(ic, 32, 40, 8, p["accent"], opacity=60, ry=3)
-    for x, y, a in ((24, 34, 20), (39, 36, -15)):
-        ic.shape(poly(place([(-2.6, -1.6), (1, -2.4), (2.8, 0.4), (0, 2.4), (-2.4, 1.4)], a, (x, y))), soil(ic),
+    # Seen from the side: the floor breaks in the middle and drops into the dark.
+    pit = poly([(20, 27), (44, 27), (38, 50), (26, 50)])
+    ic.path(pit, fill=ic.grad(p["dirt"], (0.5, p["earth"]), (1, "#000000"), angle=-90), stroke="none")
+    for side in (-1, 1):
+        x0 = 32 + side * 26
+        slab = [(x0, 27), (32 + side * 12, 27), (32 + side * 9, 33), (32 + side * 7, 46), (x0, 40)]
+        ic.shape(poly(slab), soil(ic))
+        ic.line(poly([(x0, 27.4), (32 + side * 12, 27.4)], closed=False), "#e8d0a8", 1.2, ink=False)
+    for x, y, a, r in ((30, 34, 20, 2.8), (35, 40, -25, 2.4), (31, 45, 40, 2.0)):
+        ic.shape(poly(place([(-r, -r * 0.6), (r * 0.4, -r), (r, 0.2), (0, r), (-r * 0.9, r * 0.5)], a, (x, y))), soil(ic),
                  shadow=False, ink_w=2.2)
-    for a, b in (((56, 34), (61, 31)), ((8, 36), (4.5, 33)), ((45, 46), (49, 52)), ((22, 26.5), (19, 20.5))):
-        ic.line(poly([a, b], closed=False), p["hot"], 1.4, ink=True, ink_w=3)
-    for x, y in ((31, 18), (40, 14)):
-        ic.shape(poly(place([(-2.2, -1.4), (1, -2.2), (2.4, 0.4), (0, 2.2), (-2, 1.2)], x * 3, (x, y))), soil(ic),
-                 shadow=False, ink_w=2.2)
-        ic.line(poly([(x, y - 3.5), (x, y - 7)], closed=False), p["core"], 1.2, ink=False, opacity=70)
+    glow(ic, 32, 49, 6, p["accent"], opacity=55, ry=2.4)
+    ring(ic, 32, 27, 14, 3.4, ic.grad(p["hot"], (1, p["body"])), w=2.0, dash=[3, 2.4])
+    for y in (10, 17):
+        chevron(ic, (32, y + 3.5), 90, 4.2, p["hot"] if y == 17 else p["core"], 2.6)
 
 
 ICONS = {"q": mab_q, "w": mab_w, "e": mab_e, "r": mab_r}

@@ -59,14 +59,17 @@ def ves_r(ic):
     p = ic.p
     for y0, y1 in ((14, 22), (24, 27), (34, 30)):
         ic.line(curve([(58, y0), (48, (y0 + y1) / 2 - 2), (38, y1)], closed=False), blood(ic), 2.4, ink_w=4.6)
+    # A chalice of old bone, a gold rim, a dark stem.
     cup = curve([(16, 18), (40, 18), (37, 30), (28, 35), (19, 30)], sharp=(0, 1), k=0.7)
-    ic.shape(cup, ic.grad(GOLD[0], (0.45, GOLD[1]), (1, GOLD[2])))
+    ic.shape(cup, ic.grad("#fff8ee", (0.45, p["bone"]), (1, p["bone_lo"])))
     wine = ic.add("shape.ellipse", x=17.5, y=16, width=21, height=5)
     ic.paint(ic.id(wine), fill=blood(ic), stroke="none")
-    ic.shape(poly([(26.5, 35), (29.5, 35), (30, 46), (26, 46)]), ic.grad(GOLD[0], (1, GOLD[2])), shadow=False, ink_w=2.6)
+    ic.line(poly([(16.4, 18.4), (39.6, 18.4)], closed=False), ic.grad(GOLD[0], (1, GOLD[1])), 1.2, ink=False)
+    ic.shape(poly([(26.5, 35), (29.5, 35), (30, 46), (26, 46)]), ic.grad("#5a2a30", (1, "#1a0608")), shadow=False, ink_w=2.6)
     base = ic.add("shape.ellipse", x=20, y=44.5, width=16, height=5)
-    ic.solid(ic.id(base), ic.grad(GOLD[0], (1, GOLD[2])), shadow=False, ink_w=2.6)
-    disc(ic, 28, 26, 2.2, ic.grad("#ffffff", (1, p["accent"])), shadow=False, ink_w=1.6)
+    ic.solid(ic.id(base), ic.grad("#5a2a30", (1, "#1a0608")), shadow=False, ink_w=2.6)
+    ic.line(poly([(26.2, 40), (29.8, 40)], closed=False), GOLD[1], 1.2, ink=False)
+    ic.line(poly(arc_pts((28, 22), 8, 120, 160, 4), closed=False), "#ffffff", 1.2, ink=False)
     ring(ic, 46, 52, 9, 2.6, p["hot"], w=1.6, dash=[2, 2])
 
 

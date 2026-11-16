@@ -16,23 +16,28 @@ def gold(ic):
 def sef_q(ic):
     """Cobra Spit: a cobra rears and spits venom down the line: it hurts and blinds."""
     p = ic.p
-    # The cobra, seen from the side: a coil on the sand, the neck rising in an S, the hood spread behind the head.
+    sand = ic.grad(p["stone"], (0.45, p["body"]), (1, "#5a3a14"))
+    # The cobra, seen from the side, in the desert's colour: a coil, the neck rising in an S, the hood spread behind the
+    # head; gold only on the hood's edge.
     coil = ic.add("shape.ellipse", x=22, y=43, width=24, height=9)
-    ic.solid(ic.id(coil), gold(ic), ink_w=4)
+    ic.solid(ic.id(coil), sand, ink_w=4)
     hood = ic.add("shape.ellipse", x=19, y=13, width=12, height=20, rotation=-18)
-    ic.solid(ic.id(hood), ic.grad("#fff0b0", (0.45, "#e8b84a"), (1, "#8a5a18")), ink_w=4)
+    ic.solid(ic.id(hood), ic.grad(p["stone"], (0.5, p["body"]), (1, "#5a3a14")), ink_w=4)
+    ic.line(poly(arc_pts((25, 23), 6.6, 200, 330, 8, ry=10.4), closed=False), ic.grad(GOLD[0], (1, GOLD[1])), 1.2,
+            ink=False)
     for k in range(3):
         ic.line(curve([(21.5 + k * 1.2, 17 + k * 4.5), (25 + k * 1.2, 16 + k * 4.5), (28.5 + k * 1.2, 17.5 + k * 4.5)],
                       closed=False), p["lapis"], 1.4, ink=False)
     neck = curve([(38, 46), (28, 40), (25, 31), (28, 22), (34, 18)], closed=False)
-    ic.line(neck, gold(ic), 5.2, ink_w=8.4)
-    ic.line(neck, p["lapis"], 5.2, ink=False, dash=[1.4, 3.2], cap="butt")
+    ic.line(neck, sand, 5.2, ink_w=8.4)
+    ic.line(neck, "#5a3a14", 5.2, ink=False, dash=[1.2, 3.4], cap="butt")
     head = curve([(32, 15), (38, 14.5), (43, 17), (38, 20.5), (32, 21)], sharp=(2,), k=0.6)
-    ic.shape(head, gold(ic), shadow=False, ink_w=3)
+    ic.shape(head, sand, shadow=False, ink_w=3)
     dot(ic, 37, 16.6, 0.9, p["dark"])
     swoosh(ic, (40, 46), 30, -86, -38, 4.4, (p["core"], (0.4, p["venom"]), (1, p["accent"])), head=0.85, ink_w=2.4)
     for x, y in ((57, 26), (59, 33), (55, 34)):
         dot(ic, x, y, 1.4, p["venom"])
+
 
 def crook(ic, foot, top, r=6):
     """The heqa crook: gold and lapis bands, the hook at the top."""
