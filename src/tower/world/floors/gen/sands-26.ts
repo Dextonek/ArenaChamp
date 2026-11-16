@@ -3434,7 +3434,7 @@ export const SANDS_26: GenFloor = {
     "name": "The Hollow Rider",
     "giver": "keeper",
     "intro": [
-     "The Hollow Rider walks the middle of the wadi. Nobody crosses it twice. Fell it and the road is quieter."
+     "The Hollow Rider walks the middle of the wadi. Nobody crosses it twice. Fell him and the road is quieter."
     ],
     "steps": [
      {

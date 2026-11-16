@@ -3644,7 +3644,7 @@ export const DEEP_35: GenFloor = {
     "name": "Cinder Jack",
     "giver": "keeper",
     "intro": [
-     "Cinder Jack walks the west of the Deep. Nobody goes to the lamp huts while it does."
+     "Cinder Jack walks the west of the Deep. Nobody goes to the lamp huts while he does."
     ],
     "steps": [
      {

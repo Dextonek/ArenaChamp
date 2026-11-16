@@ -121,6 +121,8 @@ generated floors have theirs; the tenth floor of each chapter is a crown, a piec
   a hundred years.
 - **The Crow King (46).** A Gloaming lord who rode to the crimson banner with his house guard and his crows, for a share of the sun.
 - **The Black Herald (47).** The crimson's herald, who carried King Orlan's last orders and has been carrying them since.
-- **The War Drummer (48).** A drummer boy of the azure whose drum still beats the advance, and the dead get up when they hear it.
+- **The War Drummer (48).** The azure's drummer, a boy of thirteen when the Tower took him, whom it keeps in the shape of the war
+  that took him: a horned giant in the siege line's black iron, beating the advance on his drum, and the dead get up when they
+  hear it. Under the horned helm he is a boy still.
 - **The Grey Captain (49).** An azure captain who deserted on the night before the Ninth Field and has regretted it on every floor.
 - **Ash and Ember (50, the crown).** The fallen sun's two last embers again, at the top of the Climb, under the Noon Seat.

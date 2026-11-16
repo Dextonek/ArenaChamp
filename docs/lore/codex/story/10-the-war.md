@@ -51,8 +51,8 @@ armies from one fire, and come down without a word. She had never told anyone wh
 drummer.
 
 On the first night of the Winter of Mud she had caught a starving azure boy stealing from her pot, and fed him. He was the drummer of the
-azure, and on the last night of the war the Tower had taken him with the rest, and he was here, on the forty-eighth floor, a boy still, beating
-the advance on his drum; and when he beat it the ashen dead got up and marched. Climbers called him the **War Drummer** and fought their way past
+azure, and on the last night of the war the Tower had taken him with the rest, and he was here, on the forty-eighth floor, a boy still inside the shape the Tower had given him, a horned giant in the siege
+line's iron, beating the advance on his drum; and when he beat it the ashen dead got up and marched. Climbers called him the **War Drummer** and fought their way past
 him. Cleaver had never been able to climb that far.
 
 This time she came up with her cauldron on her back, with the company, and she did not turn back at the forty-first. She found the Camp-Mother
@@ -103,8 +103,9 @@ only one who had walked away.
 
 And on the forty-eighth floor Cleaver found the drummer.
 
-He was a boy of thirteen, thin, beating the advance, with the dead getting up round him as he beat it. She walked up through them with a bowl in her
-hand, and he stopped drumming, because he knew her. She had caught him by the ear once. She sat him down on his drum and gave him the bowl, and he ate,
+He stood a head over the dead, horned and black with iron, beating the advance, with the dead getting up round him as he beat it. She walked up
+through them with a bowl in her hand, and he stopped drumming, because he knew her, and took off the horned helm, and under it was a boy of
+thirteen, thin. She had caught him by the ear once. She sat him down on his drum and gave him the bowl, and he ate,
 and the dead lay down.
 
 ## The first hour let go

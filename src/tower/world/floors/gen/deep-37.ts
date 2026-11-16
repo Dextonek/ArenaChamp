@@ -3697,7 +3697,7 @@ export const DEEP_37: GenFloor = {
     "name": "Brother Flint",
     "giver": "keeper",
     "intro": [
-     "Brother Flint walks the west of the Deep. Nobody goes to the lamp huts while it does."
+     "Brother Flint walks the west of the Deep. Nobody goes to the lamp huts while he does."
     ],
     "steps": [
      {

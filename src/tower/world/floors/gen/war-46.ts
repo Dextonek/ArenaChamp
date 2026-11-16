@@ -3834,7 +3834,7 @@ export const WAR_46: GenFloor = {
     "name": "Sir Ashes",
     "giver": "keeper",
     "intro": [
-     "Sir Ashes walks the middle of the field, under no banner. Fell it, and let the song close."
+     "Sir Ashes walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {
@@ -3856,7 +3856,7 @@ export const WAR_46: GenFloor = {
     "name": "The Grey Rider",
     "giver": "keeper",
     "intro": [
-     "The Grey Rider walks the west of the field, by the surgeons’ tents. The wounded will not be carried in while it does."
+     "The Grey Rider walks the west of the field, by the surgeons’ tents. The wounded will not be carried in while he does."
     ],
     "steps": [
      {

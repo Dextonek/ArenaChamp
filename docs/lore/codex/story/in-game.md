@@ -123,7 +123,7 @@ Shown on a ruler's first fall, under its name. Floors 10, 20, 30, 40 and 50 are 
 | 45 | The Banner Knight | He swore the banner would never touch the ground. |
 | 46 | The Crow King | A lord of Gloaming who rode to the crimson for a share of the sun. |
 | 47 | The Black Herald | He carries King Orlan's last orders. Nobody has let him deliver them. |
-| 48 | The War Drummer | A boy of the azure whose drum still beats the advance. A cook once fed him. |
+| 48 | The War Drummer | A boy of the azure, kept in a horned giant's iron. His drum still beats the advance. A cook once fed him. |
 | 49 | The Grey Captain | He deserted on the night before the Ninth Field, and has regretted it on every floor. |
 
 ## The Climb's people

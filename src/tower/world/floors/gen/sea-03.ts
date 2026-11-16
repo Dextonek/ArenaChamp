@@ -3601,7 +3601,7 @@ export const SEA_03: GenFloor = {
     "name": "Captain Gull",
     "giver": "keeper",
     "intro": [
-     "Captain Gull walks the land side. Nobody goes to the fishers’ row while it does."
+     "Captain Gull walks the land side. Nobody goes to the fishers’ row while he does."
     ],
     "steps": [
      {

@@ -3780,7 +3780,7 @@ export const WAR_45: GenFloor = {
     "name": "The Last Sergeant",
     "giver": "keeper",
     "intro": [
-     "The Last Sergeant walks the middle of the field, under no banner. Fell it, and let the song close."
+     "The Last Sergeant walks the middle of the field, under no banner. Fell him, and let the song close."
     ],
     "steps": [
      {

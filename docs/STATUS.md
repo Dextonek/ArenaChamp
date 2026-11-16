@@ -98,9 +98,12 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
   changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1, 21 and all 26 generated floors whose words changed (no errors, no stuck step);
   the handmade floors' bakes (11, 21, 31, 41, the harbour) and a bake after merging the small fixes show no content change; the door rule in five cases; tsc, build; server tests: three of five runs 364 of 364; two failed on timing (one
-  "shop: timeout waiting for raid_gate", one not captured); the server imports none of this batch's files. Left for the user:
-  the War Drummer is "a boy" drawn as the Siege Lord's horned giant; the named men stay "it" (Sir Rust, Captain Candle...); floor
-  11's "cut the roots that feed it" stays (the Elder Root is still the oak).
+  "shop: timeout waiting for raid_gate", one not captured); the server imports none of this batch's files. Then (the parent's
+  decisions): the War Drummer is the drawn horned giant in the lore, still the azure's drummer boy under the helm (Cleaver's story
+  kept); the named men are "he" (gen/core.ts `MEN`, 25 lines on 20 floors; beasts, things and names that do not say stay "it");
+  floor 11's "cut the roots that feed it" stays (the Elder Root is still the oak). Checked: re-bake only those lines, lore scripts
+  only the drummer's lines, the route bot clears the 20 floors (3, 6, 9, 24-26, 28, 32, 35, 37, 40, 42-50; floor 6 cleared with
+  7 falls, 49 with 5: the bot's fights, the words change nothing there), tsc, build, `SMOKE_SLOW=2` server tests 364 of 364.
 - Open world stage 3: done and merged (the entry below).
 - **Done, on branch `t3/b9981adf` (not merged, not live) (2026-11-16): the model review, round 3: decision 10's four ruler and boss
   looks** (page `docs/models/review/round3/index.html`, linked from round 2's). Fallen Climb rulers lie on the floor (all 15: 0.1-1.5 m
