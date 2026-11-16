@@ -66,6 +66,18 @@ command, the workbench, the check command; entries below).
   command, `new-hero.md` rewritten); its hook in `src/main.ts` waits until the hero bugs agent is merged.
 
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): the hero bugs** (page `docs/pipeline/hero-framework/bugs.html`): Cleaver's table no longer heals
+  the enemy; Late Fee, Foreclosure and Lightning Risk hit who is in the circle when it lands (Rust copy too); five kit flags set
+  (World Tree, Sinkhole roots; Shadow Double a summon; Stampede a strip; Shepherd's Crook not a stun); ten heroes' rules on the fight
+  clock; the server keeps a late Uproot and a quick Tag Out; the CPU's hold rule fires (Tempo, Anka, Zephyr, Marin untouchable); 93
+  files' old numbers in comments; the move's loose ends. Every changed hero inside the simulator's noise (±7). The merge with the
+  blocks trial was resolved by hand (Sefu's and Big Yoko's blocks kept, the fight clock and comments re-applied). **Decided by the
+  parent:** Ember Flight's dash flag and Chain Hammer's stun flag stay off (they broke Anka's and Brannoc's CPU; branch
+  `t3/hero-bugs-held-flags`); the hold rule kept for the four; Gus's Flood stays without a bonus (the tooltip dropped it on purpose
+  on 2026-11-04). **Not done:** the Rust re-grade of Mr. Ledger and Barry Cloudsley (`python pipeline/rustfull/grade.py`); Brannoc's
+  Rust port is older than his rework; about 15 more heroes time some rules on the computer's clock; perf prints and the rough Rust
+  model (`python pipeline/rustsim/refresh.py`) not rerun.
+
 - **Done and merged, not live (2026-11-16): the spell blocks trial** (page
 - **Done and merged, not live (2026-11-16): hero framework step 5: the new-hero command, the
   workbench, the check command** (page `docs/pipeline/hero-framework/new-hero-tools.html`; design section 13; `new-hero.md` part 3
