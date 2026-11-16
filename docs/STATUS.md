@@ -78,9 +78,14 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   and the Harbour's cannons rebuilt in Blender. Prints unchanged. For the user: the upright staffs; Anka's fan and Silvane's mirror
   left flat; Professor Puff casts with his empty hand; Sefu's headdress in Scarab Stride; Big Yoko's arms 25 degrees out; Fenna's
   staff brushes her antlers.
-- **Running: model review round 2** (what both rounds left: the Heart of Noon and the bosses in the game, the rulers' flinch, kneel
-  and fall, the 16 health bars, the older arenas' backdrops, the heroes on Climb floors, a line-up of all 40, the 1.1 m shot height;
-  page `docs/models/review/round2/`; the one Blender agent).
+- **Done and merged, not live (2026-11-16): model review round 2** (page `docs/models/review/round2/index.html`): the Heart of Noon
+  in its room and the Warden, Ash and Ember filmed; the rulers' flinch, kneel and fall; the 16 health bars; the five older arenas; all
+  40 heroes on each chapter's first floor; a line-up of 40 heroes and the 25 people. Fixed: the Heart's three rings sank 2.8 m when it
+  fell (now on the floor); the Hollow Oak's and the Raider Chief's health bars clear. For the user: big rulers lie up to 1.5 m into
+  the floor when fallen; Ash's legs go a metre under the floor in casts; the Heart's crown rays turn into the floor in its last phase;
+  the Crow King's staff head-down when kneeling; the Glade's tree crowns fill a corner at the widest zoom; Frost's low ice and two
+  Temple lintels. For the Raid's owner: once Ash charged past the room's edge onto the lava. Passed to the small-fixes agent: floor
+  41's spots on stone drums, and the shots' start height (proposal in the page).
 - **Done and merged, not live (2026-11-16): the Climb's floors 1 to 30 checked one by one** (branch 9dd77508; page
   `docs/tower/review/floors-01-30/index.html`, an entry per floor `fNN/README.md`, tools `pipeline/tools/climb-review*`). All 30 cleared
   by the bot with no errors and no stuck spots; every place reachable; every ruler on its own model. Eight faults, all in the words,
