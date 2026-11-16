@@ -55,6 +55,13 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): the lore and the Climb's words** (branch 8b7a6ecf; page `docs/lore/changes-2026-11-16.html`): the
+  gates (Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate; the others are champions the Tower drew), the rulers
+  described as drawn (the Pearl Tyrant a woman, the Bell Below's ringer, the Scarab Colossus a giantess in the shell, ...), the six
+  workers in the codex, the named women "her" on 19 floors, a won ruler stays at its door (solo; a loss still goes to the waystone),
+  Cantor's icons in engraved gold. Following (same agent): the Admiral's key, the codex's "two names", the War Drummer as drawn, the
+  named men "he".
+
 - **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
   and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
   spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the
