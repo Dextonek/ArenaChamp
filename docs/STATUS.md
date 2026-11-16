@@ -64,6 +64,20 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   page `docs/models/review/round2/`; the one Blender agent).
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
+**Done, not merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
+floors and one by one check all things that are done and correct them"; floors 1 to 30 by another agent). Page with pictures:
+`docs/tower/review/floors-31-50/index.html` (remake: `python docs/tower/review/floors-31-50/make.py`). All 20 played through by the
+route bot with no page errors, every spot reachable, every model, line and name looked at. Eight faults fixed at their cause: the big
+map's names overlapping and running off its edge, the minimap under people's marks (`map.ts`, all floors), floor 31's giver's line,
+floor 32's jetty through a ridge, the Deep's wall crystals hanging in the air (all ten Deep floors), Brannoc not shown as floor 41's
+rival, "Ash and Ember waits" on floor 50, the Turncloak standing in the camp's bench and tent (42 to 50; from the model review). News item "The Deep and the War, floor by floor, set right" (`live: false`).
+Branch `t3/tower-review-floors-31-50` (to merge into `feat/particle-editor`). Also checked: the War's two armies on 42-50 with a
+banner taken, the fights on a phone, and the two fixes for files other agents held tried live in the page (they work).
+**Waiting on the user:** the list on that page (people's marks over the HUD and the ruler fights' title box over the hero's panel, both
+in files other agents held; the trial rooms' old numerals; who holds the gates; the rival can be your own hero; the War rulers' words;
+the white-robed people in the War's sun; a won ruler sends the hero to the last waystone; a lost trial's "Nothing lost"; the
+Camp-Mother's line). Two empty folders, `C:\x` and `C:\x2`, left by a mistyped picture folder, can be deleted by hand.
+
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
 
 The three agents below were restarted in their own threads from their saved commits and are running again; the deep lore starts when one finishes (three at most).

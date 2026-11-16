@@ -506,6 +506,8 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   // Floor 50 is the chapter's crown and the Climb's last floor: behind the lair is the Raid's Ash and Ember, alone, at the second tier.
   const crown = n === 50 ? ('ash' as const) : undefined;
   const [rulerName, rulerTitle] = crown ? ['Ash and Ember', 'The fire after the war'] : RULERS[fi % RULERS.length];
+  // Ash and Ember are two: they wait, they have fallen.
+  const two = / and /.test(rulerName);
   const extra: [string, MoveSpec] = pick([
     ['volley', { use: 'volley', name: pick(['Arrow Rain', 'The Archers Loose', 'A Sky of Arrows']), share: 0.07, cooldown: 7 }],
     ['fan', { use: 'fan', share: 0.06 }],
@@ -522,7 +524,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
       [extra[0]]: extra[1],
     },
     phases: [
-      { name: `${rulerName} wakes`, at: 1, moves: ['cleave', 'lunge'], gap: [1.4, 2.2] },
+      { name: `${rulerName} ${two ? 'wake' : 'wakes'}`, at: 1, moves: ['cleave', 'lunge'], gap: [1.4, 2.2] },
       { name: 'The guard marches', at: 0.66, opener: 'guard', moves: ['guard', 'cleave', 'lunge', extra[0]], gap: [1.3, 2.1] },
       { name: pick(['Alone on a horse of smoke', 'The last charge', 'Under no banner']), at: 0.33, moves: ['cleave', 'lunge', 'rake', extra[0]], gap: [0.9, 1.5] },
     ],
@@ -542,8 +544,9 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
 
   // --- people, quests, doors, secrets ---------------------------------------------------------------------------------------
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Two armies, and they never stop. Take a banner from the stands: its soldiers will march with you, and the other banner will hunt you. Then take the three standards, hold ${lower(Fh.name)}, and break the siege line in the north. ${rulerName} waits behind it.`], quests: ['main', 'bounty1', 'bounty2'] },
-    { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: [pick(['I fought for both banners once. Neither paid.', 'I keep my head down and my boots dry. Help me with two things.', 'The field gives nothing back. Except the dead, every morning.'])], quests: ['g2', 'g3'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: [`Two armies, and they never stop. Take a banner from the stands: its soldiers will march with you, and the other banner will hunt you. Then take the three standards, hold ${lower(Fh.name)}, and break the siege line in the north. ${rulerName} ${two ? 'wait' : 'waits'} behind it.`], quests: ['main', 'bounty1', 'bounty2'] },
+    { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: C(4.3, -0.66), // 1.2 m toward the fire: at 5.5 he stood in the log bench and against the tent
+      face: -0.5, greet: [pick(['I fought for both banners once. Neither paid.', 'I keep my head down and my boots dry. Help me with two things.', 'The field gives nothing back. Except the dead, every morning.'])], quests: ['g2', 'g3'] },
     { id: 'healer', hero: healerHero, name: healerHero, role: 'giver', at: healerAt, face: facing(healerAt), greet: [`I mend whoever is carried in, whatever the colour. You came all the way to ${lower(Vh.name)}? Then you can help me.`], quests: ['g1'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: facing(rivalAt), greet: [], quests: [] },
     { id: 'trader', hero: traderHero, name: traderHero, role: 'trader', at: C(-5.5, 5.5), face: 0.6, greet: ['Both armies buy from me, and both pay. Shards for what you need.'], quests: [] },
@@ -562,7 +565,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
         { verb: 'fell', text: 'Fell the guard of the siege line', packs: ['siege'] },
         { verb: 'open', text: 'Break the siege line: go through the gate in the north', door: 'lair' },
       ] as Step[],
-      outro: [`The siege line is broken. ${rulerName} is behind it. Take your time, then go in.`],
+      outro: [`The siege line is broken. ${rulerName} ${two ? 'are' : 'is'} behind it. Take your time, then go in.`],
       reward: reward(70, { boon: true }),
     },
     { id: 'bounty1', name: named1, giver: 'keeper', intro: [`${named1} walks the middle of the field, under no banner. Fell it, and let the song close.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named1)}`, pack: 'named1' }], outro: ['A relic from a soldier of nobody. It is lighter than it looks.'], reward: reward(45, { relic: true }) },
@@ -584,7 +587,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
     { id: 'lair', piece: 'ruler', name: crown ? 'The Burning Gate' : `${poss(rulerName)} gate`, at: S.lairDoor, r: 2.2, wall: { ax: -3.4, az: S.lairZ, bx: 3.4, bz: S.lairZ, r: 0.5, height: 3.8 }, locked: `The siege line holds. ${keeperHero} has a quest about it.` },
     { id: 'trial', piece: 'trial', name: pick(['The Trench', 'The Sapper’s Tunnel', 'The Muster Ground']), at: trial, r: 2, locked: '' },
-    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} has fallen.` },
+    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} ${two ? 'have' : 'has'} fallen.` },
     { id: 'rival', piece: 'rival', name: `${poss(rivalHero)} ground`, at: rivalDoor, r: 2, locked: '' },
   ];
   const cacheDefs = caches.map((c, i) => ({ id: `c${i + 1}`, at: c, shards: shard([25, 30, 20, 30, 25, 20][i]), ...(i === 2 || i === 5 ? { boon: true } : {}) }));
@@ -703,7 +706,7 @@ export function makeBannersFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
     { id: 'cantor', hero: 'Cantor', name: 'Cantor', role: 'keeper', at: C(-2.6, 2), face: 0.4, greet: ['Hush. Two armies fought here and never stopped, and I sing for both. Take a banner in the camp: its soldiers will march with you. Then take the standards, hold the hill, and break the siege line in the north. The Marshal waits behind it.'], quests: ['main', 'bounty'] },
     { id: 'whiskers', hero: 'Sir Whiskers', name: 'Sir Whiskers', role: 'giver', at: C(5.5, -0.7), face: -0.5, greet: ['I deserted. A cat of my breeding! Nine lives, and I used the first to run. Do me two small kindnesses and I will call it even.'], quests: ['cloth', 'braziers'] },
-    { id: 'brannoc', hero: 'Brannoc', name: 'Brannoc', role: 'giver', at: brannocAt, face: facing(brannocAt), greet: ['I hold the ground between the lines. Walk through the arch behind me, and we will see which of us the field remembers.'], quests: [] },
+    { id: 'brannoc', hero: 'Brannoc', name: 'Brannoc', role: 'rival', at: brannocAt, face: facing(brannocAt), greet: ['I hold the ground between the lines. Walk through the arch behind me, and we will see which of us the field remembers.'], quests: [] },
     { id: 'cleaver', hero: 'Madame Cleaver', name: 'Madame Cleaver', role: 'trader', at: C(-5.5, 5.5), face: 0.6, greet: ['A cook feeds both armies, and both pay. Shards for what you need.'], quests: [] },
   ];
   const quests: QuestDef[] = [

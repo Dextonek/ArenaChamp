@@ -128,6 +128,11 @@ export const CHANGELOG: Release[] = [
         text: 'The Climb now has a small round map in the top-left corner that follows your hero, with the enemies, people, doors, waystones and the next step of your quest on it. Press M, or tap the small map, to see the whole floor with the names of its places.',
       },
       {
+        tag: 'Tower',
+        title: 'The Deep and the War, floor by floor, set right',
+        text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, the Turncloak no longer stands in the camp’s bench, and the last floor speaks of Ash and Ember as the two they are.',
+      },
+      {
         tag: 'Online',
         title: 'See who waits to duel',
         text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',

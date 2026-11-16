@@ -3321,7 +3321,7 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
     "id": "brannoc",
     "hero": "Brannoc",
     "name": "Brannoc",
-    "role": "giver",
+    "role": "rival",
     "at": {
      "x": -22.21,
      "z": -42.46

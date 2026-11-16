@@ -88,8 +88,9 @@ export class WorldMap {
     const s = miniSize();
     this.mini.className = 'world-minimap';
     this.mini.title = 'Map (M)';
+    // Over the people's marks (7) that walk under it as the camera moves, under the banner (9), the cards (10) and the big map (11).
     this.mini.style.cssText =
-      `position:fixed;left:${small() ? 6 : 12}px;top:calc(${small() ? 6 : 12}px + env(safe-area-inset-top, 0px));z-index:6;width:${s}px;height:${s}px;` +
+      `position:fixed;left:${small() ? 6 : 12}px;top:calc(${small() ? 6 : 12}px + env(safe-area-inset-top, 0px));z-index:8;width:${s}px;height:${s}px;` +
       'border-radius:50%;border:2px solid #8a7a52;box-shadow:0 2px 10px #000a;background:#0e0b0c;display:none;' +
       'cursor:pointer;pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;';
     this.miniCanvas.style.cssText = 'width:100%;height:100%;display:block;border-radius:50%;';
@@ -308,14 +309,23 @@ export class WorldMap {
       for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr); }
       g.closePath(); g.fillStyle = fill; g.fill(); g.lineWidth = Math.max(1, r * 0.22); g.strokeStyle = '#3a2a10'; g.stroke();
     };
+    // A name is kept inside the picture, and steps down or up a line when it would cover one already written (two doors by a camp).
+    const taken: number[][] = [];
     const label = (p: { x: number; y: number }, text: string, color: string, dy: number) => {
       g.font = `700 ${Math.round(11 * dpr)}px ui-sans-serif,system-ui`;
       g.textAlign = 'center';
+      const hw = g.measureText(text).width / 2 + 2 * dpr, x = Math.max(hw, Math.min(px - hw, p.x)), line = 13 * dpr;
+      const box = (y: number) => [x - hw, y - 10 * dpr, x + hw, y + 3 * dpr];
+      const cover = (b: number[]) => taken.reduce((s, t) => s + Math.max(0, Math.min(b[2], t[2]) - Math.max(b[0], t[0])) * Math.max(0, Math.min(b[3], t[3]) - Math.max(b[1], t[1])), 0);
+      const y0 = Math.max(12 * dpr, Math.min(px - 5 * dpr, p.y + dy));
+      let y = y0, least = cover(box(y));
+      for (const k of [1, -1, 2, -2, 3, -3]) { if (least === 0) break; const at = y0 + k * line, c = cover(box(at)); if (c < least && at >= 12 * dpr && at <= px - 5 * dpr) { y = at; least = c; } }
+      taken.push(box(y));
       g.lineWidth = 3 * dpr;
       g.strokeStyle = 'rgba(0,0,0,0.85)';
-      g.strokeText(text, p.x, p.y + dy);
+      g.strokeText(text, x, y);
       g.fillStyle = color;
-      g.fillText(text, p.x, p.y + dy);
+      g.fillText(text, x, y);
     };
 
     // Waystones and doors.
