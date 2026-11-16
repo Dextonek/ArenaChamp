@@ -53,6 +53,17 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   the cream bloom still waits on the user). The fixes reach the Climb's 55 figures too (same build): they stood 2-8 cm sunk and now
   stand on the floor; prints of duel-temple, tower-horde, world-1 and world-3 are the same as on feat/particle-editor
   (`docs/perf/data/heroreview-climb.json`, `heroreview-pe.json`).
+- **Done, on branch `t3/4027b1bb` (not merged, not live) (2026-11-16): the model review, round 2** (page
+  `docs/models/review/round2/index.html`, linked from the first round's page): what the two rounds left unchecked, looked at in the game.
+  Fixed: the Heart of Noon's rings sank 2.8 m under the floor in its fall (now lie on it, `src/raid/bodies/heart.ts`); the Hollow Oak's
+  and the Raider Chief's health bars raised clear of branches and glaive (`foeKinds.ts`). Fine: every hero's soles on all five chapters'
+  floors, the 40 heroes' and 25 people's sizes, the five older arenas from the duel camera, the rulers' flinch, kneel, knock-up, 14 bars.
+  Prints duel-temple, raid-party, world-1, world-4 the same before and after (`docs/perf/data/r2-before.json`, `r2-after.json`; world-1
+  is 98b0044a on this branch already before the change, not d862aa08 as in prints.json). **Waiting on the user:** the rulers lying through the floor
+  when they fall (Scarab 1.5 m), Ash's rigid legs a metre under the floor in every cast, the Heart's crown rays in its last phase, the
+  Crow King's staff head-down in his kneel, the Glade's tree crowns at the widest zoom, small arena notes. **For the floor reviewers
+  (31-50):** floor 41's places "east" and "north" and four pack homes sit on 0.9 m drums of cover. **For the engine:** where shots leave
+  (1.1 m for all; a proposal of about six lines in `projectile.ts` on the page). Not done: a hero casting spells on a Climb floor.
 - **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
   (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
   user's yes before the other four chapters.

@@ -48,6 +48,11 @@ export const CHANGELOG: Release[] = [
         text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
       },
       {
+        tag: 'Raid',
+        title: 'The Heart of Noon’s rings fall to the floor',
+        text: 'When the Heart of Noon falls, its three golden rings now drop and lie on the floor round it, instead of sinking out of sight under it. On the Climb, the Hollow Oak’s and the Raider Chief’s health bars sit a little higher, clear of the branches and the raised glaive.',
+      },
+      {
         tag: 'Arenas',
         title: 'The harbour’s cannons and the Tide Judge’s glaive',
         text: 'The two cannons on the Drowned Harbour’s walls are a little smaller, so a hero standing at their back no longer stands inside the gun. On the Climb, the Tide Judge’s glaive no longer runs back through his gown.',

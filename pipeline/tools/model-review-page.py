@@ -1,6 +1,7 @@
 """
 Builds docs/models/review/index.html, the model review's page for a phone, from its Markdown entries (summary first, then one section
-per group: enemies, rulers, people, bosses, arenas, the Blender list, the floor reviewers' list).
+per group: enemies, rulers, people, bosses, arenas, the Blender list, the floor reviewers' list); and the second round's page,
+docs/models/review/round2/index.html, from the Markdown entries in that folder.
 
     python -I pipeline/tools/model-review-page.py
 """
@@ -11,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DIR = ROOT / "docs" / "models" / "review"
 ORDER = ["summary", "enemies", "rulers", "people", "bosses", "arenas", "blender-list", "floor-placements"]
+# The second round (what the first left unchecked): its own folder and page.
+ROUND2 = ["summary", "heart", "bosses", "rulers", "bars", "arenas", "floors", "lineup", "shots", "lists"]
 
 
 def inline(t):
@@ -81,9 +84,14 @@ def md(text):
 
 
 def main():
+    build(DIR, ORDER, "The model review, 2026-11-16")
+    build(DIR / "round2", ROUND2, "The model review, round 2 (2026-11-16)")
+
+
+def build(folder, order, title):
     parts = []
-    for name in ORDER:
-        p = DIR / f"{name}.md"
+    for name in order:
+        p = folder / f"{name}.md"
         if p.exists():
             parts.append(f'<section id="{name}">' + md(p.read_text(encoding="utf-8")) + "</section>")
     page = f"""<!doctype html>
@@ -106,12 +114,12 @@ th {{ background:var(--card); }}
 section {{ margin-bottom:1em; }}
 li {{ margin:0.3em 0; }}
 </style></head><body><main>
-<h1>The model review, 2026-11-16</h1>
+<h1>{title}</h1>
 {''.join(parts)}
 </main></body></html>
 """
-    (DIR / "index.html").write_text(page, encoding="utf-8")
-    print("wrote", DIR / "index.html")
+    (folder / "index.html").write_text(page, encoding="utf-8")
+    print("wrote", folder / "index.html")
 
 
 if __name__ == "__main__":

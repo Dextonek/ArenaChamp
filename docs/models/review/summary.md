@@ -23,3 +23,7 @@ seen in its fight); the bosses in their rooms; the arenas' props as numbers and 
 one taste call for the user (people in cream glow), one placement for the floor reviewers (the Turncloak in a bench on floor 42), one
 note for the engine (shots leave at 1.1 m whatever the unit holds). Not checked: the Heart of Noon, the rulers' flinch, kneel and fall,
 the enemies and rulers close up in their chapters' light, the older arenas' backdrops.
+
+**Round 2 (2026-11-16): [what this round left unchecked](round2/index.html)**: the Heart of Noon, the three other bosses in real fights,
+the rulers' flinch, kneel and fall, the bars looked at in the floors, the older arenas' backdrops, the heroes on the Climb's floors, the
+line-ups, where shots leave. Three fixes (the Heart's rings in its fall, two bars), four calls for the user, one proposal for the engine.
