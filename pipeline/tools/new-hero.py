@@ -299,7 +299,8 @@ def kit_flags(key, sp):
     if sh == 'bolt':
         return " aim: 'line',"
     if sh == 'dash':
-        return " dash: true, aim: 'line', overCover: true,"
+        # the CPU casts a `dash` when the enemy is out of Q's reach: a Q that is itself the dash would never be cast so
+        return " aim: 'line', overCover: true," if key == 'Q' else " dash: true, aim: 'line', overCover: true,"
     return ''
 
 
@@ -871,6 +872,12 @@ def remove(args):
     check = ROOT / 'docs' / 'heroes' / 'new' / f'{theme}.md'
     listed = re.findall(r'^- `([^`]+)`$', check.read_text(encoding='utf-8'), re.M) if check.exists() else []
     targets = [ROOT / f for f in listed] or [p for p in card.parent.rglob('*') if p.is_file()]
+    # what make.py wrote from the stub since (its command files; the SVGs and PNGs if it exported them)
+    stem = stem_of(name)
+    vc = ROOT / 'pipeline' / 'icons' / 'vectorcraft' / stem
+    targets += [p for p in vc.glob('*.json') if re.fullmatch(r'[qwer](-a)?\.json', p.name)] if vc.is_dir() else []
+    targets += [ROOT / 'public' / 'icons' / 'spells' / f'{stem}-{k}.svg' for k in 'qwer']
+    targets += [ROOT / 'docs' / 'icons' / 'new' / f'{stem}-{k}.png' for k in 'qwer']
     say(f'{name}: the draft in src/heroes/{theme}/ and what new-hero.py made for it:')
     for t in targets:
         if t.exists():

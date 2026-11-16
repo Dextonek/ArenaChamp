@@ -115,7 +115,7 @@ A hero already planned in LORE.md (status `next10` or `next20`) keeps its entry:
 read there, and from its kit sheet its spells, shapes, cooldowns, ranges, damage, HP and colours. A shape no block fits yet (a
 wall, a summon) gets a circle and a note in the file: gate 3 decides whether it becomes a new block or the spell's own code.
 Options: `--theme --title --faction --pronoun --people --role --accent --foil`; `--dry` says what it would write;
-`--remove --yes` takes a draft out again (its files and its lore stub; only a draft).
+`--remove --yes` takes a draft out again (its files, its lore stub, and what `make.py` wrote from its icon stub; only a draft).
 
 **A draft is not in the game.** The card's `draft: true` keeps it off the roster, the shop, the CPU's picks and the Codex
 (`src/heroes/index.ts`; its lore has status `draft`, which `lore-game.py` and the Codex leave out; it draws its canvas icons).
@@ -123,7 +123,7 @@ Its lore may be unfinished meanwhile: `lore-page.py` and `lore-codex.py` list wh
 for everyone else. A draft's files are loaded with the game's (a few KB, never used), so they must make no three.js object at
 the top of a file: the sketch look and the stubs make theirs when a spell is built.
 
-### 2. The workbench: `/workbench.html` (or the tool page with `/?bench`)
+### 2. The workbench: `/workbench.html` (or the tool page with `/?bench`; never the game's page)
 
 On the dev server (`npm run dev`, then `http://localhost:5173/workbench.html`). Pick a hero, drafts included; fight the CPU,
 let the CPU play it, or try it on the training dummies. Its reach is drawn round it on the floor (a dashed ring a spell: Q

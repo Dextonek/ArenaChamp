@@ -14,13 +14,15 @@ const found = import.meta.glob<HeroCard>('./*/hero.ts', { eager: true, import: '
 
 /**
  * Whether this page shows the heroes still going through their gates (`draft: true` on the card, docs/pipeline/new-hero.md):
- * the hero workbench always does (its page, `/workbench.html`, or the tool page opened with `?bench`); on the dev server, any
+ * the hero workbench always does (its page, `/workbench.html`, or the tool page `/` opened with `?bench`; not the game's page); on the dev server, any
  * page opened with `?drafts=1` (the simulator's `--drafts`). Everywhere else a draft is not in the game: not on the roster, in
  * the shop, among the CPU's picks or in the Codex.
  */
 const query = typeof location !== 'undefined' ? new URLSearchParams(location.search) : null;
+const path = typeof location !== 'undefined' ? location.pathname : '';
 export const SHOW_DRAFTS: boolean = !!query
-  && (/\/workbench(\.html)?$/.test(location.pathname) || query.has('bench') || (!!import.meta.env.DEV && query.has('drafts')));
+  && (/\/workbench(\.html)?$/.test(path) || (/^\/(index\.html)?$/.test(path) && query.has('bench'))
+    || (!!import.meta.env.DEV && query.has('drafts')));
 
 const all = Object.entries(found).map(([path, card]) => [path.split('/')[1], card] as const);
 const released = all.filter(([, c]) => !c.draft);

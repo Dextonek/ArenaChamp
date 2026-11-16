@@ -108,12 +108,16 @@ def check_prints(name, hero, args):
         cmd = [PY, 'pipeline/tools/hero-prints.py', 'check', name, '--port', str(port)] + (['--foe', foe] if foe else [])
         code, out, secs = run(cmd, 600)
         last = [ln for ln in out.splitlines() if ln.strip()][-3:]
-        res.append({'foe': foe or 'Isolde', 'code': code, 'secs': round(secs), 'tail': last})
-    ok = all(r['code'] == 0 for r in res)
-    return {'status': 'pass' if ok else 'fail',
-            'summary': ('the same fight against Isolde and Brannoc' if ok else
-                        'ANOTHER FIGHT or no answer: ' + '; '.join(f"{r['foe']}: exit {r['code']}" for r in res if r['code'] != 0)),
-            'details': res}
+        # another fight is a difference; a tool that stopped (a browser that did not start under load, a time limit) is not
+        what = 'same' if code == 0 else ('another fight' if 'ANOTHER FIGHT' in out else 'no answer')
+        res.append({'foe': foe or 'Isolde', 'code': code, 'what': what, 'secs': round(secs), 'tail': last})
+    ok = all(r['what'] == 'same' for r in res)
+    differ = [r['foe'] for r in res if r['what'] == 'another fight']
+    stopped = [f"{r['foe']} ({r['tail'][-1][:120] if r['tail'] else 'exit ' + str(r['code'])})" for r in res if r['what'] == 'no answer']
+    summary = 'the same fight against Isolde and Brannoc' if ok else '; '.join(
+        ([f"ANOTHER FIGHT against {', '.join(differ)}"] if differ else [])
+        + ([f"no answer, run it again (the tool stopped: {'; '.join(stopped)})"] if stopped else []))
+    return {'status': 'pass' if ok else 'fail', 'summary': summary, 'details': res}
 
 
 def check_sim(name, hero, args):
