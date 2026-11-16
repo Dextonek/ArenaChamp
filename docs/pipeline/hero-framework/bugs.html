@@ -164,7 +164,7 @@ were retuned: where a hero moved, that is for you to judge.</p>
 <li class="ok"><b>Fight prints</b> 80 of 80 the same on the final code; the changed ones taken again on purpose, each traced to its fix at that fix's own commit</li>
 <li class="ok"><b>Fixes 6, 8, 9</b> change no fight: 80 of 80 the same before the other fixes</li>
 <li class="ok"><b>Simulator</b> every changed hero inside &plusmn;7 on the merged code (Mabel and Wick run twice: one run each was just past 7)</li>
-<li class="ok"><b>Server</b> 366 checks pass, the two new ones among them (one clan-chat timing check failed once under load and passed when run again, as the rules allow)</li>
+<li class="ok"><b>Server</b> 367 checks pass on the final code, the new relay checks among them (they failed before fix 6)</li>
 <li class="ok"><b>Type check, build, Rust tests</b> pass (36 Rust tests)</li>
 <li class="bad"><b>Rust guard</b> lists 39 lines (19 before): 18 are files whose comments fix 8 corrected; the real ones are Mr. Ledger's and Barry's circles (the Rust port changed the same way: they need a re-grade), Sirix's clock (the Rust port has its own fight clock already) and Brannoc, whose port is older than his rework</li>
 </ul></section>

@@ -68,7 +68,7 @@ starts with every agent session (about 90 MB each, and it often fails to connect
   Simulator (32 fights a foe, through the lock): every changed hero inside +-7 (Mabel 60.9 -> 69.8 and 64.1, Wick 40.6/38.0 ->
   33.3 twice: run twice, averages inside). Prints: the changed ones taken again on purpose (Madame Cleaver, Nyx, Bo, Zephyr,
   Marin, Anka, and the frame-edge moves of Gus, Big Yoko, Mabel, Wick, proven by the clock's origin), 80 of 80 the same on the
-  final tree. Server tests 366 pass (one clan-chat timing check failed once under load, passed again).
+  final tree. Server tests: 367 pass on the final code (SMOKE_SLOW=2, first run).
   Rust: `guard.py` lists 39 lines (19 before; the new ones are files whose comments item 8 corrected, the circles, Sirix's clock,
   and Brannoc's card); `cargo test` 36 pass. **To do:** re-grade Mr. Ledger and Barry Cloudsley (`grade.py`, their circles), and
   Brannoc's port is older than his rework (game.json re-export, port, grade); about 15 more heroes still read the computer's clock.
