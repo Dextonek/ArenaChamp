@@ -10,18 +10,10 @@ import type { BuffKind } from './effects/status';
 import type { BodyLook } from './raid/bodies/look';
 import type { Trait } from './traits/types';
 import { dawnKit } from './kits/dawn';
-import { clockworkKit } from './kits/clockwork';
-import { boneKit } from './kits/bone';
-import { inkKit } from './kits/ink';
-import { chronoKit } from './kits/chrono';
-import { voidKit } from './kits/void';
 import { hiveKit } from './kits/hive';
-import { bardKit } from './kits/bard';
-import { prismKit } from './kits/prism';
 import { stormKit } from './kits/storm';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
-import { mirrorKit } from './kits/mirror';
 import { masonKit } from './kits/mason';
 import { timberKit } from './kits/timber';
 import { balloonKit } from './kits/balloon';
@@ -146,15 +138,7 @@ const MODELS: Record<string, string> = {
   Isolde: 'models/heroes/frost_v2.glb',
   Kaia: 'models/heroes/storm_v2.glb',
   Auriel: 'models/heroes/dawn_v2.glb',
-  Mortis: 'models/heroes/bone.glb',
-  Ada: 'models/heroes/clockwork.glb',
-  Opaline: 'models/heroes/prism.glb',
   Sirix: 'models/heroes/hive.glb',
-  Cantor: 'models/heroes/bard.glb',
-  Oblivion: 'models/heroes/void_v2.glb',
-  Shiori: 'models/heroes/ink.glb',
-  Tempo: 'models/heroes/chrono.glb',
-  Silvane: 'models/heroes/mirror_v3.glb',
   Bram: 'models/heroes/mason_v3.glb',
   Hank: 'models/heroes/timber_v3.glb',
   'Professor Puff': 'models/heroes/balloon_v3.glb',
@@ -187,9 +171,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
   Kaia: { radius: 0.47, height: 3.24 },
   Auriel: { radius: 0.47, height: 2.33 },
-  Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
-  Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
-  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.34 },
+  Sirix: { radius: 0.44, height: 2.31 },
   Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
   'Sir Whiskers': { radius: 0.49, height: 2.33 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
   'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.49 }, 'Referee Whistler': { radius: 0.44, height: 2.33 },
@@ -202,7 +184,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
 };
 
 /** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
-const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
+const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, hiveKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
 
 /** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
 function roster(): HeroKit[] {

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
 import { DOOR, DOOR_CSS, Flecks, Glove, KeyFlock } from '../../effects/parts/door';
-import { Gleam } from '../../effects/parts/mirror';
+import { Gleam } from '../../heroes/mirror/parts';
 import { boltWidth, type BoltDoor, type Projectile } from '../../effects/projectile';
 import type { TelegraphSpec } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { ShockRefraction } from '../../effects/parts';
-import { CLOCKWORK, CLOCKWORK_CSS, Gear, Sparks, SteamPuffs } from '../../effects/parts/clockwork';
+import { CLOCKWORK, CLOCKWORK_CSS, Gear, Sparks, SteamPuffs } from '../../heroes/clockwork/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

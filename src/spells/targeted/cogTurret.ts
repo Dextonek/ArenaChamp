@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { CLOCKWORK_CSS, Gear, Sparks, Spring, SteamPuffs, turretLook } from '../../effects/parts/clockwork';
+import { CLOCKWORK_CSS, Gear, Sparks, Spring, SteamPuffs, turretLook } from '../../heroes/clockwork/parts';
 import type { Summon } from '../../effects/summon';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';

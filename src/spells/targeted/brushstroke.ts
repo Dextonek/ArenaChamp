@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
-import { INK, INK_CSS, InkBleed, Seal, Splatter, Stroke } from '../../effects/parts/ink';
+import { INK, INK_CSS, InkBleed, Seal, Splatter, Stroke } from '../../heroes/ink/parts';
 import type { Projectile } from '../../effects/projectile';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';

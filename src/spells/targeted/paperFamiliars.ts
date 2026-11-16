@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { INK_CSS, PaperFold, Seal, Splatter, Stroke, inkCraneLook } from '../../effects/parts/ink';
+import { INK_CSS, PaperFold, Seal, Splatter, Stroke, inkCraneLook } from '../../heroes/ink/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

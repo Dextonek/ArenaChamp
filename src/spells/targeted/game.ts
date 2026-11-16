@@ -74,26 +74,6 @@ import { geraldNoModule } from './geraldNo';
 import { aGoodLeanModule } from './aGoodLean';
 import { theShoveModule } from './theShove';
 import { raiseGeraldModule } from './raiseGerald';
-import { hallOfMirrorsModule } from './hallOfMirrors';
-import { throughTheGlassModule } from './throughTheGlass';
-import { vanityStandModule } from './vanityStand';
-import { handMirrorModule } from './handMirror';
-import { ricochetLightModule } from './ricochetLight';
-import { crystalPillarModule } from './crystalPillar';
-import { blindingFlareModule } from './blindingFlare';
-import { shatterlightModule } from './shatterlight';
-import { inkLashModule } from './inkLash';
-import { sealOfBindingModule } from './sealOfBinding';
-import { flowingScriptModule } from './flowingScript';
-import { theLastCharacterModule } from './theLastCharacter';
-import { gravitySlamModule } from './gravitySlam';
-import { nullZoneModule } from './nullZone';
-import { phaseStepModule } from './phaseStep';
-import { blackHoleModule } from './blackHole';
-import { homingDroneModule } from './homingDrone';
-import { deployTurretModule } from './deployTurret';
-import { grappleHookModule } from './grappleHook';
-import { siegeModeModule } from './siegeMode';
 import { firstLightModule } from './firstLight';
 import { dawnwardModule } from './dawnward';
 import { oathbrandModule } from './oathbrand';
@@ -110,23 +90,11 @@ import { icicleModule } from './icicle';
 import { hoarfrostModule } from './hoarfrost';
 import { rimeArmourModule } from './rimeArmour';
 import { wintersShatterModule } from './wintersShatter';
-import { tickBoltModule } from './tickBolt';
-import { slowTimeModule } from './slowTime';
-import { timeSkipModule } from './timeSkip';
-import { stolenHourModule } from './stolenHour';
 import { chainHammerModule } from './chainHammer';
 import { forgeRoarModule } from './forgeRoar';
 import { redHotRivetModule } from './redHotRivet';
 import { moltenCoreModule } from './moltenCore';
-import { resoundingChordModule } from './resoundingChord';
-import { sirenSongModule } from './sirenSong';
-import { risingChorusModule } from './risingChorus';
-import { duetModule } from './duet';
 import { burrowModule } from './burrow';
-import { boneFanModule } from './boneFan';
-import { raiseDeadModule } from './raiseDead';
-import { boneArmourModule } from './boneArmour';
-import { graveGraspModule } from './graveGrasp';
 import { FOLDER_SPELLS } from '../../heroes/spells';
 
 /**
@@ -214,26 +182,6 @@ export const gameModules: EffectModule[] = [
   aGoodLeanModule,
   theShoveModule,
   raiseGeraldModule,
-  hallOfMirrorsModule,
-  throughTheGlassModule,
-  vanityStandModule,
-  handMirrorModule,
-  ricochetLightModule,
-  crystalPillarModule,
-  blindingFlareModule,
-  shatterlightModule,
-  inkLashModule,
-  sealOfBindingModule,
-  flowingScriptModule,
-  theLastCharacterModule,
-  gravitySlamModule,
-  nullZoneModule,
-  phaseStepModule,
-  blackHoleModule,
-  homingDroneModule,
-  deployTurretModule,
-  grappleHookModule,
-  siegeModeModule,
   firstLightModule,
   dawnwardModule,
   oathbrandModule,
@@ -250,23 +198,11 @@ export const gameModules: EffectModule[] = [
   hoarfrostModule,
   rimeArmourModule,
   wintersShatterModule,
-  tickBoltModule,
-  slowTimeModule,
-  timeSkipModule,
-  stolenHourModule,
   chainHammerModule,
   forgeRoarModule,
   redHotRivetModule,
   moltenCoreModule,
-  resoundingChordModule,
-  sirenSongModule,
-  risingChorusModule,
-  duetModule,
   burrowModule,
-  boneFanModule,
-  raiseDeadModule,
-  boneArmourModule,
-  graveGraspModule,
   // the heroes in folders of their own (src/heroes/<theme>/fight.ts)
   ...FOLDER_SPELLS,
 ];

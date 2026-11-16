@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
-import { Afterimage, CHRONO, CHRONO_CSS, Dial, FrozenMotes } from '../../effects/parts/chrono';
+import { Afterimage, CHRONO, CHRONO_CSS, Dial, FrozenMotes } from '../../heroes/chrono/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

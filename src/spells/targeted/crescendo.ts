@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { BARD, BARD_CSS, Lyre, Notes, SoundRings, Stave } from '../../effects/parts/bard';
+import { BARD, BARD_CSS, Lyre, Notes, SoundRings, Stave } from '../../heroes/bard/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

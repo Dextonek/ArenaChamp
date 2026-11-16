@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import type { Enemy } from '../../effects/common';
 import { StarBurst } from '../../effects/parts';
-import { CLOCKWORK, CLOCKWORK_CSS, Gear, Rivet, Sparks, Spring } from '../../effects/parts/clockwork';
+import { CLOCKWORK, CLOCKWORK_CSS, Gear, Rivet, Sparks, Spring } from '../../heroes/clockwork/parts';
 import type { Projectile } from '../../effects/projectile';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';

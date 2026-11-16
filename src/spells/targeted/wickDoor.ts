@@ -3,7 +3,7 @@ import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst } from '../../effects/parts';
 import { DOOR, DOOR_HEIGHT, Flecks, KeyFlock, flatRing } from '../../effects/parts/door';
-import { Gleam } from '../../effects/parts/mirror';
+import { Gleam } from '../../heroes/mirror/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import {

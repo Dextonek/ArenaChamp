@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { INK, InkBleed, Splatter, Stroke } from '../../effects/parts/ink';
+import { INK, InkBleed, Splatter, Stroke } from '../../heroes/ink/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import { DOUBLE_SECONDS, doubleAlive, placeDouble } from './inkDoubleState';

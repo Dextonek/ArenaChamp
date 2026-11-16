@@ -1,17 +1,9 @@
 import type { Trait } from './types';
 import { stormTrait } from './storm';
-import { prismTrait } from './prism';
 import { dawnTrait } from './dawn';
-import { bardTrait } from './bard';
 import { forgeTrait } from './forge';
-import { voidTrait } from './void';
 import { hiveTrait } from './hive';
-import { chronoTrait } from './chrono';
 import { frostTrait } from './frost';
-import { boneTrait } from './bone';
-import { clockworkTrait } from './clockwork';
-import { inkTrait } from './ink';
-import { mirrorTrait } from './mirror';
 import { masonTrait } from './mason';
 import { timberTrait } from './timber';
 import { balloonTrait } from './balloon';
@@ -41,15 +33,10 @@ export * from './types';
  */
 export const TRAITS: Record<string, Trait> = {
   Kaia: stormTrait,
-  Opaline: prismTrait,
   Auriel: dawnTrait,
-  Cantor: bardTrait,
   Brannoc: forgeTrait,
-  Oblivion: voidTrait,
   Sirix: hiveTrait,
-  Tempo: chronoTrait,
   Isolde: frostTrait,
-  Silvane: mirrorTrait,
   Bram: masonTrait,
   Hank: timberTrait,
   'Professor Puff': balloonTrait,
@@ -68,9 +55,6 @@ export const TRAITS: Record<string, Trait> = {
   'The Great Zambini': magicTrait,
   Wick: doorTrait,
   'Pim and Pom': twinsTrait,
-  Mortis: boneTrait,
-  Ada: clockworkTrait,
-  Shiori: inkTrait,
   ...FOLDER_TRAITS,
 };
 
