@@ -30,7 +30,7 @@ const kit: HeroKit = {
       icon: icons.E,
     },
     {
-      key: 'R', label: 'stampede', name: 'Stampede', range: 12, cooldown: 22,
+      key: 'R', label: 'stampede', name: 'Stampede', range: 12, cooldown: 22, aim: 'line',
       blurb: 'Eight sheep run down a 12 m line, 4 m wide, after 0.8 s: 30 each, three hits at most, and each hit adds Wool. Step out of the line.',
       icon: icons.R,
     },
