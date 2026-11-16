@@ -81,6 +81,9 @@ interface Mem { phase: number; kneel: number; spin: number[]; crown: number; bea
 const mem = new WeakMap<BodyParts, Mem>();
 const Q = new THREE.Quaternion();
 const Q2 = new THREE.Quaternion();
+const QC = new THREE.Quaternion();
+const QB = new THREE.Quaternion();
+const FOOT = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 const one = (a: BodyAct | null) => (a ? [a] : []);
 
@@ -294,15 +297,23 @@ export const heartLook: BodyLook = (s, p) => {
       p.move(name, sg * 0.8 * fBlade, -(BLADE.y - 0.6) * fBlade, 0.4 * fBlade);
       p.turn(name, 0.2 * fBlade, 0, sg * 1.35 * fBlade);
     }
-    RINGS.forEach((name, i) => {
-      const n = p.node(name);
-      if (!n) return;
-      Q2.setFromUnitVectors(RING_AXES[name], UP);
-      n.quaternion.slerp(Q2, fRing);
-      n.position.y -= fRing * (CORE_Y - 0.25 - i * 0.06);
-    });
     p.move('core', 0, -2.2 * fCore, 0);
     p.turn('core', 0.25 * fCore, 0.3 * fall, 0.1 * fCore);
+    // The rings hang in the core, which sinks and tips: each is laid flat on the floor round its foot in the world, not in the core's
+    // space (there they went down with the core, 2 to 3 m under the floor).
+    const core = p.node('core'), base = core?.parent;
+    if (core && base) {
+      core.updateWorldMatrix(true, false);
+      core.getWorldQuaternion(QC).invert().multiply(base.getWorldQuaternion(QB));
+      base.getWorldPosition(FOOT);
+      RINGS.forEach((name, i) => {
+        const n = p.node(name);
+        if (!n) return;
+        Q2.setFromUnitVectors(RING_AXES[name], UP).premultiply(QC);
+        n.quaternion.slerp(Q2, fRing);
+        p.toward(name, FOOT.x, FOOT.y + 0.25 + i * 0.06, FOOT.z, fRing);
+      });
+    }
     p.move('crown', 0, -0.4 * fCore, -0.3 * fCore);
     p.move('shards', 0, -0.9 * fall, 0);
     p.glow('core', coreGlow * (1 - fCore * 0.9));

@@ -20,7 +20,8 @@ export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant',
 /**
  * The health bars sit over the top of each figure at its unit's size (the model review, 2026-11-16: the Pale One's crown, the Hollow
  * Oak's branches, the knights' plumes and the bearer's and deserter's crests stood through their bars): `barY` is the top of the figure
- * standing, divided by the unit's scale, plus 0.15.
+ * standing, divided by the unit's scale, plus 0.15. Looked at in the floors (round 2): the Hollow Oak's crown still touched its bar and the
+ * Raider Chief carries his glaive up through his, so those two stand higher.
  */
 export const FOE_MODELS: Record<string, FoeModel> = {
   // the Sea
@@ -31,11 +32,11 @@ export const FOE_MODELS: Record<string, FoeModel> = {
   // the Wood
   giant: { id: 'wood_giant', height: 2.0, strike: 'heavy', barY: 2.15 },
   sprite: { id: 'wood_sprite', height: 1.55, shot: 'spell', hold: 'torch', barY: 1.7 },
-  oak: { id: 'wood_oak', height: 3.0, strike: 'heavy', barY: 3.55 },
+  oak: { id: 'wood_oak', height: 3.0, strike: 'heavy', barY: 3.62 },
   // the Sands
   raider: { id: 'sands_raider', height: 1.65, strike: 'blade', barY: 1.8 },
   slinger: { id: 'sands_slinger', height: 1.65, shot: 'throw', barY: 1.75 },
-  chief: { id: 'sands_chief', height: 1.9, strike: 'heavy', barY: 2.1 },
+  chief: { id: 'sands_chief', height: 1.9, strike: 'heavy', barY: 2.2 },
   mother: { id: 'sands_chief', height: 3.1, strike: 'heavy', tint: [0xe8c890, 0.4], barY: 3.4 },
   // the Deep
   lurker: { id: 'deep_lurker', height: 1.5, strike: 'claw', barY: 1.65 },
