@@ -1,0 +1,16 @@
+{
+ "floor": 22,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Bram), the trial, the Scarab King (the Colossus's model, tinted) and the gate (Cantor) all played.",
+ "found": [
+  {"kind": "list", "title": "Named enemies are all “it”", "text": "On the made floors the keeper says “Fell it ... while it does” of every named enemy, so the Dune Mother is “her” on floor 21 and “it” here, as are Mother Kelp, Barnacle Bess, the Brine Widow, Grandmother Thorn, the Bark Widow. For beasts and things “it” is right. Giving the women their “her” is a word list in each chapter's maker (sea.ts, wood.ts, sands.ts...) and a re-bake; a matter of voice, so yours to say."},
+  {"kind": "ok", "title": "The bot's 45 s wait in a storm", "text": "Once the bot stood 45 s on its way to a lee during a storm, then went on: the storm's own wait (it shelters until the band has passed), not a stuck spot."},
+  {"kind": "ok", "title": "Props", "text": "A mesa past the north edge on its own high ground (the probe measures it against the play ground), a pillar on the sand, red rocks a little sunk at the canyon foot."}
+ ],
+ "pictures": [
+  ["person-keeper.jpg", "The Star-Reader"],
+  ["ruler-close.jpg", "The Scarab King"],
+  ["map.jpg", "The M map"],
+  ["overview.jpg", "From the south edge"]
+ ],
+ "notChecked": ["the shared packs online", "buying at the trader (card and prices shown)"]
+}
