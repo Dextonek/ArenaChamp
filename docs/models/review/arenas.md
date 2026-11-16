@@ -17,8 +17,8 @@ floor (lowest points 0 to -0.56 m: bases sunk on purpose).
 | Canyon | 9 | 9 | |
 | Cavern | 9 | 9 | |
 | Sunburst (the Heart's room) | 8 (39 fixed walls drawn by the room) | 4 | four low walls 0.41 m past their ends: touched, not entered |
-| Sunhall (the Warden's hall) | 93 (45 fixed) | 77 | pillar bases 0.4 to 0.48 m past their radius (touched); short walls stop a hero 0.4 to 0.5 m before their ends (the capsule's round end) |
-| Twinforge (Ash and Ember's forge) | 2 (12 fixed) | 1 | **Ash's great anvil reaches 1.27 m past its round cover on the east and stops 0.54 m short of it north and south**: a hero walks into the anvil's horn, and is stopped a metre from its long side |
+| Sunhall (the Warden's hall) | 93 (45 fixed walls drawn by the hall) | 67 | pillar bases 0.4 to 0.48 m past their radius (touched); short walls stop a hero 0.4 to 0.5 m before their ends (the capsule's round end) |
+| Twinforge (Ash and Ember's forge) | 2 (12 fixed walls drawn by the room) | 1 | **Ash's great anvil reaches 1.27 m past its round cover on the east and stops 0.54 m short of it north and south**: a hero walks into the anvil's horn, and is stopped a metre from its long side |
 
 The older duel arenas (temple, frost, caldera, glade, skyruins) build their props onto the obstacles in code (`*_props.glb`
 instanced per obstacle), so they fit by construction; their backdrops stand outside the ring.
