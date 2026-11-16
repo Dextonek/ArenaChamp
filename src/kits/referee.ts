@@ -7,7 +7,7 @@ import { paintCard, paintHand, paintProhibit, paintRunner, paintWand } from '../
  * (a pictogram in a red ring with a bar).
  */
 const S = {
-  core: '#f2f2f2', white: '#dcdcdc', grey: '#8d8d8d', dark: '#141414', foil: '#1a1a1a', yellow: '#e6b800', red: '#d63a2a', skin: '#e2b998',
+  core: '#f2f2f2', white: '#dcdcdc', grey: '#8d8d8d', dark: '#141414', foil: '#1a1a1a', yellow: '#e6b800', red: '#d63a2a', skin: '#7c7570',
   // the Arbiter's armour, tabard, horn, sigil and crest (the _v3 model)
   armor: '#38323e', cloth: '#26212c', ivory: '#b6b09e', gold: '#d2ae55', silver: '#b8bec8', helm: '#2c2832', crest: '#8c2a32', redDeep: '#9a2a30', sigil: '#ff7a42',
 };
@@ -137,14 +137,18 @@ export const refereeKit: HeroKit = {
     g.beginPath();
     g.roundRect(s * 0.36, s * 0.3, s * 0.28, s * 0.32, s * 0.07);
     g.fill();
-    for (const sx of [0.44, 0.56]) {
+    for (const sx of [0.44, 0.56]) {   // // Touched 2026-11-16 (docs/lore/codex/revamp.md): Kilnborn, ash-grey under the helm, pale amber eyes
       g.fillStyle = S.core;
       g.beginPath();
       g.ellipse(s * sx, s * 0.46, s * 0.027, s * 0.03, 0, 0, Math.PI * 2);
       g.fill();
+      g.fillStyle = '#e8a040';
+      g.beginPath();
+      g.arc(s * sx, s * 0.465, s * 0.016, 0, Math.PI * 2);
+      g.fill();
       g.fillStyle = S.dark;
       g.beginPath();
-      g.arc(s * sx, s * 0.465, s * 0.014, 0, Math.PI * 2);
+      g.arc(s * sx, s * 0.465, s * 0.007, 0, Math.PI * 2);
       g.fill();
     }
     g.strokeStyle = S.dark;

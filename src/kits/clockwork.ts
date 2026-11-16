@@ -128,8 +128,9 @@ export const clockworkKit: HeroKit = {
       g.arc(s * 0.5, s * (0.7 + i * 0.1), s * 0.012, 0, Math.PI * 2);
       g.fill();
     }
-    // Head: a short dark bob under a leather cap, goggles pushed up on the forehead.
-    g.fillStyle = '#e8c9b0';
+    // Head: a short dark bob under a leather cap, goggles pushed up on the forehead. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Kilnborn: ash-grey
+    // skin, pale amber eyes.
+    g.fillStyle = '#8a827c';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.12, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
@@ -160,7 +161,10 @@ export const clockworkKit: HeroKit = {
     g.fillStyle = S.dark;
     g.fillRect(s * 0.44, s * 0.43, s * 0.035, s * 0.012);
     g.fillRect(s * 0.525, s * 0.43, s * 0.035, s * 0.012);
-    g.fillStyle = '#c98a78';
+    g.fillStyle = '#ffc070';
+    g.fillRect(s * 0.45, s * 0.442, s * 0.016, s * 0.008);
+    g.fillRect(s * 0.535, s * 0.442, s * 0.016, s * 0.008);
+    g.fillStyle = '#6e5a56';
     g.fillRect(s * 0.47, s * 0.5, s * 0.06, s * 0.01);
   },
   spells: [

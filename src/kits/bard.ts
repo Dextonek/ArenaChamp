@@ -181,8 +181,9 @@ export const bardKit: HeroKit = {
       g.arc(s * x, s * 0.7, s * 0.013, 0, Math.PI * 2);
       g.fill();
     }
-    // Head: a long lean face, dark hair, under a wide hat with a rose feather.
-    g.fillStyle = '#ecd2bc';
+    // Head: a long lean face, dark hair, under a wide hat with a rose feather. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Aubade folk:
+    // golden-brown skin, the dawn line, gold thread in his hair.
+    g.fillStyle = '#b98a5c';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.11, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
@@ -232,8 +233,16 @@ export const bardKit: HeroKit = {
     g.fillStyle = S.dark;
     g.fillRect(s * 0.44, s * 0.45, s * 0.035, s * 0.012);
     g.fillRect(s * 0.525, s * 0.45, s * 0.035, s * 0.012);
-    g.fillStyle = '#b86a78';
+    g.fillStyle = '#7a3e3a';
     g.fillRect(s * 0.47, s * 0.53, s * 0.06, s * 0.01);
+    g.strokeStyle = '#f4c95a';
+    g.lineWidth = s * 0.008;
+    g.beginPath();
+    g.moveTo(s * 0.5, s * 0.395);
+    g.lineTo(s * 0.5, s * 0.48);
+    g.stroke();
+    g.fillStyle = '#e0b04a';
+    for (const x of [0.375, 0.625]) for (const y of [0.55, 0.57]) g.fillRect(s * (x - 0.02), s * y, s * 0.04, s * 0.008);
     // The golden lyre at the shoulder.
     lyre(g, s * 0.2, s * 0.98, s * 0.46);
   },

@@ -139,7 +139,17 @@ export const magicKit: HeroKit = {
     g.beginPath();
     g.arc(s * 0.5, s * 0.8, s * 0.012, 0, Math.PI * 2);
     g.fill();
-    // The face: pale and calm, level brows, a small pointed goatee, a knowing small smile.
+    // The face: pale and calm, level brows, a small pointed goatee, a knowing small smile. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Briarkin:
+    // pointed ears under the hat, eyes violet from lid to lid.
+    g.fillStyle = '#e8cfc0';
+    for (const d of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + d * 0.1), s * 0.41);
+      g.quadraticCurveTo(s * (0.5 + d * 0.17), s * 0.37, s * (0.5 + d * 0.22), s * 0.31);
+      g.quadraticCurveTo(s * (0.5 + d * 0.16), s * 0.43, s * (0.5 + d * 0.1), s * 0.47);
+      g.closePath();
+      g.fill();
+    }
     g.fillStyle = '#f0dcd0';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.44, s * 0.11, s * 0.14, 0, 0, Math.PI * 2);
@@ -153,11 +163,12 @@ export const magicKit: HeroKit = {
     g.moveTo(s * 0.52, s * 0.395);
     g.lineTo(s * 0.57, s * 0.395);
     g.stroke();
-    g.fillStyle = M.dark;
+    g.fillStyle = '#8a52d6';
     g.beginPath();
-    g.arc(s * 0.455, s * 0.42, s * 0.01, 0, Math.PI * 2);
-    g.arc(s * 0.545, s * 0.42, s * 0.01, 0, Math.PI * 2);
+    g.ellipse(s * 0.455, s * 0.42, s * 0.02, s * 0.012, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.545, s * 0.42, s * 0.02, s * 0.012, 0, 0, Math.PI * 2);
     g.fill();
+    g.fillStyle = M.dark;
     g.beginPath();
     g.moveTo(s * 0.47, s * 0.55);
     g.lineTo(s * 0.53, s * 0.55);

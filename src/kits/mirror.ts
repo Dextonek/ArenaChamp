@@ -231,8 +231,9 @@ export const mirrorKit: HeroKit = {
     g.quadraticCurveTo(s * 0.69, s * 0.58, s * 0.62, s * 0.7);
     g.quadraticCurveTo(s * 0.6, s * 0.55, s * 0.57, s * 0.45);
     g.fill();
-    // The face: pale, a calm small smile, lidded eyes with a blue glint.
-    g.fillStyle = '#e2bda8';
+    // The face: pale, a calm small smile, lidded eyes. // Touched 2026-11-16 (docs/lore/codex/revamp.md): Gloaming folk: skin cooled to blue-grey,
+    // silver eyeshine, dark lips.
+    g.fillStyle = '#c9ccd8';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.43, s * 0.105, s * 0.135, 0, 0, Math.PI * 2);
     g.fill();
@@ -250,7 +251,11 @@ export const mirrorKit: HeroKit = {
       g.beginPath();
       g.ellipse(s * sx, s * 0.43, s * 0.026, s * 0.03, 0, 0, Math.PI * 2);
       g.fill();
-      g.fillStyle = '#4aa8e8';
+      g.fillStyle = 'rgba(200,214,255,0.55)';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.435, s * 0.024, s * 0.03, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#eef2ff';
       g.beginPath();
       g.ellipse(s * sx, s * 0.435, s * 0.016, s * 0.022, 0, 0, Math.PI * 2);
       g.fill();
@@ -261,8 +266,8 @@ export const mirrorKit: HeroKit = {
       g.quadraticCurveTo(s * sx, s * 0.4, s * (sx + 0.03), s * 0.425);
       g.stroke();
     }
-    g.strokeStyle = '#a23a62';
-    g.lineWidth = s * 0.009;
+    g.strokeStyle = '#3c2238';
+    g.lineWidth = s * 0.013;
     g.beginPath();
     g.moveTo(s * 0.47, s * 0.505);
     g.quadraticCurveTo(s * 0.5, s * 0.52, s * 0.535, s * 0.5);

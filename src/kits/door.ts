@@ -178,17 +178,44 @@ export const doorKit: HeroKit = {
     }
     g.fillStyle = S.hot;
     g.fillRect(s * 0.38, s * 0.6, s * 0.24, s * 0.03);
-    // A long thin pale face, silver hair swept back, level brows, calm steady eyes, a thin polite smile.
-    g.fillStyle = '#e8d0b8';
+    // A long thin face, white hair swept back, level brows, calm steady eyes, a thin polite smile.
+    // Touched 2026-11-16 (docs/lore/codex/revamp.md): a Northerner: umber skin, white braids, star lines on the jaw.
+    g.fillStyle = '#6e4a34';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.085, s * 0.14, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.silver;
+    g.fillStyle = '#eceae4';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.36, s * 0.1, s * 0.1, 0, Math.PI, Math.PI * 2);
     g.fill();
     g.fillRect(s * 0.4, s * 0.36, s * 0.02, s * 0.1);
     g.fillRect(s * 0.58, s * 0.36, s * 0.02, s * 0.1);
+    // thin braids down to the collar, and the star lines along the jaw with a star at each bend
+    g.strokeStyle = '#eceae4';
+    g.lineWidth = s * 0.016;
+    g.setLineDash([s * 0.012, s * 0.006]);
+    for (const x of [0.405, 0.595]) {
+      g.beginPath();
+      g.moveTo(s * x, s * 0.44);
+      g.lineTo(s * x, s * 0.6);
+      g.stroke();
+    }
+    g.setLineDash([]);
+    g.strokeStyle = '#7a96e0';
+    g.fillStyle = '#7a96e0';
+    g.lineWidth = s * 0.006;
+    for (const d of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + d * 0.08), s * 0.49);
+      g.lineTo(s * (0.5 + d * 0.065), s * 0.54);
+      g.lineTo(s * (0.5 + d * 0.035), s * 0.575);
+      g.stroke();
+      for (const [x, y] of [[0.08, 0.49], [0.065, 0.54], [0.035, 0.575]]) {
+        g.beginPath();
+        g.arc(s * (0.5 + d * x), s * y, s * 0.007, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
     g.strokeStyle = S.silverLo;
     g.lineWidth = s * 0.01;
     for (const ex of [0.465, 0.535]) {

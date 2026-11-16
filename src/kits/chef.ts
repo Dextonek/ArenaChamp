@@ -286,7 +286,7 @@ export const chefKit: HeroKit = {
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.18, s * 0.2, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#d6a284';
+    g.fillStyle = '#7a4c30';   // // Touched 2026-11-16 (docs/lore/codex/revamp.md): Dune folk: deep brown skin, kohl to the temples
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.14, s * 0.17, 0, 0, Math.PI * 2);
     g.fill();
@@ -307,6 +307,18 @@ export const chefKit: HeroKit = {
       g.beginPath();
       g.moveTo(s * (0.5 + dir * 0.03), s * 0.405);
       g.quadraticCurveTo(s * (0.5 + dir * 0.06), s * 0.385, s * (0.5 + dir * 0.1), s * 0.41);
+      g.stroke();
+    }
+    g.strokeStyle = '#120c0a';
+    g.lineWidth = s * 0.008;
+    for (const d of [-1, 1]) {
+      const x = 0.5 + d * 0.06;
+      g.beginPath();
+      g.ellipse(s * x, s * 0.442, s * 0.03, s * 0.033, 0, 0, Math.PI * 2);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(s * (x + d * 0.028), s * 0.438);
+      g.lineTo(s * (x + d * 0.075), s * 0.418);
       g.stroke();
     }
     g.strokeStyle = '#a8283a';

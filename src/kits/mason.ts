@@ -7,7 +7,7 @@ import type { HeroKit } from '../heroes';
  */
 const M = { core: '#f6efdc', hot: '#dcc58f', body: '#c9b48a', stone: '#9a958c', stoneLit: '#b4afa5', stoneDark: '#5b5853', foil: '#e6e0d0', dark: '#1c1a18', fury: '#b06a58', sweat: '#8fd3ff',
   // the Stonewright's tunic, apron, pauldrons, maul and glowing rune (the _v3 model)
-  tunic: '#40383a', leather: '#6a4222', pauldron: '#8a8476', maul: '#69645c', haft: '#503420', gold: '#d8a838', rune: '#ff9a2a', runeHot: '#ffd890', skin: '#c08a64', hair: '#6c665e',
+  tunic: '#40383a', leather: '#6a4222', pauldron: '#8a8476', maul: '#69645c', haft: '#503420', gold: '#d8a838', rune: '#ff9a2a', runeHot: '#ffd890', skin: '#7e7670', hair: '#6c665e',
 };
 
 function ground(g: CanvasRenderingContext2D, s: number) {
@@ -205,7 +205,7 @@ export const masonKit: HeroKit = {
     for (const sx of [0.435, 0.565]) {
       g.fillStyle = M.core;
       g.beginPath(); g.ellipse(s * sx, s * 0.4, s * 0.03, s * 0.032, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#5a3a1c';
+      g.fillStyle = '#e8a040';   // the Kilnborn's pale amber (touched 2026-11-16, with the ash-grey skin)
       g.beginPath(); g.ellipse(s * sx, s * 0.405, s * 0.018, s * 0.024, 0, 0, Math.PI * 2); g.fill();
     }
     g.strokeStyle = '#4a4036';

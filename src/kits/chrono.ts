@@ -159,8 +159,8 @@ export const chronoKit: HeroKit = {
     // The ivory dial-face shoulder plate.
     dial(g, s * 0.24, s * 0.74, s * 0.1, { ivory: true });
     blade(g, s * 0.24, s * 0.74, 0.3, s * 0.07, s * 0.02, S.dark, '');
-    // Neck and a long lean face.
-    g.fillStyle = '#e8d8c4';
+    // Neck and a long lean face. // Touched 2026-11-16 (docs/lore/codex/revamp.md): a Northerner: umber skin, star lines on the jaw drawn as ticks.
+    g.fillStyle = '#7a5038';
     g.fillRect(s * 0.46, s * 0.56, s * 0.08, s * 0.08);
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.1, s * 0.14, 0, 0, Math.PI * 2);
@@ -195,8 +195,21 @@ export const chronoKit: HeroKit = {
     g.moveTo(s * 0.55, s * 0.49);
     g.quadraticCurveTo(s * 0.6, s * 0.6, s * 0.56, s * 0.7);
     g.stroke();
-    g.fillStyle = '#b87a74';
+    g.fillStyle = '#4a2a20';
     g.fillRect(s * 0.47, s * 0.54, s * 0.05, s * 0.008);
+    g.strokeStyle = '#7a96e0';
+    g.lineWidth = s * 0.006;
+    g.beginPath();
+    g.moveTo(s * 0.41, s * 0.49);
+    g.quadraticCurveTo(s * 0.43, s * 0.565, s * 0.49, s * 0.59);
+    g.stroke();
+    for (const t of [0.15, 0.4, 0.65, 0.9]) {
+      const x = 0.41 + (0.49 - 0.41) * t + 0.02 * Math.sin(Math.PI * t), y = 0.49 + (0.59 - 0.49) * t;
+      g.beginPath();
+      g.moveTo(s * (x - 0.012), s * (y + 0.008));
+      g.lineTo(s * (x + 0.006), s * (y - 0.01));
+      g.stroke();
+    }
   },
   spells: [
     {
