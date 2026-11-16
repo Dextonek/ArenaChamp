@@ -38,7 +38,13 @@ Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C
   `docs/models/review/round3/`.
 - Lore and Climb words (the gates, the rulers as drawn, the mothers "her"), a won ruler stays at the door, Cantor's icons in gold; page
   `docs/lore/changes-2026-11-16.html`.
-**Queued:** the hero bugs (design section 8), after the 39 are moved. Wire the Blender round's workers into the life's walkers table.
+- **Done and merged (2026-11-16): the Blender round** (page `docs/models/blender-round/index.html`): six plain workers for the walkers
+  (sea_dockhand, sea_fishwife, wood_cutter, sands_water, deep_miner, war_gleaner; passed to the life agent to wire, and their names to
+  the lore agent); eight people's cream and white robes darker (no more glow in the Sands' and War's light); Frost's toppled ice shards
+  shortened (an edit of the exported file, `blender/arenas/frost_shard_fix.py`); the Temple's lintels a deliberate ruin (left); the
+  Glade's near crowns kept out of the lower corners (`src/arenas/glade.ts`, one line; the seeded dressing moves, the fight print
+  stays). Work clips (kneel, harvest, carry) not added: +366 KB (+30 %) on the animation file every player loads.
+**Queued:** the hero bugs (design section 8), after the 39 are moved.
 
 ## Today's entries (2026-11-16)
 
