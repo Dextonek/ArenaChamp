@@ -1,8 +1,4 @@
 import type { EffectModule } from '../../effects/types';
-import { starfallArrowModule } from './starfallArrow';
-import { twinStarsModule } from './twinStars';
-import { pinningArrowModule } from './pinningArrow';
-import { meteorMarkModule } from './meteorMark';
 import { tagOutModule } from './tagOut';
 import { pomBackflipModule } from './pomBackflip';
 import { pomSnareModule } from './pomSnare';
@@ -82,10 +78,6 @@ import { hallOfMirrorsModule } from './hallOfMirrors';
 import { throughTheGlassModule } from './throughTheGlass';
 import { vanityStandModule } from './vanityStand';
 import { handMirrorModule } from './handMirror';
-import { umbralCutModule } from './umbralCut';
-import { smokeVeilModule } from './smokeVeil';
-import { shadowDoubleModule } from './shadowDouble';
-import { nightfallModule } from './nightfall';
 import { ricochetLightModule } from './ricochetLight';
 import { crystalPillarModule } from './crystalPillar';
 import { blindingFlareModule } from './blindingFlare';
@@ -118,22 +110,10 @@ import { icicleModule } from './icicle';
 import { hoarfrostModule } from './hoarfrost';
 import { rimeArmourModule } from './rimeArmour';
 import { wintersShatterModule } from './wintersShatter';
-import { seedShotModule } from './seedShot';
-import { strangleVineModule } from './strangleVine';
-import { pollenGlideModule } from './pollenGlide';
-import { worldTreeModule } from './worldTree';
-import { cobraSpitModule } from './cobraSpit';
-import { shepherdsCrookModule } from './shepherdsCrook';
-import { scarabStrideModule } from './scarabStride';
-import { sarcophagusModule } from './sarcophagus';
 import { tickBoltModule } from './tickBolt';
 import { slowTimeModule } from './slowTime';
 import { timeSkipModule } from './timeSkip';
 import { stolenHourModule } from './stolenHour';
-import { lancetModule } from './lancet';
-import { mistWaltzModule } from './mistWaltz';
-import { hemocurseModule } from './hemocurse';
-import { sanguineFeastModule } from './sanguineFeast';
 import { chainHammerModule } from './chainHammer';
 import { forgeRoarModule } from './forgeRoar';
 import { redHotRivetModule } from './redHotRivet';
@@ -142,19 +122,7 @@ import { resoundingChordModule } from './resoundingChord';
 import { sirenSongModule } from './sirenSong';
 import { risingChorusModule } from './risingChorus';
 import { duetModule } from './duet';
-import { toxinDartModule } from './toxinDart';
-import { fireVialModule } from './fireVial';
-import { acidSplashModule } from './acidSplash';
-import { homunculusModule } from './homunculus';
 import { burrowModule } from './burrow';
-import { waveDiscModule } from './waveDisc';
-import { coralSpireModule } from './coralSpire';
-import { mistFormModule } from './mistForm';
-import { moonPullModule } from './moonPull';
-import { crosswindModule } from './crosswind';
-import { skywardModule } from './skyward';
-import { featherStepModule } from './featherStep';
-import { skyRendModule } from './skyRend';
 import { boneFanModule } from './boneFan';
 import { raiseDeadModule } from './raiseDead';
 import { boneArmourModule } from './boneArmour';
@@ -171,10 +139,6 @@ import { FOLDER_SPELLS } from '../../heroes/spells';
  * (src/heroes/<theme>/fight.ts) or, for a hero not moved yet, here.
  */
 export const gameModules: EffectModule[] = [
-  starfallArrowModule,
-  twinStarsModule,
-  pinningArrowModule,
-  meteorMarkModule,
   tagOutModule,
   pomBackflipModule,
   pomSnareModule,
@@ -254,10 +218,6 @@ export const gameModules: EffectModule[] = [
   throughTheGlassModule,
   vanityStandModule,
   handMirrorModule,
-  umbralCutModule,
-  smokeVeilModule,
-  shadowDoubleModule,
-  nightfallModule,
   ricochetLightModule,
   crystalPillarModule,
   blindingFlareModule,
@@ -290,22 +250,10 @@ export const gameModules: EffectModule[] = [
   hoarfrostModule,
   rimeArmourModule,
   wintersShatterModule,
-  seedShotModule,
-  strangleVineModule,
-  pollenGlideModule,
-  worldTreeModule,
-  cobraSpitModule,
-  shepherdsCrookModule,
-  scarabStrideModule,
-  sarcophagusModule,
   tickBoltModule,
   slowTimeModule,
   timeSkipModule,
   stolenHourModule,
-  lancetModule,
-  mistWaltzModule,
-  hemocurseModule,
-  sanguineFeastModule,
   chainHammerModule,
   forgeRoarModule,
   redHotRivetModule,
@@ -314,19 +262,7 @@ export const gameModules: EffectModule[] = [
   sirenSongModule,
   risingChorusModule,
   duetModule,
-  toxinDartModule,
-  fireVialModule,
-  acidSplashModule,
-  homunculusModule,
   burrowModule,
-  waveDiscModule,
-  coralSpireModule,
-  mistFormModule,
-  moonPullModule,
-  crosswindModule,
-  skywardModule,
-  featherStepModule,
-  skyRendModule,
   boneFanModule,
   raiseDeadModule,
   boneArmourModule,

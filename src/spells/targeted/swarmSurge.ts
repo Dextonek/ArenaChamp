@@ -6,7 +6,7 @@ import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext, type HitOptions } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import { MAX_WASPS, surgeWasps } from '../../traits/hive';
-import { shapeMove } from '../../traits/tide';
+import { shapeMove } from '../../heroes/tide/trait';
 
 /**
  * Swarm Surge (hive kit v5, R: a wide skillshot). He braces for 0.5 s while every wasp he holds (the trait spends them all

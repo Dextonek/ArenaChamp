@@ -9,13 +9,7 @@
 import type { BuffKind } from './effects/status';
 import type { BodyLook } from './raid/bodies/look';
 import type { Trait } from './traits/types';
-import { alchemyKit } from './kits/alchemy';
-import { sandKit } from './kits/sand';
-import { shadowKit } from './kits/shadow';
-import { groveKit } from './kits/grove';
-import { tideKit } from './kits/tide';
 import { dawnKit } from './kits/dawn';
-import { skyKit } from './kits/sky';
 import { clockworkKit } from './kits/clockwork';
 import { boneKit } from './kits/bone';
 import { inkKit } from './kits/ink';
@@ -25,10 +19,8 @@ import { hiveKit } from './kits/hive';
 import { bardKit } from './kits/bard';
 import { prismKit } from './kits/prism';
 import { stormKit } from './kits/storm';
-import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
-import { bloodKit } from './kits/blood';
 import { mirrorKit } from './kits/mirror';
 import { masonKit } from './kits/mason';
 import { timberKit } from './kits/timber';
@@ -150,18 +142,10 @@ const FIGS_OLD = typeof location !== 'undefined' && new URLSearchParams(location
 export const modelV4 = (url: string | undefined) => (url && !FIGS_OLD ? url.replace(/^(models\/heroes\/[a-z]+)(_v\d+)?\.glb$/, '$1_v4.glb') : url);
 
 const MODELS: Record<string, string> = {
-  Vesper: 'models/heroes/blood_v2.glb',
   Brannoc: 'models/heroes/forge_v2.glb',
   Isolde: 'models/heroes/frost_v2.glb',
-  Lyra: 'models/heroes/astral.glb',
-  Vitriol: 'models/heroes/alchemy.glb',
   Kaia: 'models/heroes/storm_v2.glb',
-  Sefu: 'models/heroes/sand_v2.glb',
-  Nyx: 'models/heroes/shadow.glb',
-  Fenna: 'models/heroes/grove.glb',
   Auriel: 'models/heroes/dawn_v2.glb',
-  Marin: 'models/heroes/tide.glb',
-  Zephyr: 'models/heroes/sky_v2.glb',
   Mortis: 'models/heroes/bone.glb',
   Ada: 'models/heroes/clockwork.glb',
   Opaline: 'models/heroes/prism.glb',
@@ -200,10 +184,9 @@ const MODELS: Record<string, string> = {
  * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.33, so a small hero can still be clicked.
  */
 export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
-  Vesper: { radius: 0.41, height: 2.35 }, Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
-  Lyra: { radius: 0.38, height: 2.38 }, Vitriol: { radius: 0.43, height: 2.37 }, Kaia: { radius: 0.47, height: 3.24 },
-  Sefu: { radius: 0.4, height: 2.86 }, Nyx: { radius: 0.4, height: 2.32 }, Fenna: { radius: 0.42, height: 2.55 },
-  Auriel: { radius: 0.47, height: 2.33 }, Marin: { radius: 0.43, height: 2.29 }, Zephyr: { radius: 0.4, height: 2.37 },
+  Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
+  Kaia: { radius: 0.47, height: 3.24 },
+  Auriel: { radius: 0.47, height: 2.33 },
   Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
   Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
   Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.34 },
@@ -219,7 +202,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
 };
 
 /** The heroes not moved into folders yet, at their places in the roster (0 = Vesper, ...); the folders' cards fill the rest. */
-const LISTED: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
+const LISTED: HeroKit[] = [forgeKit, frostKit, stormKit, dawnKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit];
 
 /** The roster in order: each folder's card goes in at its `order`, the listed heroes fill the places left, in their order. */
 function roster(): HeroKit[] {

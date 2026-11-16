@@ -5,7 +5,7 @@ import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, flashBeat } 
 import { Crystal, Glitter, PRISM, PRISM_CSS, SPECTRUM, SpectrumBeam } from '../../effects/parts/prism';
 import { frameCast, type CastContext, type HitOptions } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { shapeMove } from '../../traits/tide';
+import { shapeMove } from '../../heroes/tide/trait';
 
 /**
  * Blinding Flare (prism kit v5, E: a zone round her, no aim). Six mirror panes fly in round Opaline and a white glare builds

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { SAND, SAND_CSS, Dust, SandPool, SandRibbon, SandstoneBlocks } from '../../effects/parts/sand';
+import { SAND, SAND_CSS, Dust, SandPool, SandRibbon, SandstoneBlocks } from '../../heroes/sand/parts';
 import type { Projectile } from '../../effects/projectile';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';

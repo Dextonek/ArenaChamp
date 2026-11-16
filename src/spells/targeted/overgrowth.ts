@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, clearScreenFx, createScreenFx } from '../../effects/parts';
-import { GROVE_CSS, Bloom, Petals, Pollen, RootRing, SpiralVine } from '../../effects/parts/grove';
+import { GROVE_CSS, Bloom, Petals, Pollen, RootRing, SpiralVine } from '../../heroes/grove/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
