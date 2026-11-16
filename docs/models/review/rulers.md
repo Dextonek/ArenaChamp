@@ -4,8 +4,10 @@ Checked 2026-11-16. Each ruler at its first floor's size and with its stand-in h
 `pieces/ruler.ts`), through the hero figure code it fights with (`src/heroFigure.ts`), beside Sefu: standing, walking, the basic
 attack (wind-up, hit, after) and each cast pose its moves use (`thrust` for the fan of light, `swing` for the cleave, `slam` for the
 turning fire, the tilting room and the tide, `lunge`, `raise` for the falling stones and the calls). Three views a frame: the
-game's camera, the side, the front. Each ruler was also seen in its own fight on its floor (the Drowned Captain in the harbour ring
-at 2.2 times a hero: in scale with the ring's props and the hero).
+game's camera, the side, the front, on a plain floor: this is the code a ruler fights with, but the rulers were not each watched in
+their own fight. Only the Drowned Captain was (floor 1, the harbour ring, 2.2 times a hero: in scale with the ring's props and the
+hero); a probe of the others in their fights read the wrong figure and is not used. Not checked: a ruler's flinch, kneel and fall, and
+the rulers in their chapters' light.
 
 Sheets: [the Sea](rulers/sheet-sea.jpg), [the Wood](rulers/sheet-wood.jpg), [the Sands](rulers/sheet-sands.jpg),
 [the Deep](rulers/sheet-deep.jpg), [the War](rulers/sheet-war.jpg). Tool: `pipeline/tools/ruler-sheet.js`.

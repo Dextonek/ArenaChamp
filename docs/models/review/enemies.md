@@ -27,7 +27,13 @@ Tools: `pipeline/tools/foe-anim-sheet.js` (the sheets and numbers), `pipeline/to
    sideways or backwards. Now a figure that goes backwards plays its stride backwards, and one that goes sideways turns its body up to
    about 50 degrees toward the way it goes (only the figure turns; the unit's facing, its blows and its bolts are the game's, and the
    turn is undone within about a fifth of a second when it strikes or shoots). Floor 42's crimson pack: 36 % of the moving moments had the
-   hips turned more than 50 degrees from the way they went, 17 % after; the median 41 degrees, 25 after. Same fight, frame for frame.
+   hips turned more than 50 degrees from the way they went, 17 % after; the median 41 degrees, 25 after. The fight itself did not
+   change: the same number of moving and fighting moments in both runs (the change touches only the figure inside the unit; the perf
+   tool's prints were not rerun).
+4. **Health bars through heads.** The bars stood lower than the tops of the Pale One's crown (bar 4.2 m, crown 4.56 m), the Hollow
+   Oak's branches (7.68 against 8.1), the knights' plumes (3.25 against 3.37), the deserter's and the bearer's crests, and touched the
+   Mate's, the chief's, the thief's, the raider's and the War soldiers' heads. Each `barY` is now the figure's top standing, at its
+   unit's size, plus 0.15 m (`foeKinds.ts`).
 
 ## Checked and left as they are
 
@@ -43,6 +49,13 @@ Tools: `pipeline/tools/foe-anim-sheet.js` (the sheets and numbers), `pipeline/to
 - **Size:** the commons stand a little under a hero (the docker 2.07 m beside Sefu's 2.34), the big ones over two heroes high (the
   Harbourmaster's Mate 3.5 m, the moss giant 3.3 m), the Hollow Oak 8 m and the Dune Mother 7 m with her crest, as the floors scale them.
 - **Shadows:** the model enemies cast none (`dress` turns it off), the code-drawn ones do. Left: it was chosen for the phone's frame.
+
+- **Where shots leave:** every unit's bolt, arrow, stone or net starts 0.45 m in front of it at 1.1 m up (`BOLT_HEIGHT`,
+  `src/effects/projectile.ts`, the engine's for every bolt): the bowman's crossbow is at about 1.7 m, the slinger's and the net
+  caster's hand at about 2 m at the release. Not changed here (it is the engine's, and the heroes' too); for the engine's owner: a
+  unit's shot could start at its look's own height (a `shotY` on `MinionRig`, set by `modelLook` from the hand at the release).
+- **Not checked:** the enemies in their chapters' light, close up (the in-game pictures show them small; the people showed the
+  bloom there).
 
 ## For the Blender round
 

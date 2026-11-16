@@ -9,10 +9,11 @@ Side: [the Sun Warden](bosses/warden-side.jpg), [Ash](bosses/ash-side.jpg) (a py
 
 ## Found
 
-Nothing to fix. The Warden's base rests on the floor (its lowest point 3 cm under it, as a hero's sole) and sinks only in its fall,
-as built; Ash stands on his feet and knuckles and his plates fall away by phase; Ember floats with no legs, as designed. Each faces the
-way it casts. The red disc in front of Ash and Ember in the front views is the room's centre (its lava vent at the ring's middle), not
-their ring.
+Nothing that the pictures show as wrong; this was a light check. The Warden's base rests on the floor (its lowest point 3 cm under
+it, as a hero's sole) and sinks only in its fall. In the pictures Ash stands on his feet and knuckles and loses his plates by phase,
+and Ember floats with no legs, as designed. The red disc in front of Ash and Ember in the front views is the room's centre (a ring at
+the room's middle), not their ring. Not measured: Ash's and Ember's lowest points (the measure read a model kept out of sight under
+the floor), and where each body stands against its hit circle; the side views of Ash are blocked by a pylon of the room.
 
 **Not checked this round:** the Heart of Noon (the boss pose tool does not take it; its own pictures are made by
 `pipeline/tools/heart-phase-shots.py` and `heart-room-shots.py`, last reviewed with its room).

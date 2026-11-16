@@ -5,31 +5,36 @@ Checked 2026-11-16.
 ## The arenas in the heroes' style (7 files)
 
 The duel arenas harbour, battlefield, canyon, cavern and the Raid's rooms sunburst (the Heart of Noon), sunhall (the Sun Warden's
-hall), twinforge (Ash and Ember): every prop laid against the obstacle it stands for (`pipeline/tools/arena-fit.js`; the layout's
-own rules are `pipeline/tools/arena-check.mjs`, which "cannot see the meshes"). A hero is kept 0.5 m from an obstacle's capsule
-(`pushOut`), so a mesh that reaches up to about 0.3 m past it is never touched; past 0.5 m a hero stands in it. All props stand on the
-floor (lowest points 0 to -0.56 m: bases sunk on purpose).
+hall), twinforge (Ash and Ember): every prop laid against the obstacle it stands for, vertex by vertex
+(`pipeline/tools/arena-fit.js`; the layout's own rules are `pipeline/tools/arena-check.mjs`, which "cannot see the meshes"). A hero's
+centre is kept 0.5 m from an obstacle's capsule (`pushOut`), so a prop that reaches up to about 0.5 m past its capsule is touched at
+most; past that a hero stands in it. The rooms' fixed walls have no mesh of their own (the backdrop draws them) and are skipped. All
+props stand on the floor (bases sunk on purpose). Not looked at from the game's camera this round: these are numbers and top-down
+plans.
 
-| Arena | Props | Fits | Found |
+| Arena | Props | Most past its cover, below 2.2 m | Found |
 |---|---|---|---|
-| Harbour | 9 | 7 | the two cannons reach 0.65 m past their walls at one end (a hero's feet go into the gun's end) |
-| Battlefield | 9 | 9 | |
-| Canyon | 9 | 9 | |
-| Cavern | 9 | 9 | |
-| Sunburst (the Heart's room) | 8 (39 fixed walls drawn by the room) | 4 | four low walls 0.41 m past their ends: touched, not entered |
-| Sunhall (the Warden's hall) | 93 (45 fixed walls drawn by the hall) | 67 | pillar bases 0.4 to 0.48 m past their radius (touched); short walls stop a hero 0.4 to 0.5 m before their ends (the capsule's round end) |
-| Twinforge (Ash and Ember's forge) | 2 (12 fixed walls drawn by the room) | 1 | **Ash's great anvil reaches 1.27 m past its round cover on the east and stops 0.54 m short of it north and south**: a hero walks into the anvil's horn, and is stopped a metre from its long side |
+| Harbour | 9 | **0.70 m** | the two cannons: the gun's breech and carriage tail, 0.9 m up, stand 0.7 m past the end of their wall: a hero's legs go into it |
+| Battlefield | 9 | 0.33 m | |
+| Canyon | 9 | 0.29 m | |
+| Cavern | 9 | 0.24 m | |
+| Sunburst (the Heart's room) | 8 (39 fixed walls) | 0.44 m | the low walls' plinths, 0.15 m up: touched, not entered |
+| Sunhall (the Warden's hall) | 93 (45 fixed walls) | 0.51 m | the pillars' bases, 0.25 to 0.6 m up: touched, not entered |
+| Twinforge (Ash and Ember's forge) | 2 (12 fixed walls) | 0.44 m | Ash's anvil's horn reaches 1.27 m past its cover, but 2.7 m up, over a hero's head |
+
+![](arenas/harbour-cannon.jpg) ![](arenas/twinforge-anvil.jpg)
 
 The older duel arenas (temple, frost, caldera, glade, skyruins) build their props onto the obstacles in code (`*_props.glb`
-instanced per obstacle), so they fit by construction; their backdrops stand outside the ring.
+instanced per obstacle), so they fit by construction; their backdrops stand outside the ring and were not looked at this round.
 
 ## For the Blender round (the obstacles are gameplay and stay; the meshes move)
 
-- **Twinforge, the great anvil** (`blender/arenas/real/twinforge.py`, line 302): `A.put("great_anvil", HOLD[0][0] - 0.6, Z(-HN + 4.2),
-  yaw=0.0, scale=0.9)`: centred on its 1.75 m cover and a little smaller, the horn and heel then reach about 0.3 m past it on both
-  ends. Then rebuild and check with `pipeline/tools/arena-fit.js` (cover0 `over` under 0.35).
-- **Harbour, the two cannons** (`blender/arenas/real/harbour.py`, `cannons()`): the gun is 3.2 m long on a 2.7 m wall; at
-  `scale=S * 0.9` instead of `S * 1.05` it fits (or move it 0.3 m along the wall toward its short end). Rebuild, check cover5 and cover6.
+- **Harbour, the two cannons** (`blender/arenas/real/harbour.py`, `cannons()`): the gun is about 3.2 m long on a 2.7 m wall and its
+  back end stands 0.7 m past the wall's capsule. At `scale=S * 0.9` instead of `S * 1.05` it is about 2.75 m (or move it 0.35 m along
+  the wall toward its muzzle end). Rebuild, then `pipeline/tools/arena-fit.js`: harbour covers 5 and 6 under 0.5.
+
+(A first, rougher measure with boxes also blamed Ash's anvil in the Twin Forge; measured point by point, what sticks out is the horn,
+over a hero's head. Nothing to change there.)
 
 ## The weapons (5 files)
 
