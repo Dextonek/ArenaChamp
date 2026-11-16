@@ -46,6 +46,9 @@ export interface FigureState {
   held?: boolean;
 }
 
+/** How much of a blow's or a cast's legs a figure of the Climb's own takes (`HeroFigure.climbFigure`). */
+const CLIMB_LEGS = 0.4;
+
 /** A pose: [bone, axis, angle] rotations in the figure's own space (X its left, Y up, Z forward). */
 type Pose = [BoneName, THREE.Vector3, number][];
 
@@ -303,6 +306,13 @@ export class HeroFigure {
   private realFlinchW = 0;
   private realLayers: Layer[] = [];
   private realStyle: RealStyle = {};
+  /**
+   * A figure of the Climb's own (`models/tower/`: its rulers, giants in gowns and long coats, and its people). The pack's blows and
+   * casts step and crouch so deep that a floor-length hem went into the floor and a staff held upright was driven through it at a slam
+   * (docs/models/review/rulers.md): such a figure takes `CLIMB_LEGS` of a blow's legs (a slam's landing keeps its own), and one with a
+   * staff upright stands through a slam with the staff planted and its free hand up. The heroes are as they were.
+   */
+  private climbFigure = false;
 
   readonly group = new THREE.Group();
   private figures = new Map<string, Hero>();
@@ -450,6 +460,7 @@ export class HeroFigure {
     if (kit?.look !== this.body?.look) this.body = kit?.look ? { look: kit.look, phase: this.body?.phase ?? 0, rage: this.body?.rage ?? false } : null;
     this.shownYaw = NaN;
     this.figure = null;
+    this.climbFigure = !!url && url.includes('models/tower/');
     if (url && isRealModel(url)) {
       let r = this.reals.get(url);
       if (!r) {
@@ -1335,6 +1346,14 @@ export class HeroFigure {
       layers.push({ clip: hold[0], t: this.clock, loop: true, [hold[1]]: 1 });
     }
 
+    // A Climb figure with a staff upright keeps it upright through a slam (below): the pack's landing drove it into the floor. (Kept
+    // upright through a blow or a lunge, it went into the floor with the body's lean: there the blow's own arm is better.)
+    const keepStaff = () => {
+      if (!this.climbFigure || this.realStyle.hold !== 'torch' || !hold) return;
+      const top = layers[layers.length - 1];
+      for (const l of layers) l[hold[1]] = l === top ? 0 : l.clip === hold[0] ? 1 : 0;
+    };
+
     // a hit: a short flinch of the chest and arms
     this.realFlinch += dt;
     const fl = realClipInfo('Hit_Chest');
@@ -1354,7 +1373,7 @@ export class HeroFigure {
       const clip = this.realAttackClip(m.melee), info = realClipInfo(clip);
       const tail = Math.min(info.dur - info.hit, CLIP_TAIL), lead = Math.min(info.hit, CLIP_LEAD, this.windSec * CLIP_RUSH);
       const at = m.wind >= 0 ? info.hit - lead * (1 - m.wind) : info.hit + tail * Math.min(1, this.sinceHit / STRIKE_RECOVER);
-      over(clip, at, false, this.attackW, this.attackW * (1 - this.gait) * info.legs);
+      over(clip, at, false, this.attackW, this.attackW * (1 - this.gait) * info.legs * (this.climbFigure ? CLIMB_LEGS : 1));
     }
 
     // a cast
@@ -1365,14 +1384,17 @@ export class HeroFigure {
       const castW = cn.t < cn.dur ? 1 : 1 - (cn.t - cn.dur) / 0.3;
       if (castW <= 0) this.castNow = null;
       else {
-        const loop = cn.style === 'raise' || cn.style === 'channel';
+        // a Climb figure with a staff upright does not slam it into the floor: it stands, staff planted, its free hand up
+        const planted = this.climbFigure && this.realStyle.hold === 'torch' && cn.style === 'slam';
+        const loop = cn.style === 'raise' || cn.style === 'channel' || planted;
         const clip = loop ? 'Spell_Simple_Idle_Loop' : cn.style === 'slam' ? 'Jump_Land' : cn.style === 'lunge' ? 'Sword_Dash' : cn.style === 'swing' ? 'Sword_Regular_C' : 'Spell_Simple_Shoot';
         const info = realClipInfo(clip), a = Math.min(0.24, cn.dur * 0.35) * (cn.big ? 1.3 : 1);
         const t = loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
         const w = castW * smooth(0, 0.1, cn.t);
         casting = w;
-        if (clip.startsWith('Spell_')) pushing = w;
-        over(clip, t, loop, w, w * (1 - this.gait) * info.legs);
+        if (clip.startsWith('Spell_') && !planted) pushing = w;
+        over(clip, t, loop, w, w * (1 - this.gait) * info.legs * (this.climbFigure && cn.style !== 'slam' ? CLIMB_LEGS : 1));
+        if (planted) keepStaff();
       }
     }
     if (this.stunW > 0.01) over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);
@@ -1383,7 +1405,7 @@ export class HeroFigure {
     // a staff, scepter, lyre or lantern stays upright through the pack's push and raise (a ranged attack, most casts); a dash,
     // a slam or a swing carries it as its clip does
     const push = m && this.realAttackClip(m.melee) === 'Spell_Simple_Shoot' ? this.attackW : 0;
-    if (this.realStyle.hold === 'torch' && !this.realStyle.keep) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
+    if (this.realStyle.hold === 'torch' && !this.realStyle.keep && !this.climbFigure) r.uprightHeld(Math.max(push, pushing) * (1 - this.liftW), dt);
     // the soles on the floor through a stride
     r.plantFeet(dt, true);
   }

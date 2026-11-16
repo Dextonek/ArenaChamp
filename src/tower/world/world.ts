@@ -40,6 +40,8 @@ export interface ZoneHooks {
   /** The hero fell. `revive`: a life is left, stand it up; `restart`: none was, the owner rebuilds the floor. */
   fell(): 'revive' | 'restart';
   door(d: DoorDef): void;
+  /** The open world's stage 3: another player holds this door open, so it may be walked into though this run has won it already. */
+  joinable?(d: DoorDef): boolean;
   save(): void;
   offerBoon(label: string): void;
   giveRelic(): void;
@@ -208,6 +210,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     // Every enemy kind of the floor compiled with the fight (prewarm.ts): the first pack no longer freezes the game.
     const warm = prewarmFoes(api, floor.enemies);
     scenery.enter = (d) => hooks.door(d);
+    scenery.joinable = (d) => hooks.joinable?.(d) ?? false;
     scenery.read = (lines) => {
       if (o.mode === 'run') return;
       hud.openCard({ for: 'lore', name: floor.lore.name, role: 'A carved stone', lines, buttons: [{ label: 'Close', click: () => hud.closeCard() }] });

@@ -3,7 +3,7 @@
 ## RESUMED (2026-11-16, the user: "yes continue"; and "you can make more agents, not just 3": the limit is now 6)
 
 Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
-- `t3/climb-stage3-doors-together` (from 5a2b7de3): open world stage 3, doors and bosses together.
+- Open world stage 3: done and merged (the entry below).
 - **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
   `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
   only Big Yoko showed the painted underwear, and the build now covers it on every hero; 20 portraits redrawn. Worth the user's eye:
@@ -14,14 +14,24 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
   W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
   cartoon (redraw as engraved gold?). Not tried on Safari.
-- The hero framework, steps 1 and 2 only (the audit and design `docs/pipeline/hero-framework.md`, all 40 fight prints on today's
-  code; brief `docs/pipeline/hero-framework-brief.md`). Moving heroes (step 3 on) waits until the icon job is merged.
+- **Done and merged (2026-11-16): the hero framework, steps 1 and 2.** **Step 3 now running: Anka moved as the sample; it stops for
+  the user's look before the other 39.** The design
+  `docs/pipeline/hero-framework.md`, its page `docs/pipeline/hero-framework/index.html`. Two fight prints per hero, all 40 repeat:
+  `python pipeline/tools/hero-prints.py check` and `check --foe Brannoc` (references `docs/perf/data/hero-prints*.json`). Not proven
+  by the prints: Sefu E, Tempo E, Mr. Ledger E and R, Pip R (never cast in them). Waiting on the user: the design's yes, and the
+  "found broken" list (section 8: the table that heals the enemy, the Flood bonus, six kit flags...). Step 3 (move Anka) next.
 - The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
   floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
   for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
-- The model review (the user: "look at all models we made and correct them: clipping, bad direction; make them fit the scenes"):
-  one agent now on the Climb's 55 models, the Raid bosses, the arena props and the weapons (in-game fixes; Blender rebuilds listed
-  for one Blender round later; page `docs/models/review/`).
+- **Done and merged, not live (2026-11-16): the model review of the Climb, the bosses and the arenas** (58 models; page
+  `docs/models/review/index.html`). Fixed in code: the War bowman levels his crossbow; the Pale One's and the rulers' gowns no longer
+  sink at a blow; the five staff rulers plant the staff instead of driving it 2 m into the floor (`climbFigure` in `src/heroFigure.ts`,
+  Climb models only); enemies backing off or circling step the way they go; 16 enemy looks' health bars above the crown (set from
+  measurements, not looked at). Blender list (`docs/models/review/blender-list.md`): Tide Judge glaive and Harbour cannons passed to
+  the heroes' review (the one Blender agent); the cream that blooms white on seven people in the Sands' and War's light waits on the
+  user (15 % darker, `#cdbf9c`?). The Turncloak's placement on floors 42-43 passed to the floors 31-50 review. For the engine: every
+  enemy's shot leaves at 1.1 m (`src/effects/projectile.ts`), the bowman's crossbow is at 1.7 m. Not checked: the Heart of Noon, the
+  rulers' flinch, kneel and fall, the older arenas' backdrops.
 - **Done, on branch `t3/1cbb14d0` (not merged, not live) (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`).
   All 40 measured through every clip (`pipeline/tools/hero-review.js`), a sheet each, a CPU duel each over the nine arenas, three on a
   Climb floor. Three faults across the roster, fixed in code (`src/motion/real.ts`, two lines in `HeroFigure.followReal`), no model
@@ -30,9 +40,15 @@ Running, each in its own thread and worktree (`git worktree list`), from its "Pa
   left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now upright; Anka's fan and Silvane's mirror left
   as they were). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
   **Waiting on the user:** the list on the page (staffs upright: keep?; Professor Puff casts with his empty hand; Sefu's headdress in
-  his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). No Blender list from the other review had come.
-- **Queued (the user: "look at the map and fill it to be more lively"):** an agent that makes the Climb's floors livelier (ambient
-  life, more to see), starting with one chapter shown to the user first; it starts when the stage 3 job is merged (a slot frees).
+  his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). Its Blender round (the Tide Judge's glaive, the harbour's cannons) running in the same branch.
+- **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
+  (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
+  user's yes before the other four chapters.
+- **Server tests flaky under load (2026-11-16, after the stage 3 merge):** with six agents running, three runs failed three different
+  timing checks (shop: a late `lobby` null after a leave; shop: timeout on `raid_gate`; doors: timeout on `door_end`); the stage 3
+  branch had 364 passing. Re-run `npm run test:server` when the machine is quiet; if one keeps failing, fix it (the shop's leave
+  should wait for its `lobby` null instead of a 100 ms pause).
+- Stray: `C:\c` (261 MB of misplaced scratch copies, an agent's wrong path) could not be removed (safety check); the user may delete it.
 Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
 
 ## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
@@ -81,10 +97,25 @@ The three agents below were restarted in their own threads from their saved comm
   description, a "new hero" command that makes the folder, lore entry, kit outline, model build file and checklist, a hero workbench
   page (change numbers live, fight the CPU, see the balance), and automatic checks on a hero change (simulator, online sync, icon at
   small size, model size, lore). Anka converted first as the sample, then the other 39 in batches, each checked in the simulator so
-  none plays differently; the twenty new heroes built the new way. Starts when the icon agent lands (it edits `src/heroes.ts` and
-  the kits). Brief: `docs/pipeline/hero-framework-brief.md`.
-- **Stopped, saved on its branch (see the top) (2026-11-16): the Climb's open world stage 3, doors and bosses together** (one agent; PROTOCOL 19 likely; pictures
-  `docs/tower/openworld/stage3/`): friends go through a door together, the boss runs the Raid's way (one brain, revives, hand-over).
+  none plays differently; the twenty new heroes built the new way. Steps 1 and 2 running (the icons are merged). Brief: `docs/pipeline/hero-framework-brief.md`.
+- **Done and merged, not live (2026-11-16): the Climb's open world stage 3, doors together** (branch
+  `t3/climb-stage3-doors-together` 6226e5b3, PROTOCOL 19; `pipeline/designs/climb-open-world.md`, multiplayer.md "stage 3", pictures and numbers
+  `docs/tower/openworld/stage3/`). **Only a ruler's lair** (and a crown floor's Raid boss) is fought together; gates, trials and rivals
+  stay alone (the gate and rival are CPU duels, not on the boss path). Walking into a lair with another player of the shard within 30 m
+  holds the door 6 s (a line with "Go in now" for the first; the others near are invited to walk in); whoever walks in fights the ruler
+  on the Raid's machinery (one brain, `NetLink`, revives, hand-over), set for the party (health and gauge x(1+0.75 per extra), blows
+  x(1+0.15)); seats stay in the shard; all come out side by side in front of the door; the clear counts for whoever hit, nothing for one
+  who never did, all down is a life each. Nothing on the accounts. Checked: server tests 364 (35 new), type check, build, a two-tab run
+  (A Kaia, B Lyra, floor 1 then 2): both see the same ruler (its place within 0.05 m p95 after the 100 ms play-back delay, health within
+  0.1 % p95), B struck down and got up by A's autopilot in 4.3 s, A's tab frozen 5.5 s: B took the brain in 4.7 s; A's tab closed: B took
+  it in 0.37 s and won alone; the clear counted on both (lair won, 40 shards), both back side by side in shard 1.1; both connections
+  dropped mid-fight: both out with nothing counted, lives kept, back in the same shard. Route bot (not signed in) clears 1, 11, 21, 31,
+  41; perf prints the same (duel-temple 90b1abaa, raid-party 9c4a9c48). A crown floor's lair stays alone (not played on two screens). Known: the ruler's sentries,
+  guard and called keepers are each screen's own (each hero clears its own; only the brain's felled sentries earn stagger or a kneel);
+  the duel's boss health bar stays hidden in Climb ruler fights, alone or together, as before (the party list shows the heroes); a lost
+  party fight wakes everyone at the door (alone: at the last waystone); nobody joins a fight once it began; a guarded or still ruler
+  (floors 11, 41) and a party of three were not played in two tabs. After any change to a floor's doors or ruler: `node pipeline/tools/climb-packs.mjs`. Next (stage 4): invite a friend into
+  your shard, friends shown on the Climb screen, CPU heroes that fight more than one player (to share gates and rivals).
 - **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
   words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
   Senmere, by the vault-keeper Iselm (now the Sun Warden) to keep his dying daughter at her hour, collects worlds; it took the sun's

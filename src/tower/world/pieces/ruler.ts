@@ -5,7 +5,7 @@ import { defaultLook, type MinionLook } from '../../../effects/parts/minion';
 import { HERO_BODIES, type HeroKit } from '../../../heroes';
 import { HoldRing } from '../../../raid/fx';
 import { STAND_COLOR } from '../../../raid/script';
-import type { BossCast, BossDef, BossMove, PlayContext, PlayedMove, RaidAdd, RoomFloor, Threat } from '../../../raid/types';
+import type { BossCast, BossDef, BossMove, PlayContext, PlayedMove, RaidAdd, RaidLink, RoomFloor, Threat } from '../../../raid/types';
 import type { GameApi } from '../../../runtime';
 import { traitFor } from '../../../traits';
 import type { TowerBoons } from '../../boons';
@@ -72,7 +72,10 @@ interface State {
 
 export interface Ruler {
   def: BossDef;
-  link: TowerLink;
+  /** The fight's link: the floor's own (`TowerLink`, alone), or the one a party's fight gave (`ctx.link`). */
+  link: RaidLink;
+  /** The link alone, or null in a party's fight. */
+  tower: TowerLink | null;
   /** Starts the floor's own cast: call right after `Duel.startBoss`. */
   begin(): void;
   /** What happens after the fight starts and its figures load: the tint, the ally. */
@@ -81,7 +84,11 @@ export interface Ruler {
   phase(): number;
 }
 
-export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons: TowerBoons; ally?: string; run: PieceRun }): Ruler {
+/**
+ * `ctx.link`: a party's fight (the open world's stage 3, src/tower/world/together.ts) brings its own link, a Raid `NetLink` on the hub,
+ * made for this ruler's def; the fight is then the same on every screen, its health, phases and kneels the hub's. Alone, the floor's own.
+ */
+export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons: TowerBoons; ally?: string; run: PieceRun; link?: (def: BossDef) => RaidLink }): Ruler {
   const { hard, boons, run } = ctx, arena = api.arena;
   const real = api.kits.find((k) => k.name === d.stand) ?? api.kits[0];
   // `hard` raises what a hit costs; the health is the ruler's own number (a longer fight is not a harder one).
@@ -95,7 +102,8 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
   const body = d.body ?? HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
   const still = d.speed === 0;
   const state: State = { t: 0, surge: null, raise: false };
-  let link!: TowerLink;
+  let link!: RaidLink;
+  let tower: TowerLink | null = null;
   let tinted: (() => void) | null = null;
   const rewards: Record<string, FloorReward> = {};
   if (d.sentries?.fall) rewards.sentry = { stagger: d.sentries.fall.stagger, kneel: d.sentries.fall.kneel };
@@ -226,12 +234,14 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
     moves: { ...moves, floor: floorMove() },
     floor: () => floorNow(),
   };
-  link = new TowerLink(def, hp, rewards);
+  if (ctx.link) link = ctx.link(def);
+  else link = tower = new TowerLink(def, hp, rewards);
 
-  /** Which phase the fight is in, from the bar. */
+  /** Which phase the fight is in, from the bar (in a party's fight, as the hub has said it). */
   const phase = () => {
+    if (!tower) return api.duel.boss?.stats.phases ?? 0;
     let i = 0;
-    for (let n = 1; n < def.phases.length; n++) if (link.left <= def.phases[n].at) i = n;
+    for (let n = 1; n < def.phases.length; n++) if (tower.left <= def.phases[n].at) i = n;
     return i;
   };
 
@@ -424,7 +434,7 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
     if (tinted) run.onEnd(tinted);
   };
   return {
-    def, link, phase, ready,
+    def, link, tower, phase, ready,
     begin() {
       link.on.cast({ id: FLOOR_CAST, move: 'floor', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: 0 });
       if (ctx.ally) {

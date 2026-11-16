@@ -298,7 +298,7 @@ run, on both).
 
 The user, 2026-11-14: "do it" to stage 2 of [the design](../../pipeline/designs/climb-open-world.md), with enemies that grow stronger
 "if more enemies are attacking on mob or boss or gatekeeper", by **more players**. In a shard, the players on a floor now fight the same
-packs. Gatekeepers and rulers behind doors are still each player's own (stage 3).
+packs. Gatekeepers and rulers behind doors are still each player's own here (stage 3, below, shares the rulers).
 
 - **One owner screen a pack.** A pack woken on a screen is claimed (`pack_claim`). Nobody runs it: that screen does (its *owner*) and
   the shard hears `pack_owner`. Someone does: only the claimer hears whose it is. Until the answer the pack fights on the waking screen
@@ -413,6 +413,79 @@ work on every hero add about 170 to 215 draw calls, 1 to 2 ms of step on desktop
 prints 90b1abaa, as before the change; `raid-party` prints 34f75b29 instead of e83903c0, and so does the commit before this work with a
 dead, never-called function added to src/net/world.ts: the raid scene's print follows how the code is loaded, not what this code does
 (stage 1 saw it come out as one of two prints). (Since 2026-11-15 the perf tool's clock and dice make the print the same every run: raid-party 9c4a9c48; baseline `docs/perf/data/prints.json`.)
+
+## The Climb's open world, stage 3: doors together (since PROTOCOL 19)
+
+The user accepted stage 2 and asked for stage 3 of [the design](../../pipeline/designs/climb-open-world.md): players together on a floor
+go through a ruler's door together and fight what is behind it together. **Only a ruler's lair** is fought together: a gate and a
+rival are duels with a CPU hero, a trial is a room of its own, and a crown floor's lair (every tenth floor: a Raid boss) was not played
+on two screens, so those stay alone, as before (the hub answers `door_solo`).
+
+- **How a player sees it.** Walk into a ruler's lair (its door ready for you, as alone) while another player of your shard stands within
+  30 m of it (`WORLD_DOORS.nearR`): the door holds. A line at the top says "The Drowned Captain's lair: held for others near, 5 s" with a
+  **Go in now** button for the first one in. The players near see "Lyra waits at the Drowned Captain's lair: walk in within 5 s to fight
+  beside them". Whoever walks in by then is in; when the time is up, or everyone near is in, or the first says go, the fight starts for
+  all of them. Nobody else came: it is played alone, as before. With nobody near when you walk in (or alone on the floor, or not signed
+  in) the door is played at once, alone, exactly as before. A lair this run has already won may be walked into to help while another
+  player holds it open (it pays nothing more).
+- **The fight is a raid's.** The hub makes a raid's match (`match.boss`) with a `door`: the first in runs the ruler's brain, the others
+  follow its casts and walk (`NetLink`, `src/tower/world/together.ts`, which does for one door what `RaidController.stage` does for a raid's
+  fight); a fallen hero lies with its gold ring until a partner stands by it for 3 s (twice a fight each); when the brain's screen leaves
+  or says nothing for 4 s, the next one takes it over (`brainWatch`, `nextBrain`). Every `boss_*` check of the Raid holds: only the brain
+  speaks for the ruler, hits are capped (600 a hit, 1400 a second a screen), places are clamped to the room (14 m round its middle,
+  `WORLD_DOORS.ring`), a mechanic is paid once a cast. The ruler's sentries, its guard and its called keepers are each screen's own (as a
+  Raid boss's adds are): each hero clears its own; the brain's felled sentries earn the ruler's stagger once each, through the hub.
+- **Its numbers.** The hub keeps each floor's ruler as its table says (`server/climb-packs.mjs`, `CLIMB_DOORS`, made from the floors by
+  `node pipeline/tools/climb-packs.mjs`, with a floor that has no pieces of its own playing the highest floor's below it, as the page
+  does): its health, the shares of health its phases start at, its gauge and kneel, what a felled sentry earns (a crown floor's row names
+  its Raid boss and tier, and is played alone). With `n` in the fight (`doorScale`): health and the gauge x (1 + 0.75 (n - 1)) (the
+  design's gatekeepers' and rulers' factor), its blows x (1 + 0.15 (n - 1)) (as a pack's). Two: x1.75 and x1.15; three: x2.5 and x1.3;
+  eight: x6.25 and x2.05. Set for those who went in; nobody joins later.
+- **Off the floor, in the same shard.** Each player who goes in keeps its seat in the shard (`WorldSeat.inside`): the floor hears
+  `world_left` for it and `door_busy` (who went in; again with nobody when it is over), its packs go to whoever is near them, and while it
+  is inside it hears nothing of the floor, counts in no pack's fight and is never handed a pack. Its page puts the floor away without
+  leaving the shard (`WorldPresence.away`). After the fight its page builds the zone again and joins: the hub finds the seat and puts it
+  back on the floor (`world_joined` to the others), in the same shard.
+- **The result, for each player its own.** `door_end` tells each player still in the fight whether its own screen hit the ruler. The ruler
+  fell and it hit: the lair is won on its run (quests, stars, the 40 shards, the gate unsealed, as alone). The ruler fell and it never hit:
+  nothing counts, no life lost, the door as it was. Everyone down: lost, a life each, as alone. Either way everyone comes out in front of
+  the door, together (alone a lost lair still wakes the hero at its last waystone; a lost party fight wakes everyone at the door, the
+  life still lost). A player whose connection went mid-fight (a deploy) comes out at once with nothing counted. One who leaves the fight
+  but not the floor (`match_leave`) is back on the floor at once (`world_joined`). Nothing goes on the accounts (no raid run, no obols,
+  no board): a climb's progress stays in each browser.
+- **Limits.** The ruler's sentries, its guard and its called keepers are each screen's own: each hero clears its own, and only the brain's
+  felled sentries earn the stagger or the kneel (on floor 41 only the brain's standard makes the Marshal kneel). A sentry's reward is
+  paid once by its number (`REWARD_ID + fell`, counted on each screen): after a hand-over the new brain's numbers may repeat ones already
+  paid and are dropped. The duel's boss bar stays hidden in a ruler's fight, alone or together, as it always was in the Climb (the
+  Climb's HUD hides it for the floor's own unseen boss); the party list shows each hero's health. A guarded or a still ruler (floors 11,
+  41) was not played in two tabs, nor a party of three or more, nor on a phone.
+- **Trust.** As the Raid's: the brain's screen is trusted with the ruler's moves, each screen with its own hero's HP and its hits (capped).
+  A screen could claim hits it never made and so count a clear: acceptable for a co-op world.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `door_enter` | client → hub | `door` | this hero walked into a door that is ready for it. A door the floor does not have: `error` "No such door on this floor". Dropped from a player the hub last heard more than the door's ring + 8 m from it (`enterR`), past 4 a second, from one behind a door or in a fight. Not a ruler's lair, a crown floor's, or nobody else near: `door_solo` |
+| `door_gather` | hub → those in it and near the door | `door`, `by`, `ids`, `names`, `left` | the door is held: who opened it, who is in, seconds left; `left` 0: it closed (they went in, or all who were in it left the shard) |
+| `door_go` | client → hub | | the first in goes in now, with whoever has come (from anyone else: dropped) |
+| `door_solo` | hub → client | `door` | play it alone, as before |
+| `door_start` | hub → each in the fight | `id`, `door`, `side`, `you`, `party: [{ side, name, hero }]`, `n`, `hp`, `brain`, `dmg`, `staggerMax` | the fight of the party: this player's seat, the ruler's health and gauge for `n`, its blows' factor, whose screen runs the brain. Then as a raid's fight: `match_loaded` from each screen, `match_fight` (the countdown), and the Raid's `boss_*`, `move`/`peer_move`/`party_moves`, `cast`/`peer_cast`, `attack`, `raid_hp`/`partner_hp`, `hero_down`/`peer_down`, `revive`/`revived`, `partner_left`, `boss_brain`/`brain_moved`, `match_leave` |
+| `door_busy` | hub → the floor | `door`, `n`, `names` | these went in together (`n` 0: the fight is over, the door free) |
+| `door_end` | hub → each still in it | `door`, `result` (`won`, `lost`), `hit`, `seconds`, `hp` | the fight is over; `hit`: this player's screen hit the ruler (it counts for it) |
+
+Checked (2026-11-16): `npm run test:server`, 364 checks (the doors' 35 among them: a door id the floor does not have refused; a trial's
+door alone; a player far from the lair not taken in; the lair held when another is near and both told, not one 180 m off; the second
+walks in and nobody else is near: the fight starts at once, the first runs the brain; set for two, 4900 health, the gauge 175, blows
+x1.15; the floor sees both go, a newcomer does not see them, they hear nothing of the floor; the countdown; only the brain's cast passes;
+the ruler's walk clamped; walks relayed with the seat; a hit from either screen comes off on both; a felled cannon's stagger grown with
+the gauge, an unknown mechanic earns nothing; a fall and a revive at half health; the brain's screen closes and the other takes it
+over; the ruler falls at its two phases, won, counting for the one who hit; the floor hears the door is free; coming out into the same
+shard as the same player, seen again; nothing on the account; three in a held door that waits for a fourth near, only the first may say
+go, set for three (7125), the one who stayed out not taken; all three down is lost, only the one who hit said to have hit; a held door
+nobody else walks into played alone after its 6 s; alone on a floor played alone at once; a crown floor's lair alone even with another
+near; one who leaves the fight but not the floor seen on the floor again, its walk heard). Two tabs on the dev server:
+[docs/tower/openworld/stage3/](../tower/openworld/stage3/) (both screens agree on the ruler to 0.05 m p95 after the 100 ms play-back
+delay and on its health to 0.1 %; a revive; the brain handed over from a frozen tab in 4.7 s and from a closed one in 0.37 s; the clear
+on both; out together; a dropped connection mid-fight).
 
 ## The hero shop, raid ranks and the week's boards
 

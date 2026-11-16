@@ -7,7 +7,8 @@
 // 16 (2026-11-14): the Climb's open world, stage 1 (`world_join`, `world_move`, `world_cast`, `world_leave`).
 // 17 (2026-11-14): leaderboards (`leaderboards`, `climb_report`, the duel rating) and clans with a clan chat (`clan_*`).
 // 18 (2026-11-14): the Climb's open world, stage 2: shared packs (`pack_*`, `world_roster.packs`).
-export const PROTOCOL = 18;
+// 19 (2026-11-16): the Climb's open world, stage 3: doors together (`door_*`; a ruler fought by a party on the Raid's `boss_*`).
+export const PROTOCOL = 19;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -343,6 +344,25 @@ export const WORLD_PACKS = {
 export const packScale = (n) => {
   const k = Math.max(1, Math.floor(n)) - 1;
   return { hp: 1 + WORLD_PACKS.hp * k, dmg: 1 + WORLD_PACKS.dmg * k };
+};
+
+/**
+ * The Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md; docs/architecture/multiplayer.md). A ruler's
+ * door (not a crown floor's: that Raid boss is fought alone for now) that a signed-in player walks into while another player of the
+ * shard stands within `nearR` m of it holds `gatherS` seconds:
+ * whoever else walks in by then fights the ruler with them, on the Raid's machinery (one screen runs its brain, revives, hand-over).
+ * - `enterR`: how far from the door (past its own ring) the hub still takes a player's word that it walked in (its last report).
+ * - `hp`, `dmg`: what each player past the first adds to the ruler's health (the design's gatekeepers' and rulers' 0.75) and to its
+ *   blows (as a pack's). The stagger gauge grows as the health does, so a party makes it kneel as often for its damage.
+ * - `max`: the most in one door's fight (a shard's eight). `entersPerS`: the most `door_enter`s taken from one player in a second.
+ * - `ring`: how far from the room's middle a hero or the ruler may be reported (m; the rulers' rooms are 12 m round).
+ */
+export const WORLD_DOORS = { gatherS: 6, nearR: 30, enterR: 8, hp: 0.75, dmg: 0.15, max: 8, entersPerS: 4, ring: 14 };
+
+/** A ruler fought by `n` players: its health (and gauge) and its blows, times. @param {number} n */
+export const doorScale = (n) => {
+  const k = Math.max(1, Math.floor(n)) - 1;
+  return { hp: 1 + WORLD_DOORS.hp * k, dmg: 1 + WORLD_DOORS.dmg * k };
 };
 
 // --- leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans") ------------------------------

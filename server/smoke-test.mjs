@@ -700,6 +700,204 @@ async function packCases() {
 }
 
 /**
+ * The Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md), on a server of its own beside the rest.
+ * A door id the floor does not have is refused; a trial's door, a player far from the door and a player alone are as before; two who
+ * walk into a ruler's lair are put in one fight, set for two; the floor sees them go and come back; only the brain speaks for the
+ * ruler; damage, phases, a fall and a revive; the brain's screen leaves and the other takes it over; the clear counts for whoever hit;
+ * they come out into the same shard; three in a held door, the first says go, set for three, all down is lost; a held door nobody
+ * else walks into plays alone; nothing goes on the accounts. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function doorCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} doors: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-doors.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in, on `floor` at x, z. @param {string} name @param {number} floor @param {number} x @param {number} z @param {string} [hero] */
+  const walker = async (name, floor, x, z, hero = 'Kaia') => {
+    const c = await client(to);
+    c.send({ t: 'register', name, password: 'pw1234' });
+    const s = await c.next('session');
+    c.send({ t: 'world_join', floor, hero, x, z, yaw: 0 });
+    return { c, r: await c.next('world_roster'), obols: s.profile.obols };
+  };
+  // Floor 1's lair stands at (0, -105.8), its trial at (-45.7, 76.6); its ruler has 2800 health, phases at 0.66 and 0.5, a gauge of
+  // 100 (server/climb-packs.mjs). Floor 2's lair at (0, -60.4), 2850 health.
+  const L1 = { x: 0, z: -105.8 }, L2 = { x: 0, z: -60.4 };
+  /** Damage `total` off the ruler from one screen, as fast as the hub takes it (1400 a second). @param {any} c @param {number} total */
+  const hurt = async (c, total) => {
+    while (total > 0) {
+      for (const amount of [600, 600, 200]) {
+        if (total <= 0) break;
+        c.send({ t: 'boss_damage', amount: Math.min(amount, total) });
+        total -= Math.min(amount, total);
+      }
+      await pause(1050);
+    }
+  };
+  try {
+    const a = await walker('dia', 1, L1.x + 2, L1.z), b = await walker('dob', 1, L1.x + 9, L1.z + 4), c = await walker('dax', 1, -45, 76);
+    ok(a.r.shard === '1.1' && b.r.shard === '1.1' && c.r.shard === '1.1', 'three on floor 1 share shard 1.1');
+
+    a.c.send({ t: 'door_enter', door: 'nope' });
+    ok((await a.c.next('error')).error === 'No such door on this floor', 'a door id the floor does not have is refused');
+    c.c.send({ t: 'door_enter', door: 'trial' });
+    ok((await c.c.next('door_solo')).door === 'trial', 'a trial\'s door is played alone, as before (door_solo)');
+    c.c.send({ t: 'door_enter', door: 'lair' });
+    await pause(200);
+    ok(!c.c.got.door_gather && !c.c.got.door_start && (c.c.got.door_solo ?? 0) === 1, 'a player the hub last heard 180 m from the lair did not walk into it: nothing happens');
+
+    a.c.send({ t: 'door_enter', door: 'lair' });
+    const ga = await a.c.next('door_gather'), gb = await b.c.next('door_gather');
+    ok(ga.door === 'lair' && ga.by === a.r.you && ga.ids.length === 1 && ga.left > 5 && gb.by === a.r.you, 'the lair walked into with another player 10 m off: it is held for 6 s, and both hear it (door_gather)');
+    ok(!c.c.got.door_gather, 'a player far from the door is not told');
+    b.c.send({ t: 'door_enter', door: 'lair' });
+    const sa = await a.c.next('door_start'), sb = await b.c.next('door_start');
+    ok(sa.side === 0 && sb.side === 1 && sa.id === sb.id && sa.n === 2 && sa.brain === 0 && sb.brain === 0, 'the second walks in, and nobody else is near: the fight starts at once for both, the first in runs the brain');
+    ok(sa.hp === 4900 && sa.staggerMax === 175 && Math.abs(sa.dmg - 1.15) < 1e-9 && sa.party.length === 2, 'set for two: health 2800 x 1.75 = 4900, the gauge 175, blows x1.15');
+    const left1 = await c.c.next('world_left'), left2 = await c.c.next('world_left'), busy = await c.c.next('door_busy');
+    ok([left1.id, left2.id].sort().join() === [a.r.you, b.r.you].sort().join() && busy.n === 2 && busy.door === 'lair', 'the floor sees both go into the lair (world_left, door_busy)');
+    const d = await walker('dez', 1, 10, 10);
+    ok(!d.r.players.some((/** @type {any} */ p) => p.id === a.r.you || p.id === b.r.you) && d.r.players.some((/** @type {any} */ p) => p.id === c.r.you),
+      'a newcomer to the floor does not see the two behind the door');
+    c.c.send({ t: 'world_move', x: -44, z: 76, yaw: 0, walk: true, hp: 1 });
+    await pause(150);
+    ok(!a.c.got.world_moved && !b.c.got.world_moved, 'the two inside hear nothing of the floor');
+
+    a.c.send({ t: 'match_loaded', maxHp: 900 });
+    b.c.send({ t: 'match_loaded', maxHp: 700 });
+    const fa = await a.c.next('match_fight');
+    await b.c.next('match_fight');
+    ok(fa.countdown === 3, 'both loaded: the countdown');
+    await pause(3100);
+    b.c.send({ t: 'boss_cast', id: 1, move: 'cleave', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 1, target: 0 });
+    a.c.send({ t: 'boss_cast', id: 2, move: 'anchor', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 2, target: 1 });
+    const cast = await b.c.next('boss_cast');
+    await pause(150);
+    ok(cast.id === 2 && cast.move === 'anchor' && !a.c.got.boss_cast, 'only the brain speaks for the ruler: its cast reaches the other, the other\'s is dropped');
+    a.c.send({ t: 'boss_move', x: 0, z: 99, yaw: 0, ts: 1 });
+    const bm = await b.c.next('boss_move');
+    ok(Math.hypot(bm.x - 0, bm.z - 7) <= 14.001, 'the ruler\'s walk is clamped to its room (14 m round its middle)');
+    b.c.send({ t: 'move', x: 3, z: 8, yaw: 0, ts: 5 });
+    const pm = await a.c.next('peer_move');
+    ok(pm.x === 3 && pm.side === 1, 'a hero\'s walk reaches the other, with its seat');
+
+    b.c.send({ t: 'boss_damage', amount: 600 });
+    const hp1 = await a.c.next('boss_hp');
+    ok(hp1.hp === 4300, 'a hit from the screen that does not run the brain comes off the ruler, on both screens (4900 - 600)');
+    a.c.send({ t: 'boss_reward', key: 'sentry', id: 910001 });
+    const gauge = await b.c.next('boss_gauge');
+    ok(Math.abs(gauge.value - 55 * 1.75) < 0.01, `a felled cannon earns its stagger, grown with the gauge (55 x 1.75 = ${gauge.value})`);
+    a.c.send({ t: 'boss_reward', key: 'nope', id: 910002 });
+    await pause(150);
+    ok((b.c.got.boss_gauge ?? 0) === 1, 'a mechanic the ruler does not have earns nothing');
+
+    a.c.send({ t: 'hero_down' });
+    ok((await b.c.next('peer_down')).side === 0, 'the brain\'s hero falls: the other hears it');
+    b.c.send({ t: 'revive', side: 0 });
+    const rv = await a.c.next('revived');
+    ok(rv.side === 0 && rv.hp === 450 && rv.left === 1 && rv.by === 1, 'its partner gets it up: half its health, one more revive left');
+
+    a.c.close();
+    const pl = await b.c.next('partner_left'), brain = await b.c.next('boss_brain');
+    ok(pl.side === 0 && brain.side === 1, 'the brain\'s screen closes mid-fight: the other hears it left and takes the brain over');
+    b.c.send({ t: 'boss_cast', id: 3, move: 'cleave', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 3, target: 1 });
+    await pause(1050);
+    // A second since its last hit: the hub takes 1400 a second from one screen.
+    await hurt(b.c, 4300);
+    const end = await b.c.next('door_end', 4000);
+    ok(end.result === 'won' && end.hit === true && end.door === 'lair', 'the ruler falls: door_end, won, and it counts for the one who hit');
+    ok((b.c.got.boss_phase ?? 0) === 2, `its phases came at 0.66 and 0.5 of its health (${b.c.got.boss_phase ?? 0} boss_phase)`);
+    const free = await c.c.next('door_busy');
+    ok(free.n === 0 && free.door === 'lair', 'the floor hears the lair is free again');
+    c.c.forget('world_joined');
+    b.c.send({ t: 'world_join', floor: 1, hero: 'Kaia', x: L1.x, z: L1.z + 5, yaw: 0 });
+    const back = await b.c.next('world_roster'), seen = await c.c.next('world_joined');
+    ok(back.shard === '1.1' && back.you === b.r.you && seen.id === b.r.you, 'it comes out into the same shard, as the same player, and the floor sees it again');
+    b.c.send({ t: 'profile' });
+    const prof = await b.c.next('profile');
+    const pr = prof.profile ?? prof;
+    ok((pr.raids?.played ?? 0) === 0 && pr.obols === b.obols, 'a door\'s fight puts nothing on the account (no raid run, no obols)');
+    for (const x of [b, c, d]) x.c.close();
+
+    // Three in a held door on floor 2, a fourth near who stays out: the first says go. Set for three; all down is lost.
+    const q = [await walker('qua', 2, L2.x + 1, L2.z), await walker('qub', 2, L2.x + 4, L2.z), await walker('quc', 2, L2.x + 6, L2.z), await walker('qud', 2, L2.x + 20, L2.z)];
+    q[0].c.send({ t: 'door_enter', door: 'lair' });
+    await q[0].c.next('door_gather');
+    q[1].c.send({ t: 'door_enter', door: 'lair' });
+    q[2].c.send({ t: 'door_enter', door: 'lair' });
+    await pause(300);
+    ok(!q[0].c.got.door_start, 'with another near who has not walked in, a held door waits');
+    q[1].c.send({ t: 'door_go' });
+    await pause(200);
+    ok(!q[0].c.got.door_start, 'only the first in can say go');
+    q[0].c.send({ t: 'door_go' });
+    const s3 = await Promise.all(q.slice(0, 3).map((x) => x.c.next('door_start')));
+    ok(s3.every((m, i) => m.side === i && m.n === 3) && s3[0].hp === 7125, 'the first says go: three go in, set for three (2850 x 2.5 = 7125)');
+    await pause(200);
+    ok(!q[3].c.got.door_start, 'the one who stayed out is not taken in');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'match_loaded', maxHp: 800 });
+    await Promise.all(q.slice(0, 3).map((x) => x.c.next('match_fight')));
+    await pause(3100);
+    q[1].c.send({ t: 'boss_damage', amount: 100 });
+    await q[0].c.next('boss_hp');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'hero_down' });
+    const ends = await Promise.all(q.slice(0, 3).map((x) => x.c.next('door_end')));
+    ok(ends.every((m) => m.result === 'lost') && ends[1].hit && !ends[0].hit && !ends[2].hit, 'all three down: the door is lost for all; only the one who hit is said to have hit');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: L2.x, z: L2.z + 5, yaw: 0 });
+    await Promise.all(q.slice(0, 3).map((x) => x.c.next('world_roster')));
+
+    // A held door that nobody else walks into: after its 6 s, the first plays it alone.
+    q[0].c.send({ t: 'world_move', x: L2.x + 1, z: L2.z, yaw: 0, walk: false, hp: 1 });
+    await pause(100);
+    q[0].c.forget('door_gather');
+    q[0].c.send({ t: 'door_enter', door: 'lair' });
+    await q[0].c.next('door_gather');
+    const alone = await q[0].c.next('door_solo', 8000);
+    ok(alone.door === 'lair', 'a held door nobody else walks into: after its 6 s the first plays it alone (door_solo)');
+    for (const x of q) x.c.close();
+
+    // Alone on a floor: the lair is played as before, at once.
+    const e = await walker('dee', 3, 0, -90);
+    e.c.send({ t: 'door_enter', door: 'lair' });
+    ok((await e.c.next('door_solo', 1500)).door === 'lair' && !e.c.got.door_gather, 'alone on the floor: the lair is played alone at once');
+    e.c.close();
+
+    // A crown floor's lair (a Raid boss) is fought alone for now, even with another near.
+    const k1 = await walker('dka', 10, 0, -95), k2 = await walker('dkb', 10, 3, -95);
+    k1.c.send({ t: 'door_enter', door: 'lair' });
+    ok((await k1.c.next('door_solo', 1500)).door === 'lair' && !k2.c.got.door_gather, 'the lair of a crown floor is played alone, even with another near');
+    for (const x of [k1, k2]) x.c.close();
+
+    // One leaves the fight but not the floor (match_leave): the other fights on; the floor sees the leaver again and hears its walk.
+    const m1 = await walker('dma', 3, 1, -90), m2 = await walker('dmb', 3, 3, -88), m3 = await walker('dmc', 3, 40, 40);
+    m1.c.send({ t: 'door_enter', door: 'lair' });
+    await m1.c.next('door_gather');
+    m2.c.send({ t: 'door_enter', door: 'lair' });
+    await Promise.all([m1.c.next('door_start'), m2.c.next('door_start')]);
+    m3.c.forget('world_joined');
+    m1.c.send({ t: 'match_leave' });
+    const gone = await m2.c.next('partner_left'), again = await m3.c.next('world_joined');
+    m1.c.send({ t: 'world_move', x: 2, z: -84, yaw: 0, walk: true, hp: 1 });
+    const walk = await m3.c.next('world_moved');
+    ok(gone.side === 0 && again.id === m1.r.you && walk.id === m1.r.you, 'one who leaves the fight but stays on the floor: the other fights on, the floor sees it again and its walk');
+    for (const x of [m1, m2, m3]) x.c.close();
+  } catch (err) {
+    ok(false, String(err instanceof Error ? err.stack : err));
+  }
+  server.close();
+  return lines;
+}
+
+/**
  * The leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans"), on servers of their own beside the rest:
  * a duel that counts moves both ratings and one too short moves none, the boards list, the Climb's report, clans (create, join by
  * code, a wrong code, a player in another clan, asking and the leader's yes), the chat (members only, the rate limit, the filter, a
@@ -967,7 +1165,7 @@ async function socialCases() {
 // The shop's cases, the world's and the social ones run beside the rest, on their own servers.
 const only = onlyShop || onlyWorld || onlySocial;
 const shopRun = target || (only && !onlyShop) ? null : shopCases();
-const worldRun = target || (only && !onlyWorld) ? null : Promise.all([worldCases(), packCases()]).then((l) => l.flat());
+const worldRun = target || (only && !onlyWorld) ? null : Promise.all([worldCases(), packCases(), doorCases()]).then((l) => l.flat());
 const socialRun = target || (only && !onlySocial) ? null : socialCases();
 
 if (!only) try {

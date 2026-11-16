@@ -37,6 +37,11 @@ export interface FoeModel {
   livery?: number;
   /** A colour laid over the whole figure, and how much (a named enemy that shares its kind's model). */
   tint?: [number, number];
+  /**
+   * How much of a blow's step a figure takes, as a share of the clip's own (`realClipInfo().legs`; default 1). A floor-length gown
+   * (the Pale One) dropped through the ground with the hook's crouch: less of the legs keeps the hem above it.
+   */
+  legs?: number;
   /** The health bar's height over the feet (m, before the unit's scale); default a little over `height`. */
   barY?: number;
 }
@@ -193,6 +198,8 @@ const STRIKE: Record<NonNullable<FoeModel['strike']>, string[]> = {
 /** How long a blow's end plays on after it lands, and a shot's (s). */
 const TAIL = 0.4;
 const SHOT_LEAD = 0.18;
+/** How far a walking figure turns from the unit's facing toward the way it goes (radians). */
+const SIDE = 0.9;
 /** How often a unit's figure is posed (s): every other frame at 60 frames a second. */
 const POSE_STEP = 1 / 30;
 
@@ -224,6 +231,10 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
     const k0 = (made++ * 0.618034) % 1;
     let dressed = false, posed = 0, clock = k0 * 4, phase = k0, gait = 0, since = k0 * POSE_STEP;
     let lastSwing = -1, after = -1, which = 0, shotT = -1, lastShot = 0;
+    // Where the unit really goes against where it faces (the tactics keep a unit facing its target while it backs off or circles):
+    // the pack has only forward walks, so a unit going backwards walks its stride backwards, and one going sideways turns its body up
+    // to `SIDE` toward the way it goes (the group keeps the game's facing; only the figure in it turns).
+    let px = NaN, pz = NaN, way = 1, turn = 0;
     const strikes = STRIKE[f.strike ?? 'blade'];
     const hold = f.hold ? HOLD[f.hold] : null;
     const layers: Layer[] = [];
@@ -256,7 +267,22 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
         const gw = gaitInfo('Walk_Loop'), gj = gaitInfo('Jog_Fwd_Loop');
         const jog = Math.min(1, Math.max(0, (legSpeed - gw.speed) / (gj.speed - gw.speed)));
         const dur = (1 - jog) * gw.dur + jog * gj.dur, carried = (1 - jog) * gw.speed + jog * gj.speed;
-        phase += (dt * Math.min(1.6, Math.max(0.5, legSpeed / Math.max(0.1, carried)))) / dur;
+        const me = root.matrixWorld.elements, wx = me[12], wz = me[14];
+        let wantTurn = 0;
+        if (dt > 0 && px === px) {
+          const vx = (wx - px) / dt, vz = (wz - pz) / dt;
+          if (gait > 0.2 && vx * vx + vz * vz > 0.25 && pose.swing < 0 && shotT < 0) {
+            const rel = Math.atan2(Math.sin(Math.atan2(vx, vz) - Math.atan2(me[8], me[10])), Math.cos(Math.atan2(vx, vz) - Math.atan2(me[8], me[10])));
+            way = Math.abs(rel) > Math.PI * 0.6 ? -1 : 1;
+            const off = way > 0 ? rel : Math.atan2(Math.sin(rel - Math.PI), Math.cos(rel - Math.PI));
+            wantTurn = Math.max(-SIDE, Math.min(SIDE, off));
+          } else if (gait <= 0.2) way = 1;
+        }
+        px = wx;
+        pz = wz;
+        turn += (wantTurn - turn) * Math.min(1, dt * (pose.swing >= 0 || shotT >= 0 ? 16 : 6));
+        hero.root.rotation.y = turn;
+        phase += (way * dt * Math.min(1.6, Math.max(0.5, legSpeed / Math.max(0.1, carried)))) / dur;
         layers.length = 0;
         all('Idle_Loop', clock, true, 1 - gait);
         all('Walk_Loop', gw.leftFwd + phase * gw.dur, true, gait * (1 - jog));
@@ -272,19 +298,19 @@ export function modelLook(f: FoeModel, fallback: MinionLook, unit: { speed: numb
         const clip = strikes[which], info = realClipInfo(clip);
         if (pose.swing >= 0) {
           const lead = Math.min(info.hit, 0.55);
-          over(clip, info.hit - lead * (1 - pose.swing), 1, (1 - gait) * info.legs);
+          over(clip, info.hit - lead * (1 - pose.swing), 1, (1 - gait) * info.legs * (f.legs ?? 1));
         } else if (after >= 0) {
           after += dt;
           const w = 1 - after / TAIL;
           if (w <= 0) after = -1;
-          else over(clip, info.hit + Math.min(info.dur - info.hit, TAIL) * (after / TAIL), w, w * (1 - gait) * info.legs);
+          else over(clip, info.hit + Math.min(info.dur - info.hit, TAIL) * (after / TAIL), w, w * (1 - gait) * info.legs * (f.legs ?? 1));
         }
         // a shot: the push (or the throw) from a little before its release through its end
         if (pose.shot > lastShot + 0.3) shotT = 0;
         lastShot = pose.shot;
         if (shotT >= 0) {
           shotT += dt;
-          const sc = f.shot === 'throw' ? 'OverhandThrow' : f.shot === 'aim' ? 'Punch_Jab' : 'Spell_Simple_Shoot', si = realClipInfo(sc);
+          const sc = f.shot === 'throw' ? 'OverhandThrow' : f.shot === 'aim' ? 'Punch_Cross' : 'Spell_Simple_Shoot', si = realClipInfo(sc);
           const t = si.hit - SHOT_LEAD + shotT, w = Math.min(1, 1.6 - shotT / 0.45);
           if (w <= 0 || t > si.dur) shotT = -1;
           else over(sc, t, w, w * (1 - gait) * si.legs);
