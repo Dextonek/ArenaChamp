@@ -21,7 +21,7 @@ them". This page is the second of the two agents: chapters IV (the Deep) and V (
 reachable; every person, pack, named enemy, ruler, gatekeeper and trial seen in the game with its own model; every name and line read
 against the codex.
 
-**Fixed (7 faults, at their cause, so every floor that shared them is set right):**
+**Fixed (8 faults, at their cause, so every floor that shared them is set right):**
 - The big map's names covered each other by the camps and ran off the map's edge (all floors; `map.ts`). Floor 31.
 - People's "!" marks and names were drawn over the minimap (all floors; `map.ts`). Floor 32.
 - Floor 31's Candle-Crowned still said Isolde's "cold woman" line under her crown of candles (`folk.ts`). Floor 31.
@@ -30,6 +30,8 @@ against the codex.
   Floor 35.
 - Brannoc, who hosts floor 41's duel, was marked as a quest giver with nothing to give ("…" over him, "Quests" on his card). Floor 41.
 - "Ash and Ember waits / is / has fallen / wakes" on the last floor: they are two. Floor 50.
+- The Turncloak stood in the camp's log bench (42) and against the tent (43): moved 1.2 m toward the fire on all nine made War floors
+  (found by the model review). Floors 42 and 43.
 
 **For you** (below): things in other agents' files this round, bigger changes, and matters of taste, each with where it shows and the
 exact change I would make.

@@ -96,7 +96,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'The Deep and the War, floor by floor, set right',
-        text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, and the last floor speaks of Ash and Ember as the two they are.',
+        text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, the Turncloak no longer stands in the camp’s bench, and the last floor speaks of Ash and Ember as the two they are.',
       },
       {
         tag: 'Online',

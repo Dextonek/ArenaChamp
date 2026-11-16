@@ -3689,8 +3689,8 @@ export const WAR_42: GenFloor = {
     "name": "Ada",
     "role": "giver",
     "at": {
-     "x": -5.5,
-     "z": 70.9
+     "x": -4.3,
+     "z": 70.94
     },
     "face": 0.5,
     "greet": [

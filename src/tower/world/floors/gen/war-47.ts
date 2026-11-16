@@ -3739,8 +3739,8 @@ export const WAR_47: GenFloor = {
     "name": "Zephyr",
     "role": "giver",
     "at": {
-     "x": 5.5,
-     "z": 88.3
+     "x": 4.3,
+     "z": 88.34
     },
     "face": -0.5,
     "greet": [

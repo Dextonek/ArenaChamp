@@ -3768,8 +3768,8 @@ export const WAR_50: GenFloor = {
     "name": "Oblivion",
     "role": "giver",
     "at": {
-     "x": -5.5,
-     "z": 87.84
+     "x": -4.3,
+     "z": 87.88
     },
     "face": 0.5,
     "greet": [
