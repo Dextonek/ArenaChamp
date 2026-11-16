@@ -13,14 +13,14 @@ import { addRod, removeRod, stormOf } from '../trait';
  * staff, a blue ring (the 3.5 m zone) is drawn on the ground and fills toward 1.2 s, and at 0.25 s a bolt falls and plants a
  * GREAT rod there (`addRod(..., great)`, drawn by the trait's `marks` on both screens: a rod 4.4 m tall; it counts as one of
  * her three rods and stands 3 s). From 1.2 s on, each second (at 1.2 s and 2.2 s: the rod is gone at 3.25 s) it pulses: every
- * enemy within 3.5 m of the spot, on its live position, takes 18 and is slowed 1 s (`status: slow`), a ring of ground forks
+ * enemy within 3.5 m of the spot, on its live position, takes 24 and is slowed 1 s (`status: slow`), a ring of ground forks
  * runs out. The zone is the telegraph (impact 1.2 s: it roots her until then), so leaving it by 1.2 s (3.5 m takes 1.13 s) takes
  * nothing. If the rod is used up or grounded meanwhile (`stormOf(figure).rods` no longer holds it) the pulses stop.
  * Recast, Discharge (the trait's free second cast, from 1.2 s to 3 s after the first, power 1): the effect tells the two casts
  * apart by itself (a second cast of the same caster figure within 3.3 s, a clock per figure, so both screens agree; the `mode`
  * setting forces one) and reads the rod's spot from the per-figure record, not from this instance, because the CPU reuses one
  * instance per label. At 0.25 s a huge bolt falls on the rod, which is removed (`removeRod`) and everyone within 3.5 m at that
- * moment takes 40 once. The rod already gone (grounded, arced away, pushed out by a newer one): it only fizzles. Clean by 3.4 s.
+ * moment takes 50 once. The rod already gone (grounded, arced away, pushed out by a newer one): it only fizzles. Clean by 3.4 s.
  * Hits are the ordinary zone kind (not `projectile`), judged on live positions against the zone from `telegraphs`.
  */
 export interface ThunderRodSettings {

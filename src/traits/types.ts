@@ -46,7 +46,8 @@ export interface TraitHit {
   victim: Enemy;
   victimIsHero: boolean;
   /**
-   * Set by the victim's `taken` hook: the hit is swallowed whole (Isolde's ice block, Oblivion's mantle). No damage,
+   * Set by the victim's `taken` hook: the hit is swallowed whole (Tempo's Time Skip, Anka's ashes and her rise, Zephyr in
+   * the wind, Marin's mist; the engine also sets it on a sealed hero). No damage,
    * no status, debuff, knockback or pull, and the dealer does not learn it landed.
    */
   blocked?: boolean;

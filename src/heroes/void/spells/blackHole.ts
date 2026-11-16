@@ -17,11 +17,11 @@ import { voidFx, watchCover } from '../trait';
  * through it, shards and ash streaming in. The line telegraph (the core's path, 2 m wide) shows from the cast; its impact is
  * 0.4 s, the wind-up he is rooted for, and the hole pulls and hurts from then on. Each frame it pulls every enemy within
  * 5 m of its live position toward it at 1.8 m/s (`ctx.carry`, live positions), unless cover stops it: an obstacle between the
- * hole and the enemy (`blocksSight` with `ctx.obstacles()`). Touching the core (centre within 1 m) deals 90 and stuns 1 s, once
+ * hole and the enemy (`blocksSight` with `ctx.obstacles()`). Touching the core (centre within 1 m) deals 105 and stuns 1 s, once
  * per enemy (`projectile: true`), with one short impact frame. At 4 s it closes; clean by 4.7 s.
  * Recast, Collapse (the trait's free second cast; it opens 0.3 s late, replays nothing): it writes `voidFx.collapseAt`, which the
  * effect reads on both screens. The hole stops where it is, the pull stops (so the 0.5 s warning is true), a 3 m ring fills in
- * hot pink for 0.5 s, then everyone within 3 m of it on live positions takes 70 (`projectile: true`) with an impact frame, shards
+ * hot pink for 0.5 s, then everyone within 3 m of it on live positions takes 85 (`projectile: true`) with an impact frame, shards
  * and a ground ripple. The core still stuns during the warning. Clean 1.2 s after the collapse hit. A new cast clears the flag.
  */
 export interface BlackHoleSettings {

@@ -16,12 +16,13 @@ import { takeReaction } from '../trait';
  * acid) from her bandolier and flings them into an alchemical circle at her feet; the circle flares and a little
  * glass-bellied homunculus (`ctx.summon`, `homunculusLook`) hops out of it, at her feet (`ctx.from`, not the aim spot), with the three reagents swirling in its belly, and
  * waddles at the enemy (4 m/s). It bursts on contact: when it comes within 1.5 m of an enemy the effect hits everyone
- * within 2 m for 70 (`ctx.hit` with `projectile: true`: the touch is the dodge check) and ends the unit by setting its
+ * within 2 m for 55 (`ctx.hit` with `projectile: true`: the touch is the dodge check) and ends the unit by setting its
  * `left` to 0. The trait (`src/traits/alchemy.ts`) keys on slot 3: that one hit carries all three reagents, so Combust,
  * Corrode and Concussion all go off; the effect reads them (`takeReaction`) and plays the three bursts, a beat apart, on
- * the enemy. It lives 3.7 s at most (the duel drops a hit more than about 4.2 s after the cast: it appears at 0.4 s) and
- * can be shot down (120 HP): then it only fizzles. Network duels leave `ctx.summon` undefined: the effect plays the look
- * with the homunculus as a flask thrown at the enemy, which bursts there and hits no one. See
+ * the enemy. It lives 3.7 s at most (it appears at 0.4 s, so it bursts by 4.1 s after the cast, well inside the server's
+ * 12 s hit window, `HIT_WINDOW_MS`) and can be shot down (120 HP): then it only fizzles. Where `ctx.summon` is undefined
+ * (the raid partner's replay, for one; a network duel keeps it on the victim's screen, which raises the homunculus) the effect
+ * plays the look with the homunculus as a flask thrown at the enemy, which bursts there and hits no one. See
  * pipeline/designs/kit-alchemy.md.
  */
 export interface HomunculusSettings {
@@ -38,14 +39,14 @@ export const defaultHomunculus = (): HomunculusSettings => ({ damage: 55, hp: 12
 
 // Timeline (seconds).
 const SPAWN_T = 0.4; // the circle flares, the homunculus hops out
-/** Lifetime of the unit: it must burst before the duel's hit window (about 4.2 s after the cast) closes. */
+/** Lifetime of the unit: it bursts by 4.1 s after the cast (the server's hit window, `HIT_WINDOW_MS`, is 12 s). */
 const LIFE = 3.7;
 const CONTACT = 1.5; // the burst fires when an enemy is this close
 const BLAST = 2; // everyone this close to the unit is hit
 const TAIL = 1.4; // seconds the effect plays on after the burst
 const DURATION = SPAWN_T + LIFE + TAIL;
 const CIRCLE_R = 1.4;
-const THROW_SECONDS = 0.9; // network look: the flask's flight
+const THROW_SECONDS = 0.9; // the look without `ctx.summon`: the flask's flight
 
 export class Homunculus implements Effect {
   readonly group = new THREE.Group();
@@ -77,7 +78,7 @@ export class Homunculus implements Effect {
   // Parts.
   private vials = REAGENT.map((r) => new Flask(r));
   private circle = new TransmuteCircle();
-  private bomb = new Flask(REAGENT[1]); // the network look: the homunculus as a flask in flight
+  private bomb = new Flask(REAGENT[1]); // the look without `ctx.summon`: the homunculus as a flask in flight
   private shardSets = REAGENT.map((r) => new GlassShards({ max: 32, color: r.body, edge: r.hot, opacity: 0.95 }));
   private bubbles = new Bubbles(40);
   private balls = REAGENT.map((r) => new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), new THREE.MeshBasicMaterial({ color: r.body, transparent: true, depthWrite: false })));

@@ -15,7 +15,7 @@ import { boneArmours, type BoneArmourState } from '../trait';
  * record says the damage taken used it up, or he recast it: Shatter) or at 3.5 s, whichever is first, the ribs fly apart and five of them turn
  * into darts that home in on the enemy: 0.3 s later they hit it for 38 (`projectile: true`, so the duel's zone check
  * lets them through; one hit when the first dart lands) with an ember star, chips and a ground ripple. The cast is
- * 3.5 s old at the latest, inside the duel's 4.2 s window for spell hits. Clean by 4.6 s.
+ * 3.5 s old at the latest, well inside the server's 12 s hit window (`HIT_WINDOW_MS`). Clean by 4.6 s.
  *
  * Where the trait gives no record (the VFX tool) the shards simply fly at 3.5 s; on the other screen of a network duel the record is written when he shatters it or it breaks.
  * With no enemy near at the cast (`targets` is empty) the ribs only crumble.

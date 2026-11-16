@@ -12,7 +12,7 @@ import { FEE_DAMAGE, FEE_DELAY, FEE_RADIUS, FEE_SLOW } from '../trait';
  * radius 2.5) and an enormous LATE FEE notice drops out of the sky onto it, rolling and flapping as it comes, a loose coin or two
  * falling with it. At 1.0 s it lands flat with a slap: the ring floods red, a stamp-print of LATE FEE is left on the floor, a ground
  * ripple, a burst of paper and gold coins that bounce. Whoever stands in the ring at that moment (the live position, judged then)
- * is slowed for 1.5 s and takes 40, which goes on the tab (`src/traits/ledger.ts`) rather than hurting now. The notice lies a
+ * is slowed for 1.5 s and takes 62, which goes on the tab (`src/traits/ledger.ts`) rather than hurting now. The notice lies a
  * moment, then shrinks into the floor; clean by about 2.3 s. See pipeline/designs/kit-ledger.md.
  */
 export interface LateFeeSettings {

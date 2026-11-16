@@ -13,7 +13,7 @@ import { KNOCK_PER_M, POP_BASE, POP_RANGE, POP_SHOVE, POP_WIND, AIR_MAX, airSeen
  * Professor Puff draws a brass pin with a pink glass head, a red circle and a closing pale ring mark the enemy on both screens (they follow it),
  * and a star pulses over its head. The pin is thrown at 0.15 s and flies, turning to follow the enemy's live position, to land at 0.6 s.
  * At 0.6 s the spell checks itself: if `stillSees` the enemy is false, or the enemy is more than 11 m away, the pin clatters off (a few rubber
- * scraps, a puff, no hit). Otherwise the enemy POPS: one hit, `projectile: true`, judged on its live position, 50 (the trait adds 20 per Air it
+ * scraps, a puff, no hit). Otherwise the enemy POPS: one hit, `projectile: true`, judged on its live position, 60 (the trait adds 20 per Air it
  * carries and lets all the Air out in a fixed 3 m shove). The pop is a real snap, sized by the Air it let out (read from `airSeen`, the
  * swelling the trait draws): a spiky star, a refraction ring, a ring of puffs thrown out flat (the Air going), rubber scraps (10 to 30), the word
  * POP!, one short impact frame, a chromatic kick and a hard shake. Reach cover or break sight in the 0.6 s and it fizzles.

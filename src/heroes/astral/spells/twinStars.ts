@@ -7,7 +7,7 @@ import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
 
 /**
- * Twin Stars (astral kit, W: self buff, 4 s). The effect is only the look: the rule (basic attacks echo at 50%, the
+ * Twin Stars (astral kit, W: self buff, 5 s). The effect is only the look: the rule (basic attacks echo at 50%, the
  * trait's `attackEcho`, and +20% speed from the kit's `buff`) runs in the trait and the duel. A parchment chart draws
  * on under her and a ring of refraction opens; two four-point stars spiral out of her hands and orbit her chest on a
  * tilted ring, joined by a gold line that turns with them and flares every 1.4 s. While she moves, small stars are

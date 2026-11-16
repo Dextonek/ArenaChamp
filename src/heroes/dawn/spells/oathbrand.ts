@@ -15,7 +15,7 @@ import { BRAND_SECONDS } from '../trait';
  * cast). For 0.5 s (`FALL`) a pale thread of light hangs over the enemy and a gold ring closes on its feet, both following it
  * live, while a sun disc swells over Auriel's head; the red circle from `telegraphs` shows on the enemy. At 0.5 s the spell checks
  * `stillSees` (cover cancels it: a fizzle, a puff of shards, no hit). Otherwise a beam of hard light falls on the enemy's
- * live position: 50 (`projectile: true`, judged live, so walking does not dodge it; cover does), a sun-wheel flash, a ring, a
+ * live position: 44 (`projectile: true`, judged live, so walking does not dodge it; cover does), a sun-wheel flash, a ring, a
  * star, shards thrown up. The hit brands the enemy for 2.5 s: the trait (`src/traits/dawn.ts`, `dealt` slot 2) puts the stack on
  * it, and a shield burst that catches a branded enemy stuns it 0.8 s. The effect also keeps a gold sun disc turning over the
  * enemy's head for the brand's life. Clean 3.0 s after the cast. See pipeline/designs/kit-dawn.md.

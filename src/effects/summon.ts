@@ -16,7 +16,8 @@ import { MinionPool, type MinionFx, type MinionLook, type MinionPose } from './p
  * A unit has its own HP and dies at 0 HP or when its `seconds` run out, in a small puff. At most 6 live per side.
  * Spell hits and bolts can hit enemy units (`arena.liveFoes()` lists them, and `ctx.hit` takes a unit's figure), but a
  * unit is never the duel's enemy hero. Unit damage on a hero goes through the world's `hit`, which for a duel is the
- * same path as any spell hit (shield, status). Network duels leave `summon` undefined. `kind` decides behaviour only;
+ * same path as any spell hit (shield, status). A network duel keeps `summon` on the victim's screen (the replayed cast raises
+ * the other player's units there); the raid partner's replay leaves it undefined. `kind` decides behaviour only;
  * the look is a `MinionLook` (`parts/minion.ts`), pluggable per summon.
  */
 export type SummonKind = 'melee' | 'ranged' | 'turret';

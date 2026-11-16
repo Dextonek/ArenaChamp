@@ -14,9 +14,9 @@ import { SWEATER_DAMAGE, SWEATER_RADIUS, SWEATER_RANGE, SWEATER_SLOW, SWEATER_WI
  * the enemy's feet follows them and shows where it lands. At 0.5 s the spell checks itself: if `stillSees` the enemy (cover between
  * them stops it) and they are within 9 m, the sweater lands on them: slowed 2 s (`ctx.hit`, damage 0, `projectile: true`) and a
  * knitted sweater is drawn on them, visibly tightening, with the words KEEP WARM over their head (the trait's `enemyLabel`, from
- * the book). At 2.5 s it shrinks: 40 damage (`projectile: true`, on their live position: the sweater is on them), a pop of wool, and
+ * the book). At 2.5 s it shrinks: 50 damage (`projectile: true`, on their live position: the sweater is on them), a pop of wool, and
  * she says "ooh, it suits you" (the trait's `landed`). Otherwise it falls on the floor and unravels, no hit. Reaching cover within the
- * 0.5 s is the answer; or wait it out and take 40. Clean by 3.4 s. See pipeline/designs/kit-yarn.md.
+ * 0.5 s is the answer; or wait it out and take 50. Clean by 3.4 s. See pipeline/designs/kit-yarn.md.
  */
 export interface SweaterSettings {
   damage: number;

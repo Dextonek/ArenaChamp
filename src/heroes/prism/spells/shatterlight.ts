@@ -13,7 +13,7 @@ import { bankPath } from '../../../obstacles';
  * crystal shards rise out of a ring of radius 2.5 m round the spot the target stood on at the cast (`ctx.point`, fixed: the
  * ring does not follow them), turned inward, each tied to the middle by a thin spectral line that brightens for the full
  * 1.2 s. At 1.2 s (the telegraph's impact: a 2.5 m circle, which roots her until then) each shard fires inward through the
- * middle as a real bolt (`ctx.projectile`: radius 0.3, 14 m/s, 8 m range, `reflect: 1`): 30 each, +25% for the bounce off
+ * middle as a real bolt (`ctx.projectile`: radius 0.3, 14 m/s, 8 m range, `reflect: 1`): 36 each, +25% for the bounce off
  * a wall, and each hits at most once (one bolt each). Standing where lines cross takes several; stepping out of the ring
  * takes none, because the bolts are dodged by touch, not by the circle (a `projectile` hit always passes the zone check). One short
  * impact frame as they go; a flash where they cross; a flash at every wall bounce. Clean by about 2.5 s.

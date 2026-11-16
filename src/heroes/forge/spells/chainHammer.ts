@@ -15,9 +15,9 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * (`ctx.projectile`, 18 m/s, 9 m, radius 0.45: it reaches 6 m at 0.63 s) tumbling down the aim, and a straight run of
  * chain links stays joined from his hand to it, drawn back to him every frame. The first enemy it touches takes 34 (at full power; the Heat scales it) and is
  * dragged 4 m toward him (`pull: 4`, `knock: 0`) and slowed 1 s; the chain stays taut on the enemy for 0.45 s while they
- * come, then it whips back to his hand with a puff of steam. A miss reels the chain in the same way. Tempered (his trait,
- * on a 3-Heat enemy): stunned 0.75 s instead of the slow. The hit's status is the trait's to change; this file only asks
- * for the slow. Network duels: the bolt flies on the victim's screen, the dealer's screen draws only the wind-up.
+ * come, then it whips back to his hand with a puff of steam. A miss reels the chain in the same way. His trait (the Heat)
+ * only scales the damage (`castMods` power, x0.55 cold to x1.15 white-hot); there is no Tempered stun any more, so the
+ * slow is the hit's one status. Network duels: the bolt flies on the victim's screen, the dealer's screen draws only the wind-up.
  * Clean by about 1.6 s. See pipeline/designs/kit-forge.md.
  */
 export interface ChainHammerSettings {

@@ -15,7 +15,7 @@ import {
  * out, so she is fastest at the start and slows toward the end). Her figure is not drawn (the trait's `figureHidden`) and she is sealed:
  * nothing can hit her and she cannot cast (src/traits/mole.ts). A big mound of dirt with a gold ring and a glowing lamp on top moves
  * over the surface where she really is, with a torn furrow behind it and clods kicked out to the sides: that is what the other player
- * reads. At 1.5 s she bursts out: 40 and a 0.5 s knock-up to everyone within 1.5 m of the exit on their live position, a fountain of
+ * reads. At 1.5 s she bursts out: 60 and a 0.5 s knock-up to everyone within 1.5 m of the exit on their live position, a fountain of
  * clods and a ring of dust. The exit circle is the telegraph, shown from the dive. The path is the same maths on both screens (from
  * `sentFrom` and the aim point), so the mound is drawn without `moveCaster`. Clean by about 2.5 s. See pipeline/designs/kit-mole.md.
  */

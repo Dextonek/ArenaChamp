@@ -12,7 +12,7 @@ import { HOSE_DAMAGE, HOSE_PUSH, HOSE_RANGE, HOSE_RADIUS, HOSE_SPEED, HOSE_WIND,
  * Air Hose (balloon kit v5, Q: a skillshot). Professor Puff pumps a small pink balloon up at the brass nozzle in his hand over the 0.3 s
  * wind-up (it swells, jiggles, and sheds a few bubbles), then lets go: the balloon flies as the bolt (`ctx.projectile`: 8 m from him, 22 m/s,
  * radius 0.35), shrinking as it empties, its string streaming, a stream of soft puffs and soap bubbles behind it. A real balloon rocket, not
- * a glowing ball. It hits the first enemy it touches for 45 with a 1 m push (the trait puts 3 Air on the hit and pushes 8% farther per Air
+ * a glowing ball. It hits the first enemy it touches for 60 with a 1 m push (the trait puts 3 Air on the hit and pushes 8% farther per Air
  * already there): a PFFT, a ring of puffs and bubbles. It reaches 6 m at 0.57 s.
  *
  * Telegraph: one thin line from him, as wide as the bolt really hits (`boltWidth(0.35)`); its `impact` is the launch (0.3 s), so the root on

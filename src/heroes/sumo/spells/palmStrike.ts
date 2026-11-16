@@ -11,7 +11,7 @@ import { PALM_DAMAGE, PALM_PUSH, PALM_PUSH_TIME, PALM_REACH, PALM_WIDTH, PALM_WI
 /**
  * Palm Strike (sumo kit, Q: a slap you can feel). No aim of its own: it goes the way he faces. A 2.8 m by 2 m strip shows in front
  * of him from the cast (the telegraph). Over the 0.4 s wind-up a huge open hand fades in beside him and is drawn back, growing; at 0.4 s
- * it is thrown forward in one beat, and everyone inside the strip at that moment (live positions) takes 40 and is shoved 3 m along
+ * it is thrown forward in one beat, and everyone inside the strip at that moment (live positions) takes 54 and is shoved 3 m along
  * his facing over 0.22 s (`ctx.carry`, `knock: 0`). The hit has a pale star, a ground ripple and refraction ring, a roll of dust
  * and a hard shake. The shove opens a push window on his record (`bookOf(...).pushUntil`): a body carried out of his ring in it
  * is a ring-out (`victimTick` in `src/traits/sumo.ts`, on the screen that decides that hero). Clean by about 1.3 s.

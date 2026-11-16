@@ -12,7 +12,7 @@ import { CLEAVER_DAMAGE, CLEAVER_RADIUS, CLEAVER_RANGE, CLEAVER_SPEED, CLEAVER_W
 /**
  * Thrown Cleaver (chef kit v5, Q: a skillshot that leaves a dish). Madame Cleaver swings her great steel cleaver up over her
  * shoulder (0.25 s wind-up, it grows in her hand and turns faster) and throws it as a real bolt (`ctx.projectile`: 9 m from her,
- * 20 m/s, radius 0.3) that TUMBLES end over end, with three pale after-images behind it: 50 damage. It reaches 6 m at 0.55 s.
+ * 20 m/s, radius 0.3) that TUMBLES end over end, with three pale after-images behind it: 66 damage. It reaches 6 m at 0.55 s.
  *
  * Where it stops (the cleaver bites into the floor, quivering, and a dish plops out beside it) comes from a pure path of `sentFrom`,
  * the aim and `ctx.obstacles()` (`bankPath`, no bounces), so both screens of a network duel put the dish at the same spot with the

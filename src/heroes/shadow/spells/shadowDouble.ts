@@ -13,9 +13,10 @@ import { watchCover } from '../trait';
  * does not stop it). A shadow copy stays where she stood (`ctx.summon`: one `melee` unit, 40 HP, 2.5 s, 15 per 0.9 s, black and violet
  * `shadowCloneLook`, hooded and thin) and walks at the enemy; one spell kills it. Where she stood: a black pool and a puff of wisps; three
  * black figure cut-outs trail along the dart and fade; where she lands, black shards. No damage of its own; the copy's blows are the damage.
- * Clean by 1.0 s (the copy outlives the effect: it belongs to the arena). Network duels leave `ctx.summon` undefined: then a plain black
- * figure cut-out stands where she was for 2.5 s as the look only (no blows). The copy's ground ring is the unit's own and shows
- * only as it appears and dies. See pipeline/designs/kit-shadow.md.
+ * Clean by 1.0 s (the copy outlives the effect: it belongs to the arena). Where `ctx.summon` is undefined (the raid partner's
+ * replay, for one; a network duel keeps it on the victim's screen, which raises the copy) a plain black figure cut-out stands
+ * where she was for 2.5 s as the look only (no blows). The copy's ground ring is the unit's own and shows only as it appears
+ * and dies. See pipeline/designs/kit-shadow.md.
  */
 export interface ShadowDoubleSettings {
   distance: number;

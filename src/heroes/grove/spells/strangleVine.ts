@@ -10,7 +10,7 @@ import { NEAR_FLOWER_R, flowersOf } from '../trait';
 /**
  * Strangle Vine (grove kit v5, W: a targeted root, `projectile` hit). A click on the enemy (7 m, line of sight checked by the
  * engine at the cast) with a 0.5 s wind-up: two vines run along the ground from her feet toward the enemy and a red circle
- * marks it (she is rooted by the engine until it lands). At 0.5 s the vines are on the enemy: 30 damage and rooted 1.0 s, or
+ * marks it (she is rooted by the engine until it lands). At 0.5 s the vines are on the enemy: 40 damage and rooted 1.0 s, or
  * 1.4 s if the enemy is within 3 m of one of her flowers at that moment (`NEAR_FLOWER_R`, her list in `src/traits/grove.ts`).
  * The hit is `projectile: true`: the target cannot walk out of it once it has landed; the answer is range (7 m) and sight at
  * the cast. Six vines of different reach, thickness and coil spiral up the figure with an irregular outline (re-sampled every

@@ -13,7 +13,7 @@ import { DISC_MOVE, tideNow } from '../trait';
 
 /**
  * Wave Disc (tide kit, Q: a 9 m line skillshot). Marin spins a flat disc of water between her hands and throws it
- * (`ctx.projectile`; the first enemy it touches is hit, dodged by stepping off the line). It does 68 and moves the
+ * (`ctx.projectile`; the first enemy it touches is hit, dodged by stepping off the line). It does 52 and moves the
  * enemy 2.5 m by the tide: at High tide the hit throws foam outward and knocks the enemy back, at Low tide a water
  * tether draws it in toward her. The move itself is decided in `src/traits/tide.ts` (`dealt`): this effect hands the
  * engine the Low-tide shape (a pull toward the bolt's start) and the trait flips it to a push at High tide. The look

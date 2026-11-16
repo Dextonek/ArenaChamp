@@ -11,8 +11,8 @@ import { type InkStroke, removeStrokes, strokesNear } from '../trait';
  * The Last Character (ink kit v5, R: a zone and a payoff on her ink). Ground aim, 9 m. She writes one great character, 4 m
  * wide, on the ground over 1.0 s (rice paper unrolls, five wet strokes are painted in one after another: the 2 m circle is
  * the telegraph and it roots her while she writes). At 1.0 s, judged on live positions (`ctx.enemies`): an enemy inside the
- * 2 m circle takes 30 and is rooted 1 s; and for every live armed stroke of hers within 0.8 m of that enemy at that moment,
- * 3 at most, a further 40. It is one hit with the sum (30 + 40 per stroke); an enemy outside the circle but standing on her ink
+ * 2 m circle takes 40 and is rooted 1 s; and for every live armed stroke of hers within 0.8 m of that enemy at that moment,
+ * 3 at most, a further 50. It is one hit with the sum (40 + 50 per stroke); an enemy outside the circle but standing on her ink
  * takes only the stroke part, as a `projectile: true` hit (no root), so the strokes pay off even when they stand outside the
  * character. The strokes that were counted vanish (`removeStrokes`, both screens). One short impact frame (a single light
  * frame, ink on paper), a vermilion seal stamps the middle, ink and a ring burst out. Clean by 2.4 s. Strokes only count

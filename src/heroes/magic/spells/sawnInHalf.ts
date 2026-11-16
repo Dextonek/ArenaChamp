@@ -12,7 +12,7 @@ import { SAW_DAMAGE, SAW_RADIUS, SAW_RANGE, SAW_SLOW, SAW_SPEED, SAW_WIND } from
 /**
  * Sawn in Half (magic kit, W: the saw). The Great Zambini snaps his fingers: over the 0.3 s wind-up a long toothed saw blade with a gold
  * and violet grip is drawn out of thin air at his hand in a puff of confetti, then slides at the enemy as one real bolt (`ctx.projectile`:
- * 8 m, 18 m/s, radius 0.35), rocking as it goes, with a trail of gold stars. 50 damage and slowed 1.5 s (the hit carries the slow, and
+ * 8 m, 18 m/s, radius 0.35), rocking as it goes, with a trail of gold stars. 60 damage and slowed 1.5 s (the hit carries the slow, and
  * so does the cast's mods, which is what reaches a network duel). It reaches 6 m at 0.63 s. A hit throws a fan of confetti, stars and two
  * halves of a card; a miss or a wall pops it into confetti.
  *

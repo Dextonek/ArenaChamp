@@ -11,7 +11,7 @@ import { watchCover } from '../trait';
 /**
  * Gravity Slam (void kit v5, Q: a quick slam, no aim). A 3 m circle shows round him from the cast (the telegraph, so the
  * enemy can read it). Over 0.35 s glass cracks run out across the ground to the rim and his weight bears down. At 0.35 s he
- * slams: every enemy inside the circle at that moment (live positions) takes 50 and is dragged 1.5 m
+ * slams: every enemy inside the circle at that moment (live positions) takes 60 and is dragged 1.5 m
  * toward him (`pull`, `knock: 0`); shards are thrown out and then drawn back in, a cyan star pops at his feet, a ground
  * refraction ring runs out to 3.4 m, one impact frame. The cracks heal from 1.0 s; clean by 1.6 s. Nothing happens on a hit
  * (no refund). The circle is centred on where he stood at the cast (`sentFrom`), the same on both screens.

@@ -20,7 +20,7 @@ import {
  * At 0.3 s Gerald slides at 8 m/s: his obstacle and his look go with him (the obstacle list is rebuilt when one is added
  * or removed, so a live one is not moved: it is removed at the start and a new one stands at the end spot; his unit keeps
  * his HP the whole way and is held on him). The first time an enemy stands within 1.3 m of him (live position, once per
- * enemy) it takes 60 (`projectile: true`) and is carried along with him (`ctx.carry`) until he stops. If he stops on a
+ * enemy) it takes 70 (`projectile: true`) and is carried along with him (`ctx.carry`) until he stops. If he stops on a
  * wall, pillar or the ring's edge with someone carried, they are stunned 0.9 s, with a big thud and Gerald furious; a
  * full 8 m slide ends with a small thump. A dark scrape trails behind him. Clean by about 2.3 s.
  *

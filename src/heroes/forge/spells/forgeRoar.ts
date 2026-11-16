@@ -11,7 +11,7 @@ import { SLAM_SECONDS, fxOf } from '../trait';
  * Forge Roar (forge kit v5, W: a self buff that arms a slam). He roars and heat rolls off him: at 0.3 s a ground ring of
  * heat and a refraction ring sweep out to 2.4 m, a cold-tinted star pops at his chest, sparks fly up and ash drifts down,
  * and a loop of chain links closes round his waist and turns slowly for the whole 3 s of the armour (+30%, the kit's
- * `buff`). The slam itself is the trait's (`src/traits/forge.ts`: his next basic attack, +35 damage and a 0.5 s knock-up):
+ * `buff`). The slam itself is the trait's (`src/traits/forge.ts`: his next basic attack, +30 damage and a 0.5 s knock-up):
  * this effect draws it armed. A white-hot hammer rides on his shoulder, following him live, until the slam is spent or the
  * 3 s run out (the trait writes `forgeFx.slamOffAt`, mirrored on the other screen); then it cools to black in 0.25 s with a
  * puff of steam. It deals no damage and has no telegraph. No speed anywhere. Clean by 3.5 s.

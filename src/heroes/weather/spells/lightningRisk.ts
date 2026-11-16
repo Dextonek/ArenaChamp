@@ -12,7 +12,7 @@ import { BOLT_DAMAGE, BOLT_DELAY, BOLT_RADIUS } from '../trait';
  * wide grin rolls in 5.5 m above it, swelling over the first half second and rumbling (it shakes, its face goes darker). A pale
  * yellow ring marks the 1.5 m circle on the ground and sparks crackle round its edge. At 0.8 s the bolt comes down: a jagged
  * white-hot strike from the cloud to the floor, a flash on the ground, a refraction ring and a star. Whoever stands in the circle
- * at that moment (their live position, judged then) takes 45. The cloud lingers a moment and drifts off, still smiling. Clean by about
+ * at that moment (their live position, judged then) takes 64. The cloud lingers a moment and drifts off, still smiling. Clean by about
  * 2.0 s. Telegraph: the circle, impact at 0.8 s (he is rooted until then). See pipeline/designs/kit-weather.md.
  */
 export interface LightningRiskSettings {

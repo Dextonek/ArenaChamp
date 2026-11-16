@@ -10,7 +10,7 @@ import { CLAW_ANGLE, CLAW_DAMAGE, CLAW_REACH, CLAW_WIND } from '../trait';
 /**
  * Claw (mole kit, Q: a swipe). Mabel digs in her heels (puffs of dirt, her helmet lamp flickers up) and rakes her huge digging claws
  * across the cone in front of her (2.5 m, 120 degrees: the same shape the telegraph draws) at 0.4 s: three gold strokes sweep over the
- * ground on dark ones, clods fly out along the swipe, a little pale star pops. Everyone inside the cone on their live position takes 45.
+ * ground on dark ones, clods fly out along the swipe, a little pale star pops. Everyone inside the cone on their live position takes 68.
  * The cone's apex is `sentFrom` and its heading the caster's facing at the cast, so both screens agree. Telegraph: the cone, impact at
  * the swipe (she is rooted 0.4 s). Clean by about 1.2 s. See pipeline/designs/kit-mole.md.
  */

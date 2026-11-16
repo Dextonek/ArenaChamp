@@ -11,9 +11,9 @@ import { takeReaction } from '../trait';
  * Acid Splash (alchemy kit, E: a 4 m cone in front of her, reagent violet; her answer to being rushed). She hauls a flask of
  * violet acid up in front of her chest (it shakes and swells while the cone fills on the ground), then smashes it: the
  * flask bursts in a fan of acid, a spray of droplets arcs out across the cone, a violet ring rolls out of her feet and
- * everyone inside the cone (live positions, at the smash) takes 30 and a shove of about 1.5 m. The acid lies in a
+ * everyone inside the cone (live positions, at the smash) takes 40 and a shove of about 1.4 m (knock 10). The acid lies in a
  * bubbling violet puddle for a moment, then drains. When the hit sets off a reaction the effect reads it (`takeReaction`)
- * and plays that burst. The targeting is `self` with radius 4: the duel AI casts it when the enemy is within 3.4 m.
+ * and plays that burst. The targeting is `self` with radius 4.5: the duel AI casts it when the enemy is within 3.9 m.
  * See pipeline/designs/kit-alchemy.md.
  */
 export interface AcidSplashSettings {
@@ -33,7 +33,7 @@ const GLINT_T = 0.26;
 const HIT_T = 0.42; // the smash
 const DRAIN_T = 1.5;
 const DURATION = 2.1;
-const RANGE = 4; // the cone's length: the kit's reach (the self radius is the same)
+const RANGE = 4; // the cone's length: the kit's reach (the self radius below is a little more)
 const SELF_RADIUS = 4.5; // the duel AI casts it when the enemy is within this minus 0.6 (3.9 m)
 const ANGLE = 100; // degrees, the cone's full width
 const FLASK_SCALE = 0.85;
@@ -271,7 +271,7 @@ export class AcidSplash implements Effect {
 export const acidSplashModule: EffectModule = {
   label: 'acid splash',
   category: 'hero: alchemy',
-  // Around her: the duel AI casts it when the enemy is within radius - 0.6 (3.4 m). The cone itself reaches RANGE.
+  // Around her: the duel AI casts it when the enemy is within radius - 0.6 (3.9 m). The cone itself reaches RANGE.
   targeting: { mode: 'self', radius: SELF_RADIUS },
   create: () => new AcidSplash(),
   telegraphs(effect) {

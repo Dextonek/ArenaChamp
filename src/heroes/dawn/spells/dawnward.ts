@@ -12,10 +12,10 @@ import { W_BURST, W_BURST_RADIUS, W_SHIELD_SECONDS, aurielShields, burstHit, typ
 /**
  * Dawnward (dawn kit v5, W: a self shield that bursts). Six kite shields of hard light fly in and click into a ring round
  * Auriel (0.35 s) and turn slowly round her, a gold sun-wheel sigil under her feet and a sun disc behind her; the whole thing
- * follows her. The shield itself (70 for 3 s, her basic attacks reaching 3 m farther meanwhile, recast Pop) is the trait's
+ * follows her. The shield itself (45 for 3 s, her basic attacks reaching 3 m farther meanwhile, recast Pop) is the trait's
  * (`src/traits/dawn.ts`): this effect draws it and watches the trait's `aurielShields` record. The moment the record says the
  * shield is gone (broken, run out at 3 s, or popped) the ring shatters and a 3 m burst goes off at her LIVE position:
- * 42 damage to every enemy inside it on its live position (`projectile: true`; no telegraph can show it, so the ring flash is
+ * 27 damage to every enemy inside it on its live position (`projectile: true`; no telegraph can show it, so the ring flash is
  * the warning and the enemy has the 3 s the shield lasted to see it coming). A branded enemy caught in it is stunned 0.8 s
  * by the trait. If a Sunrise replaces the record the ring just crumbles, no burst. The effect lives 3.2 s at least and up to
  * about 4.4 s, inside the server's window for hits after a cast. Where the trait gives no record (the VFX tool) the shield

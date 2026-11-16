@@ -13,7 +13,7 @@ import { CARD_DAMAGE, CARD_FAN, CARD_RADIUS, CARD_RANGE, CARD_SPEED, CARD_WIND }
  * Card Spray (magic kit, Q: three cards). The Great Zambini flicks his wrist: over the 0.3 s wind-up a fan of three playing cards
  * appears at his hand (gold stars fall from it) and at 0.3 s they leave as three real bolts (`ctx.projectile`: 8 m, 22 m/s, radius 0.3)
  * in a 24 degree fan (-12, 0 and +12 degrees from the aim). Each card spins as it flies and leaves a trail of confetti and gold
- * stars. 22 damage each; every card that hits bursts into a spray of confetti, stars and loose cards, and one that misses (or meets a
+ * stars. 26 damage each; every card that hits bursts into a spray of confetti, stars and loose cards, and one that misses (or meets a
  * wall) pops into confetti. A card reaches 6 m at 0.57 s. Close up the three overlap into a wall; past 5 m a player can stand in a gap.
  *
  * Telegraph: three thin lines, one per card, as wide as the bolt really hits (`boltWidth`), from the cast to where the card ends

@@ -37,19 +37,22 @@ export interface HitOptions {
   color?: string;
   /**
    * Metres the hit drags the target toward `from` (default the caster), stopping 1 m short of it (at most 4 m).
-   * Use `knock: 0` with it (the default knock is 4). Summoned units and network duels ignore it.
+   * Use `knock: 0` with it (the default knock is 4). Summoned units ignore it; a network duel applies it on the victim's
+   * screen (the duel's `damagePlayer`), with the knock, debuff and status.
    */
   pull?: number;
   /**
    * A status effect on top of the damage (stun, root, slow, silence, blind, knock-up). Capped, refreshed and
-   * stun-immune as in `status.ts`; a dodged or filtered hit gives none. Network duels ignore it.
+   * stun-immune as in `status.ts`; a dodged or filtered hit gives none. In a network duel the victim's screen enforces it
+   * and tells the other screen, which only shows it.
    */
   status?: { kind: StatusKind; seconds: number };
   /** A debuff (or buff) on the target on top of the damage (see `BuffKind` in status.ts). A dodged hit gives none. */
   debuff?: { kind: BuffKind; amount: number; seconds: number };
   /**
    * Set by the engine on a skillshot's hit (`CastContext.projectile`): the bolt physically touched the target, which
-   * is already the dodge check, so the duel's zone filters let it through. Spells do not set it.
+   * is already the dodge check, so the duel's zone filters let it through. Many spells set it too, on a hit whose catch
+   * they judged themselves on the live position (a sure hit, a delayed circle, a carry), for the same reason.
    */
   projectile?: true;
   /**
@@ -90,7 +93,8 @@ export interface CastContext {
   /**
    * Gives the caster a shield of `amount` HP for `seconds` (the player hero, a duel opponent or an arena foe): it
    * absorbs damage before HP, then breaks ("SHIELD BROKEN") or expires. Casting again keeps the larger one.
-   * `color` (css, optional) tints the bubble and the bar segment. Network duels ignore it.
+   * `color` (css, optional) tints the bubble and the bar segment. In a network duel only the caster's own screen has it:
+   * the replay on the victim's screen leaves it undefined (with `healSelf` and `moveCaster`) and learns the shield.
    */
   shieldSelf?(amount: number, seconds: number, color?: string): void;
   /** Heals the caster by `amount` (capped at max HP) with a green floating number. */
@@ -110,7 +114,8 @@ export interface CastContext {
   /**
    * Fires a skillshot (see `projectile.ts`): a bolt that flies from `from` along `dir` and hits the first enemy it
    * touches, dodged by stepping off the line. The arena ticks it; follow the returned handle (`pos`, `dir`, `alive`,
-   * `children`, `onHit`) to draw it. Call it at the cast moment. Network duels leave it undefined (no bolt flies).
+   * `children`, `onHit`) to draw it. Call it at the cast moment. In a network duel the cast replayed on the victim's screen
+   * keeps it: the bolt flies there at that screen's hero, and its hit is decided there.
    */
   projectile?(opts: ProjectileOptions): Projectile;
   /**
@@ -165,7 +170,8 @@ export interface CastContext {
    * distance and shoot dodgeable bolts, a `turret` stands and shoots. The arena owns and ticks them; follow the returned
    * handle (`units`, `alive`, `onDeath`) for extra visuals. Units can be hit by spells and bolts (they are in `targets`,
    * and `liveFoes()` lists them) but never count as the duel's enemy hero. At most 6 per side. Call it at the cast
-   * moment. Network duels leave it undefined.
+   * moment. In a network duel the cast replayed on the victim's screen keeps it and raises the other player's units there;
+   * the raid partner's replay (`partnerCast`, where nothing counts) leaves it undefined.
    */
   summon?(opts: SummonOptions): Summon;
   /**

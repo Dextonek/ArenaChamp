@@ -14,7 +14,7 @@ import {
 /**
  * Mop Bucket (janitor kit v5, E: a thrown wheeled bucket). Gus swings the bucket up from his side over the 0.3 s wind-up (water
  * slops over the rim) and lets it fly as a real bolt (`ctx.projectile`: 8 m from him, 16 m/s, radius 0.4): it tumbles end over end
- * with its wheels spinning and a trail of drops and soap bubbles behind it. It reaches 6 m at 0.65 s. A hit: 40 damage. Where it stops
+ * with its wheels spinning and a trail of drops and soap bubbles behind it. It reaches 6 m at 0.65 s. A hit: 55 damage. Where it stops
  * (on a hero, or at the end of its range, or at cover) it lands with a CLANG, a splash and a ring, and the floor 2.5 m round is wet for
  * 6 s (`addWet`, written on both screens, drawn by the trait's `marks`). The empty bucket lies there a moment and drains.
  *

@@ -11,7 +11,7 @@ import { CHARGE_DAMAGE, CHARGE_RANGE, CHARGE_TIME, CHARGE_WIDTH, CHARGE_WIND } f
  * Charge (twins kit, Pim's W: a rush). Pim puts his head down and digs in (0.4 s): the sword points forward, dust kicks up behind his
  * boots, and orange streaks gather along the lane (the lane is the telegraph, a 1.6 m wide strip as long as the rush). Then he runs the
  * aimed distance (5 m at most, 2 m at least) in 0.2 s (`ctx.moveCaster`), a trail of dust and confetti behind him and speed streaks
- * along the lane. When he arrives (0.6 s) everyone in the lane on their live position takes 40 and is shoved ahead of him, with a
+ * along the lane. When he arrives (0.6 s) everyone in the lane on their live position takes 56 and is shoved ahead of him, with a
  * spiky star, a ring and the word RAAH. Network duels: the other screen has no `moveCaster` (his client streams the run), so it draws
  * the lane from `sentFrom` and the hits are decided on the victim's screen. Clean by about 1.6 s. See pipeline/designs/kit-twins.md.
  */

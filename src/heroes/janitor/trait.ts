@@ -45,7 +45,11 @@ export const BUCKET_DAMAGE = 55;
 export const BUCKET_RADIUS = 0.4;
 export const SPLASH_R = 2.5;
 
-/** Flood (R): radius, warning, seconds it floods, his surf (haste), and what his Q deals meanwhile. */
+/**
+ * Flood (R): radius, warning, seconds it floods, his surf (haste), and what his Q deals meanwhile. `FLOOD_MOP` equals
+ * `MOP_DAMAGE`, so Flood's `castMods` gives power 1: no bonus since the tuning of 2026-11-04 raised the mop from 45 to 60 and
+ * took the bonus out of the tooltip.
+ */
 export const FLOOD_RADIUS = 7;
 export const FLOOD_WARN = 1;
 export const FLOOD_LIFE = 5;
@@ -135,7 +139,7 @@ function floodRunning(t: TraitView) {
  * that makes up the difference (`v - own`, times dt) goes through `t.carryEnemy`, so a hero pressing steadily is not faster at all,
  * only slower to turn and slower to stop, and cover still stops them. Off the wet floor `v` is just their own step. A sign hit needs
  * the slide's speed toward the sign to be `SIGN_SPEED` or more: walking on dry floor at 4 m/s never hurts. Flood: `afterCast` notes the
- * cast, `tick` starts the surf (haste 35%) when the water comes (1 s), `castMods` makes his Q hit for 60 meanwhile; a ring at his
+ * cast, `tick` starts the surf (haste 35%) when the water comes (1 s), `castMods` keeps his Q at 60 (power 1); a ring at his
  * feet shows the surf on both screens. The CPU: see `aiHold` and `aiGoal`.
  */
 export const janitorTrait: Trait = {
@@ -182,7 +186,7 @@ export const janitorTrait: Trait = {
   },
 
   castMods(t, slot) {
-    // Flood: his Q is 60 while he surfs.
+    // Flood: his Q is 60 while he surfs, the same as without (`FLOOD_MOP` = `MOP_DAMAGE`, power 1: no bonus since 2026-11-04).
     if (slot === 0 && floodRunning(t) && t.time < t.mem.floodAt + FLOOD_WARN + FLOOD_LIFE) return { power: FLOOD_MOP / MOP_DAMAGE };
     return {};
   },

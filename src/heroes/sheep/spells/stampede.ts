@@ -16,8 +16,8 @@ import {
  * abreast of him, bouncing on the spot, then at 0.8 s (one short impact frame) they bolt down a line 12 m long and 4 m wide at 8 m/s:
  * a bouncing, rocking rush of wool with dust and tufts flying (drawn, `SheepHerd`; they are NOT summons, so they do not count against the
  * cap of 6 and nothing can kill them). The line is the telegraph and the real shape: `ctx.hit` is decided on each enemy's LIVE position, as the
- * sheep pass: an enemy inside the strip and within 0.75 m of a sheep takes 25 from that sheep, once per sheep, three sheep at most per
- * victim (75), and the trait adds 1 Wool for each (`dealt`, slot 3). The eight lanes are 0.5 m apart across the strip and the sheep
+ * sheep pass: an enemy inside the strip and within 0.75 m of a sheep takes 30 from that sheep, once per sheep, three sheep at most per
+ * victim (90), and the trait adds 1 Wool for each (`dealt`, slot 3). The eight lanes are 0.5 m apart across the strip and the sheep
  * stagger two ranks deep, so the strip has no gap: stepping out of it is the only dodge (the telegraph shows from the cast and the first
  * sheep reaches 4 m at 1.3 s). A pillar or wall on the centre line shortens the line (`bankPath`): the sheep stop at it in a burst of
  * wool. The first rank stands on Bo's line at 0.8 s, the second 1.1 m behind. Clean by about 2.9 s.

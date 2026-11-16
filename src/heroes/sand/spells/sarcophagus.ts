@@ -14,7 +14,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * `ctx.hit(target, { damage: 0, knock: 0, status: sealed 1.2 s })`: sealed, they cannot act and nothing can hit them from
  * either side, and the opaque gold case hides them. If they stepped out it shuts on nothing, and sinks: no seal, no damage.
  * The seal runs 1.2 s from the frame it landed. The frame it ends is not trusted (statuses tick each frame and the effect
- * cannot read the enemy's status), so the effect waits one more frame, then the halves burst open in scarabs and the 90 damage
+ * cannot read the enemy's status), so the effect waits one more frame, then the halves burst open in scarabs and the 110 damage
  * lands (`projectile: true`: the hit is on the seal's own result, a figure no longer sealed, so `resolve` does not swallow it)
  * with a brief impact frame. The trait (`src/traits/sand.ts`) Judges them with that hit. So the burst comes about
  * 1.3 s after the seal, around 2.0 s after the cast; clean by about 3.1 s. Sefu is free to move and act from 0.7 s.
@@ -180,7 +180,7 @@ export class SarcophagusSpell implements Effect {
         ctx!.hit(tg!, { damage: 0, knock: 0, color: SAND_CSS.hot, status: { kind: 'sealed', seconds: this.settings.seal } });
       }
     }
-    // --- The seal has run its time: wait one frame, then the case bursts open and the 90 lands on an unsealed figure. ---
+    // --- The seal has run its time: wait one frame, then the case bursts open and the 110 lands on an unsealed figure. ---
     if (this.sealAt >= 0 && this.burstAt < 0) {
       if (this.armed) this.burst(t);
       else if (t >= this.sealAt + this.settings.seal) this.armed = true;

@@ -10,7 +10,7 @@ import { RING_RADIUS, STOMP_DAMAGE, STOMP_RADIUS, STOMP_SLOW, STOMP_WIND, bookOf
 /**
  * Stomp (sumo kit, W: the ring). A 3 m circle shows round him from the cast (the telegraph). Over the 0.5 s wind-up he settles his
  * weight (small puffs lift off the floor at 0.15 s and 0.32 s, the red circle closes in). At 0.5 s his foot comes down: everyone
- * inside the circle at that moment (live positions) takes 40 and is slowed 1 s (`knock: 0`); seven cracks run out across the floor
+ * inside the circle at that moment (live positions) takes 50 and is slowed 1 s (`knock: 0`); seven cracks run out across the floor
  * (dark seams with a red glow), a ring of dust rolls out, a pale star pops at his feet, a refraction ring runs out and the floor
  * shakes. Then the DOHYO is stamped: a red and a pale ripple run out to 5 m and the straw ring takes the floor (`Trait.marks` in
  * `src/traits/sumo.ts`, drawn from the record this effect writes). Only one ring stands: a new Stomp replaces it. The cracks close from

@@ -11,7 +11,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
 /**
  * Cobra Spit (sand kit v5, Q: 9 m line skillshot, `ctx.projectile`). A gold-and-turquoise cobra of sand rears up in front of
  * Sefu in 0.2 s (the wind-up, 0.25 s) and on the strike spits a bolt of venom (20 m/s, radius 0.35) down the aim from his feet:
- * it reaches 6 m at 0.55 s, so a sidestep after the hood rises is enough. The first enemy it touches takes 50 damage and is
+ * it reaches 6 m at 0.55 s, so a sidestep after the hood rises is enough. The first enemy it touches takes 62 damage and is
  * blinded 1.2 s (`status: blind`). A hit on a Judged enemy halves what is left of this spell's cooldown: that is the trait
  * (`src/traits/sand.ts`, `dealt` and `peerNote`), the bolt lands 0.25 s or more after the cast set the cooldown, so it
  * is always a running cooldown that is cut. The hit splashes in a turquoise star and a ground ring; the hood dissolves to grains.

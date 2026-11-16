@@ -15,11 +15,11 @@ import { lyraMarks, type LyraMark } from '../trait';
  * with a ring closing on its centre (and, from now, the module's circle telegraph), and the star lets go and falls
  * as a meteor (a star arrow with a long tail and a big head) from where it hung. At 2.4 s it lands: the hit is decided
  * by the enemy's live position against the fixed spot (1.8 m) and goes through `ctx.hit` with `projectile: true`
- * (the telegraph is decided late, so it cannot gate it): 135 plus 25% of the damage she dealt the marked enemy
+ * (the telegraph is decided late, so it cannot gate it): 120 plus 25% of the damage she dealt the marked enemy
  * meanwhile. The landing is an impact frame, a whiteout blink, a crater with a gold rim, a ground refraction ring,
  * a star burst, stars thrown outward and a constellation of eight spokes that holds, then snaps and falls. The tally
  * is `lyraMarks` (src/traits/astral.ts), opened at `play()` and closed just before the strike; where the trait does
- * not track (the other screen of a network duel) the strike is the flat 135. Clean by about 4.1 s, well inside the
+ * not track (the other screen of a network duel) the strike is the flat 120. Clean by about 4.1 s, well inside the
  * duel's hit window (the hit lands at 2.4 s). See pipeline/designs/kit-astral.md.
  */
 export interface MeteorMarkSettings {

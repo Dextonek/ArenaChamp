@@ -161,8 +161,9 @@ const AI_KITE_STAND = 4.8;
  * Mist Waltz (W) arms two attacks for 3 s: +18 damage and 1.5 m more reach each (`attackMods`, `attackReach`). For the CPU
  * it is a getaway (`escape` in the kit): it flows away from an enemy within 3.5 m and shoots.
  * Hemocurse (E): the effect owns `hemocurses`; while it is live each spell the enemy casts costs them 15 HP (`enemyCast`
- * calls `hitEnemy`, decided where the hit is real) and heals her 20 if she is Hungry. It was 30 before the rework and 20 after it: more
- * and more heroes cast without cooldowns (against Cantor, a spell every beat, 20 was a fifth of her damage). Sanguine Feast (R) holds her 1.6 s.
+ * calls `hitEnemy`, decided where the hit is real) and heals her 20 if she is Hungry. The cost was 30 before the rework,
+ * 20 after it, 15 since: more and more heroes cast without cooldowns (against Cantor, a spell every beat, 20 was a fifth of
+ * her damage). Sanguine Feast (R) holds her 1.6 s.
  * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half; 40 while Hungry, when
  * her spells drink most of it back), then holds off until the Price is nearly back at rest; it keeps 50 HP back (12 for a
  * needle), always takes the Rip, does not curse a cursed enemy, throws the needle before it waltzes away, and starts the

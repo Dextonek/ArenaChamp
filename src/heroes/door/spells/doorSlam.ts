@@ -12,7 +12,7 @@ import { SLAM_DAMAGE, SLAM_RADIUS, SLAM_STUN, SLAM_WIND, bookOf, standingDoors, 
  * Slam (door kit v5, E: both doors slam). Every door of his that stands (one or two) is the centre of a 1.5 m circle: for 0.7 s the
  * light in its crack grows hotter and wider, a red warning disc fills the circle on the floor inside a brass ring, and brass flecks
  * rattle off the frame. At 0.7 s the doors SLAM: a big star on each, a ring of force along the floor, a burst of brass, the camera
- * jolts. An enemy inside either circle at that moment, on its LIVE position (`ctx.enemies`, not the list frozen at the cast), takes 40
+ * jolts. An enemy inside either circle at that moment, on its LIVE position (`ctx.enemies`, not the list frozen at the cast), takes 70
  * and a 0.5 s stun. A door that broke meanwhile does not slam. The circles come from the doors that stand (the trait's records,
  * the same on both screens), they are the telegraph (impact 0.7 s: he is rooted until then) and the hit shape. The CPU casts it only
  * with a door within 1.5 m of the enemy (`aiHold`). Clean by 1.7 s. See pipeline/designs/kit-door.md.

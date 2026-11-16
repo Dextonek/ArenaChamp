@@ -12,7 +12,7 @@ import type { Effect, EffectModule } from '../../../effects/types';
  * 0.2 s (`ctx.moveCaster`, 0.2 s) trailing a ribbon of mist that thins from its root, and at the end of the slide the mist
  * folds back into her with a small star, a ring on the ground and a second sigil. She is not untouchable and there is no
  * telegraph. The trait (`src/traits/blood.ts`) arms her next two basic attacks for 3 s (+18 damage, +1.5 m reach, shown as
- * two drop pips on her) and costs 20 HP. Built from `sentFrom` and `point`, so both screens of a network duel draw the same
+ * two drop pips on her) and costs the Price in HP. Built from `sentFrom` and `point`, so both screens of a network duel draw the same
  * path; her real move is her own client's (`moveCaster`), the other screen has none and she follows her streamed position.
  * Clean by 1.3 s.
  */

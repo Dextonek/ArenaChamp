@@ -28,7 +28,8 @@ import { CORE_SECONDS, fxOf } from '../trait';
  * See pipeline/designs/kit-forge.md.
  * Since the Heat rework (2026-11-12, `src/traits/forge.ts`) the game plays only the Quench: R is the Quench at any Heat, the
  * trait writes `forgeFx.quenchAt` at the cast and this effect takes a fresh one as "this cast is the Quench", with
- * `quenchLeft` carrying the Heat (0.06 s a point: 30 + 0.6 a point of Heat). The stance is still here for the VFX tool.
+ * `quenchLeft` carrying the Heat (0.05 s a point, `QUENCH_PER_HEAT`: 30 + 0.5 a point of Heat). The stance is still here for
+ * the VFX tool.
  */
 export interface MoltenCoreSettings {
   /** Quench: base damage, and damage per second the core had left. */
