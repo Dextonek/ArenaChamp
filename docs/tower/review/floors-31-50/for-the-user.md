@@ -23,3 +23,9 @@ Bigger things, things in files another agent is working in, and matters of taste
   Defeat The Prism Mother") is at the top left, 64 px down, right over the hero's name and health. The exact fix, in
   `src/tower/world/pieces/hud.ts` (another agent's folder this round): the root's `top:64px` -> under the hero's panel (about `top:160px`
   on a desktop; on a phone below the minimap's column), or only for the ruler kind, which has no top bar of its own. Picture: floor 40.
+- **The Iron Marshal's words** (floor 42): title "Two banners, one sword", last phase "Under no banner" (a random pick of three in the
+  generator), while the codex makes him the crimson's marshal and "both banners" belongs to the Last Marshal (41). What I would do: a
+  title like "The crimson's iron hand" (`src/tower/world/gen/war.ts` `RULERS`, and the same words in `floors/gen/war-42.ts`).
+- **White-robed people read as white shapes in the War** (the White Sister, the Herald, the Camp-Mother): under the War's sun and bloom
+  their robes go to pure white from the game's camera. Already so in the accepted line-up. A fix is a darker cloth in their models
+  (Blender, one agent at a time) or a tint in code for the War's folk. Picture: floor 42.
