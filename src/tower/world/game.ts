@@ -521,8 +521,9 @@ export class WorldGame implements DoorSink {
       return;
     }
     // Back in front of the door when it was won (or a trial was lost); at the last waystone when a life was lost. A party's fight puts
-    // everyone in front of the door, won or lost: they come out together.
-    this.enter(out.shared || !(d.piece === 'ruler' || d.piece === 'gate') ? this.inFront(d) : undefined);
+    // everyone in front of the door, won or lost: they come out together. A won ruler, alone, too (the parent's decision, 2026-11-16:
+    // it used to send the hero to the last waystone, against this comment); only a lost ruler or gate wakes the hero at the waystone.
+    this.enter((d.piece === 'ruler' || d.piece === 'gate') && !out.won && !out.shared ? undefined : this.inFront(d));
     after?.();
   }
 
