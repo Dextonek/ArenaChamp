@@ -45,8 +45,8 @@ either can count, Barry calling the wind and the Professor steering into it.
 ## People and appearance
 
 Coast folk of Saltreach, Noon-touched: thirty at the Fall, he looks fifty, with a calm round face under windswept brown hair. A storm-slate coat with a cloud
-mantle and a high gold-rimmed collar, the weathervane staff with its glowing orb in the left hand. In the [revamp plan](../revamp.md) he gets a touch: sea-tanned
-skin and the tide lines of his people on his forearms (twenty-three floods).
+mantle and a high gold-rimmed collar, the weathervane staff with its glowing orb in the left hand. His skin is sea-tanned, and the coat's flared sleeves end below
+the elbow, so the tide lines of his people show on his forearms (Touched on 2026-11-16 by the [revamp plan](../revamp.md): twenty-three floods, seven drawn).
 
 ## Voice
 

@@ -42,8 +42,9 @@ His mother died in the ninety-fourth summer, in a storm at sea. That spring he r
 ## People and appearance
 
 Coast folk, Spire-born, born after the Fall: twenty-four, lean and long-limbed, with swept white hair (the Spire-born go white young, from the wind, they
-say), a mask of jade cloth across the lower face, a short teal coat, a very long jade scarf streaming behind him, bandaged forearms, and the curved wind-blade
-in the right hand. In the [revamp plan](../revamp.md) he gets a touch: sea-tanned skin, sea-glass in one ear, and the tide lines of his people.
+say), a mask of jade cloth across the lower face, a short teal coat, a very long jade scarf streaming behind him, bracers at the wrists, and the curved wind-blade
+in the right hand. His skin is sea-tanned, with sea-glass in his left ear and the tide lines
+of his people above the bracers (Touched on 2026-11-16 by the [revamp plan](../revamp.md): he was pale before).
 
 ## Voice
 
