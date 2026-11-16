@@ -14,7 +14,7 @@ from real.parts_d import dawn_line
 
 def build():
     R = Real("bard", sex="m", height=1.0, width=0.88, depth=0.86, skin="#b98a5c")
-    dawn_line(R)
+    dawn_line(R, color="#f4c95a", width=0.0036)
     z = R.z
     R.mat("plum", "#4a1a40", rough=0.6, double=True)
     R.mat("rose", "#b23a7c", rough=0.55, double=True)
