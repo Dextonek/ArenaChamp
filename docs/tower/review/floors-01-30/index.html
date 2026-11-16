@@ -15,7 +15,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 </style></head><body><main>
 <h1>The Climb, floor by floor: 1 to 30</h1>
 <p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red).</p>
-<div class="sum"><b>20 floors checked</b> · <b>6 fixed</b> · <b>6 for you</b></div>
+<div class="sum"><b>21 floors checked</b> · <b>6 fixed</b> · <b>6 for you</b></div>
 <h2>For you to decide</h2><ul>
 <li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
 <li><a href="#f01">Floor 1</a>: <b>On the map, “The gate up” sits on “The camp”.</b> The gate is beside the camp on every floor, so their two labels overlap on the M map (more on a phone). Small; a fix would nudge one label in map.ts.</li>
@@ -53,6 +53,7 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <a class="" href="#f18">18</a>
 <a class="" href="#f19">19</a>
 <a class="f l" href="#f20">20</a>
+<a class="" href="#f21">21</a>
 </div>
 <h2>I. The Sea</h2>
 <section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
@@ -381,6 +382,23 @@ ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
 <figure><a href="f20/person-rival.jpg"><img loading="lazy" src="f20/person-rival.jpg" alt="Anka, the rival"></a><figcaption>Anka, the rival</figcaption></figure>
 <figure><a href="f20/map.jpg"><img loading="lazy" src="f20/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
 <figure><a href="f20/overview.jpg"><img loading="lazy" src="f20/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<h2>III. The Sands</h2>
+<section class="floor" id="f21"><h3>Floor 21: The Storm Canyon</h3><p>Clean: the Sands&#x27; handmade floor. Cleared with four stars and no fall through the storms, no console error, every spot reachable; the wells, the caravan, the rival (Vesper, as the Codex has it), the trial, the Scarab Colossus (own model) and the gate (Sefu) all played; the people and their lines match the Codex (the Star-Reader, the Storm-Counter).</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The ridge&#x27;s slingers and the fort&#x27;s raiders slept through the bot&#x27;s route (they fight as anyone walks in: picture). The probe: 47 red rocks at the canyon foot sunk a little into the sand (nothing shows), a house at the cliff foot and a crate on the rocks with a gap the eye does not see, two shrubs on the rim.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34305 m²; 59 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 2 float, 3 gap, 47 buried, 3 in cover (each looked at; see below)</li><li>Grass and small things on ground steeper than 31°: 3</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1604 game s, every checkpoint reached; 43 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Scarab Colossus (Under the sand), model models/tower/sands_scarab_v4.glb, loaded yes after 3178 ms of real time</li><li>Frame check at the busiest spot (-80, -61), 3 units awake: median 6.1, 5.2, 3.7 ms, p95 8.1, 15.7, 6.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online; buying at the trader (card and prices shown)</p>
+</details>
+<div class="pics">
+<figure><a href="f21/start.jpg"><img loading="lazy" src="f21/start.jpg" alt="The camp as it opens"></a><figcaption>The camp as it opens</figcaption></figure>
+<figure><a href="f21/person-pip.jpg"><img loading="lazy" src="f21/person-pip.jpg" alt="The Star-Reader"></a><figcaption>The Star-Reader</figcaption></figure>
+<figure><a href="f21/person-kaia.jpg"><img loading="lazy" src="f21/person-kaia.jpg" alt="The Storm-Counter"></a><figcaption>The Storm-Counter</figcaption></figure>
+<figure><a href="f21/pack-fort.jpg"><img loading="lazy" src="f21/pack-fort.jpg" alt="The old fort and the Raider Chief"></a><figcaption>The old fort and the Raider Chief</figcaption></figure>
+<figure><a href="f21/ruler-close.jpg"><img loading="lazy" src="f21/ruler-close.jpg" alt="The Scarab Colossus"></a><figcaption>The Scarab Colossus</figcaption></figure>
+<figure><a href="f21/map.jpg"><img loading="lazy" src="f21/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f21/overview.jpg"><img loading="lazy" src="f21/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f21/phone-camp.jpg"><img loading="lazy" src="f21/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
 </div>
 </section>
 </main></body></html>
