@@ -17,6 +17,9 @@ const DRAWN = new Set<string>([
   'bram',
   'grandma-ironknit',
   'gus',
+  'hank',
+  'kaia',
+  'lyra',
   'mabel',
   'madame-cleaver',
   'mortis',
@@ -25,10 +28,15 @@ const DRAWN = new Set<string>([
   'nyx',
   'oblivion',
   'pim',
+  'pip',
   'pom',
   'professor-puff',
   'referee-whistler',
+  'sefu',
   'sir-whiskers',
+  'tempo',
+  'the-great-zambini',
+  'wick',
 ]);
 
 /** A hero's file stem: its name in lower case with dashes (`Big Yoko` -> `big-yoko`); the twins are `pim` and `pom`. */

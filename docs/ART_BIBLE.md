@@ -83,6 +83,10 @@ in small details.
 | Lynx (Sir Whiskers; foil: plate `#3c4458`, steel `#c4ced8`, clay `#b5653a`) | `#fff6e0` | `#ffc060` | `#e8a13a` | `#c8423a` | `#2a1608` |
 | Tithe / seal (Mr. Ledger; foil: vellum `#efe4c0`, oxblood `#7a2230`) | `#fff4e0` | `#e6d9ae` | `#c8302a` | `#ff7a4a` | `#161214` |
 | Augury (Barry Cloudsley; foil: storm `#4a5870`, deep `#2f5ea8`) | `#ffffff` | `#e4edf8` | `#6ac8ff` | `#f4e65a` | `#16233b` |
+| Wingfoot (Pip; foil: paper `#eee3c4`, parcel brown `#b98a52`, night blue `#3a6ac8`, seal red `#d9463a`) | `#fff6dc` | `#ffe8a0` | `#ffd24a` | `#8fb0ee` | `#141c30` |
+| Moss / rune (Hank; foil: wood `#b5763a`, bark `#6a4426`, pine `#3f6b3a`, steel `#cfd5d8`) | `#f4ffe0` | `#c8f08a` | `#7fbf55` | `#e8b868` | `#1c120b` |
+| Illusion (The Great Zambini; foil: card `#efe8d8`, deep violet `#2a1248`) | `#ffffff` | `#e8c8ff` | `#b05aff` | `#d8404a` | `#120a1e` |
+| Threshold (Wick; foil: brass `#b08a4a`, door wood `#5a3321`) | `#fffbe8` | `#ffe6a8` | `#ffcf7a` | `#c8423a` | `#1a0d0a` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

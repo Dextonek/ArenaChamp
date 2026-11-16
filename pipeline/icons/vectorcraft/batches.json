@@ -117,5 +117,52 @@
    "Redrawn after a first look: Mabel's Dig (claws over the hole read as horns) and Sinkhole (cracks over the pit read as a broken plate), the Feastmistress's smoke (grey puffs read as stones), the Weaver's Sweater (read as a basket) and Mr. Biscuit (read as a ghost), Sir Whiskers's Scratch (read as a feather), Nyx's Smoke Veil (two eyes in the smoke made a rock monster).",
    "Pom has three icons: Tag Out is the same spell for both twins and uses Pim's."
   ]
+ },
+ "3": {
+  "date": "2026-11-16",
+  "stems": [
+   "pip",
+   "kaia",
+   "tempo",
+   "hank",
+   "the-great-zambini",
+   "wick",
+   "lyra",
+   "sefu"
+  ],
+  "rows": {
+   "pip": "Proposed row Wingfoot (src/kits/courier.ts): sun yellow on night blue; paper, string and the red seal as foils.",
+   "kaia": "The art bible's Storm row; iron and copper for her rods.",
+   "tempo": "The art bible's Chrono row, the ivory dial as its foil.",
+   "hank": "Proposed row Moss / rune (src/kits/timber.ts): the axe's rune green, warm wood as the accent.",
+   "the-great-zambini": "Proposed row Illusion (src/kits/magic.ts): violet, the cards' red pips as the accent.",
+   "wick": "Proposed row Threshold (src/kits/door.ts): lamplight through a door, brass, his crimson as the accent.",
+   "lyra": "The art bible's Astral row, the sky chart as its foil.",
+   "sefu": "The art bible's Sand row; gold and lapis for the crook, the cobra and the sarcophagus."
+  },
+  "bible": {
+   "pip": [
+    "Wingfoot",
+    "Pip; foil: paper `#eee3c4`, parcel brown `#b98a52`, night blue `#3a6ac8`, seal red `#d9463a`"
+   ],
+   "hank": [
+    "Moss / rune",
+    "Hank; foil: wood `#b5763a`, bark `#6a4426`, pine `#3f6b3a`, steel `#cfd5d8`"
+   ],
+   "the-great-zambini": [
+    "Illusion",
+    "The Great Zambini; foil: card `#efe8d8`, deep violet `#2a1248`"
+   ],
+   "wick": [
+    "Threshold",
+    "Wick; foil: brass `#b08a4a`, door wood `#5a3321`"
+   ]
+  },
+  "notes": [
+   "One sign per hero: Pip's gold wings on letters, parcels and his wrapped boot, Kaia's iron rods and thick bent lightning, Tempo's clock hands with their pale echo, Hank's rune-edged double axe and his pines, the Illusionist's tall hats and cards, the Doorwarden's arched doors full of lamplight and his brass key, Lyra's star-tipped arrows, Sefu's gold and lapis (cobra, crook, scarab, sarcophagus).",
+   "Cartoon left behind: the postman's yellow mailbox, the stage magician's purple box, the bellhop's doors with a gold star, the lumberjack's TIMBER! board.",
+   "Weakest: Lyra's Q and W are a bow and two arrows: clear at 48 px, thin lines at 32. The Illusionist's E and R both show hats (three in a row, three round a ring with swords); the ring and the swords tell R apart. Kaia's Supercell and Barry's Lightning Risk (batch 2) both put lightning under a cloud; hers is a turning storm with three bolts, his one bolt on a mark.",
+   "Redrawn after a first look: Pip's Shortcut (a blue boot read as a modern sneaker; now a wrapped messenger's boot), Hank's TIMBER! (the fourth tree ran out of the frame), Sefu's Cobra Spit (a cobra seen from the front read as a microphone at 32 px; now from the side) and Scarab Stride (read as a caterpillar)."
+  ]
  }
 }
