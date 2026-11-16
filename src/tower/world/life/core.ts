@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TOUCH } from '../../../touch';
 import type { GameApi } from '../../../runtime';
+import { RING } from '../../../arenas/common';
+import type { FloorDef } from '../def';
+import { floorKeep } from '../keep';
 
 /**
  * The Climb's life (the user, 2026-11-16: "look at the map and fill it more, to be more lively"): what moves on a floor and is not
@@ -835,4 +838,344 @@ export class Room {
     for (const p of this.o.packs) d = Math.min(d, Math.hypot(p.x - x, p.z - z) - p.r);
     return d;
   }
+}
+
+// --- beasts on the ground: deer, foxes, hares, lizards, camels... -------------------------------------------------------------------
+
+/**
+ * A four-legged beast's shape, built in code facing +z, its feet at y = 0: body, neck and head, ears, tail, four legs, coloured per
+ * part (vertex colours), with an `aPart` attribute (kind 0 body, 1 a leg, 2 the head and neck; the leg's step phase; the pivot's y
+ * and z) that the shader swings (legs about the hip, the head down to graze about the neck's foot). Sizes are life size times `s`.
+ */
+export function beastGeometry(o: {
+  s: number; shoulder: number; len: number; girth: number; neck: number; head: number; leg?: number;
+  colors: { body: number; under?: number; leg: number; head?: number; tail?: number; ear?: number };
+  ears?: 'long' | 'point' | 'round'; tail?: 'stub' | 'brush' | 'long'; low?: boolean;
+}) {
+  const parts: THREE.BufferGeometry[] = [];
+  const s = o.s, c = o.colors, sh = o.shoulder * s, L = o.len * s, G = o.girth * s, legR = (o.leg ?? 0.045) * s;
+  const tag = (g: THREE.BufferGeometry, kind: number, phase: number, py: number, pz: number) => {
+    const n = g.attributes.position.count, a = new Float32Array(n * 4);
+    for (let i = 0; i < n; i++) a.set([kind, phase, py, pz], i * 4);
+    g.setAttribute('aPart', new THREE.BufferAttribute(a, 4));
+    return g;
+  };
+  const bodyY = sh - G * 0.35;
+  parts.push(tag(painted(new THREE.SphereGeometry(1, 10, 7).scale(G * 0.5, G * 0.55, L * 0.5).translate(0, bodyY, 0), c.body), 0, 0, 0, 0));
+  if (c.under) parts.push(tag(painted(new THREE.SphereGeometry(1, 8, 5).scale(G * 0.38, G * 0.3, L * 0.4).translate(0, bodyY - G * 0.3, 0.02 * L), c.under), 0, 0, 0, 0));
+  // the neck and head, pivoting at the neck's foot (graze: the head down to the ground)
+  const ny = bodyY + G * 0.15, nz = L * 0.4, nl = o.neck * s, hl = o.head * s;
+  const up = o.low ? 0.35 : 0.85; // the neck's rise (0 level, about 1.2 upright)
+  const ex = nz + Math.cos(up) * nl * 0.9, ey = ny + Math.sin(up) * nl * 0.9;
+  const neck = new THREE.CylinderGeometry(G * 0.17, G * 0.24, nl, 7).translate(0, nl / 2, 0).rotateX(Math.PI / 2 - up).translate(0, ny, nz);
+  parts.push(tag(painted(neck, c.body), 2, 0, ny, nz));
+  const head = new THREE.SphereGeometry(1, 8, 6).scale(hl * 0.3, hl * 0.32, hl * 0.55).translate(0, ey + hl * 0.05, ex + hl * 0.25);
+  parts.push(tag(painted(head, c.head ?? c.body), 2, 0, ny, nz));
+  const muzzle = new THREE.ConeGeometry(hl * 0.18, hl * 0.45, 6).rotateX(Math.PI / 2).translate(0, ey - hl * 0.02, ex + hl * 0.75);
+  parts.push(tag(painted(muzzle, c.head ?? c.body), 2, 0, ny, nz));
+  for (const side of [-1, 1]) {
+    const ear = o.ears === 'long'
+      ? new THREE.ConeGeometry(hl * 0.08, hl * 0.8, 5).scale(1, 1, 0.5).rotateX(-0.25).translate(side * hl * 0.12, ey + hl * 0.6, ex + hl * 0.05)
+      : o.ears === 'round'
+        ? new THREE.SphereGeometry(hl * 0.12, 6, 4).translate(side * hl * 0.2, ey + hl * 0.3, ex + hl * 0.1)
+        : new THREE.ConeGeometry(hl * 0.11, hl * 0.4, 4).rotateZ(-side * 0.35).translate(side * hl * 0.2, ey + hl * 0.4, ex + hl * 0.1);
+    parts.push(tag(painted(ear, c.ear ?? c.head ?? c.body), 2, 0, ny, nz));
+  }
+  if (o.tail) {
+    const t = o.tail === 'brush'
+      ? new THREE.SphereGeometry(1, 7, 5).scale(G * 0.16, G * 0.16, L * 0.38).rotateX(0.5).translate(0, bodyY - G * 0.05, -L * 0.72)
+      : o.tail === 'long'
+        ? new THREE.ConeGeometry(G * 0.12, L * 0.9, 5).rotateX(-Math.PI / 2 + 0.15).translate(0, bodyY - G * 0.15, -L * 0.85)
+        : new THREE.ConeGeometry(G * 0.1, L * 0.18, 5).rotateX(-Math.PI / 2 - 0.6).translate(0, bodyY + G * 0.2, -L * 0.52);
+    parts.push(tag(painted(t, c.tail ?? c.body), 0, 0, 0, 0));
+  }
+  // the legs: a front pair and a hind pair, the diagonal pairs in step
+  const hip = bodyY - G * 0.1, legLen = hip;
+  for (const [lx, lz, ph] of [[-1, 1, 0], [1, 1, Math.PI], [-1, -1, Math.PI], [1, -1, 0]] as const) {
+    const x = lx * G * 0.28, z = lz * L * 0.34;
+    const leg = new THREE.CylinderGeometry(legR, legR * 0.75, legLen, 5).translate(x, hip - legLen / 2, z);
+    parts.push(tag(painted(leg, c.leg), 1, ph, hip, z));
+  }
+  return mergeGeometries(parts)!;
+}
+
+interface Beast {
+  home: { x: number; z: number };
+  x: number; z: number; yaw: number; want: number;
+  state: 'graze' | 'look' | 'alert' | 'flee' | 'away' | 'back';
+  t: number; next: number;
+  gait: number; graze: number; step: number;
+  tx: number; tz: number;
+}
+
+/**
+ * Beasts that graze or sit about (deer at a glade's edge, a fox, hares, lizards on a rock, camels at a well): one instanced mesh a
+ * kind. Each keeps near its home, now and then lifts its head and looks round; when the hero comes within `shy` m (or a fight comes
+ * near) it looks up, then bolts away from the hero, and comes back at a walk when the hero has gone. `shy: 0`: it never bolts (a
+ * tethered camel), it only turns its head. The legs and the head move in the shader; the processor moves only the body.
+ */
+export class Beasts {
+  readonly mesh: THREE.InstancedMesh;
+  private list: Beast[] = [];
+  private attr: THREE.InstancedBufferAttribute;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private up = new THREE.Vector3(0, 1, 0);
+  private p = new THREE.Vector3();
+  private one = new THREE.Vector3(1, 1, 1);
+  constructor(
+    private env: LifeEnv,
+    geo: THREE.BufferGeometry,
+    homes: { x: number; z: number }[],
+    private o: { shy: number; walk: number; run: number; stride: number; flee: number; ok: (x: number, z: number) => boolean; danger: (x: number, z: number) => boolean; graze?: number; y?: (x: number, z: number) => number },
+  ) {
+    const mat = palMat(env, 0xffffff, { vertexColors: true, roughness: 0.85 });
+    patch(mat, 'beast', env.time, (sh) => {
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+          uniform float uTime;
+          attribute vec4 aPart; // kind (0 body, 1 leg, 2 head), the leg's phase, the pivot's y and z
+          attribute vec3 aBeast; // the step's phase, gait 0..1 (0 still, 0.5 a walk, 1 a run), graze 0..1`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          float g = aBeast.y;
+          vec2 yz = transformed.yz - aPart.zw;
+          if (aPart.x > 0.5 && aPart.x < 1.5) {
+            // a leg: swung about the hip, further at a run
+            float a = sin(aBeast.x + aPart.y) * (0.25 + 0.4 * g) * step(0.01, g);
+            transformed.yz = aPart.zw + vec2(yz.x * cos(a) - yz.y * sin(a), yz.x * sin(a) + yz.y * cos(a));
+          } else if (aPart.x > 1.5) {
+            // the head and neck: down to the grass (graze), a nod at a run
+            float a = aBeast.z * 1.05 + sin(aBeast.x * 2.0) * 0.08 * g;
+            transformed.yz = aPart.zw + vec2(yz.x * cos(a) - yz.y * sin(a), yz.x * sin(a) + yz.y * cos(a));
+          }
+          // the body rises and falls with the step
+          transformed.y += abs(sin(aBeast.x)) * 0.06 * g;`);
+    });
+    this.mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, homes.length));
+    this.mesh.count = homes.length;
+    env.own.push(geo);
+    this.attr = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, homes.length) * 3), 3);
+    this.attr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('aBeast', this.attr);
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.mesh.frustumCulled = false;
+    this.mesh.castShadow = false;
+    this.mesh.receiveShadow = true;
+    env.group.add(this.mesh);
+    const rnd = env.rnd;
+    for (const h of homes) {
+      const yaw = rnd() * 6.28;
+      this.list.push({ home: h, x: h.x, z: h.z, yaw, want: yaw, state: 'graze', t: 0, next: 2 + rnd() * 6, gait: 0, graze: 1, step: rnd() * 6.28, tx: h.x, tz: h.z });
+    }
+    this.write();
+  }
+
+  get count() {
+    return this.list.length;
+  }
+
+  /** A point `d` m from (x, z) away from (hx, hz), turned a little until `ok` (inside the floor, off the paths...). */
+  private away(x: number, z: number, hx: number, hz: number, d: number) {
+    const a0 = Math.atan2(z - hz, x - hx);
+    for (let k = 0; k < 9; k++) {
+      const a = a0 + Math.ceil(k / 2) * 0.35 * (k % 2 ? 1 : -1), tx = x + Math.cos(a) * d, tz = z + Math.sin(a) * d;
+      if (this.o.ok(tx, tz)) return { x: tx, z: tz };
+    }
+    return { x, z };
+  }
+
+  update(dt: number, hero: THREE.Vector3) {
+    const rnd = this.env.rnd, o = this.o;
+    for (const b of this.list) {
+      b.t += dt;
+      const dh = Math.hypot(hero.x - b.x, hero.z - b.z);
+      const scared = o.shy > 0 && (dh < o.shy || o.danger(b.x, b.z));
+      let speed = 0, graze = 0;
+      switch (b.state) {
+        case 'graze': case 'look': {
+          if (scared) { b.state = 'alert'; b.t = 0; b.next = 0.35 + rnd() * 0.5; break; }
+          if (o.shy === 0 && dh < 9) b.want = Math.atan2(hero.x - b.x, hero.z - b.z); // a tethered one turns to look
+          if ((b.next -= dt) < 0) {
+            if (b.state === 'graze') { b.state = 'look'; b.next = 1.5 + rnd() * 2.5; if (rnd() < 0.5) b.want = b.yaw + (rnd() - 0.5) * 2; }
+            else {
+              b.state = 'graze';
+              b.next = 3 + rnd() * 7;
+              if (rnd() < 0.4) { const a = rnd() * 6.28, r = rnd() * 2.5, tx = b.home.x + Math.cos(a) * r, tz = b.home.z + Math.sin(a) * r; if (o.ok(tx, tz)) { b.tx = tx; b.tz = tz; } }
+            }
+          }
+          // a slow step or two to a new mouthful
+          const d = Math.hypot(b.tx - b.x, b.tz - b.z);
+          if (d > 0.15) { speed = o.walk * 0.6; b.want = Math.atan2(b.tx - b.x, b.tz - b.z); }
+          graze = b.state === 'graze' && d <= 0.15 ? (o.graze ?? 1) : 0;
+          break;
+        }
+        case 'alert':
+          // head up, turned to the hero, a moment
+          b.want = Math.atan2(hero.x - b.x, hero.z - b.z);
+          if (b.t > b.next) { const p = this.away(b.x, b.z, hero.x, hero.z, o.flee * (0.8 + rnd() * 0.4)); b.tx = p.x; b.tz = p.z; b.state = 'flee'; b.t = 0; }
+          break;
+        case 'flee': case 'back': {
+          const d = Math.hypot(b.tx - b.x, b.tz - b.z);
+          speed = b.state === 'flee' ? o.run * Math.min(1, 0.4 + b.t * 1.5) : o.walk;
+          b.want = Math.atan2(b.tx - b.x, b.tz - b.z);
+          if (b.state === 'back' && scared) { b.state = 'alert'; b.t = 0; b.next = 0.2; break; }
+          if (d < 0.4) { b.state = b.state === 'flee' ? 'away' : 'graze'; b.t = 0; b.next = 2 + rnd() * 4; }
+          break;
+        }
+        case 'away':
+          // stands where it ran to, then grazes; goes home when the hero is well away from it (and from home)
+          if (scared && b.t > 0.5) { const p = this.away(b.x, b.z, hero.x, hero.z, o.flee * 0.6); b.tx = p.x; b.tz = p.z; b.state = 'flee'; b.t = 0; break; }
+          graze = b.t > 3 ? (o.graze ?? 1) : 0;
+          if (b.t > 10 && dh > o.shy * 2.5 && Math.hypot(hero.x - b.home.x, hero.z - b.home.z) > o.shy * 2.5) { b.state = 'back'; b.tx = b.home.x; b.tz = b.home.z; b.t = 0; }
+          break;
+      }
+      // turn towards where it wants to face, then move
+      const dy = Math.atan2(Math.sin(b.want - b.yaw), Math.cos(b.want - b.yaw));
+      b.yaw += dy * Math.min(1, dt * (speed > o.walk ? 8 : 4));
+      if (speed > 0 && Math.abs(dy) < 1.2) { b.x += Math.sin(b.yaw) * speed * dt; b.z += Math.cos(b.yaw) * speed * dt; }
+      const gaitTo = speed <= 0 ? 0 : speed <= o.walk ? 0.5 * Math.min(1, speed / o.walk) : 0.5 + 0.5 * Math.min(1, (speed - o.walk) / Math.max(0.1, o.run - o.walk));
+      b.gait += (gaitTo - b.gait) * Math.min(1, dt * 6);
+      b.graze += (graze - b.graze) * Math.min(1, dt * 2.5);
+      b.step += dt * (speed / o.stride) * Math.PI * 2;
+    }
+    this.write();
+  }
+
+  private write() {
+    const a = this.attr.array as Float32Array;
+    this.list.forEach((b, i) => {
+      this.q.setFromAxisAngle(this.up, b.yaw);
+      this.m.compose(this.p.set(b.x, this.o.y ? this.o.y(b.x, b.z) : 0, b.z), this.q, this.one);
+      this.mesh.setMatrixAt(i, this.m);
+      a[i * 3] = b.step % 6.2831853;
+      a[i * 3 + 1] = b.gait;
+      a[i * 3 + 2] = b.graze;
+    });
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.attr.needsUpdate = true;
+  }
+
+  /** What each does (the tools). */
+  snapshot() {
+    return this.list.map((b) => ({ state: b.state, x: +b.x.toFixed(1), z: +b.z.toFixed(1) }));
+  }
+}
+
+// --- motes: leaves, ash, dust and spores in the air; butterflies, moths and dragonflies ------------------------------------------
+
+/**
+ * Small things in the air, one instanced mesh, moved only in the shader. Two ways to be: drifting in a box round the hero (`around`:
+ * the box moves with the hero and what leaves it on one side comes in on the other, so a whole floor has them for the cost of the box
+ * full: ash falling, dust blowing, spores hanging) or hovering round fixed spots (`spots`: butterflies over a glade, moths at a
+ * crystal, dragonflies over a pool). A `flake` tumbles; a `wing` is two wings that beat; a `mote` is a speck. Lit by the scene like
+ * everything else (never a glow).
+ */
+export class Motes {
+  readonly mesh: THREE.InstancedMesh;
+  private center = { value: new THREE.Vector3() };
+  constructor(env: LifeEnv, o: {
+    n: number; shape: 'flake' | 'wing' | 'mote'; size: number; colors: number[];
+    around?: { box: [number, number, number]; base: number; vel: [number, number, number]; sway: number };
+    spots?: { x: number; y: number; z: number; r: number }[];
+    spin?: number; flap?: number; roughness?: number; metal?: number;
+  }) {
+    const s = o.size;
+    let geo: THREE.BufferGeometry;
+    if (o.shape === 'wing') {
+      // two wings from the body's line: each two triangles out to its side
+      const g = new THREE.BufferGeometry();
+      const v = [0, 0, 0.35, 1, 0, 0.5, 0.9, 0, -0.45, 0, 0, -0.35, 0, 0, 0.35, 0.9, 0, -0.45, 0, 0, 0.35, -0.9, 0, -0.45, -1, 0, 0.5, 0, 0, 0.35, 0, 0, -0.35, -0.9, 0, -0.45];
+      g.setAttribute('position', new THREE.Float32BufferAttribute(v.map((k) => k * s * 0.5), 3));
+      g.computeVertexNormals();
+      geo = g;
+    } else if (o.shape === 'flake') geo = new THREE.PlaneGeometry(s, s * 0.7);
+    else geo = new THREE.OctahedronGeometry(s * 0.5, 0);
+    const mat = palMat(env, 0xffffff, { side: THREE.DoubleSide, roughness: o.roughness ?? 0.85, metalness: o.metal ?? 0 });
+    const A = o.around, n = o.n;
+    patch(mat, `mote-${o.shape}-${A ? 'a' : 's'}-${o.spin ?? 0}-${o.flap ?? 0}-${A ? A.base + ',' + A.sway : ''}`, env.time, (sh) => {
+      sh.uniforms.uCenter = this.center;
+      sh.uniforms.uBox = { value: new THREE.Vector3(...(A?.box ?? [1, 1, 1])) };
+      sh.uniforms.uVel = { value: new THREE.Vector3(...(A?.vel ?? [0, 0, 0])) };
+      const turn = o.shape === 'wing'
+        ? `
+          // the wings beat about the body's line
+          float beat = sin(uTime * ${((o.flap ?? 9) * 6.2832).toFixed(2)} + ph) * 0.9 + 0.25;
+          transformed.y += abs(transformed.x) * sin(beat) * 1.2;
+          transformed.x *= cos(beat);`
+        : `
+          // tumbling about an axis of its own
+          vec3 ax = normalize(vec3(aMote.x - 0.5, aMote.y - 0.2, aMote.z - 0.5) + 0.001);
+          transformed = rotAxis(transformed, ax, uTime * ${(o.spin ?? 1.5).toFixed(2)} * (0.6 + aMote.y) + ph);`;
+      const place = A
+        ? `
+          // drifting in the box round the hero, wrapped (what leaves on one side comes in on the other)
+          vec3 sway = vec3(sin(uTime * 0.9 + ph * 3.0), 0.0, cos(uTime * 0.7 + ph * 2.0)) * ${A.sway.toFixed(2)};
+          vec3 w = aMote.xyz * uBox + uVel * uTime * (0.75 + 0.5 * aMote.y) + sway;
+          vec3 rel = mod(w - uCenter + uBox * 0.5, uBox) - uBox * 0.5;
+          float hy = mod(w.y, uBox.y);
+          at = vec3(uCenter.x + rel.x, ${A.base.toFixed(2)} + hy, uCenter.z + rel.z);
+          // smaller to nothing at the box's sides, its top and its bottom (none pops in)
+          float edge = smoothstep(0.5, 0.38, max(abs(rel.x) / uBox.x, abs(rel.z) / uBox.z)) * smoothstep(0.0, 0.12, hy / uBox.y) * smoothstep(1.0, 0.85, hy / uBox.y);
+          transformed *= edge;`
+        : `
+          // hovering round its spot: a wandering loop, now and then a dart
+          float t = uTime * (0.25 + 0.2 * aMote.y) + ph;
+          at = aHome.xyz + vec3(sin(t * 1.3 + aMote.x * 6.0) + 0.4 * sin(t * 3.1), 0.0, cos(t * 1.1 + aMote.z * 6.0) + 0.4 * cos(t * 2.7)) * aHome.w
+            + vec3(0.0, sin(t * 0.9 + aMote.y * 6.0) * 0.45 + sin(uTime * 7.0 + ph) * 0.04, 0.0);
+          ${o.shape === 'wing' ? `
+          // turned to the way it goes
+          vec2 vel = vec2(cos(t * 1.3 + aMote.x * 6.0) * 1.3 + 1.24 * cos(t * 3.1), -sin(t * 1.1 + aMote.z * 6.0) * 1.1 - 1.08 * sin(t * 2.7));
+          float yw = atan(vel.x, vel.y);
+          transformed.xz = vec2(transformed.x * cos(yw) + transformed.z * sin(yw), -transformed.x * sin(yw) + transformed.z * cos(yw));` : ''}`;
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+          uniform float uTime;
+          uniform vec3 uCenter, uBox, uVel;
+          attribute vec4 aMote; // seed (0..1) x, y, z, phase
+          attribute vec4 aHome; // a spot's middle and reach (spots)
+          vec3 rotAxis(vec3 p, vec3 k, float a) { return p * cos(a) + cross(k, p) * sin(a) + k * dot(k, p) * (1.0 - cos(a)); }`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          float ph = aMote.w * 6.2832;
+          vec3 at;
+          ${turn}
+          ${place}
+          transformed *= 0.75 + 0.5 * aMote.x;
+          transformed += at;`);
+    });
+    this.mesh = new THREE.InstancedMesh(geo, mat, n);
+    env.own.push(geo);
+    const mote = new Float32Array(n * 4), home = new Float32Array(n * 4), rnd = env.rnd, col = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+      mote.set([rnd(), rnd(), rnd(), rnd()], i * 4);
+      if (o.spots?.length) { const sp = o.spots[i % o.spots.length]; home.set([sp.x, sp.y, sp.z, sp.r], i * 4); }
+      this.mesh.setColorAt(i, col.set(o.colors[i % o.colors.length]));
+    }
+    geo.setAttribute('aMote', new THREE.InstancedBufferAttribute(mote, 4));
+    geo.setAttribute('aHome', new THREE.InstancedBufferAttribute(home, 4));
+    this.mesh.frustumCulled = false;
+    this.mesh.castShadow = false;
+    env.group.add(this.mesh);
+  }
+  /** Moves the box with the hero (`around`). */
+  follow(hero: THREE.Vector3) {
+    this.center.value.set(hero.x, 0, hero.z);
+  }
+  get count() {
+    return this.mesh.count;
+  }
+}
+
+// --- the ground a chapter's life keeps off, from any chapter's look ----------------------------------------------------------------
+
+/**
+ * The `Room` of a floor from its look (any chapter's: its trails as offsets from the middle, its cover) and its floor (the spots,
+ * the packs): what every chapter's life keeps off. `low`: ground that floods or is otherwise not to be stood on.
+ */
+export function roomOf(look: { paths?: [number, number][][]; pieces: { o: { ax: number; az: number; bx: number; bz: number; r: number; fixed?: boolean } }[] }, def: FloorDef, low: { x: number; z: number; rx: number; rz: number; rot?: number }[] = []) {
+  const roads: [number, number, number, number][] = [];
+  for (const p of look.paths ?? []) for (let i = 1; i < p.length; i++) roads.push([RING.x + p[i - 1][0], RING.z + p[i - 1][1], RING.x + p[i][0], RING.z + p[i][1]]);
+  return new Room({
+    roads, cover: look.pieces.map((p) => p.o), keep: floorKeep(def), low,
+    packs: def.packs.map((p) => ({ x: p.at.x, z: p.at.z, r: p.named ? 4 : 8 })),
+  });
 }

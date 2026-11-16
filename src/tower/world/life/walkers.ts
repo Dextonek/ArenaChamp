@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RealHero } from '../../../motion/real';
 import type { LifeEnv } from './core';
+import { RING } from '../../../arenas/common';
 
 /**
  * People going about a floor: each walks a route (a line of points beside a path) at an easy pace, stands a while at each end and
@@ -57,6 +58,11 @@ export class Walkers {
 
   get count() {
     return this.list.length;
+  }
+
+  /** Where each is now (the tools), and whether its figure is drawn. */
+  snapshot() {
+    return this.list.map((w) => ({ ...this.place(w, w.s), drawn: !!w.fig?.root.visible }));
   }
 
   /** The point `s` m along a route, and the way it runs there. */
@@ -118,6 +124,44 @@ export class Walkers {
       ]);
     });
   }
+}
+
+/**
+ * Who walks each chapter's floors, by the floor's number and the walker's index: the model's file stem (`models/tower/<stem>_v4.glb`).
+ * The plain workers made for it (2026-11-16, blender/tower/<chapter>/: the people's skeleton, empty hands, a load on the back or the
+ * head; no name, so nobody meets a named person twice): on the Sea a dockhand and a fishwife in turn, one worker a chapter after it.
+ * They walk on the walking clip (no work clips: the clip file would grow by a third). One line a chapter.
+ */
+export const WALKER_MODELS: Record<'sea' | 'wood' | 'sands' | 'deep' | 'war', (n: number, i: number) => string> = {
+  sea: (n, i) => ((n + i) % 2 === 0 ? 'sea_dockhand' : 'sea_fishwife'),
+  wood: () => 'wood_cutter',
+  sands: () => 'sands_water',
+  deep: () => 'deep_miner',
+  war: () => 'war_gleaner',
+};
+export const walkerModel = (chapter: keyof typeof WALKER_MODELS, n: number) => (i: number) => `models/tower/${WALKER_MODELS[chapter](n, i)}_v4.glb`;
+
+/**
+ * Walkers' routes beside a floor's trails (offsets from the middle): each trail followed `side` m to its right, cut where `ok` says
+ * no (near a pack's fight, the flats...), and the longest runs of at least `min` points (2 m apart) kept, `most` of them.
+ */
+export function walkerRoutes(paths: [number, number][][], ok: (x: number, z: number) => boolean, most: number, o: { side?: number; min?: number } = {}) {
+  const side = o.side ?? 1.4, runs: { x: number; z: number }[][] = [];
+  for (const path of paths) {
+    const pts = path.map(([dx, dz]) => ({ x: RING.x + dx, z: RING.z + dz }));
+    const dense: { x: number; z: number }[] = [];
+    for (let k = 1; k < pts.length; k++) {
+      const a = pts[k - 1], b = pts[k], len = Math.hypot(b.x - a.x, b.z - a.z) || 1, n = Math.max(1, Math.ceil(len / 2)), nx = (b.z - a.z) / len, nz = -(b.x - a.x) / len;
+      for (let i = 0; i < n; i++) dense.push({ x: a.x + (b.x - a.x) * (i / n) + nx * side, z: a.z + (b.z - a.z) * (i / n) + nz * side });
+    }
+    let cur: { x: number; z: number }[] = [];
+    for (const q of dense) {
+      if (ok(q.x, q.z)) cur.push(q);
+      else { if (cur.length) runs.push(cur); cur = []; }
+    }
+    if (cur.length) runs.push(cur);
+  }
+  return runs.filter((r) => r.length >= (o.min ?? 12)).sort((a, b) => b.length - a.length).slice(0, most);
 }
 
 const turn = (from: number, to: number, k: number) => {

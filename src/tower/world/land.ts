@@ -433,7 +433,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   // --- the town: houses along the land's side, past the outline -------------------------------------------------------------
   const roofs: Key[] = ['wine', 'slate', 'teal', 'wine', 'slate'];
   /** The houses as drawn (world), for the dry-stone wall to stop short of them. */
-  const homes: { x: number; z: number; r: number }[] = [];
+  const homes: { x: number; z: number; r: number; chimney?: { x: number; z: number; top: number } }[] = [];
   const houses = Math.round(14 * (rmean / 48));
   for (let k = 0, made = 0; k < houses * 6 && made < houses; k++) {
     // the land's side: from the south-west round to the north-west (before the mirror), not the cliff, not the sea
@@ -448,7 +448,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
       low = Math.min(low, geo.height(o.dx + cy * ax + sy * az, o.dz - sy * ax + cy * az));
     }
     house(dress, p.x, y, p.z, hy, w, d, h, roofs[made % roofs.length], rnd, low);
-    homes.push({ x: p.x, z: p.z, r: Math.hypot(w, d) / 2 + 0.3 });
+    // (its chimney's top, as house() draws it, for the life's smoke: life/sea.ts)
+    homes.push({ x: p.x, z: p.z, r: Math.hypot(w, d) / 2 + 0.3, chimney: { x: p.x + Math.cos(hy) * w * 0.22 - Math.sin(hy) * d * 0.2, z: p.z - Math.sin(hy) * w * 0.22 - Math.cos(hy) * d * 0.2, top: y + h + w * 0.42 + 1.2 } });
     free.push({ x: o.dx, z: o.dz, r: w * 0.85 });
     made++;
   }
@@ -474,6 +475,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
 
   // --- jetties and boats, on the sea's side ------------------------------------------------------------------------------
   const jetties = Math.max(2, Math.round(2 * (rmean / 48)));
+  const piers: { x: number; z: number; yaw: number; len: number }[] = []; // (world, for the life: life/sea.ts)
   for (let j = 0; j < jetties; j++) {
     // straight out from the shore, square to the outline's direction
     const a = dir(((j + 0.5) / jetties - 0.5) * 0.26), len = 13 + rnd() * 7, ux = Math.cos(a), uz = Math.sin(a), r0 = rimAt(spec.rim, a) + 1.5;
@@ -483,6 +485,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
       dress.add('wood', new THREE.CylinderGeometry(0.16, 0.18, 1.94, 8).translate(0, 0.97, 0), p.x, WATER - 1.23, p.z);
     }
     const mid = W(ux * (r0 + len / 2), uz * (r0 + len / 2)), yaw = Math.atan2(ux, uz);
+    piers.push({ x: mid.x, z: mid.z, yaw, len: len + 1 });
     dress.add('plank', new THREE.BoxGeometry(2.6, 0.22, len + 1), mid.x, 0.35, mid.z, yaw);
     for (const side of [-1.3, 1.3]) dress.add('gold', new THREE.BoxGeometry(0.1, 0.08, len + 1), mid.x - uz * side, 0.5, mid.z + ux * side, yaw);
     for (let s = 0; s < len; s += 3.5) free.push({ x: ux * (r0 + s), z: uz * (r0 + s), r: 2 });
@@ -597,6 +600,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   const depth = buildDepth({ spec, geo, dress, into, own, rnd, ground: { map, L }, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
     ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6, tree: true })), ...(spec.sceneTaken ?? []), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 0.7 }))] });
   dress.build(into, own);
+  // What the life needs of the land (life/sea.ts): its houses with their chimneys, its boats as drawn, its jetties.
+  into.userData.landLife = { homes, boats: drawn, jetties: piers };
 
   return {
     /** The lights of the depth (lanterns, torches, the island's light), for the zone's glows. */

@@ -55,6 +55,11 @@ shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's 
 starts with every agent session (about 90 MB each, and it often fails to connect here).
 
 ## Today's entries (2026-11-16)
+- **In progress (2026-11-16): the Climb's life, chapters II to V** (branch `t3/tower-chapters-life`, one commit a chapter; page
+  `docs/tower/life/index.html`). Done: **the Wood** (`src/tower/world/life/wood.ts`: wood pigeons in the crowns, hinds/foxes/hares
+  that bolt, smoke through the burners' thatch, airing lines, butterflies, dragonflies and rings at the spring, woodcutters walking),
+  fights the same life on/off (floors 11, 12, 15), the six Blender walkers wired (`WALKER_MODELS` in `life/walkers.ts`), the Sea's
+  land chimneys smoke (`landLife` in `land.ts`). Next: the Sands, the Deep, the War (drafts written). Not live.
 - **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
   and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
   spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the

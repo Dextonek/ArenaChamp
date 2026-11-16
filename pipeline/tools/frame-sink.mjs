@@ -18,5 +18,7 @@ const server = http.createServer((req, res) => {
   req.on('data', (c) => chunks.push(c));
   req.on('end', () => { fs.writeFileSync(path.join(dir, name), Buffer.concat(chunks)); res.writeHead(200, cors); res.end('ok'); });
 });
-server.listen(5199, '127.0.0.1', () => console.log('sink on 5199, pid', process.pid));
+// (a port of its own as the second argument, when another sink is running: node frame-sink.mjs <folder> 5207)
+const port = Number(process.argv[3] ?? 5199);
+server.listen(port, '127.0.0.1', () => console.log('sink on', port, 'pid', process.pid));
 setTimeout(() => process.exit(0), 9 * 60 * 1000);

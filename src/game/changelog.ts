@@ -88,6 +88,11 @@ export const CHANGELOG: Release[] = [
         text: 'On the Climb’s first ten floors gulls sit on the roofs, wrecks and sand and lift off as you walk up, smoke rises from fires and chimneys, washing and pennants move in the wind, boats rock at their moorings, fish leap in the shallows and people walk between the places.',
       },
       {
+        tag: 'Tower',
+        title: 'The Climb comes alive, chapter by chapter',
+        text: 'The Wood has its own life now: wood pigeons burst from the trees as you pass under, hinds, foxes and hares graze at the glades’ edges and bolt when you come, smoke rises through the burners’ thatch, blankets air on lines, butterflies cross the glades and woodcutters walk the trails. On the Sea, dockhands and fishwives now walk between the places, and the houses past the shore smoke from their chimneys.',
+      },
+      {
         tag: 'Heroes',
         title: 'The Story: why the sun fell, and how it ends',
         text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',

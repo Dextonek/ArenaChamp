@@ -5,8 +5,9 @@ import type { FloorDef } from '../def';
 import { floorKeep } from '../keep';
 import { WATER, geography, rimAt } from '../land';
 import type { SeaLook } from '../zone';
-import { Walkers } from './walkers';
-import { Cloth, Dress, Flock, Floaters, PAL, Puffs, Room, Shallows, birdGeometry, goldOf, palMat, type Life, type LifeEnv, type Perch } from './core';
+import { Walkers, walkerModel, walkerRoutes } from './walkers';
+import type { SeaLand } from './index';
+import { Cloth, Dress, Flock, Floaters, PAL, Puffs, Room, Shallows, birdGeometry, goldOf, mulberry, palMat, type Life, type LifeEnv, type Perch } from './core';
 
 /**
  * The Sea's life (chapter I, floors 1 to 10; docs/lore/codex/climb/sea.md: "wrecks lie against the quays, lanterns burn on the
@@ -35,6 +36,8 @@ export interface SeaIn {
   danger(x: number, z: number): boolean;
   /** The tide is in, or about to come (the flats flood). */
   tide(): boolean;
+  /** What the land drew past the edge (land.ts `landLife`): its houses and chimneys, its boats, its jetties. */
+  land: SeaLand | null;
 }
 
 export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
@@ -348,35 +351,28 @@ export function seaLife(env: LifeEnv, inp: SeaIn, hero: THREE.Vector3): Life {
   env.group.userData.gulls = gulls; // for the tools (pipeline/tools/life-shots.js)
 
   // --- people walking between places: beside a path, well off the packs' fights and the flats (walkers.ts) ----------------------------
-  // A stand-in figure until the Sea has plain coast folk of its own: the trader who is not on this floor (the two take turns, folk.ts).
+  // (who walks: walkers.ts `WALKER_MODELS`, a dockhand and a fishwife in turn)
   let walkers: Walkers | null = null;
   // (`globalThis.__lifeNoPeople = true`: the rest of the life without them, for the perf tool's A/B)
   if (!lite && !(globalThis as { __lifeNoPeople?: boolean }).__lifeNoPeople) {
-    const runs: { x: number; z: number }[][] = [];
-    for (const path of L.paths) {
-      const pts = path.map(([dx, dz]) => ({ x: RING.x + dx, z: RING.z + dz }));
-      const dense: { x: number; z: number }[] = [];
-      for (let k = 1; k < pts.length; k++) {
-        const a = pts[k - 1], b = pts[k], len = Math.hypot(b.x - a.x, b.z - a.z) || 1, n = Math.max(1, Math.ceil(len / 2)), nx = (b.z - a.z) / len, nz = -(b.x - a.x) / len;
-        for (let i = 0; i < n; i++) dense.push({ x: a.x + (b.x - a.x) * (i / n) + nx * 1.4, z: a.z + (b.z - a.z) * (i / n) + nz * 1.4 });
-      }
-      let cur: { x: number; z: number }[] = [];
-      for (const q of dense) {
-        if (room.packNear(q.x, q.z) > 14 && !room.low(q.x, q.z) && room.cover(q.x, q.z) > 0.6) cur.push(q);
-        else { if (cur.length) runs.push(cur); cur = []; }
-      }
-      if (cur.length) runs.push(cur);
-    }
-    const chosen = runs.filter((r) => r.length >= 12).sort((a, b) => b.length - a.length).slice(0, area > 2 ? 3 : 2);
-    const stand = `models/tower/${def.n % 2 === 1 ? 'sea_pedlar' : 'sea_trader'}_v4.glb`;
-    walkers = new Walkers(env, chosen, () => stand, inp.danger);
+    const chosen = walkerRoutes(L.paths, (x, z) => room.packNear(x, z) > 14 && !room.low(x, z) && room.cover(x, z) > 0.6, area > 2 ? 3 : 2);
+    walkers = new Walkers(env, chosen, walkerModel('sea', def.n), inp.danger);
     for (const r of chosen) where.walkers.push(r[Math.floor(r.length / 2)]);
   }
   counts.walkers = walkers?.count ?? 0;
+  env.group.userData.walkers = walkers; // (the tools: where each is now)
 
   // --- put together ----------------------------------------------------------------------------------------------------------------
   smoke.build(0x9c9991, 0.55);
   counts.smoke = smoke.count;
+  // The land's houses past the edge (land.ts `landLife`): about half their chimneys smoke too, on dice of their own (so nothing that
+  // was placed before moves). The land's boats and sails are merged into its ground's mesh and stay still.
+  if (inp.land) {
+    const own = mulberry(0xc41 + def.n * 977), chimneys = new Puffs({ ...env, rnd: own }, { x: wind.x, z: wind.y });
+    for (const h of inp.land.homes) if (h.chimney && own() < 0.5) chimneys.add(h.chimney.x, h.chimney.top, h.chimney.z, { rise: 5, size: 1.3, per: 8, life: 8, spread: 0.15 });
+    chimneys.build(0x9c9991, 0.55);
+    counts.chimneys = chimneys.count / 8;
+  }
   cloth.done();
   nets.done();
   counts.cloth = cloth.count;
