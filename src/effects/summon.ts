@@ -515,7 +515,7 @@ export class SummonSystem {
   private shoot(u: SummonUnit, w: SummonWorld, at: THREE.Vector3) {
     const dir = new THREE.Vector3(at.x - u.pos.x, 0, at.z - u.pos.z).normalize();
     const proj = w.fire({
-      from: u.pos.clone().addScaledVector(dir, 0.45), dir, speed: BOLT_SPEED, range: u.opts.range + 2, radius: 0.22,
+      from: u.pos.clone().addScaledVector(dir, 0.45), height: u.figure.shotY, dir, speed: BOLT_SPEED, range: u.opts.range + 2, radius: 0.22,
       hit: { damage: u.opts.damage, knock: 0, color: u.opts.color },
     });
     // A copy's bolt is a look: the screen that runs the unit has the real one.

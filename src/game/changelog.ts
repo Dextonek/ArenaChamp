@@ -44,8 +44,8 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Tower',
-        title: 'The Drowned Admiral, and a tidier phone screen',
-        text: 'Floor 1’s ruler is called the Drowned Admiral, as in the lore. On a phone, the box with your hero’s passive fits what is in it and no longer runs under the floor’s panel.',
+        title: 'The Drowned Admiral, a tidier phone screen, shots from the hand',
+        text: 'Floor 1’s ruler is called the Drowned Admiral, as in the lore, and on a phone the box with your hero’s passive fits what is in it. Bowmen, slingers and net casters loose their shots from the hand, and on the Field of Banners each army waits beside its standard, not inside its stone foot.',
       },
       {
         tag: 'Tower',
