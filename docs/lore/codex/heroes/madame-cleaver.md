@@ -71,8 +71,7 @@ invitations as if they were orders. She swears in the desert tongue, so that onl
 
 ## Secrets
 
-- The starving azure boy she caught stealing from her pot on the first night of the Winter of Mud was the drummer of the azure, the boy
-  whose drum still beats on the Climb's forty-eighth floor. She has climbed to the forty-first and turned back. She cannot face the rest.
+- The starving azure boy she caught stealing from her pot on the first night of the Winter of Mud was the drummer of the azure, the boy whose drum still beats on the Climb's forty-eighth floor, in the horned giant's iron the Tower keeps him in. She has climbed to the forty-first and turned back. She cannot face the rest.
 - The promise she and Brannoc did not keep was to open an inn together at the Waymeet when the war was really over. She still has the deed.
 - She has never once eaten at the Truce Table herself.
 
