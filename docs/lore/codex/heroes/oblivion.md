@@ -78,3 +78,4 @@ The Tower unmade, with everything else. Or, if the Arbiter is right that it figh
 - **[Wick](wick.md)**, sworn enemy: the keeper of every door, against the thing that makes holes where no door should be.
 - **[Tempo](tempo.md)**, sworn enemy: one keeps the hours; the other wants none left.
 - **[Thessa](thessa.md)**, sworn enemy: she sews the Tear shut; it unpicks every stitch.
+- **[Kagen](kagen.md)**, sworn enemy: a swordsman whose master's cut at the Tear was never finished, and who means to finish it on what came through.

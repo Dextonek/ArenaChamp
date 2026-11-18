@@ -70,3 +70,4 @@ To see what is at the top, because it is the most interesting thing on the Dial;
 
 - **[Silvane](silvane.md)**, owed by her: he spent one of his lives for her, and she has not paid it back.
 - **[Kohaku](kohaku.md)**, rival: the fox and the cat; he chases, she lets him, and neither will say how long it has been.
+- **[Kagen](kagen.md)**, rival: they spar every winter, and he calls the swordsman slow, always from a safe distance.

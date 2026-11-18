@@ -1,5 +1,19 @@
 # Status
 
+## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): gate 2 (the look) shown, waiting on the user's yes; a draft, NOT live
+
+The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
+to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts leave marks that only open when he sheathes.
+- **Done:** the draft files (`python pipeline/tools/new-hero.py Kagen --theme sheath ...`, `src/heroes/sheath/`, `draft: true`); his
+  lore (LORE.md entry, ties with Oblivion, Zephyr, Sir Whiskers; Shiori already had four ties, so hers stays in his story only; codex
+  page `docs/lore/codex/heroes/kagen.md`); his model `blender/heroes/real/sheath.py` -> `public/models/heroes/sheath_v4.glb`
+  (528 KB, 28,093 triangles, emissive 0.55), on his card with the body of Zephyr and Wick. `hero-check.py Kagen --only model,lore` passes.
+- **Gate 2 pictures:** `docs/heroes/new/sheath-gate2-sheet.jpg` (front, face, back, walking, attack, game camera, between Sefu and
+  Kaia) and `sheath-gate2-lineup.jpg`. Rebuild: `D:/blender/blender.exe --background --factory-startup --python
+  blender/heroes/real_build.py -- sheath --shots <folder>`; pictures with `_v4sheet('x.jpg', ['sand','sheath','storm'])` on
+  `/game?drafts=1` with the frame sink.
+- **Waiting on the user:** yes to the figure (gate 2). **Next:** gate 3, the kit sheet with every number (`pipeline/designs/kit-sheath.md`).
+
 ## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
 
 - **Later the same day:** the user asked for "more of those movie vfx", six, themes my pick: Phoenix Rebirth, Black Sun Eclipse,

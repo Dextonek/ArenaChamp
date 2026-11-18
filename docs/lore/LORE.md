@@ -201,7 +201,7 @@ hangs above the Tower, but they want to know why it fell before anyone hangs it 
 and the Hourkeepers will not allow it.
 
 ### loners | Loners
-- members: Oblivion, Sir Whiskers, The Great Zambini, Ostrel, Asenet
+- members: Oblivion, Sir Whiskers, The Great Zambini, Ostrel, Asenet, Kagen
 
 Five heroes belong to no faction. Oblivion wants no world at all. Sir Whiskers has served too many courts to join another. The Great
 Zambini has joined all of them, in writing. Ostrel carries every faction's dead, and so belongs to none. Asenet, the Uncrowned, was
@@ -1008,6 +1008,20 @@ since, and everyone who wore it too long has fallen. She walks the Dial with no 
 tarnished gold, and she carries the curse with her: a thin circlet that will not stay on any head, hers included. She slipped Kessa's
 chain on a spring tide. She owes Vitriol for the curse and Ramet for the gate, and she pays neither.
 
+### Kagen | the Scarlet Sheath | sheath | loners | he | draft
+- people: north
+- home: frostfall | The Hollow Shrine on the cliffs above Frostfall, the one place in the north where the Tear can be seen
+- age: Looks 38. He was 9 and sweeping the shrine steps when the sun fell (Noon-touched).
+> "It is already cut. You just have not noticed."
+
+The Hollow Shrine stands on the cliffs above Frostfall, the one height in the north from which the Tear over the Tower can be
+seen. On the night it opened, Kagen's master drew his sword at it, once, and never sheathed it again: he stood on the steps with
+the blade out until he died, and the cut he began was never finished. Kagen keeps the master's sheath, lacquered red in the last
+noon light, and has never let a cut of his own end until the blade is home. A Northerner, umber-skinned, star lines on his jaw,
+in black over grey with a cinnabar sash, he walks to the Ring to meet what came through the Tear.
+Shiori inks the paper seals on his sheath; Zephyr races his draw and has never seen it; Sir Whiskers spars with him and calls him
+slow, from a safe distance.
+
 ## Ties
 
 - ! Auriel ~ Vesper | sworn enemies | The dawn, and the countess who would keep it from coming. Every duel between them is the Noonsworn against the Court
@@ -1054,6 +1068,9 @@ chain on a spring tide. She owes Vitriol for the curse and Ramet for the gate, a
 - Silvane ~ Lithea | sworn enemies | A mirror is the one thing that turns the gorgon's gaze, and Silvane carries it
 - Silvane > Sir Whiskers | owes | He spent one of his lives for her, and she has not paid it back
 - Kohaku ~ Sir Whiskers | rivals | The fox and the cat: he chases, she lets him, and neither will say how long it has been
+- ! Kagen ~ Oblivion | sworn enemies | His master's cut at the Tear was never finished; the thing that came through it is what he means to finish it on
+- Kagen ~ Zephyr | rivals | The wind blade wants to race his draw. He has never seen it, and Kagen has never seen the race
+- Kagen ~ Sir Whiskers | rivals | They spar every winter. The lynx calls him slow, always from a safe distance
 - Kohaku ~ Hesk | sworn enemies | She stole the word from his first golem's brow and it walked into the black water
 - Kohaku ~ Arden | rivals | The one fox the Huntmaster has never caught, and the one hunter she has never fooled twice
 - Lithea > Corbel | maker | She turned him to stone with one look; the Court gave him wings, and he has hunted her since
@@ -1160,3 +1177,4 @@ Tower long ago and come back out), `halfkept` (half taken in the hour of the Fal
 - The Great Zambini | returned | taken with a Fox court revel three hundred years before the Fall; walked out of a Hundred Door in year 40
 - Ostrel | dial | born four hundred years ago, drowned carrying a girl the Tower kept
 - Asenet | dial | born in Tamerit; read the first king's tomb, and knew
+- Kagen | dial | born at Frostfall nine years before the Fall; was sweeping the Hollow Shrine's steps when the sun fell

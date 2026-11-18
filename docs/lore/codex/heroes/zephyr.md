@@ -77,3 +77,4 @@ To run it, top to bottom, faster than Pip; and to stand on the Noon Seat for one
 - **[Pip](pip.md)**, rival: the fastest feet against the fastest blade; they race across the Dial every spring and the score is even.
 - **[Lian](lian.md)**, friend: she flies her dragon on his wind, and he never lets her forget it.
 - **[Ramet](ramet.md)**, rival: the wind and the lion race across the Glass Flats every year, and the lion has never lost on sand.
+- **[Kagen](kagen.md)**, rival: he wants to race the swordsman's draw, and has never once seen it.
