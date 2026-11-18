@@ -92,8 +92,24 @@ export function specks(ctx: Ctx, seed: number, count: number, alpha: number, box
   }
 }
 
+/** What a title card says. */
+export interface TitleText {
+  /** The name in kanji, large (two or three characters). */
+  kanji: string;
+  /** The name in English, small capitals. */
+  english: string;
+  /** The move's name on the black band (kanji). */
+  move: string;
+  /** The move's name in Latin letters, the smallest line. */
+  romaji: string;
+  /** The band text's gradient, top to bottom (three colours). */
+  colors?: [string, string, string];
+}
+
+const SCARLET_TITLE: TitleText = { kanji: '緋鞘', english: 'SCARLET SHEATH', move: '一閃・斷界', romaji: 'ISSEN · WORLD SEVER' };
+
 /** The title card, top left. `k` 0 to 1 fades it; `dark` draws it for a dark background. */
-export function titleCard(ctx: Ctx, k: number, dark: boolean) {
+export function titleCard(ctx: Ctx, k: number, dark: boolean, text: TitleText = SCARLET_TITLE) {
   if (k <= 0) return;
   ctx.save();
   ctx.globalAlpha = clamp(k);
@@ -104,14 +120,14 @@ export function titleCard(ctx: Ctx, k: number, dark: boolean) {
   ctx.strokeStyle = INK;
   ctx.lineWidth = 12;
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillText('緋鞘', 50, 110);
-  ctx.strokeText('緋鞘', 44, 104);
+  ctx.fillText(text.kanji, 50, 110);
+  ctx.strokeText(text.kanji, 44, 104);
   ctx.fillStyle = '#fbf7ef';
-  ctx.fillText('緋鞘', 44, 104);
+  ctx.fillText(text.kanji, 44, 104);
   // The name in English.
   ctx.font = `800 26px "Consolas","Menlo",monospace`;
   ctx.fillStyle = dark ? '#e9dccb' : '#3a2416';
-  ctx.fillText('SCARLET SHEATH', 46, 156);
+  ctx.fillText(text.english, 46, 156);
   // The move's name on a black brush band.
   ctx.fillStyle = '#0d0a0b';
   ctx.beginPath();
@@ -123,15 +139,16 @@ export function titleCard(ctx: Ctx, k: number, dark: boolean) {
   ctx.closePath();
   ctx.fill();
   const g = ctx.createLinearGradient(0, 196, 0, 256);
-  g.addColorStop(0, '#ffd27a');
-  g.addColorStop(0.45, '#ff7a2a');
-  g.addColorStop(1, '#d92418');
+  const [c0, c1, c2] = text.colors ?? ['#ffd27a', '#ff7a2a', '#d92418'];
+  g.addColorStop(0, c0);
+  g.addColorStop(0.45, c1);
+  g.addColorStop(1, c2);
   ctx.font = `900 58px ${SERIF}`;
   ctx.lineWidth = 8;
   ctx.strokeStyle = '#2a0805';
-  ctx.strokeText('一閃・斷界', 64, 245);
+  ctx.strokeText(text.move, 64, 245);
   ctx.fillStyle = g;
-  ctx.fillText('一閃・斷界', 64, 245);
+  ctx.fillText(text.move, 64, 245);
   // Four small squares after the band, the first red.
   ['#e0412e', '#8c8a92', '#8c8a92', '#8c8a92'].forEach((c, i) => {
     ctx.fillStyle = c;
@@ -139,12 +156,12 @@ export function titleCard(ctx: Ctx, k: number, dark: boolean) {
   });
   ctx.font = `700 17px "Consolas","Menlo",monospace`;
   ctx.fillStyle = dark ? '#9d8f86' : '#57514c';
-  ctx.fillText('ISSEN · WORLD SEVER', 48, 306);
+  ctx.fillText(text.romaji, 48, 306);
   ctx.restore();
 }
 
-/** The red seal with the character 斷 carved out in white, stamped in over `k` (0 to 1). */
-export function seal(ctx: Ctx, x: number, y: number, size: number, k: number) {
+/** A seal with one character carved out in white (斷 on red by default), stamped in over `k` (0 to 1). */
+export function seal(ctx: Ctx, x: number, y: number, size: number, k: number, char = '斷', color = '#c51f26') {
   if (k <= 0) return;
   const r = rng(91);
   const s = 1 + (1 - Math.min(1, k * 1.6)) ** 2 * 0.6;
@@ -167,17 +184,17 @@ export function seal(ctx: Ctx, x: number, y: number, size: number, k: number) {
   ctx.moveTo(-h, -h);
   edge(-h, -h, h, -h); edge(h, -h, h, h); edge(h, h, -h, h); edge(-h, h, -h, -h);
   ctx.closePath();
-  ctx.fillStyle = '#c51f26';
+  ctx.fillStyle = color;
   ctx.fill();
   // The carved character.
   ctx.fillStyle = '#f6efe6';
   ctx.font = `900 ${Math.round(size * 0.86)}px ${SERIF}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('斷', 0, size * 0.04);
+  ctx.fillText(char, 0, size * 0.04);
   // Worn spots in the ink.
   for (let i = 0; i < 26; i++) {
-    ctx.fillStyle = r.next() < 0.6 ? 'rgba(197,31,38,0.9)' : 'rgba(246,239,230,0.75)';
+    ctx.fillStyle = r.next() < 0.6 ? rgba(color, 0.9) : 'rgba(246,239,230,0.75)';
     ctx.beginPath();
     ctx.arc(r.range(-h, h), r.range(-h, h), r.range(1, 3.2), 0, Math.PI * 2);
     ctx.fill();
@@ -187,7 +204,7 @@ export function seal(ctx: Ctx, x: number, y: number, size: number, k: number) {
   const sp = rng(17);
   for (let i = 0; i < 16; i++) {
     const a = sp.range(0, Math.PI * 2), d = size * sp.range(0.62, 1.1) * clamp(k * 1.4);
-    ctx.fillStyle = rgba(RED, clamp(k * 2) * sp.range(0.6, 1));
+    ctx.fillStyle = rgba(color, clamp(k * 2) * sp.range(0.6, 1));
     ctx.beginPath();
     ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, sp.range(2, i < 3 ? 8 : 5), 0, Math.PI * 2);
     ctx.fill();
