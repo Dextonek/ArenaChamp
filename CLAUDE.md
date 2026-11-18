@@ -91,6 +91,13 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.
 
+- **Creatures are real 3D models with one continuous body, their heads matched to references (2026-11-18).** For the
+  showpieces (`/showpiece`, docs/architecture/showpiece.md) the user asked the drawn creatures to be "more real with
+  continuous bodies, like the champs", then "look how the dragon head looks on the internet", "look more sources" and
+  "maybe even fantasy dragons". First heads (a catfish, then a toy) were too soft; what worked: several real and fantasy
+  references first, then forms fused into one skin in Blender (`blender/creatures/`), lean and angular, eyes sunk under
+  a hard brow. Show a still beside the old version before filming.
+
 ## Working habits that pay off
 - Dev servers come from `.claude/launch.json` (`vfx-dev` on 5173: tool page `/` and game `/game`; `sheet-dev` on 5175
   for the model sheet pages). Type check `npx tsc --noEmit -p .`, build `npm run build`, server test

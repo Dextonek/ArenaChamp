@@ -2,6 +2,20 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds (second section) are **pushed to GitHub, not live**._
 
+## Showpieces: five short anime special moves, with 3D creatures (2026-11-18): committed; NOT pushed, NOT live
+
+- **Asked:** the user sent a 15 s clip (a katana's draw tearing the world open onto a dragon's eye) and asked for "something
+  like this" in the VFX tool, as a page in the tool (not in the game), in the clip's look; then "4 more, theme and effect
+  you decide"; then the creatures "more real with continuous bodies, like the champs", heads matched to real and fantasy
+  dragons.
+- **Built:** `/showpiece` (`showpiece.html`, `src/showpiece/`): a player with a timeline of beats and Save video. Five pieces:
+  Scarlet Sheath (after the clip), Raijin's Verdict (thunder), Tidebreaker (water), Frost Lotus (ice), Jade Serpent (wind).
+  Tidebreaker's dragon, Jade Serpent's serpent and Scarlet Sheath's eye are real 3D models built in Blender
+  (`blender/creatures/`), bent and drawn into the 2D layers in code. How it works: [architecture/showpiece.md](architecture/showpiece.md).
+  Films and picture sheets: `docs/showpiece/`. Stills and films: `python -I pipeline/tools/showpiece-shots.py`.
+- **Not done / for the user's eye:** the 3D creatures are a first pass (the user has seen the water dragon only as a still);
+  the page loads its kanji from Google Fonts; it ships with the next deploy.
+
 ## The game runs smoother (2026-11-13): done, committed and pushed; NOT live
 
 The user: "lets make new seison where we will optimalize this game so taht it can run smoothly", then "i just want you to make
