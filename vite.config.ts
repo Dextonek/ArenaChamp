@@ -42,7 +42,8 @@ export default defineConfig(({ command }) => ({
   build: {
     rollupOptions: {
       // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/).
-      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html') },
+      // A third page, the showpiece (src/showpiece/): an animated special move played and saved as a video.
+      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html'), showpiece: resolve(__dirname, 'showpiece.html') },
     },
   },
 }));

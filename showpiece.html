@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Showpiece · VFX Tool</title>
+    <link rel="icon" href="/favicon.svg" />
+    <style>
+      :root { --bg: #0d0a0b; --panel: #171214; --line: #33292c; --ink: #efe4d6; --ink2: #a99c90; --red: #e0412e; --gold: #e8b45a; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+      main { max-width: 1280px; margin: 0 auto; padding: 14px 16px 24px; }
+      header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+      h1 { font: 700 20px/1.2 Georgia, serif; margin: 0; letter-spacing: .02em; }
+      h1 small { color: var(--ink2); font: 500 13px system-ui, sans-serif; margin-left: 6px; }
+      header a { color: var(--ink2); margin-left: auto; font-size: 13px; }
+      #stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+      #picture { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      .controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+      button { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+      button.on { border-color: var(--gold); color: var(--gold); }
+      #save { margin-left: auto; background: #3a1410; border-color: #7a2a20; }
+      #time { font-variant-numeric: tabular-nums; color: var(--ink2); min-width: 104px; }
+      #beat { color: var(--gold); font-weight: 600; }
+      #bar { position: relative; height: 46px; margin-top: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; touch-action: none; cursor: pointer; }
+      .tick { position: absolute; top: 0; bottom: 0; padding: 0; border: 0; border-right: 1px solid var(--line); border-radius: 0; background: transparent; overflow: hidden; }
+      .tick span { position: absolute; left: 4px; bottom: 4px; font-size: 11px; color: var(--ink2); white-space: nowrap; pointer-events: none; }
+      .tick.on { background: rgba(224, 65, 46, .14); }
+      .tick.on span { color: var(--ink); }
+      #head { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--red); pointer-events: none; }
+      .recording .controls button:not(#save), .recording #bar { opacity: .4; pointer-events: none; }
+      nav#pieces { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+      nav#pieces a { color: var(--ink2); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; background: var(--panel); }
+      nav#pieces a.on { color: var(--gold); border-color: var(--gold); }
+      p.about { color: var(--ink); font-size: 14px; margin: 12px 0 0; }
+      p.note { color: var(--ink2); font-size: 13px; margin: 12px 0 0; }
+      @media (max-width: 600px) { .tick span { display: none; } main { padding: 10px 12px 18px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1><span id="name"></span> <small id="sub"></small></h1>
+        <a href="/">← VFX Tool</a>
+      </header>
+      <nav id="pieces"></nav>
+      <div id="stage"><canvas id="picture"></canvas></div>
+      <div class="controls">
+        <button id="play">Pause</button>
+        <button id="loop">Loop</button>
+        <span id="time">0.00 s</span>
+        <span id="beat"></span>
+        <button id="save">Save video</button>
+      </div>
+      <div id="bar"><div id="head"></div></div>
+      <p class="about" id="about"></p>
+      <p class="note">Drag along the bar to scrub, tap a beat to jump to it. On a keyboard: space plays and pauses, the arrows step one frame. Save video plays it once from the start and records it.</p>
+    </main>
+    <script type="module" src="/src/showpiece/main.ts"></script>
+  </body>
+</html>
