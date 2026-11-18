@@ -19,9 +19,9 @@ Theme `sheath`, icon stem `kagen`, faction `loners`, assassin, melee, 700 HP, ac
 - [x] Its lore: people, realm and home, faction, age, legend (80-150 words), line, two to four ties, its origin
       (`docs/lore/LORE.md`); its codex page (`docs/lore/codex/heroes/kagen.md`). `python pipeline/tools/lore-page.py --check`
       lists what a draft still lacks as notes.
-- [ ] The card in `pipeline/designs/kit-sheath.md`: sentence, shape, colours, role, the new thing, question, weakness, second decision
+- [x] The card in `pipeline/designs/kit-sheath.md`: sentence, shape, colours, role, the new thing, question, weakness, second decision
       (rules 1 to 3).
-- [ ] Name, title, spell names and theme word new (`python pipeline/tools/kits20.py` checks names taken).
+- [x] Name, title, spell names and theme word new (`python pipeline/tools/kits20.py` checks names taken).
 - [x] **The user's yes to the idea.**
 
 ## Gate 2: look
@@ -29,12 +29,12 @@ Theme `sheath`, icon stem `kagen`, faction `loners`, assassin, melee, 700 HP, ac
       (`hero-check.py "Kagen" --only model`).
 - [x] The card's `body` measured on the model; what it holds and how it strikes (`src/motion/real.ts`, `REAL_STYLE`).
 - [x] Pictures: front, face, back, walking, its attack at the hit, the game camera; the line-up between Sefu and Kaia.
-- [ ] **The user's yes to the figure.**
+- [x] **The user's yes to the figure.** (2026-11-18: "Yes, the look is right")
 
 ## Gate 3: kit on paper
-- [ ] The sheet's table: per spell its key, name, cooldown, rule, and the answer with its arithmetic (rule 4).
-- [ ] Which block each spell is (`src/heroes/framework/blocks.ts`): bolt, circle, lane, sure hit, zone; and what is new code.
-- [ ] What the CPU does with each spell, and against it.
+- [x] The sheet's table: per spell its key, name, cooldown, rule, and the answer with its arithmetic (rule 4).
+- [x] Which block each spell is (`src/heroes/framework/blocks.ts`): bolt, circle, lane, sure hit, zone; and what is new code.
+- [x] What the CPU does with each spell, and against it.
 - [ ] **The user's yes to the kit.**
 
 ## Gate 4: spells

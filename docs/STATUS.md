@@ -1,6 +1,6 @@
 # Status
 
-## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): gate 2 (the look) shown, waiting on the user's yes; a draft, NOT live
+## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look agreed; gate 3 (the kit on paper) shown, waiting on the user's yes; a draft, NOT live
 
 The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
 to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts leave marks that only open when he sheathes.
@@ -12,7 +12,14 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
   blade clip), `sheath-gate2-large.jpg`, `sheath-gate2-gamecam.jpg` (front and behind) and `sheath-gate2-lineup.jpg`. Rebuild: `D:/blender/blender.exe --background --factory-startup --python
   blender/heroes/real_build.py -- sheath --shots <folder>`; pictures with `_v4sheet('x.jpg', ['sand','sheath','storm'])` on
   `/game?drafts=1` with the frame sink.
-- **Waiting on the user:** yes to the figure (gate 2). **Next:** gate 3, the kit sheet with every number (`pipeline/designs/kit-sheath.md`).
+- **Gate 2 agreed** ("Yes, the look is right").
+- **Gate 3 written:** `pipeline/designs/kit-sheath.md` (640 HP; sword blows and spells leave cut marks, 4 at most, fading 5 s after
+  his last cut; Q Issen dash, W Noto the click (3.5 m ring, 0.5 s) with a 0.4 s parry, E Senbon three waves, R Sekai-giri a
+  12 m line that opens every mark at 36). The page: `docs/heroes/new/sheath-gate3.html`. **A correction to gate 1:** the card said no
+  hero stores damage on the enemy; Mr. Ledger's tab does. The sheet keeps the marks with rules that differ (they never land by
+  themselves, a count of 4, the click can be stepped out of) and offers one alternative (cuts on the floor).
+- **Waiting on the user:** yes to the kit (gate 3), or the alternative. **Next:** gate 4, the spells (`numbers.ts`, the blocks, the
+  looks from the World Sever and Thousand Swords tool spells, the passive, icons, portrait).
 
 ## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
 
