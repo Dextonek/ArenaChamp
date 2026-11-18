@@ -34,8 +34,13 @@ for (const p of PIECES) {
 
 /** The piece's font, only its few characters. */
 const ready: Promise<void> = (async () => {
+  // A piece's models must be in before a frame is filmed: a missing one would film without it, silently.
+  const models = piece.preload?.();
   const f = piece.fonts;
-  if (!f) return;
+  if (!f) {
+    await models;
+    return;
+  }
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f.family).replace(/%20/g, '+')}:wght@${f.weight}&text=${encodeURIComponent(f.text)}&display=block`;
@@ -44,6 +49,7 @@ const ready: Promise<void> = (async () => {
   try {
     await Promise.race([document.fonts.load(`${f.weight} 40px "${f.family}"`, f.text), new Promise((r) => setTimeout(r, 4000))]);
   } catch { /* the device's own font, then */ }
+  await models;
 })();
 
 const canvas = document.getElementById('picture') as HTMLCanvasElement;

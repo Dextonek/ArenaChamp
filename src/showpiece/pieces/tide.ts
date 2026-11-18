@@ -6,6 +6,7 @@ import { SEA_Y, waveFlat, waveGlow, wavePath, waveShape } from '../art/tide/wave
 import { moonFlat, moonGlow, nightFall, stars, type MoonLook } from '../art/tide/moon';
 import { rimSpray, seaSurface, whirlFlat, whirlGlow, type Whirl } from '../art/tide/whirl';
 import { dragon, headFrame, type DragonPose } from '../art/tide/dragon';
+import { dragon3d, loadDragon } from '../art/tide/dragon3d';
 import { flyingDrops, splash, wallMask, wallOfWater, waterLines, wetHalftone } from '../art/tide/crash';
 
 /**
@@ -99,6 +100,8 @@ function ringFlash(L: Layers, at: Pt, k: number) {
   L.glow.stroke();
 }
 
+const DRAWN = typeof location !== 'undefined' && new URLSearchParams(location.search).get('dragon') === '2d';
+
 const MOON_WAVE: MoonLook = { x: 715, y: 585, r: 225 };
 const MOON_SKY: MoonLook = { x: 960, y: 360, r: 290 };
 const WHIRL: Whirl = { x: 960, y: 880, rx: 940, ry: 210 };
@@ -157,7 +160,11 @@ function sea(L: Layers, t: number, screen: ScreenParams) {
     whirlGlow(L.glow, WHIRL, open, t, env(t, 6.9, 7.3, 8.6, 9.3));
     rimSpray(L.flat, { ...WHIRL, rx: WHIRL.rx * open, ry: WHIRL.ry * open }, open * (1 - 0.5 * seg(t, 8.5, 9.5)), t);
   }
-  if (t > 7.2) dragon(L.flat, L.glow, pose);
+  // The dragon: the 3D model (one continuous body, blender/creatures/dragon.py); `?dragon=2d` shows the drawn one.
+  if (t > 7.2) {
+    if (DRAWN) dragon(L.flat, L.glow, pose);
+    else dragon3d(L, pose);
+  }
   uncam([L.flat, L.glow]);
   // A flash only into the crash (on the dark, even a small flash greys the whole frame).
   screen.flash = 0.04 * env(t, 4.95, 5.0, 5.05, 5.25) + 0.6 * seg(t, HIT - 0.12, HIT);
@@ -239,6 +246,7 @@ const piece: Piece = {
   id: 'tide',
   title: 'Tidebreaker',
   subtitle: 'Kaishin · The Turning Sea',
+  preload: () => loadDragon(),
   about: 'A drop in a still pool raises a great wave under a teal moon; a water dragon spirals out of the whirlpool and crashes down as a wall of water.',
   order: 30,
   duration: DURATION,

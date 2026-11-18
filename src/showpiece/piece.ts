@@ -38,6 +38,8 @@ export interface Piece {
    * kilobytes). Without it the device's own fonts are used.
    */
   fonts?: { family: string; weight: number; text: string };
+  /** Loads what the piece needs before its first frame (3D creatures: src/showpiece/stage3d.ts). The page waits for it. */
+  preload?: () => Promise<unknown>;
   /** Draws the frame at time t (0 to duration) into both layers; says what the screen pass should do. */
   draw(L: Layers, t: number): ScreenParams;
 }
