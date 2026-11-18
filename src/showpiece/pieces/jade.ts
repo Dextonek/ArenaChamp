@@ -7,6 +7,10 @@ import {
   windAt, windLeaves, windLines,
 } from '../art/jade/grove';
 import { Track, serpentFlat, serpentGlow, type SerpentPose } from '../art/jade/serpent';
+import { loadSerpent, serpentCoil3d, serpentGlide3d } from '../art/jade/serpent3d';
+
+/** `?serpent=2d` shows the drawn serpent instead of the 3D one. */
+const DRAWN = typeof location !== 'undefined' && new URLSearchParams(location.search).get('serpent') === '2d';
 import {
   cutGlint, cutSpray, darkGround, darkStalks, ensoRing, inkBleed, inkDrop, jadeSpeedLines, leafStorm, orbitLeaves, paperReturn,
   shockRing, windSlash,
@@ -130,8 +134,10 @@ function paperBeats(L: Layers, t: number, screen: ScreenParams) {
   // The serpent passes through; it is gone in the first cut's impact frame.
   if (t > 3.1 && t < CUTS[0].t + 0.05) {
     const pose = glidePose(t);
-    serpentFlat(L.flat, pose);
-    serpentGlow(L.glow, pose);
+    if (DRAWN) {
+      serpentFlat(L.flat, pose);
+      serpentGlow(L.glow, pose);
+    } else serpentGlide3d(L, pose.track, pose.head, pose.width, pose.light ?? 1);
   }
   slicedBands(L.flat, t, (ctx, band) => stalks(ctx, band, (s) => s.front));
   // The near stalks in front hide the serpent's light behind them.
@@ -186,8 +192,10 @@ function coilBeat(L: Layers, t: number, screen: ScreenParams) {
   // The leaves' phase: time, plus the gust's speed-up integrated (speed 1 + 2 * gust^3 over 0.65 s).
   orbitLeaves(L.glow, C, t, seg(t, 7.1, 7.8), t + 0.325 * gust ** 4, gust);
   const pose = coilPose(t);
-  serpentFlat(L.flat, pose);
-  serpentGlow(L.glow, pose);
+  if (DRAWN) {
+    serpentFlat(L.flat, pose);
+    serpentGlow(L.glow, pose);
+  } else serpentCoil3d(L, easeOut(seg(t, 6.85, 8.75)), C, pose.light ?? 1);
   for (const ctx of [L.flat, L.glow]) ctx.restore();
   // The ink's last edges clearing as the dark begins.
   const clear = 1 - seg(t, 6.95, 7.15);
@@ -212,7 +220,7 @@ function release(L: Layers, t: number, screen: ScreenParams) {
   darkGround(L.flat, C);
   // The serpent is gone in the flash; for a moment its shape stays as a dark ghost.
   const ghost = 1 - seg(t, 9.45, 9.62);
-  if (ghost > 0) serpentFlat(L.flat, { ...coilPose(9.45), alpha: ghost });
+  if (ghost > 0 && DRAWN) serpentFlat(L.flat, { ...coilPose(9.45), alpha: ghost });
   paperReturn(L.flat, STORM, easeInOut(seg(t, 9.9, 10.55)), (ctx) => {
     paper(ctx);
     endingScene(ctx, t);
@@ -314,6 +322,7 @@ const piece: Piece = {
   id: 'jade',
   title: 'Jade Serpent',
   subtitle: 'Fujin · The Bamboo Cut',
+  preload: () => loadSerpent(),
   about: 'A jade serpent glides through a bamboo grove brushed in ink; three blades of wind cut the grove, it coils into a spiral of jade light in the dark and lets go as a storm of leaves.',
   order: 50,
   duration: DURATION,

@@ -208,6 +208,8 @@ export interface View {
   alpha?: number;
   /** Nothing below this height (world units) is drawn: the water's surface it rises out of. */
   clipBelow?: number;
+  /** Moves the whole picture by this much (picture units), e.g. so the point looked at sits off the frame's centre. */
+  shift?: [number, number];
 }
 
 /**
@@ -223,6 +225,10 @@ export function drawCreature(L: Layers, c: Creature, v: View) {
   st.camera.aspect = w / h;
   st.camera.position.set(...v.eye);
   st.camera.lookAt(new THREE.Vector3(...v.at));
+  // A shift moves the lens, not the picture, so the picture still covers the whole frame.
+  const [sx, sy] = v.shift ?? [0, 0];
+  if (sx || sy) st.camera.setViewOffset(w, h, (-sx * w) / 1920, (-sy * h) / 1080, w, h);
+  else st.camera.clearViewOffset();
   st.camera.updateProjectionMatrix();
   st.rim.color.setHex(v.rim ?? 0x8fe8ff);
   st.key.color.setHex(v.key ?? 0xfff0d8);

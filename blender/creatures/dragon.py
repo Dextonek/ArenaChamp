@@ -35,11 +35,16 @@ import figkit  # noqa: E402
 LENGTH = 10.0
 OUT = os.path.join(ROOT, "public", "models", "showpiece")
 
+# Each kind: its colours, its length and girth, how far the jaw hangs open, and which parts it has. The jade serpent is
+# kept apart from the water dragon on purpose (the user's brief for it: no horns, no fangs, no mane): a closed mouth,
+# swept-back jade crests instead of antlers and mane, twice as long and slimmer, a leaf at the tail's end.
 KINDS = {
     "water": dict(body="#1d4f63", belly="#e2cf98", gold="#d9a845", fin="#e9f2f3", iris="#ffcf5a", mouth="#5c1418",
-                  tongue="#b8323a", horns=True, whiskers=True, mane=True),
-    "jade": dict(body="#1f5a3c", belly="#d6e3b4", gold="#d4a845", fin="#7fe0a8", iris="#ffd76a", mouth="#3c1210",
-                 tongue="#a8303a", horns=False, whiskers=False, mane=False),
+                  tongue="#b8323a", horns=True, whiskers=True, mane=True, teeth=True, beard=True, crests=False, leaf=False,
+                  length=10.0, girth=1.0, jaw=-0.32),
+    "jade": dict(body="#1d5a3a", belly="#e4e8c8", gold="#d8b04a", fin="#6fd69c", iris="#ffd25a", mouth="#2a0e0c",
+                 tongue="#a8303a", horns=False, whiskers=True, mane=False, teeth=False, beard=False, crests=True, leaf=True,
+                 length=20.0, girth=0.74, jaw=0.0),
 }
 
 # The jaw hinges here and hangs open by this much.
@@ -62,8 +67,16 @@ def smooth_curve(points):
 
 
 # The body's radius from the neck back: the neck, the full body, a long tail.
-RADIUS = smooth_curve([(0.8, 0.2), (1.2, 0.2), (1.7, 0.24), (2.4, 0.32), (4.0, 0.355), (5.8, 0.33), (7.4, 0.25), (8.8, 0.13),
-                       (9.7, 0.04), (LENGTH, 0.008)])
+_RADIUS10 = smooth_curve([(0.8, 0.2), (1.2, 0.2), (1.7, 0.24), (2.4, 0.32), (4.0, 0.355), (5.8, 0.33), (7.4, 0.25), (8.8, 0.13),
+                          (9.7, 0.04), (10.0, 0.008)])
+GIRTH = 1.0
+
+
+def RADIUS(x):
+    """The body's radius: the 10 m dragon's profile stretched to this kind's length behind the neck, and its girth."""
+    if x <= 1.7:
+        return _RADIUS10(x) * (1.0 if x < 1.2 else GIRTH + (1 - GIRTH) * max(0.0, (1.7 - x) / 0.5))
+    return _RADIUS10(1.7 + (x - 1.7) * (10.0 - 1.7) / (LENGTH - 1.7)) * GIRTH
 
 
 def bell(v):
@@ -74,8 +87,8 @@ def body_point(x, th):
     """A point on the body's skin (the neck to the tail), th round it (0 on top)."""
     side = abs(th if th <= math.pi else th - 2 * math.pi)
     r = RADIUS(x)
-    out = 0.022 * bell(side / 0.16) * (1 if 1.3 < x < 9.3 else 0)       # a ridge along the back
-    if math.cos(th) < -0.45 and 1.3 < x < 9.4:
+    out = 0.022 * bell(side / 0.16) * (1 if 1.3 < x < LENGTH - 0.7 else 0)       # a ridge along the back
+    if math.cos(th) < -0.45 and 1.3 < x < LENGTH - 0.6:
         out += r * 0.04 * ((x / 0.17) % 1.0)                              # the belly's plates
     rr = r + out
     return Vector((x, rr * math.sin(th), rr * math.cos(th)))
@@ -135,7 +148,9 @@ def skin(fig):
         rot = Matrix.Rotation(0.28 * s, 4, "Z") @ Matrix.Rotation(-0.4, 4, "Y") @ Matrix.Rotation(0.5 * s, 4, "X")
         blob(bm, (0.7, 0.13 * s, 0.205), (0.22, 0.085, 0.032), rot=rot)
     # The lower jaw, lean, hanging open, with a chin at its front and the muscle at its back.
-    for c, r in (((0.5, 0, -0.19), (0.38, 0.11, 0.05)), ((0.16, 0, -0.18), (0.07, 0.095, 0.055)), ((0.8, 0, -0.16), (0.16, 0.14, 0.08))):
+    # A closed mouth (the serpent) has the jaw pressed up against the lip.
+    lift = 0.065 if JAW_OPEN == 0 else 0.0
+    for c, r in (((0.5, 0, -0.19 + lift), (0.38, 0.11, 0.05)), ((0.16, 0, -0.18 + lift), (0.07, 0.095, 0.055)), ((0.8, 0, -0.16 + lift * 0.6), (0.16, 0.14, 0.08))):
         bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=18, radius=1.0, matrix=jaw_matrix(c, r))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     me = bpy.data.meshes.new("skin")
@@ -176,7 +191,7 @@ def skin(fig):
             if c.z < -0.1 and n.z > 0.3 and c.z < jaw_top(c.x) + 0.05 and c.x > 0.12:
                 p.material_index = 2
                 continue
-        if c.x > 1.05 and n.z < -0.55:
+        if c.x > 1.05 and n.z < -0.55 and c.x < LENGTH - 0.3:
             p.material_index = 1
     return ob
 
@@ -199,7 +214,7 @@ def parts(fig, k):
         rot = Matrix.Rotation(-0.5 * s, 4, "Z") @ Matrix.Rotation(0.6 * s, 4, "X") @ Matrix.Rotation(-0.4, 4, "Y")
         fig.ellipsoid("scales", (1.04, 0.17 * s, 0.24), (0.14, 0.02, 0.05), seg=(18, 10), rot=rot)
     # Teeth: a row along each side of the upper lip, fangs at the front; fangs and teeth on the jaw.
-    for s in (-1, 1):
+    for s in ((-1, 1) if k["teeth"] else ()):
         for i in range(7):
             x = 0.16 + i * 0.075
             L = 0.1 if i == 0 else 0.045
@@ -213,9 +228,10 @@ def parts(fig, k):
     # The tongue, curling up out of the mouth.
     pts = [jaw_point((0.78, 0, -0.16)), jaw_point((0.5, 0, -0.15)), jaw_point((0.25, 0, -0.13)), jaw_point((0.1, 0, -0.06)),
            jaw_point((0.06, 0, 0.02))]
-    fig.tube("tongue", pts, [0.05, 0.046, 0.038, 0.026, 0.01], seg=12, squash=((0, 0, 1), 0.45))
+    if k["teeth"]:
+        fig.tube("tongue", pts, [0.05, 0.046, 0.038, 0.026, 0.01], seg=12, squash=((0, 0, 1), 0.45))
     # The beard: locks hanging from under the jaw, swept back.
-    for i in range(9):
+    for i in range(9 if k["beard"] else 0):
         u = i / 8
         base = jaw_point((0.22 + 0.4 * u, (u - 0.5) * 0.16, -0.25))
         L = 0.42 - 0.15 * abs(u - 0.4)
@@ -227,6 +243,15 @@ def parts(fig, k):
             base = Vector((0.74 + 0.06 * j, 0.15 * s, 0.24))
             pts = [base, base + Vector((0.12, 0.06 * s, 0.1 + 0.02 * j)), base + Vector((0.26, 0.1 * s, 0.14 + 0.03 * j))]
             fig.tube("fin", pts, [0.03, 0.02, 0.002], seg=8)
+    if k["crests"]:
+        # Crests: long jade blades swept back off the brow and the back of the skull, flat like fins, lying close.
+        for s in (-1, 1):
+            for j, (x0, y0, z0, L, up, out) in enumerate(((0.72, 0.13, 0.22, 0.75, 0.1, 0.12), (0.86, 0.13, 0.25, 0.95, 0.14, 0.16),
+                                                          (1.0, 0.12, 0.22, 1.1, 0.12, 0.2), (1.02, 0.17, 0.05, 0.8, -0.02, 0.24))):
+                base = Vector((x0, y0 * s, z0))
+                pts = [base, base + Vector((L * 0.35, out * 0.5 * s, up * 0.6)), base + Vector((L * 0.7, out * 0.85 * s, up)),
+                       base + Vector((L, out * s, up * 1.1))]
+                fig.tube("fin", pts, [0.045, 0.036, 0.02, 0.002], seg=10, squash=((0, 0, 1), 0.3))
     if k["horns"]:
         # Antlers: from the crown, back and up, a tine forward and one up.
         for s in (-1, 1):
@@ -255,8 +280,8 @@ def parts(fig, k):
             fig.tube("fin", pts, [0.05, 0.04, 0.024, 0.002], seg=10)
     # The back's crest: flame-shaped fins, smaller towards the tail.
     x = 1.7
-    while x < 9.35:
-        h = 0.2 * (RADIUS(x) / 0.355) ** 0.8 + 0.04
+    while x < LENGTH - 0.65:
+        h = (0.2 * (RADIUS(x) / 0.355) ** 0.8 + 0.04) * (0.6 if k["crests"] else 1.0)
         w = 0.14 * (RADIUS(x) / 0.355) + 0.04
         z0 = top(x) - 0.03
         bm = fig.bm("fin")
@@ -272,14 +297,35 @@ def parts(fig, k):
             b = (a + 1) % n
             bm.faces.new((front[b], front[a], back[a], back[b]))
         x += 0.3
-    # The tail's fan: three long flames.
-    for dy, dz in ((0.0, 0.0), (0.22, 0.12), (-0.22, 0.12)):
-        fig.tube("fin", [(9.45, dy * 0.2, dz * 0.2), (9.8, dy * 0.7, dz * 0.7 + 0.04), (10.3, dy, dz + 0.1)], [0.05, 0.035, 0.002], seg=10,
-                 squash=((0, 1, 0) if dy == 0 else (0, 0, 1), 0.35))
+    E = LENGTH - 10.0
+    if k["leaf"]:
+        # A jade leaf at the tail's end, flat and upright, with a gold midrib.
+        bm = fig.bm("fin")
+        n = 18
+        top_, bot = [], []
+        for i in range(n + 1):
+            u = i / n
+            x = LENGTH - 0.75 + 1.25 * u
+            hh = 0.26 * math.sin(math.pi * u) ** 0.8 * (1 - 0.3 * u)
+            top_.append(bm.verts.new((x, 0.012, 0.05 + hh)))
+            bot.append(bm.verts.new((x, 0.012, 0.05 - hh * 0.55)))
+        for i in range(n):
+            bm.faces.new((top_[i], bot[i], bot[i + 1], top_[i + 1]))
+        bk = [[bm.verts.new((v.co.x, -0.012, v.co.z)) for v in row] for row in (top_, bot)]
+        for i in range(n):
+            bm.faces.new((bk[0][i + 1], bk[1][i + 1], bk[1][i], bk[0][i]))
+        fig.tube("gold", [(LENGTH - 0.8, 0, 0.05), (LENGTH + 0.45, 0, 0.06)], [0.016, 0.002], seg=8)
+    else:
+        # The tail's fan: three long flames.
+        for dy, dz in ((0.0, 0.0), (0.22, 0.12), (-0.22, 0.12)):
+            fig.tube("fin", [(9.45 + E, dy * 0.2, dz * 0.2), (9.8 + E, dy * 0.7, dz * 0.7 + 0.04), (10.3 + E, dy, dz + 0.1)], [0.05, 0.035, 0.002], seg=10,
+                     squash=((0, 1, 0) if dy == 0 else (0, 0, 1), 0.35))
 
 
 def build(kind):
+    global LENGTH, GIRTH, JAW_OPEN
     k = KINDS[kind]
+    LENGTH, GIRTH, JAW_OPEN = k["length"], k["girth"], k["jaw"]
     bpy.ops.wm.read_factory_settings(use_empty=True)
     fig = figkit.Fig(kind)
     fig.mat("scales", k["body"], rough=0.42)
