@@ -2480,5 +2480,43 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "world sever",
+    "file": "src/spells/targeted/worldSever.ts",
+    "mode": "enemy",
+    "recipes": [
+      "g-dark-lord-slash",
+      "b-genshin-raiden-musou-isshin",
+      "f-swipe-smoke-crescent-slash"
+    ],
+    "date": "2026-11-18",
+    "selfTest": {
+      "ok": true,
+      "errors": 0,
+      "nanFrames": 0,
+      "singularFrames": 0,
+      "zones": 1,
+      "arenaHits": 1
+    }
+  },
+  {
+    "label": "thousand swords",
+    "file": "src/spells/targeted/thousandSwords.ts",
+    "mode": "ground",
+    "recipes": [
+      "g-castorice-sky-rift-blade-rain",
+      "b-elden-ring-founding-rain-of-stars",
+      "f-swipe-smoke-crescent-slash"
+    ],
+    "date": "2026-11-18",
+    "selfTest": {
+      "ok": true,
+      "errors": 0,
+      "nanFrames": 0,
+      "singularFrames": 0,
+      "zones": 1,
+      "arenaHits": 10
+    }
   }
 ]

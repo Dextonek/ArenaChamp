@@ -59,6 +59,8 @@ import { ghostGalleonBroadsideModule } from './ghostGalleonBroadside';
 import { calderaAwakeningModule } from './calderaAwakening';
 import { ophanimDescentModule } from './ophanimDescent';
 import { thousandCutIaidoModule } from './thousandCutIaido';
+import { worldSeverModule } from './worldSever';
+import { thousandSwordsModule } from './thousandSwords';
 import { lunarTideModule } from './lunarTide';
 import { abyssalAnglerModule } from './abyssalAngler';
 import { supercellModule } from './supercell';
@@ -203,6 +205,8 @@ export const targetedModules: EffectModule[] = [
   calderaAwakeningModule,
   ophanimDescentModule,
   thousandCutIaidoModule,
+  worldSeverModule,
+  thousandSwordsModule,
   lunarTideModule,
   abyssalAnglerModule,
   supercellModule,
