@@ -7,9 +7,9 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
 - **Done:** the draft files (`python pipeline/tools/new-hero.py Kagen --theme sheath ...`, `src/heroes/sheath/`, `draft: true`); his
   lore (LORE.md entry, ties with Oblivion, Zephyr, Sir Whiskers; Shiori already had four ties, so hers stays in his story only; codex
   page `docs/lore/codex/heroes/kagen.md`); his model `blender/heroes/real/sheath.py` -> `public/models/heroes/sheath_v4.glb`
-  (528 KB, 28,093 triangles, emissive 0.55), on his card with the body of Zephyr and Wick. `hero-check.py Kagen --only model,lore` passes.
-- **Gate 2 pictures:** `docs/heroes/new/sheath-gate2-sheet.jpg` (front, face, back, walking, attack, game camera, between Sefu and
-  Kaia) and `sheath-gate2-lineup.jpg`. Rebuild: `D:/blender/blender.exe --background --factory-startup --python
+  (535 KB, emissive 0.55; scar, star lines on jaw and hands, straw sandals as on the card), on his card with the body of Zephyr and Wick. `hero-check.py Kagen --only model,lore` passes.
+- **Gate 2 pictures:** `docs/heroes/new/sheath-gate2-sheet.jpg` (front, face, back, walking, attack, game camera; rows Sefu, Zephyr, Kagen, Kaia: Zephyr strikes with the same pack
+  blade clip), `sheath-gate2-large.jpg`, `sheath-gate2-gamecam.jpg` (front and behind) and `sheath-gate2-lineup.jpg`. Rebuild: `D:/blender/blender.exe --background --factory-startup --python
   blender/heroes/real_build.py -- sheath --shots <folder>`; pictures with `_v4sheet('x.jpg', ['sand','sheath','storm'])` on
   `/game?drafts=1` with the frame sink.
 - **Waiting on the user:** yes to the figure (gate 2). **Next:** gate 3, the kit sheet with every number (`pipeline/designs/kit-sheath.md`).

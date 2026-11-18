@@ -1015,7 +1015,7 @@ chain on a spring tide. She owes Vitriol for the curse and Ramet for the gate, a
 > "It is already cut. You just have not noticed."
 
 The Hollow Shrine stands on the cliffs above Frostfall, the one height in the north from which the Tear over the Tower can be
-seen. On the night it opened, Kagen's master drew his sword at it, once, and never sheathed it again: he stood on the steps with
+seen. The night the sun fell, when the Tear first showed, Kagen's master drew his sword at it once and never sheathed it: he stood with
 the blade out until he died, and the cut he began was never finished. Kagen keeps the master's sheath, lacquered red in the last
 noon light, and has never let a cut of his own end until the blade is home. A Northerner, umber-skinned, star lines on his jaw,
 in black over grey with a cinnabar sash, he walks to the Ring to meet what came through the Tear.

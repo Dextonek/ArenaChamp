@@ -18,7 +18,7 @@ from real import parts_a as P
 from real import parts_b as PB
 from real import parts_c as PC
 from real.parts_a import V
-from real.parts_d import star_lines, back_of_head, paint_px, line_w, on_face
+from real.parts_d import star_lines, hand_lines, back_of_head, paint_px, line_w, on_face
 
 
 def build():
@@ -40,7 +40,8 @@ def build():
     # ---- the head: dark hair drawn back into one long braid, star lines, a scar ----------------------------------
     R.hair("Hair_SimpleParted", "#1e1714", rough=0.5)
     hk = [k for k in R.M if k.startswith("hair_")][-1]
-    star_lines(R, color="#2c4590", width=0.0034, dots=0.0038, seed=11)
+    star_lines(R, color="#2c4590", width=0.0036, dots=0.0042, seed=11)
+    hand_lines(R, color="#2c4590", width=0.0026, seed=11)
     eye, _ = R.eye_box()
     top = back_of_head(R, 0.0, eye.z + 0.01, out=0.02)
     PA_braid = P.braid
@@ -50,9 +51,9 @@ def build():
     f.torus("cinnabar", top + Vector((0, 0.022, -0.05)), 0.02, 0.006, normal=(0, 0.45, -1), seg=(14, 5))
     f.tube("cinnabar", [top + Vector((0.01, 0.03, -0.055)), top + Vector((0.03, 0.05, -0.1)), top + Vector((0.025, 0.06, -0.14))], 0.0035, seg=5)
     # the scar: a pale line over the left brow and down the cheek
-    a = on_face(R, 0.022, eye.z + 0.042)
-    b = on_face(R, 0.062, eye.z - 0.05)
-    paint_px(R, lambda Pp: line_w(Pp, [a, a.lerp(b, 0.5), b], 0.0026), "#8e5a48", 0.8, groups=("Head",))
+    a = on_face(R, 0.028, eye.z - 0.024)
+    b = on_face(R, 0.07, eye.z - 0.078)
+    paint_px(R, lambda Pp: line_w(Pp, [a, a.lerp(b, 0.5), b], 0.0042), "#c8988a", 0.9, groups=("Head",))
 
     # ---- under-kimono, coat, wide sleeves -------------------------------------------------------------------------
     R.fitted("Under", ["pelvis", "spine", "clavicle", "upperarm", "neck"], "under", offset=0.004, where=lambda p: p.z < z["neck"] - 0.03 or abs(p.x) > 0.08)
@@ -84,6 +85,10 @@ def build():
             pts = [P.surf(R, zz, aa * s, out=out) for zz, aa in ((neck_top + dz, 1.15), (neck_top - 0.05 + dz, 0.6), (z["chest"] - 0.02 + dz, 0.18),
                                                                 (z["waist"] + 0.08, 0.02 * -s))]
             P.ribbon(fa, key, pts, lambda t, w=w: w, lambda t: (0, -1, 0), k=6)
+    # the collar round the back of the neck, joining the two front bands (it hides the cut edge of the cloth)
+    for key, out, w in (("foil", 0.016, 0.03), ("coat", 0.024, 0.04)):
+        back = [P.surf(R, neck_top - 0.004, aa, groups=("neck", "spine", "clavicle"), out=out) for aa in (1.0, 1.6, 2.3, PI, 2 * PI - 2.3, 2 * PI - 1.6, 2 * PI - 1.0)]
+        P.ribbon(fa, key, back, lambda t, w=w: w, lambda t: (0, 0, 1), k=6)
     f2 = R.piece("near")
     for s in (1, -1):  # gold down the coat's open front edges
         f2.tube("gold", [P.surf(R, zz, a * s, out=0.03) for zz, a in ((neck_top - 0.03, 0.75), (z["chest"] - 0.01, 0.3), (z["waist"] + 0.05, 0.22))], 0.0045, seg=6)
@@ -122,7 +127,17 @@ def build():
         fk.ellipsoid("gold", knot + V(dx * 2.2, -0.006, -0.025 - ln), (0.009, 0.009, 0.014), seg=(8, 6))
 
     # ---- leg wraps, boots -----------------------------------------------------------------------------------------
-    R.boots("leather", top=z["ankle"] + 0.05)
+    # pale split-toe socks in straw sandals, the thongs black
+    R.mat("straw", "#b8995a", rough=0.85)
+    R.boots("under", top=z["ankle"] + 0.05)
+    for n in "lr":
+        g = R.piece(f"foot_{n}")
+        heel, tb = R.bone(f"foot_{n}"), R.bone(f"ball_{n}")
+        cy = (heel.y + tb.y) / 2 - 0.05
+        g.ellipsoid("straw", V(heel.x, cy, 0.012), (0.07, 0.172, 0.017), seg=(18, 6))
+        toe = V(heel.x, tb.y - 0.11, 0.045)
+        for sx in (1, -1):
+            g.tube("ink", [toe, V(heel.x + sx * 0.05, tb.y - 0.02, 0.06), V(heel.x + sx * 0.062, tb.y + 0.03, 0.03)], 0.0065, seg=5)
     lo, hi = z["ankle"] + 0.04, z["knee"] - 0.04
     R.fitted("Wraps", ["calf"], "foil", offset=0.008, below=hi, above=lo)
     for n in "lr":
