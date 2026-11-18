@@ -103,7 +103,7 @@ def sheet(files, out, cols=4, w=480):
     if n == 1:
         ffmpeg(*inputs, '-vf', f'scale={w}:{h}', '-q:v', '4', str(out))
     else:
-        ffmpeg(*inputs, '-filter_complex', scale + ''.join(f'[v{i}]' for i in range(n)) + f'xstack=inputs={n}:layout={layout}', '-q:v', '4', str(out))
+        ffmpeg(*inputs, '-filter_complex', scale + ''.join(f'[v{i}]' for i in range(n)) + f'xstack=inputs={n}:layout={layout}:fill=0x141012', '-q:v', '4', str(out))
 
 
 def cmd_stills(a):
