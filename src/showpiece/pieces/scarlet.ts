@@ -6,6 +6,10 @@ import {
   RIFT, embers, lensPath, riftBackdrop, riftInside, riftLightning, riftRims, riftSpikes, riftWhiteHot, shards, type RiftShape,
 } from '../art/rift';
 import { eyeFlat, eyeGlow } from '../art/eye';
+import { eye3d, loadEye } from '../art/eye3d';
+
+/** `?eye=2d` shows the drawn eye instead of the 3D one. */
+const DRAWN_EYE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('eye') === '2d';
 import { darkBurst, inkSwirl, paintedSun, sparks, starFlare, sunFlat, sunGlow } from '../art/sun';
 import { clickRing, cutLine, inkRemnants, paperFlood, redStrokes, slashStreak, speedLines, swingTrail } from '../art/ink';
 
@@ -161,14 +165,24 @@ function eyeBeats(L: Layers, t: number, screen: ScreenParams, glowK = 1) {
   }
   riftBackdrop(L.flat, rift, 0.4 + 0.6 * opening);
   riftInside(L.flat, rift, t, 1);
-  L.flat.save();
-  lensClip(L.flat, rift, t);
-  eyeFlat(L.flat, eye);
-  L.flat.restore();
+  if (DRAWN_EYE) {
+    L.flat.save();
+    lensClip(L.flat, rift, t);
+    eyeFlat(L.flat, eye);
+    L.flat.restore();
+  } else {
+    // The 3D eye, clipped to the tear on both layers (its glow too).
+    for (const c of [L.flat, L.glow]) {
+      c.save();
+      lensClip(c, rift, t);
+    }
+    eye3d(L, { ...eye, alpha: eye.alpha * (glowK > 0 ? 1 : 1) });
+    for (const c of [L.flat, L.glow]) c.restore();
+  }
   if (glowK > 0) {
     L.glow.save();
     lensClip(L.glow, rift, t);
-    eyeGlow(L.glow, { ...eye, alpha: eye.alpha * glowK });
+    if (DRAWN_EYE) eyeGlow(L.glow, { ...eye, alpha: eye.alpha * glowK });
     L.glow.restore();
     riftWhiteHot(L.glow, rift, t, whiteHot * 0.95 * glowK);
     riftSpikes(L.glow, rift, t, seg(t, 4.1, 4.35), seg(t, 4.5, 5.0));
@@ -309,6 +323,7 @@ const piece: Piece = {
   duration: DURATION,
   beats: BEATS,
   fonts: { family: 'Noto Serif JP', weight: 900, text: '緋鞘一閃・斷界封' },
+  preload: () => loadEye(),
   draw: drawFrame,
 };
 export default piece;

@@ -18,7 +18,7 @@ import type { Layers } from './piece';
 
 export interface Creature {
   /** The model's meshes, each with its straight positions and normals kept. */
-  meshes: { mesh: THREE.Mesh; pos: Float32Array; nrm: Float32Array }[];
+  meshes: { mesh: THREE.Mesh; pos: Float32Array; nrm: Float32Array; name: string }[];
   root: THREE.Group;
   /** The model's length along x (snout to tail). */
   length: number;
@@ -46,7 +46,9 @@ export function loadCreature(url: string): Promise<Creature> {
         const mesh = new THREE.Mesh(g, m.material);
         mesh.frustumCulled = false;
         root.add(mesh);
-        meshes.push({ mesh, pos: (g.attributes.position.array as Float32Array).slice(), nrm: (g.attributes.normal.array as Float32Array).slice() });
+        // The object's name in Blender (a mesh with several materials comes as a group of that name).
+        const name = (m.parent && m.parent !== gltf.scene && !m.name.startsWith(m.parent.name) ? m.parent.name : m.name) || m.parent?.name || '';
+        meshes.push({ mesh, name, pos: (g.attributes.position.array as Float32Array).slice(), nrm: (g.attributes.normal.array as Float32Array).slice() });
       });
       const c = { meshes, root, length };
       loaded.set(url, c);
@@ -208,6 +210,8 @@ export interface View {
   alpha?: number;
   /** Nothing below this height (world units) is drawn: the water's surface it rises out of. */
   clipBelow?: number;
+  /** Turns the picture about the view's axis (radians, as the 2D canvas turns: positive is clockwise on screen). */
+  roll?: number;
   /** Moves the whole picture by this much (picture units), e.g. so the point looked at sits off the frame's centre. */
   shift?: [number, number];
 }
@@ -224,6 +228,7 @@ export function drawCreature(L: Layers, c: Creature, v: View) {
   st.camera.fov = v.fov ?? 30;
   st.camera.aspect = w / h;
   st.camera.position.set(...v.eye);
+  st.camera.up.set(Math.sin(v.roll ?? 0), Math.cos(v.roll ?? 0), 0);
   st.camera.lookAt(new THREE.Vector3(...v.at));
   // A shift moves the lens, not the picture, so the picture still covers the whole frame.
   const [sx, sy] = v.shift ?? [0, 0];
@@ -250,8 +255,17 @@ export function drawCreature(L: Layers, c: Creature, v: View) {
   const glow = (v.glow ?? 1) * alpha;
   if (glow > 0) {
     const saved = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+    const order = new Map<THREE.Mesh, number>();
     for (const { mesh } of c.meshes) {
       saved.set(mesh, mesh.material);
+      order.set(mesh, mesh.renderOrder);
+      // Glowing parts draw after the parts that only hide what is behind them, so an eye under its lid stays hidden.
+      mesh.renderOrder = 1;
+      // A part painted in code says itself what of it glows.
+      if (mesh.userData.glowMaterial) {
+        mesh.material = mesh.userData.glowMaterial as THREE.Material;
+        continue;
+      }
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       const em = mats.map((m) => {
         const s = m as THREE.MeshStandardMaterial;
@@ -259,12 +273,14 @@ export function drawCreature(L: Layers, c: Creature, v: View) {
         return e ? new THREE.MeshBasicMaterial({ color: s.emissive.clone().multiplyScalar(Math.min(2, s.emissiveIntensity)) }) : st.glowMat;
       });
       mesh.material = Array.isArray(mesh.material) ? em : em[0];
+      if (em.every((m) => m === st.glowMat)) mesh.renderOrder = 0;
     }
     r.render(st.scene, st.camera);
     for (const [mesh, m] of saved) {
       const now = mesh.material;
-      for (const x of Array.isArray(now) ? now : [now]) if (x !== st.glowMat) x.dispose();
+      for (const x of Array.isArray(now) ? now : [now]) if (x !== st.glowMat && x !== mesh.userData.glowMaterial) x.dispose();
       mesh.material = m;
+      mesh.renderOrder = order.get(mesh) ?? 0;
     }
     L.glow.globalCompositeOperation = 'lighter';
     L.glow.globalAlpha = glow;
