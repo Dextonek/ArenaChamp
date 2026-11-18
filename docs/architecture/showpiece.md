@@ -88,5 +88,11 @@ else's footage and stay out of git.
 | `tide` | Tidebreaker | A drop in a still pool, the great wave in woodblock style, the teal moon, the whirlpool, the water dragon (3D) rising and roaring, the crash, still water, the seal 潮 |
 | `frost` | Frost Lotus | An ice bud on paper, frost creeping, night, the lotus opening, a ring of ice blades, the frame frozen and shattered, snow on paper, the seal 氷 |
 | `jade` | Jade Serpent | A bamboo grove in ink, the wind, the serpent (3D) gliding through, three wind cuts, the coil in the dark, the release as a storm of leaves, fallen bamboo, the seal 蛇 |
+| `phoenix` | Phoenix Rebirth | An ember in a heap of ash, cracks of light, the burst, a firebird rising whose wings catch feather by feather, the cry, the dive that becomes the sun, a sprout and a golden feather, the seal 鳳 |
+| `eclipse` | Black Sun Eclipse | An ink sun on paper, the moon creeping in, totality and the corona, chains of shadow locked in an X, the heaven gate opening like an iris, the beam, shards on paper, the seal 蝕 |
+| `sakura` | Sakura Requiem | An ink branch, the blossoms opening in a wave, the wind, night and the moon, a vortex of petals, a blade of petals cutting the night, petal snow, the seal 桜 |
+| `clockwork` | Celestial Clockwork | A star chart on parchment, the stars waking, the chart burning into space, a brass clock assembling, hands of stars, the stopped hour, the shattering, a new star inked in, the seal 刻 |
+| `scarab` | Sun Scarab | Papyrus and glyphs, sand pouring, a gold scarab rising with the sun, the climb through the night, the winged sun, the pillar of gold light, the sandstorm back to papyrus, the seal 陽 |
+| `lanterns` | Spirit Lanterns | A paper lantern lit amber then cyan, night, a procession of lanterns, ghost-fires rising into a spiral, a nine-tailed fox of blue fire, dawn with one lantern still lit, the seal 魂 |
 
 Films and stills: `docs/showpiece/`.

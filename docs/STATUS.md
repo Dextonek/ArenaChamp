@@ -1,6 +1,11 @@
 # Status
 
-## Showpieces: five short anime special moves, with 3D creatures (2026-11-18): merged with GitHub main and pushed; NOT live
+## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
+
+- **Later the same day:** the user asked for "more of those movie vfx", six, themes my pick: Phoenix Rebirth, Black Sun Eclipse,
+  Sakura Requiem, Celestial Clockwork, Sun Scarab, Spirit Lanterns (all 2D). And two spells in the same style in the tool's
+  arena: World Sever and Thousand Swords (`src/spells/targeted/`, picture `docs/spells/world-sever-thousand-swords.jpg`).
+
 
 - **Asked:** the user sent a 15 s clip (a katana's draw tearing the world open onto a dragon's eye) and asked for "something
   like this" in the VFX tool, as a page in the tool (not in the game), in the clip's look; then "4 more, theme and effect
