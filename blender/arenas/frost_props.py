@@ -177,7 +177,7 @@ def boulder(P, coll):
 
 def spire(P, coll, main=3.4, fan=False, seed=5):
     """An ice-spire cluster on a snowy rock outcrop (radius 0.95, covers a pillar of r 0.8): a tall crystal with a
-    ring of satellites leaning outward, a toppled shard and a snapped stump. `fan`: two tall crystals in a fan
+    ring of satellites leaning outward, a small toppled shard and a snapped stump. `fan`: two tall crystals in a fan
     instead of one spire."""
     ice, snow, rock = P.materials()
     rnd = random.Random(seed)
@@ -197,8 +197,10 @@ def spire(P, coll, main=3.4, fan=False, seed=5):
         d = 0.35 + rnd.random() * 0.2
         h = main * (0.28 + rnd.random() * 0.35)
         parts.append(_crystal(f"Sat{k}", (math.cos(a) * d, math.sin(a) * d, 0.25), h, 0.14 + rnd.random() * 0.1, a, 0.22 + rnd.random() * 0.25, ice, rnd))
-    # a toppled shard lying against the outcrop and a snapped stump
-    parts.append(_crystal("Toppled", (0.55, -0.55, 0.1), 1.3, 0.16, -0.8, 1.2, ice, rnd))
+    # a toppled shard lying against the outcrop and a snapped stump. The shard was 1.3 m long (r 0.16) and reached 1.2 m
+    # past the spire's cover at 0.6 m high, where a hero stands (model review round 2, fixed 2026-11-16): now 0.45 of
+    # that, as frost_shard_fix.py made it in the exported file (this build needs dao_blender, not on every computer).
+    parts.append(_crystal("Toppled", (0.55, -0.55, 0.1), 1.3 * 0.45, 0.16 * 0.45, -0.8, 1.2, ice, rnd))
     stump = _crystal("Stump", (-0.6, 0.55, 0.15), 0.6, 0.22, 2.4, 0.3, ice, rnd)
     for v in stump.data.vertices:
         v.co.z = min(v.co.z, 0.45 + 0.15 * v.co.x)

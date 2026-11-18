@@ -418,6 +418,8 @@
 .mode span { display: flex; flex-direction: column; min-width: 0; }
 .mode b { font: 700 16px var(--display); letter-spacing: 0.05em; color: var(--text); }
 .mode small { font-size: 12px; }
+.mode small.qcount { color: #9df0b4; }
+.mode small.qcount:empty { display: none; }
 .mode:hover:not(:disabled):not(.on) { border-color: var(--line-gold); transform: translateY(-1px); color: var(--text); }
 .mode.on {
   border-color: var(--gold-hi); color: var(--text);
@@ -504,7 +506,7 @@
 /* A phone held upright: the screens' tabs move to a bar along the bottom, under the thumb; a tighter menu, a smaller
    hero grid, and the Find match row pinned above the tab bar so it never scrolls out of reach. */
 @media (max-width: 600px) {
-  :root { --tabbar: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  :root { --tabbar: calc(60px + env(safe-area-inset-bottom, 0px)); }
   .screen { padding: 12px 10px calc(90px + var(--tabbar)); }
   .screen.wide { padding-bottom: calc(14px + var(--tabbar)); }
   .card { padding: 14px 14px; }
@@ -819,13 +821,8 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .top { gap: 12px; }
 }
 @media (max-width: 600px) {
-  /* Eight tabs along the bottom of a phone: narrower letters, so "Lobbies" and "Profile" still fit their tab. */
-  .top nav.many .nav { font-size: 8.5px; letter-spacing: 0.01em; padding-left: 0; padding-right: 0; }
-  .top nav.many .nav .ic svg { width: 20px; height: 20px; }
   .who { gap: 7px; }
   .who .btn.small { padding-left: 10px; padding-right: 10px; }
-  /* A logged-in player's bar is full on a phone (name, obols, Log out): the Graphics button is on the Profile screen there. */
-  .who.full .gfx { display: none; }
   .obols.big { font-size: 26px; }
   .purse-big { padding: 6px 14px 8px; }
   .shop { gap: 10px; }
@@ -841,4 +838,197 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .lock-strip .btn.small { padding: 5px 9px; min-height: 30px; font-size: 12px; }
   .board-row { grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; padding: 6px 9px; }
   .board-score { font-size: 12px; }
+}
+
+/* --- Leaderboards and Clan (src/game/social.ts) ------------------------------------------------------------------ */
+/* The count of clan messages not seen yet, on the Clan tab. */
+.nav-unread {
+  position: static; margin-left: -2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; display: inline-flex;
+  align-items: center; justify-content: center; background: var(--red); color: #fff; font: 800 10px var(--sans); letter-spacing: 0;
+  box-shadow: 0 0 8px rgba(255, 106, 106, 0.6);
+}
+.nav-unread[hidden] { display: none; }
+.tag { color: var(--gold); font-weight: 800; letter-spacing: 0.04em; margin-right: 4px; }
+.who-tag { display: inline-flex; align-items: baseline; min-width: 0; }
+.linkish { background: none; border: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.tile-v .linkish { color: var(--gold-hi); text-decoration: underline dotted rgba(255, 210, 122, 0.5); text-underline-offset: 4px; }
+.boards-screen, .clan-none { display: flex; flex-direction: column; gap: 18px; max-width: 860px; margin: 0 auto; }
+.boards-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.boards-tabs .mode { justify-content: center; padding: 10px 6px; }
+.boards-tabs .mode b { font-size: 14px; }
+.tabs.small { margin: 2px 0 6px; }
+.tabs.small .tab { font-size: 12px; padding: 7px 6px; }
+.board-row.own { margin-top: 6px; border-style: dashed; }
+.clan-forms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 6px; }
+.clan-form .row { margin-top: 8px; flex-wrap: nowrap; }
+.clan-form input:not(.code-in) { flex: 1; min-width: 0; }
+.clan-row .board-who { color: var(--text); }
+.clan-page { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line-gold); border-radius: 12px; background: rgba(8, 6, 10, 0.55); }
+.clan-page-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.clan-page-head h3::after { display: none; }
+.clan-page .btn.primary { margin-top: 10px; width: 100%; }
+.clan-in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 18px; max-width: 1180px; margin: 0 auto; align-items: start; }
+.clan-head h2 { margin-bottom: 2px; }
+.clan-code { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 4px; padding: 8px 12px; border: 1px dashed var(--line-gold); border-radius: 10px; }
+.clan-code .code { font: 800 20px var(--sans); letter-spacing: 4px; color: var(--gold-hi); }
+.clan-asks .ask-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.clan-asks .ask-row .m-name { flex: 1; font-weight: 700; }
+.member-list { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.member { border: 1px solid var(--line); border-radius: 9px; background: rgba(8, 6, 10, 0.5); }
+.member.open { border-color: var(--line-gold); }
+.clan-page .member { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+.member-main {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; background: none; border: none; color: var(--text);
+  font: inherit; cursor: pointer; text-align: left;
+}
+.member-main:disabled { cursor: default; }
+.m-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.member .role { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--line-gold); border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+.member .role.off { color: var(--muted); border-color: var(--line); }
+.m-num { margin-left: auto; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.m-num + .m-num { margin-left: 8px; min-width: 34px; text-align: right; }
+.member-acts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 9px; }
+.btn.danger { border-color: rgba(255, 106, 106, 0.55); color: var(--red); background: rgba(255, 106, 106, 0.06); box-shadow: none; }
+.clan-leave { margin-top: 12px; }
+.clan-chat { display: flex; flex-direction: column; min-height: 0; }
+.chat-list {
+  list-style: none; margin: 4px 0 10px; padding: 8px; height: min(52vh, 460px); overflow-y: auto; display: flex; flex-direction: column; gap: 3px;
+  background: rgba(8, 6, 10, 0.55); border: 1px solid var(--line); border-radius: 10px; overscroll-behavior: contain;
+}
+.chat-line { display: flex; align-items: baseline; gap: 7px; padding: 3px 4px; border-radius: 6px; line-height: 1.35; font-size: 14px; overflow-wrap: anywhere; }
+.chat-line[hidden] { display: none; }
+.chat-line:hover { background: rgba(255, 255, 255, 0.03); }
+.chat-line.event { color: var(--muted); font-style: italic; font-size: 12.5px; }
+.chat-time { font-size: 11px; font-style: normal; font-variant-numeric: tabular-nums; flex: none; }
+.chat-from { color: var(--gold-hi); flex: none; }
+.chat-line.own .chat-from { color: #9df0b4; }
+.chat-text { flex: 1; min-width: 0; white-space: pre-wrap; }
+.chat-report { flex: none; background: none; border: none; color: var(--muted); font: 600 11px var(--sans); cursor: pointer; opacity: 0.45; padding: 0 2px; }
+.chat-line:hover .chat-report, .chat-report:focus-visible { opacity: 1; }
+.chat-report:disabled { opacity: 0.3; cursor: default; }
+.chat-form { display: flex; gap: 8px; }
+.chat-form input { flex: 1; min-width: 0; }
+.chat-note { color: var(--red); min-height: 16px; margin-top: 4px; }
+@media (max-width: 860px) {
+  .clan-in { grid-template-columns: minmax(0, 1fr); }
+  /* On a narrow screen the chat comes first: it is what a member opens the screen for. */
+  .clan-chat { order: -1; }
+}
+@media (max-width: 600px) {
+  /* On a phone the count sits on the tab's icon. */
+  .nav-unread { position: absolute; top: 2px; right: calc(50% - 20px); margin: 0; }
+  .boards-tabs { gap: 4px; }
+  .boards-tabs .mode { padding: 8px 2px; }
+  .boards-tabs .mode b { font-size: 12px; letter-spacing: 0.02em; }
+  .clan-forms { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .chat-list { height: 46vh; }
+  .chat-report { opacity: 0.7; }
+}
+/* A row with a second line under the name (the clans' board): the name keeps its whole width on a phone. */
+.board-two { display: flex; flex-direction: column; min-width: 0; }
+.board-two small { font-size: 11.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Ten tabs for a signed-in player (Boards and Clan joined them): the bar gives way in steps so Log out never leaves the screen.
+   First the record and the Graphics button go (Graphics is on the Profile screen, as on a phone), then the tab icons, then the
+   letters tighten. Under 860 px the bar wraps (above), and under 600 px the tabs move to the bottom. */
+.top nav.many .nav { white-space: nowrap; }
+@media (max-width: 1640px) and (min-width: 601px) {
+  .top nav.many .nav { padding-left: 8px; padding-right: 8px; letter-spacing: 0.06em; gap: 6px; }
+  .who.full > .muted, .who.full .gfx { display: none; }
+}
+@media (max-width: 1440px) and (min-width: 601px) {
+  .top nav.many .nav .ic { display: none; }
+  .top:has(nav.many) { gap: 14px; }
+}
+@media (max-width: 1180px) and (min-width: 601px) {
+  .top:has(nav.many) { padding-left: 14px; padding-right: 14px; gap: 10px; }
+  .top:has(nav.many) .brand { font-size: 17px; }
+  .top nav.many .nav { font-size: 11px; letter-spacing: 0.03em; padding-left: 6px; padding-right: 6px; }
+}
+@media (max-width: 1000px) and (min-width: 601px) {
+  /* The tabs on a row of their own, under the name and Log out. */
+  .top:has(nav.many) { flex-wrap: wrap; row-gap: 0; }
+  .top nav.many { order: 3; flex: 1 1 100%; justify-content: space-between; }
+  .top:has(nav.many) .who { margin-left: auto; }
+}
+@media (max-width: 760px) and (min-width: 601px) {
+  .top nav.many .nav { font-size: 10px; letter-spacing: 0; padding-left: 4px; padding-right: 4px; }
+}
+
+/* --- lore (src/game/lore.ts): a hero's faction, home, age, legend and ties --- */
+.fchip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px 1px 6px; border-radius: 20px; border: 1px solid var(--fc, #c9a24a);
+  color: var(--text); font: 700 11px ui-sans-serif, system-ui; letter-spacing: 0.04em; background: color-mix(in srgb, var(--fc, #c9a24a) 16%, transparent); white-space: nowrap; }
+.fchip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--fc, #c9a24a); }
+.lore-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 2px; }
+.lore { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line, #3a3242); display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.lore-head { display: flex; align-items: center; gap: 10px; }
+.lore-head h3 { margin: 0; }
+.lore-facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
+.lore-fact { display: contents; }
+.lore-k { color: var(--muted, #a89870); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; padding-top: 2px; }
+.lore-quote { margin: 2px 0; padding: 4px 12px; border-left: 3px solid var(--accent, #c9a24a); font: italic 15px ui-serif, Georgia, serif; color: var(--text); }
+.lore-legend { margin: 0; line-height: 1.5; font-size: 14px; max-width: 72ch; }
+.lore-ties { display: flex; flex-wrap: wrap; gap: 6px; }
+.lore-tie { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 4px; border-radius: 22px; border: 1px solid var(--line, #3a3242);
+  background: rgba(20, 16, 18, 0.7); color: var(--text); cursor: pointer; text-align: left; min-height: 36px; }
+.lore-tie span { display: flex; flex-direction: column; line-height: 1.15; }
+.lore-tie.strong { border-color: #ffd27a; }
+.lore-tie:hover { border-color: #8a7a52; }
+.loading-tie { margin: 10px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255, 210, 122, 0.45);
+  background: rgba(30, 22, 12, 0.7); color: #ffd27a; font: 600 14px/1.35 ui-serif, Georgia, serif; text-align: center; }
+.lore-more { align-self: flex-start; margin-top: 2px; }
+
+/* --- The bar on a phone (user, 2026-11-15: the account ran off the screen, and eleven tabs were too small to read) ---
+   main.ts header(): four tabs and More along the bottom, the other tabs, Graphics and Log out in a sheet over them; at the
+   top the name (a tap opens the Profile) ends in "..." where the room runs out. Wider screens keep every tab in the bar. */
+.who-name {
+  background: none; border: none; padding: 0; margin: 0; color: inherit; font: inherit; font-weight: 700; cursor: pointer;
+  min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* The name gives way only when the bar runs out of room: everything else in it keeps its size. */
+.top .brand, .who > :not(.who-name) { flex: none; }
+.who { min-width: 0; }
+.who-name:hover { color: var(--gold-hi); }
+.who-name:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; border-radius: 4px; }
+.nav.more, .more-veil { display: none; }
+@media (max-width: 1000px) and (min-width: 861px) {
+  /* A guest's seven tabs, Graphics and Log in in one row: a little less room round each tab. */
+  .top nav:not(.many) .nav { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 600px) {
+  .top nav .nav.extra { display: none; }
+  .top nav .nav.more { display: flex; }
+  .top nav .nav { font-size: 11px; letter-spacing: 0.05em; padding: 6px 2px 5px; min-height: 48px; }
+  .nav.more.open { color: var(--text); }
+  /* The account: the brand, the dot and the obols keep their size; the name gives way. */
+  .who { flex: 0 1 auto; }
+  .who-name { min-height: 36px; }
+  .who .purse { min-height: 36px; }
+  .who .btn.small { min-height: 36px; }
+  .who .gfx, .who.full .out { display: none; }
+  .more-veil {
+    display: block; position: fixed; left: 0; right: 0; top: 0; bottom: var(--tabbar); z-index: 7;
+    background: rgba(5, 3, 8, 0.6);
+  }
+  .more-sheet {
+    position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 10px; border-radius: 14px;
+    border: 1px solid var(--line-gold); background: linear-gradient(180deg, #1b1421, #0d0a12);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 -12px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 228, 170, 0.08);
+  }
+  .more-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .more-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .more-grid.four .more-item { letter-spacing: 0.03em; }
+  .more-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 66px; padding: 8px 4px;
+    border: 1px solid var(--line); border-radius: 10px; background: rgba(8, 6, 10, 0.55); color: var(--muted);
+    font: 700 12px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+  }
+  .more-item .ic svg { width: 24px; height: 24px; }
+  .more-item.on { color: var(--gold-hi); border-color: var(--line-gold); box-shadow: inset 0 0 14px rgba(255, 210, 122, 0.12); }
+  .more-item:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+  .more-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .more-foot .btn.small { min-height: 40px; padding: 8px 14px; font-size: 13px; }
+}
+@media (max-width: 360px) {
+  /* The smallest phones: a signed-in bar keeps the sigil and gives the name the brand's words. */
+  .top:has(.who.full) .brand-words { display: none; }
 }

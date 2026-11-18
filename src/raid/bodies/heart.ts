@@ -34,6 +34,9 @@ const GLOW_EYES = 1.5;
 const GLOW_RING = 0.55;
 const GLOW_BLADE = 0.6;
 
+/** How far the crown sways to either side in the last phase, on top of its wobble (rad): with the wobble it stays within about 0.35. */
+const CROWN_SWAY = 0.15;
+
 /** Each ring's own axis in the model (glTF, y up): the tilt it was built at in Blender, turned into y up. */
 const RING_AXES: Record<RingName, THREE.Vector3> = {
   ringA: new THREE.Vector3(0.1651, 0.309, 0.9366).normalize(),
@@ -81,6 +84,9 @@ interface Mem { phase: number; kneel: number; spin: number[]; crown: number; bea
 const mem = new WeakMap<BodyParts, Mem>();
 const Q = new THREE.Quaternion();
 const Q2 = new THREE.Quaternion();
+const QC = new THREE.Quaternion();
+const QB = new THREE.Quaternion();
+const FOOT = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 const one = (a: BodyAct | null) => (a ? [a] : []);
 
@@ -214,9 +220,10 @@ export const heartLook: BodyLook = (s, p) => {
   p.size('mask', 1 / coreSize);
   p.size('crown', 1 / coreSize);
 
-  // The crown turns a little about its own front, faster in the last phase.
+  // The crown turns a little about its own front, faster in the last phase, to and fro. (It used to keep turning in the last phase, and
+  // its long upper rays came round underneath into the floor: they reach it at about half a radian of turn, model review round 3.)
   m.crown += dt * crownSpin;
-  p.turn('crown', 0, 0, Math.sin(m.crown) * (0.08 + noon * 0.12) + noon * m.crown * 0.15);
+  p.turn('crown', 0, 0, Math.sin(m.crown) * (0.08 + noon * 0.12) + noon * CROWN_SWAY * Math.sin(m.crown * 0.35));
 
   // The rings: each turns about its own axis. Brought down by The Rings Turn, it lies flat round the heart's foot and turns with its beam.
   RINGS.forEach((name, i) => {
@@ -294,15 +301,23 @@ export const heartLook: BodyLook = (s, p) => {
       p.move(name, sg * 0.8 * fBlade, -(BLADE.y - 0.6) * fBlade, 0.4 * fBlade);
       p.turn(name, 0.2 * fBlade, 0, sg * 1.35 * fBlade);
     }
-    RINGS.forEach((name, i) => {
-      const n = p.node(name);
-      if (!n) return;
-      Q2.setFromUnitVectors(RING_AXES[name], UP);
-      n.quaternion.slerp(Q2, fRing);
-      n.position.y -= fRing * (CORE_Y - 0.25 - i * 0.06);
-    });
     p.move('core', 0, -2.2 * fCore, 0);
     p.turn('core', 0.25 * fCore, 0.3 * fall, 0.1 * fCore);
+    // The rings hang in the core, which sinks and tips: each is laid flat on the floor round its foot in the world, not in the core's
+    // space (there they went down with the core, 2 to 3 m under the floor).
+    const core = p.node('core'), base = core?.parent;
+    if (core && base) {
+      core.updateWorldMatrix(true, false);
+      core.getWorldQuaternion(QC).invert().multiply(base.getWorldQuaternion(QB));
+      base.getWorldPosition(FOOT);
+      RINGS.forEach((name, i) => {
+        const n = p.node(name);
+        if (!n) return;
+        Q2.setFromUnitVectors(RING_AXES[name], UP).premultiply(QC);
+        n.quaternion.slerp(Q2, fRing);
+        p.toward(name, FOOT.x, FOOT.y + 0.25 + i * 0.06, FOOT.z, fRing);
+      });
+    }
     p.move('crown', 0, -0.4 * fCore, -0.3 * fCore);
     p.move('shards', 0, -0.9 * fall, 0);
     p.glow('core', coreGlow * (1 - fCore * 0.9));

@@ -1,0 +1,127 @@
+{
+ "floor": 18,
+ "part": "climb-review-shots",
+ "wallSeconds": 15.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 18,
+  "shots": [
+   "phone-start",
+   "phone-camp",
+   "phone-map",
+   "phone-person-keeper",
+   "phone-fight"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "status": {
+   "clock": 5.97,
+   "hero": {
+    "x": -73,
+    "z": 52.91,
+    "hp": 470,
+    "max": 520
+   },
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": null,
+   "law": {
+    "text": "The paths change in 101 s",
+    "active": false,
+    "warn": false
+   },
+   "packs": [
+    {
+     "id": "a",
+     "state": "awake",
+     "left": 4,
+     "total": 4
+    },
+    {
+     "id": "d",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "b",
+     "state": "unborn",
+     "left": 4,
+     "total": 4
+    },
+    {
+     "id": "f",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "named1",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    },
+    {
+     "id": "named2",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    },
+    {
+     "id": "root1",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    },
+    {
+     "id": "root2",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    },
+    {
+     "id": "root3",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    }
+   ],
+   "liveUnits": 4,
+   "log": [
+    {
+     "t": 2.98,
+     "text": "a: appears"
+    },
+    {
+     "t": 3,
+     "text": "a: wakes (near)"
+    }
+   ],
+   "gameLog": []
+  }
+ }
+}

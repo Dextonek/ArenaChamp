@@ -8,9 +8,14 @@
 // and a pick nobody answers are real).
 // All of that runs with the hero shop switched off, as it was written: its accounts are new and play any hero. The shop
 // itself (pipeline/designs/hero-shop.md), the raid ranks and the week's boards are played on servers of their own, with the
-// shop on, at the same time as the rest (`shopCases`): their lines are printed at the end.
+// shop on, at the same time as the rest (`shopCases`): their lines are printed at the end. So is the Climb's open world (`worldCases`:
+// shards of a floor, walks and casts relayed, leaving; and stage 2's shared packs, `packCases`), and the leaderboards and clans (`socialCases`: the duel rating, the boards,
+// clans, the clan chat and its limits, a restart on the same store).
 //   node server/smoke-test.mjs                         (its own Node servers on temporary data files)
 //   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
+//   node server/smoke-test.mjs --world                 (only the Climb's open world: a few seconds)
+//   node server/smoke-test.mjs --social                (only the leaderboards and clans: about 45 s)
+//   node server/smoke-test.mjs --relay                 (only the late R casts some heroes send: about 15 s)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server with the shop off, e.g. `npm run cf:dev` with
 //                                                       SHOP "off"; unique names per run; the shop's cases are left out)
 import { createServer } from 'node:http';
@@ -19,6 +24,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
+import { WORDS } from './filter.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, SHOP, STARTERS, heroPrice, isoWeek, raidBand, raidHp,
   raidStaggerMax, raidTwinHp, shopRotation,
@@ -28,6 +34,9 @@ import {
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
 
 const onlyShop = process.argv.includes('--shop');
+const onlyWorld = process.argv.includes('--world');
+const onlySocial = process.argv.includes('--social');
+const onlyRelay = process.argv.includes('--relay');
 const target = process.argv.slice(2).find((x) => !x.startsWith('--'));
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
@@ -56,6 +65,13 @@ function check(ok, what) {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`);
   if (!ok) failed = true;
 }
+
+/**
+ * On a busy machine (several agents building and running browsers) a reply can come late. SMOKE_SLOW=2 doubles every wait
+ * (`SMOKE_SLOW=2 npm run test:server`; PowerShell: `$env:SMOKE_SLOW=2; npm run test:server`). Waits only matter when a reply is
+ * missing, so a longer wait never makes a check pass that should fail; it only makes a failing run take longer.
+ */
+const SLOW = Math.max(1, Number(process.env.SMOKE_SLOW) || 1);
 
 /** A test client: `next(type)` waits for the next message of that type. @param {string} [to] */
 async function client(to = url) {
@@ -91,7 +107,7 @@ async function client(to = url) {
       if (i >= 0) return Promise.resolve(inbox.splice(i, 1)[0]);
       return new Promise((resolve, reject) => {
         waiting.push({ t, resolve });
-        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), ms);
+        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), ms * SLOW);
       });
     },
     close: () => ws.close(),
@@ -215,7 +231,8 @@ async function shopCases() {
     nia.send({ t: 'queue_join', hero: cheap });
     ok((await nia.next('error')).error.includes('locked') && nia.got.queue === undefined, 'a locked hero is refused at the queue');
     nia.send({ t: 'lobby_create', raid: 'sun' });
-    const raidRoom = await nia.next('lobby');
+    let raidRoom = await nia.next('lobby');
+    while (!raidRoom.lobby) raidRoom = await nia.next('lobby'); // a late "left" (lobby: null) from the leave above, on a busy machine
     nia.send({ t: 'lobby_pick', hero: cheap });
     ok((await nia.next('error')).error.includes('locked') && raidRoom.lobby.seats[0].rank === null, 'and in a raid room');
     nia.send({ t: 'lobby_leave' });
@@ -289,14 +306,15 @@ async function shopCases() {
       const pia = await enter(srv.to, 'pia'), quin = await enter(srv.to, 'quin');
       await duel(pia, quin, STARTERS[0], STARTERS[1]);
       const [d1] = await longDuel(pia, quin);
+      // This week's Tower report, sent before the clock moves: a day forward from a Sunday is already the next week.
+      pia.send({ t: 'tower_report', floor: 3, hero: STARTERS[0], week });
+      await pia.next('boards');
       skew.ms += 86400000;
       await duel(pia, quin, STARTERS[0], STARTERS[1]);
       const [d2] = await longDuel(pia, quin);
       const e = SHOP.earn;
       ok(d1.earned === e.duel + e.win + e.firstWin && d2.earned === d1.earned, 'the first win of the next UTC day pays again');
       // The week turns: other heroes are free, last week's are locked again, and the boards start empty.
-      pia.send({ t: 'tower_report', floor: 3, hero: STARTERS[0], week });
-      await pia.next('boards');
       skew.ms = 7 * 86400000;
       pia.forget('shop');
       const next = isoWeek(Date.now() + skew.ms).id;
@@ -418,10 +436,808 @@ async function shopCases() {
   return lines;
 }
 
-// The shop's cases run beside the rest, on their own servers.
-const shopRun = target ? null : shopCases();
+/**
+ * The Climb's open world, stage 1 (pipeline/designs/climb-open-world.md), on a server of its own beside the rest: players on one
+ * floor share a shard and hear each other's walks and casts, a ninth opens a second shard, another floor hears nothing, and leaving,
+ * a dropped connection and going to a lobby all take a player out. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function worldCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} world: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-world.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in. @param {string} name */
+  const enter = async (name) => {
+    const x = await client(to);
+    x.send({ t: 'register', name, password: 'pw1234' });
+    await x.next('session');
+    return x;
+  };
+  try {
+    // Not signed in: no world.
+    const guest = await client(to);
+    guest.send({ t: 'world_join', floor: 2, hero: 'Kaia' });
+    ok((await guest.next('auth_error')).error === 'Please log in', 'a page not signed in is not put on a floor');
+    guest.close();
 
-if (!onlyShop) try {
+    const a = await enter('wanda'), b = await enter('walt');
+    a.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: 1, z: 2, yaw: 0.5 });
+    const ra = await a.next('world_roster');
+    ok(ra.shard === '2.1' && ra.floor === 2 && ra.players.length === 0 && ra.max === 8 && Number.isInteger(ra.you), 'the first on floor 2 opens its shard 2.1, alone');
+    b.send({ t: 'world_join', floor: 2, hero: 'Lyra', x: 4, z: 5, yaw: 1 });
+    const rb = await b.next('world_roster'), joined = await a.next('world_joined');
+    ok(rb.shard === '2.1' && rb.players.length === 1 && rb.players[0].name === 'wanda' && rb.players[0].hero === 'Kaia' && rb.players[0].x === 1 && rb.players[0].z === 2,
+      'a second on floor 2 joins the same shard and sees the first where it stands');
+    ok(joined.id === rb.you && joined.name === 'walt' && joined.hero === 'Lyra' && joined.x === 4, 'the first hears the second come in, with its name and hero');
+
+    // Walks: relayed with the sender's id, clamped to the floor's reach; a flood is cut at 12 a second.
+    b.send({ t: 'world_move', x: 6.12345, z: 9999, yaw: 2, walk: true, hp: 1.7, ts: 1234 });
+    const mv = await a.next('world_moved');
+    ok(mv.id === rb.you && mv.x === 6.123 && mv.z === 500 && mv.walk === true && mv.hp === 1 && mv.ts === 1234, 'a walk is relayed with its id, clamped (x to the mm, z inside the reach, health share at most 1)');
+    await pause(1100);
+    a.forget('world_moved');
+    const before = a.got.world_moved ?? 0;
+    for (let i = 0; i < 30; i++) b.send({ t: 'world_move', x: i, z: 0, yaw: 0, walk: true, hp: 1 });
+    await pause(400);
+    const flood = (a.got.world_moved ?? 0) - before;
+    ok(flood === 12, `a flood of 30 walks in one moment: 12 relayed (${flood})`);
+
+    // Casts: the look's label and spots, relayed; the same spell again too soon is dropped.
+    b.send({ t: 'world_cast', label: 'Starfall', x: 1, z: 1, tx: 3, tz: 4 });
+    const cs = await a.next('world_cast');
+    ok(cs.id === rb.you && cs.label === 'Starfall' && cs.tx === 3 && cs.tz === 4, 'a cast is relayed with its label and aim');
+    b.send({ t: 'world_cast', label: 'Starfall', x: 1, z: 1, tx: 3, tz: 4 });
+    b.send({ t: 'world_cast', label: 'x'.repeat(60), x: 1, z: 1, tx: 3, tz: 4 });
+    await pause(300);
+    ok((a.got.world_cast ?? 0) === 1, 'the same spell again within 350 ms, and a label too long, are dropped');
+
+    // Another floor hears none of it.
+    const c = await enter('wren');
+    c.send({ t: 'world_join', floor: 3, hero: 'Sefu' });
+    const rc = await c.next('world_roster');
+    ok(rc.shard === '3.1' && rc.players.length === 0, 'floor 3 is a shard of its own');
+    b.send({ t: 'world_move', x: 1, z: 1, yaw: 0, walk: false, hp: 1 });
+    await a.next('world_moved');
+    await pause(200);
+    ok(!c.got.world_moved && !c.got.world_joined, 'a player on floor 3 hears nothing of floor 2');
+
+    // Eight to a shard: six more fill 2.1, the ninth opens 2.2.
+    const more = [];
+    for (let i = 0; i < 6; i++) {
+      const x = await enter(`wx${i}`);
+      x.send({ t: 'world_join', floor: 2, hero: 'Bram' });
+      more.push({ x, r: await x.next('world_roster') });
+    }
+    ok(more.every((m) => m.r.shard === '2.1') && more[5].r.players.length === 7, 'eight players fill shard 2.1');
+    const ninth = await enter('wynn');
+    ninth.send({ t: 'world_join', floor: 2, hero: 'Nyx' });
+    const r9 = await ninth.next('world_roster');
+    ok(r9.shard === '2.2' && r9.players.length === 0, 'the ninth gets a new shard, 2.2');
+
+    // Joining the same floor again (a zone built again) keeps the shard and says nothing to the others.
+    a.forget('world_joined'); b.forget('world_joined');
+    const joinedBefore = b.got.world_joined ?? 0;
+    a.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: 1, z: 1 });
+    const again = await a.next('world_roster');
+    await pause(200);
+    ok(again.shard === '2.1' && again.you === ra.you && (b.got.world_joined ?? 0) === joinedBefore, 'joining the floor it is on keeps the shard, and the others hear nothing new');
+
+    // Leaving: by the message, by a dropped connection, by going to a lobby.
+    b.send({ t: 'world_leave' });
+    const left = await a.next('world_left');
+    ok(left.id === rb.you, 'world_leave: the others hear world_left with its id');
+    more[0].x.close();
+    const dropped = await a.next('world_left');
+    ok(dropped.id === more[0].r.you, 'a dropped connection: the others hear world_left');
+    more[1].x.send({ t: 'lobby_create' });
+    const lobbied = await a.next('world_left');
+    ok(lobbied.id === more[1].r.you, 'a player who opens a lobby leaves the floor');
+    // The room the leavers made: shard 2.1 has room again, and a newcomer goes there (2.2 was left empty when the ninth went on).
+    ninth.send({ t: 'world_join', floor: 3, hero: 'Nyx' });
+    await ninth.next('world_roster');
+    const late = await enter('wade2');
+    late.send({ t: 'world_join', floor: 2, hero: 'Kaia' });
+    ok((await late.next('world_roster')).shard === '2.1', 'after the ninth went to floor 3, a newcomer on floor 2 goes into 2.1, which has room again');
+    for (const x of [a, b, c, ninth, late, ...more.map((m) => m.x)]) x.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+  }
+  server.close();
+  return lines;
+}
+
+/**
+ * The Climb's open world, stage 2 (shared packs), on a server of its own with a clock the test moves: the first to wake a pack runs it
+ * and the shard hears whose it is, another who wakes it is told; a pack the floor does not have is refused; the owner's places reach
+ * the members near it, clamped; a hit goes to the owner alone and a flood is cut; the owner's blow reaches the one it struck; the fight
+ * is counted (and never counted down); an owner who leaves hands the pack to the member near it; a quiet owner is replaced; a cleared
+ * pack is told to newcomers and comes back after `respawnS` when nobody is near its home, never alone.
+ * @returns {Promise<string[]>}
+ */
+async function packCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} packs: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  let clock = Date.now();
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-packs.json'), log: () => {}, shop: false, now: () => clock });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in, on floor 2 at x, z. @param {string} name @param {number} x @param {number} z */
+  const walker = async (name, x, z) => {
+    const c = await client(to);
+    c.send({ t: 'register', name, password: 'pw1234' });
+    await c.next('session');
+    c.send({ t: 'world_join', floor: 2, hero: 'Kaia', x, z, yaw: 0 });
+    return { c, r: await c.next('world_roster') };
+  };
+  // Floor 2's pack "a" stands at (80.1, 29.2), "d" at (-63.8, 67.9) (server/climb-packs.mjs).
+  const A = { x: 80.1, z: 29.2 };
+  try {
+    const a = await walker('pia', A.x + 2, A.z), b = await walker('pom', 0, 0);
+    ok(Array.isArray(b.r.packs) && b.r.packs.length === 0, 'a shard nobody fought in has no shared packs');
+    a.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    const oa = await a.c.next('pack_owner'), ob = await b.c.next('pack_owner');
+    ok(oa.pack === 'a' && oa.owner === a.r.you && ob.owner === a.r.you && oa.n === 1, 'the first to wake a pack runs it, set for one (the other is 80 m away), and the shard hears it');
+    a.c.send({ t: 'pack_claim', pack: 'nope', x: 0, z: 0 });
+    ok((await a.c.next('error')).error === 'No such pack on this floor', 'a pack id the floor does not have is refused');
+
+    // b comes near and wakes it too: it is told whose it is; and now two are in the fight.
+    b.c.send({ t: 'world_move', x: A.x - 3, z: A.z, yaw: 0, walk: true, hp: 1 });
+    const scale = await a.c.next('pack_scale');
+    ok(scale.pack === 'a' && scale.n === 2, 'a second player within 20 m: the pack is set for two (pack_scale)');
+    b.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    const told = await b.c.next('pack_owner');
+    ok(told.owner === a.r.you && told.n === 2, 'a second screen that wakes it is told who runs it, and for how many');
+
+    // The owner's places: to b (near), clamped; not back to the owner; a non-owner's report is dropped.
+    const c = await walker('pax', -60, 60);
+    a.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [[A.x, 9999, 1, 50, 80, 1, -1, 0, 2], 0], zn: [[0, 0, A.x, A.z, 2.1, 0, 0, 0.4, 1]] }] });
+    const st = await b.c.next('pack_state');
+    const u0 = st.packs[0].u[0];
+    ok(st.packs.length === 1 && st.packs[0].id === 'a' && st.packs[0].n === 2 && u0[1] === 500 && u0[3] === 50 && st.packs[0].u[1] === 0 && st.packs[0].zn.length === 1,
+      'the owner\'s places reach the member near the pack, clamped (z 9999 to 500), with a fallen unit and a red zone');
+    b.c.send({ t: 'pack_state', packs: [{ id: 'a', x: 0, z: 0, u: [] }] });
+    await pause(200);
+    ok(!a.c.got.pack_state && !c.c.got.pack_state, 'nobody hears a pack from a screen that does not run it, and a member 150 m away hears none');
+
+    // Hits: b's go to the owner alone, with who hit; a flood is cut at 40 a second; the owner's own hit is not relayed.
+    b.c.send({ t: 'pack_hit', pack: 'a', u: 0, dmg: 42 });
+    const hit = await a.c.next('pack_hit');
+    ok(hit.pack === 'a' && hit.u === 0 && hit.dmg === 42 && hit.by === b.r.you, 'a hit on a unit goes to the pack\'s owner, with the hitter\'s id');
+    a.c.send({ t: 'pack_hit', pack: 'a', u: 0, dmg: 10 });
+    clock += 1100;
+    const before = a.c.got.pack_hit ?? 0;
+    for (let i = 0; i < 60; i++) b.c.send({ t: 'pack_hit', pack: 'a', u: 1, dmg: 9999 });
+    await pause(300);
+    ok((a.c.got.pack_hit ?? 0) - before === 40, `a flood of 60 hits in one second: 40 relayed (${(a.c.got.pack_hit ?? 0) - before}), and the owner's own hit is not`);
+    const big = await a.c.next('pack_hit');
+    ok(big.dmg === 600, 'a hit past the most one hit can be is cut to it (600)');
+
+    // The owner's blow on b goes to b alone; a blow said by b for the pack is dropped.
+    a.c.send({ t: 'pack_hurt', pack: 'a', to: b.r.you, share: 0.08, x: A.x, z: A.z, kind: 'Docker', net: { kind: 'root', s: 9 } });
+    const hurt = await b.c.next('pack_hurt');
+    ok(hurt.share === 0.08 && hurt.by === a.r.you && hurt.net.kind === 'root' && hurt.net.s === 3 && hurt.kind === 'Docker', 'the owner\'s blow on another hero goes to that hero (its hold cut to 3 s)');
+    b.c.send({ t: 'pack_hurt', pack: 'a', to: a.r.you, share: 0.5, x: 0, z: 0 });
+    await pause(200);
+    ok(!a.c.got.pack_hurt && !c.c.got.pack_hurt, 'a blow said by a screen that does not run the pack reaches nobody');
+
+    // b walks off: the pack stays set for two.
+    b.c.send({ t: 'world_move', x: A.x - 35, z: A.z, yaw: 0, walk: true, hp: 1 });
+    clock += 11000;
+    a.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [[A.x, A.z, 0, 50, 80, 0, -1, 0, 0]] }] });
+    await pause(150);
+    ok((a.c.got.pack_scale ?? 0) === 1, 'the fight is never counted down: two left, it stays set for two');
+
+    // The owner leaves mid-fight: the pack goes to b, 35 m from it; when nobody is near, to nobody.
+    a.c.close();
+    const moved = await b.c.next('pack_owner');
+    ok(moved.pack === 'a' && moved.owner === b.r.you && moved.n === 2, 'the owner leaves: its pack goes to the member near it, still set for two');
+    const d = await walker('pez', -63, 67);
+    d.c.send({ t: 'pack_claim', pack: 'd', x: -63.8, z: 67.9 });
+    await d.c.next('pack_owner');
+    clock += 5000;
+    // b keeps reporting its pack; d has said nothing for 5 s.
+    b.c.send({ t: 'pack_state', packs: [{ id: 'a', x: A.x, z: A.z, u: [] }] });
+    await pause(150);
+    c.c.forget('pack_owner');
+    c.c.send({ t: 'world_move', x: -60, z: 61, yaw: 0, walk: false, hp: 1 });
+    const quiet = await c.c.next('pack_owner');
+    ok(quiet.pack === 'd' && quiet.owner === c.r.you, 'an owner that sent nothing for 4 s is replaced by the member near the pack');
+
+    // Cleared: the others hear it, a newcomer is told; it comes back after 3 minutes when nobody is within 30 m of its home.
+    b.c.send({ t: 'pack_clear', pack: 'a' });
+    ok((await c.c.next('pack_cleared')).pack === 'a', 'the owner clears its pack: the shard hears pack_cleared');
+    const e = await walker('pug', 0, 0);
+    ok(e.r.packs.some((/** @type {any} */ p) => p.id === 'a' && p.cleared && p.owner === 0), 'a newcomer is told the pack is cleared');
+    e.c.send({ t: 'pack_claim', pack: 'a', x: A.x, z: A.z });
+    ok((await e.c.next('pack_cleared')).pack === 'a', 'waking a cleared pack: told it is cleared');
+    clock += 170000;
+    b.c.send({ t: 'world_move', x: A.x + 40, z: A.z, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!e.c.got.pack_respawn, 'not before 3 minutes');
+    clock += 11000;
+    b.c.send({ t: 'world_move', x: A.x + 10, z: A.z, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!e.c.got.pack_respawn, 'not while someone stands within 30 m of its home');
+    b.c.send({ t: 'world_move', x: A.x + 45, z: A.z, yaw: 0, walk: false, hp: 1 });
+    ok((await e.c.next('pack_respawn')).pack === 'a', 'after 3 minutes with nobody near: the pack comes back (pack_respawn)');
+    for (const x of [b, c, d, e]) x.c.close();
+
+    // Alone, an owner quiet for a while (a tab put away) keeps its pack: nobody near could take it.
+    const g = await walker('pal', -63, 67);
+    g.c.send({ t: 'pack_claim', pack: 'd', x: -63.8, z: 67.9 });
+    const gOwn = await g.c.next('pack_owner');
+    clock += 6000;
+    g.c.send({ t: 'world_move', x: -63, z: 66, yaw: 0, walk: true, hp: 1 });
+    await pause(200);
+    ok(gOwn.owner === g.r.you && (g.c.got.pack_owner ?? 0) === 1, 'alone, an owner quiet for 6 s keeps its pack (nobody near to take it)');
+    g.c.close();
+    await pause(100);
+
+    // Alone on the floor, a cleared pack never comes back.
+    const f = await walker('pip', 80, 29);
+    const ff = f.r.shard === '2.1' ? null : f;
+    f.c.send({ t: 'world_join', floor: 7, hero: 'Kaia', x: 0, z: 0, yaw: 0 });
+    await f.c.next('world_roster');
+    f.c.send({ t: 'pack_claim', pack: 'a', x: 0, z: 0 });
+    await f.c.next('pack_owner');
+    f.c.send({ t: 'pack_clear', pack: 'a' });
+    clock += 200000;
+    f.c.send({ t: 'world_move', x: 200, z: 200, yaw: 0, walk: false, hp: 1 });
+    await pause(150);
+    ok(!f.c.got.pack_respawn && ff === null, 'alone in a shard, a cleared pack stays cleared (respawns are for a shared floor)');
+    f.c.close();
+  } catch (err) {
+    ok(false, String(err instanceof Error ? err.stack : err));
+  }
+  server.close();
+  return lines;
+}
+
+/**
+ * The Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md), on a server of its own beside the rest.
+ * A door id the floor does not have is refused; a trial's door, a player far from the door and a player alone are as before; two who
+ * walk into a ruler's lair are put in one fight, set for two; the floor sees them go and come back; only the brain speaks for the
+ * ruler; damage, phases, a fall and a revive; the brain's screen leaves and the other takes it over; the clear counts for whoever hit;
+ * they come out into the same shard; three in a held door, the first says go, set for three, all down is lost; a held door nobody
+ * else walks into plays alone; nothing goes on the accounts. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function doorCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} doors: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-doors.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  /** A new account, signed in, on `floor` at x, z. @param {string} name @param {number} floor @param {number} x @param {number} z @param {string} [hero] */
+  const walker = async (name, floor, x, z, hero = 'Kaia') => {
+    const c = await client(to);
+    c.send({ t: 'register', name, password: 'pw1234' });
+    const s = await c.next('session');
+    c.send({ t: 'world_join', floor, hero, x, z, yaw: 0 });
+    return { c, r: await c.next('world_roster'), obols: s.profile.obols };
+  };
+  // Floor 1's lair stands at (0, -105.8), its trial at (-45.7, 76.6); its ruler has 2800 health, phases at 0.66 and 0.5, a gauge of
+  // 100 (server/climb-packs.mjs). Floor 2's lair at (0, -60.4), 2850 health.
+  const L1 = { x: 0, z: -105.8 }, L2 = { x: 0, z: -60.4 };
+  /** Damage `total` off the ruler from one screen, as fast as the hub takes it (1400 a second). @param {any} c @param {number} total */
+  const hurt = async (c, total) => {
+    while (total > 0) {
+      for (const amount of [600, 600, 200]) {
+        if (total <= 0) break;
+        c.send({ t: 'boss_damage', amount: Math.min(amount, total) });
+        total -= Math.min(amount, total);
+      }
+      await pause(1050);
+    }
+  };
+  try {
+    const a = await walker('dia', 1, L1.x + 2, L1.z), b = await walker('dob', 1, L1.x + 9, L1.z + 4), c = await walker('dax', 1, -45, 76);
+    ok(a.r.shard === '1.1' && b.r.shard === '1.1' && c.r.shard === '1.1', 'three on floor 1 share shard 1.1');
+
+    a.c.send({ t: 'door_enter', door: 'nope' });
+    ok((await a.c.next('error')).error === 'No such door on this floor', 'a door id the floor does not have is refused');
+    c.c.send({ t: 'door_enter', door: 'trial' });
+    ok((await c.c.next('door_solo')).door === 'trial', 'a trial\'s door is played alone, as before (door_solo)');
+    c.c.send({ t: 'door_enter', door: 'lair' });
+    await pause(200);
+    ok(!c.c.got.door_gather && !c.c.got.door_start && (c.c.got.door_solo ?? 0) === 1, 'a player the hub last heard 180 m from the lair did not walk into it: nothing happens');
+
+    a.c.send({ t: 'door_enter', door: 'lair' });
+    const ga = await a.c.next('door_gather'), gb = await b.c.next('door_gather');
+    ok(ga.door === 'lair' && ga.by === a.r.you && ga.ids.length === 1 && ga.left > 5 && gb.by === a.r.you, 'the lair walked into with another player 10 m off: it is held for 6 s, and both hear it (door_gather)');
+    ok(!c.c.got.door_gather, 'a player far from the door is not told');
+    b.c.send({ t: 'door_enter', door: 'lair' });
+    const sa = await a.c.next('door_start'), sb = await b.c.next('door_start');
+    ok(sa.side === 0 && sb.side === 1 && sa.id === sb.id && sa.n === 2 && sa.brain === 0 && sb.brain === 0, 'the second walks in, and nobody else is near: the fight starts at once for both, the first in runs the brain');
+    ok(sa.hp === 4900 && sa.staggerMax === 175 && Math.abs(sa.dmg - 1.15) < 1e-9 && sa.party.length === 2, 'set for two: health 2800 x 1.75 = 4900, the gauge 175, blows x1.15');
+    const left1 = await c.c.next('world_left'), left2 = await c.c.next('world_left'), busy = await c.c.next('door_busy');
+    ok([left1.id, left2.id].sort().join() === [a.r.you, b.r.you].sort().join() && busy.n === 2 && busy.door === 'lair', 'the floor sees both go into the lair (world_left, door_busy)');
+    const d = await walker('dez', 1, 10, 10);
+    ok(!d.r.players.some((/** @type {any} */ p) => p.id === a.r.you || p.id === b.r.you) && d.r.players.some((/** @type {any} */ p) => p.id === c.r.you),
+      'a newcomer to the floor does not see the two behind the door');
+    c.c.send({ t: 'world_move', x: -44, z: 76, yaw: 0, walk: true, hp: 1 });
+    await pause(150);
+    ok(!a.c.got.world_moved && !b.c.got.world_moved, 'the two inside hear nothing of the floor');
+
+    a.c.send({ t: 'match_loaded', maxHp: 900 });
+    b.c.send({ t: 'match_loaded', maxHp: 700 });
+    const fa = await a.c.next('match_fight');
+    await b.c.next('match_fight');
+    ok(fa.countdown === 3, 'both loaded: the countdown');
+    await pause(3100);
+    b.c.send({ t: 'boss_cast', id: 1, move: 'cleave', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 1, target: 0 });
+    a.c.send({ t: 'boss_cast', id: 2, move: 'anchor', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 2, target: 1 });
+    const cast = await b.c.next('boss_cast');
+    await pause(150);
+    ok(cast.id === 2 && cast.move === 'anchor' && !a.c.got.boss_cast, 'only the brain speaks for the ruler: its cast reaches the other, the other\'s is dropped');
+    a.c.send({ t: 'boss_move', x: 0, z: 99, yaw: 0, ts: 1 });
+    const bm = await b.c.next('boss_move');
+    ok(Math.hypot(bm.x - 0, bm.z - 7) <= 14.001, 'the ruler\'s walk is clamped to its room (14 m round its middle)');
+    b.c.send({ t: 'move', x: 3, z: 8, yaw: 0, ts: 5 });
+    const pm = await a.c.next('peer_move');
+    ok(pm.x === 3 && pm.side === 1, 'a hero\'s walk reaches the other, with its seat');
+
+    b.c.send({ t: 'boss_damage', amount: 600 });
+    const hp1 = await a.c.next('boss_hp');
+    ok(hp1.hp === 4300, 'a hit from the screen that does not run the brain comes off the ruler, on both screens (4900 - 600)');
+    a.c.send({ t: 'boss_reward', key: 'sentry', id: 910001 });
+    const gauge = await b.c.next('boss_gauge');
+    ok(Math.abs(gauge.value - 55 * 1.75) < 0.01, `a felled cannon earns its stagger, grown with the gauge (55 x 1.75 = ${gauge.value})`);
+    a.c.send({ t: 'boss_reward', key: 'nope', id: 910002 });
+    await pause(150);
+    ok((b.c.got.boss_gauge ?? 0) === 1, 'a mechanic the ruler does not have earns nothing');
+
+    a.c.send({ t: 'hero_down' });
+    ok((await b.c.next('peer_down')).side === 0, 'the brain\'s hero falls: the other hears it');
+    b.c.send({ t: 'revive', side: 0 });
+    const rv = await a.c.next('revived');
+    ok(rv.side === 0 && rv.hp === 450 && rv.left === 1 && rv.by === 1, 'its partner gets it up: half its health, one more revive left');
+
+    a.c.close();
+    const pl = await b.c.next('partner_left'), brain = await b.c.next('boss_brain');
+    ok(pl.side === 0 && brain.side === 1, 'the brain\'s screen closes mid-fight: the other hears it left and takes the brain over');
+    b.c.send({ t: 'boss_cast', id: 3, move: 'cleave', step: 0, x: 0, z: 7, fx: 0, fz: 7, dir: 0, seed: 3, target: 1 });
+    await pause(1050);
+    // A second since its last hit: the hub takes 1400 a second from one screen.
+    await hurt(b.c, 4300);
+    const end = await b.c.next('door_end', 4000);
+    ok(end.result === 'won' && end.hit === true && end.door === 'lair', 'the ruler falls: door_end, won, and it counts for the one who hit');
+    ok((b.c.got.boss_phase ?? 0) === 2, `its phases came at 0.66 and 0.5 of its health (${b.c.got.boss_phase ?? 0} boss_phase)`);
+    const free = await c.c.next('door_busy');
+    ok(free.n === 0 && free.door === 'lair', 'the floor hears the lair is free again');
+    c.c.forget('world_joined');
+    b.c.send({ t: 'world_join', floor: 1, hero: 'Kaia', x: L1.x, z: L1.z + 5, yaw: 0 });
+    const back = await b.c.next('world_roster'), seen = await c.c.next('world_joined');
+    ok(back.shard === '1.1' && back.you === b.r.you && seen.id === b.r.you, 'it comes out into the same shard, as the same player, and the floor sees it again');
+    b.c.send({ t: 'profile' });
+    const prof = await b.c.next('profile');
+    const pr = prof.profile ?? prof;
+    ok((pr.raids?.played ?? 0) === 0 && pr.obols === b.obols, 'a door\'s fight puts nothing on the account (no raid run, no obols)');
+    for (const x of [b, c, d]) x.c.close();
+
+    // Three in a held door on floor 2, a fourth near who stays out: the first says go. Set for three; all down is lost.
+    const q = [await walker('qua', 2, L2.x + 1, L2.z), await walker('qub', 2, L2.x + 4, L2.z), await walker('quc', 2, L2.x + 6, L2.z), await walker('qud', 2, L2.x + 20, L2.z)];
+    q[0].c.send({ t: 'door_enter', door: 'lair' });
+    await q[0].c.next('door_gather');
+    q[1].c.send({ t: 'door_enter', door: 'lair' });
+    q[2].c.send({ t: 'door_enter', door: 'lair' });
+    await pause(300);
+    ok(!q[0].c.got.door_start, 'with another near who has not walked in, a held door waits');
+    q[1].c.send({ t: 'door_go' });
+    await pause(200);
+    ok(!q[0].c.got.door_start, 'only the first in can say go');
+    q[0].c.send({ t: 'door_go' });
+    const s3 = await Promise.all(q.slice(0, 3).map((x) => x.c.next('door_start')));
+    ok(s3.every((m, i) => m.side === i && m.n === 3) && s3[0].hp === 7125, 'the first says go: three go in, set for three (2850 x 2.5 = 7125)');
+    await pause(200);
+    ok(!q[3].c.got.door_start, 'the one who stayed out is not taken in');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'match_loaded', maxHp: 800 });
+    await Promise.all(q.slice(0, 3).map((x) => x.c.next('match_fight')));
+    await pause(3100);
+    q[1].c.send({ t: 'boss_damage', amount: 100 });
+    await q[0].c.next('boss_hp');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'hero_down' });
+    const ends = await Promise.all(q.slice(0, 3).map((x) => x.c.next('door_end')));
+    ok(ends.every((m) => m.result === 'lost') && ends[1].hit && !ends[0].hit && !ends[2].hit, 'all three down: the door is lost for all; only the one who hit is said to have hit');
+    for (const x of q.slice(0, 3)) x.c.send({ t: 'world_join', floor: 2, hero: 'Kaia', x: L2.x, z: L2.z + 5, yaw: 0 });
+    await Promise.all(q.slice(0, 3).map((x) => x.c.next('world_roster')));
+
+    // A held door that nobody else walks into: after its 6 s, the first plays it alone.
+    q[0].c.send({ t: 'world_move', x: L2.x + 1, z: L2.z, yaw: 0, walk: false, hp: 1 });
+    await pause(100);
+    q[0].c.forget('door_gather');
+    q[0].c.send({ t: 'door_enter', door: 'lair' });
+    await q[0].c.next('door_gather');
+    const alone = await q[0].c.next('door_solo', 8000);
+    ok(alone.door === 'lair', 'a held door nobody else walks into: after its 6 s the first plays it alone (door_solo)');
+    for (const x of q) x.c.close();
+
+    // Alone on a floor: the lair is played as before, at once.
+    const e = await walker('dee', 3, 0, -90);
+    e.c.send({ t: 'door_enter', door: 'lair' });
+    ok((await e.c.next('door_solo', 1500)).door === 'lair' && !e.c.got.door_gather, 'alone on the floor: the lair is played alone at once');
+    e.c.close();
+
+    // A crown floor's lair (a Raid boss) is fought alone for now, even with another near.
+    const k1 = await walker('dka', 10, 0, -95), k2 = await walker('dkb', 10, 3, -95);
+    k1.c.send({ t: 'door_enter', door: 'lair' });
+    ok((await k1.c.next('door_solo', 1500)).door === 'lair' && !k2.c.got.door_gather, 'the lair of a crown floor is played alone, even with another near');
+    for (const x of [k1, k2]) x.c.close();
+
+    // One leaves the fight but not the floor (match_leave): the other fights on; the floor sees the leaver again and hears its walk.
+    const m1 = await walker('dma', 3, 1, -90), m2 = await walker('dmb', 3, 3, -88), m3 = await walker('dmc', 3, 40, 40);
+    m1.c.send({ t: 'door_enter', door: 'lair' });
+    await m1.c.next('door_gather');
+    m2.c.send({ t: 'door_enter', door: 'lair' });
+    await Promise.all([m1.c.next('door_start'), m2.c.next('door_start')]);
+    m3.c.forget('world_joined');
+    m1.c.send({ t: 'match_leave' });
+    const gone = await m2.c.next('partner_left'), again = await m3.c.next('world_joined');
+    m1.c.send({ t: 'world_move', x: 2, z: -84, yaw: 0, walk: true, hp: 1 });
+    const walk = await m3.c.next('world_moved');
+    ok(gone.side === 0 && again.id === m1.r.you && walk.id === m1.r.you, 'one who leaves the fight but stays on the floor: the other fights on, the floor sees it again and its walk');
+    for (const x of [m1, m2, m3]) x.c.close();
+  } catch (err) {
+    ok(false, String(err instanceof Error ? err.stack : err));
+  }
+  server.close();
+  return lines;
+}
+
+/**
+ * The leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans"), on servers of their own beside the rest:
+ * a duel that counts moves both ratings and one too short moves none, the boards list, the Climb's report, clans (create, join by
+ * code, a wrong code, a player in another clan, asking and the leader's yes), the chat (members only, the rate limit, the filter, a
+ * player's own mute, the leader's mute, a report), the dots, the tag in the open world, the room still there after the hub starts
+ * again on the same store, and leaving, removing, handing the lead on and an empty clan gone. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function socialCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} social: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  /** @type {string[]} */
+  const said = [];
+  /** @type {import('node:http').Server[]} */
+  const servers = [];
+  const file = join(dir, 'accounts-social.json');
+  const serve = async () => {
+    const server = createServer();
+    servers.push(server);
+    attachGameServer(server, { dataFile: file, log: (m) => { said.push(m); }, shop: false });
+    await new Promise((r) => server.listen(0, () => r(undefined)));
+    return { to: `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`, server };
+  };
+  /** A connection, registered or logged in. @param {string} to @param {string} name @param {'register' | 'login'} [how] */
+  const enter = async (to, name, how = 'register') => {
+    const x = await client(to);
+    x.send({ t: how, name, password: 'pw1234' });
+    const s = await x.next('session');
+    return Object.assign(x, { profile: s.profile, name });
+  };
+  /** The next `clan` message, after dropping any older ones waiting. @param {any} x */
+  const clanNow = async (x) => { x.forget('clan'); x.send({ t: 'clan_get' }); const m = await x.next('clan'); x.forget('clan_history'); return m; };
+  /** The leaderboards as `x` sees them. @param {any} x */
+  const boards = async (x) => { x.forget('leaderboards'); x.send({ t: 'leaderboards' }); return x.next('leaderboards'); };
+  /** A duel between `x` and `y` to the first round's fight; `x` knocks `y` out in each round after holding `hold` ms. */
+  const duelTo = async (/** @type {any} */ x, /** @type {any} */ y, /** @type {number} */ hold) => {
+    x.send({ t: 'lobby_create' });
+    const code = (await x.next('lobby')).lobby.code;
+    y.send({ t: 'lobby_join', code });
+    x.send({ t: 'lobby_pick', hero: 'Kaia' }); x.send({ t: 'lobby_ready', ready: true });
+    await pause(150);
+    y.send({ t: 'lobby_pick', hero: 'Bram' }); y.send({ t: 'lobby_ready', ready: true });
+    await x.next('match_start'); await y.next('match_start');
+    for (let r = 1; r <= 2; r++) {
+      x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+      await x.next('match_fight'); await y.next('match_fight');
+      await pause(3200 + (r === 1 ? hold : 0));
+      x.send({ t: 'cast', id: r, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+      await y.next('peer_cast');
+      for (let i = 0; i < 3; i++) y.send({ t: 'took_hit', id: r, damage: 250 });
+      if (r === 1) { await x.next('round_start'); await y.next('round_start'); }
+    }
+    const ends = [await x.next('match_end'), await y.next('match_end')];
+    for (const t of ['lobby', 'round_end', 'round_start', 'match_fight', 'peer_cast']) { x.forget(t); y.forget(t); }
+    return ends;
+  };
+
+  try {
+    let { to, server } = await serve();
+    const guest = await client(to);
+
+    // --- the duel rating and the boards (runs beside the clans: it waits out a real 30 s) ---------------------------------
+    const duels = (async () => {
+      const r1 = await enter(to, 'rhys'), r2 = await enter(to, 'rory');
+      ok(r1.profile.rating === 1000 && r1.profile.rated === 0, 'a new account starts at a rating of 1000');
+      const [qw, ql] = await duelTo(r1, r2, 0);
+      ok(qw.rating?.change === 0 && ql.rating?.change === 0 && qw.profile.rating === 1000 && ql.profile.rating === 1000,
+        `a duel shorter than ${SHOP.minDuelS} s moves no rating (${qw.seconds} s)`);
+      const [w, l] = await duelTo(r1, r2, SHOP.minDuelS * 1000 + 500);
+      ok(w.rating.change === 16 && l.rating.change === -16 && w.profile.rating === 1016 && l.profile.rating === 984 && w.profile.rated === 1,
+        `a duel that counts moves both ratings: 1016 and 984 (${w.seconds} s)`);
+      const b = await boards(r1);
+      ok(b.duels[0]?.name === 'rhys' && b.duels[0].rating === 1016 && b.duels[0].hero === 'Kaia' && b.duels[1]?.name === 'rory' && b.duels[1].rating === 984,
+        'the rating board: rhys 1016 (favourite Kaia), then rory 984');
+      ok(b.weekly.length === 1 && b.weekly[0].name === 'rhys' && b.weekly[0].wins === 1, 'the week\'s board counts the duel that counted: rhys 1 win');
+      ok(b.you?.rank === 1 && b.you.rating === 1016 && b.you.week.rank === 1, 'the player\'s own row: first, 1016, first this week');
+      const g = await boards(guest);
+      ok(g.you === null && g.duels.length === 2 && Array.isArray(g.raid) && Array.isArray(g.tower) && Array.isArray(g.climb) && Array.isArray(g.clans),
+        'a page not signed in reads the boards too, with no row of its own');
+      // The Climb: the page's own word, only upward, only what can be.
+      r2.send({ t: 'climb_report', floor: 7, stars: 20 });
+      r2.send({ t: 'climb_report', floor: 51, stars: 3 });
+      r2.send({ t: 'climb_report', floor: 9, stars: 37 });
+      r2.send({ t: 'climb_report', floor: 5, stars: 10 });
+      const c = await boards(r2);
+      ok(c.climb.length === 1 && c.climb[0].name === 'rory' && c.climb[0].floor === 7 && c.climb[0].stars === 20 && c.you.climb.rank === 1,
+        'the Climb\'s board: floor 7 with 20 stars; floor 51, 37 stars on floor 9 and a lower report are not taken');
+      r1.close(); r2.close();
+    })();
+
+    // --- clans ---------------------------------------------------------------------------------------------------------
+    const ana = await enter(to, 'ana'), ben = await enter(to, 'ben'), cy = await enter(to, 'cyd'), dee = await enter(to, 'dee');
+    const eve = await enter(to, 'eve'), fay = await enter(to, 'fay');
+    ana.send({ t: 'clan_create', name: 'x', tag: 'OWL' });
+    ok((await ana.next('clan_error')).error.startsWith('Clan name'), 'a clan name of one letter is refused');
+    ana.send({ t: 'clan_create', name: 'Night Owls', tag: 'OWLS5' });
+    ok((await ana.next('clan_error')).error.startsWith('Tag'), 'a tag of five is refused');
+    ana.send({ t: 'clan_create', name: '  Night   Owls ', tag: 'owl' });
+    const made = (await ana.next('clan')).clan;
+    ok(made.name === 'Night Owls' && made.tag === 'OWL' && made.leader === 'ana' && /^[A-Z2-9]{6}$/.test(made.code) && made.members.length === 1 && made.members[0].online,
+      `ana founds Night Owls [OWL], its invite code ${made.code}`);
+    dee.send({ t: 'clan_create', name: 'NIGHT OWLS', tag: 'DD' });
+    ok((await dee.next('clan_error')).error.includes('taken'), 'the same name in other letters is taken');
+    dee.send({ t: 'clan_create', name: 'Deep Ones', tag: 'DEEP' });
+    await dee.next('clan');
+    ana.forget('clan_chat');
+    ben.send({ t: 'clan_join', code: made.code.toLowerCase() });
+    const benClan = (await ben.next('clan')).clan;
+    const anaSees = await ana.next('clan_chat');
+    ok(benClan.id === made.id && benClan.members.length === 2 && benClan.code === undefined && anaSees.line.kind === 'join' && anaSees.line.name === 'ben',
+      'ben joins by the code (any case); ana\'s room says so; only the leader sees the code');
+    cy.send({ t: 'clan_join', code: 'ZZZZZZ' });
+    ok((await cy.next('clan_error')).error === 'No clan has that code', 'a wrong code is refused');
+    dee.send({ t: 'clan_join', code: made.code });
+    ok((await dee.next('clan_error')).error.includes('in a clan already'), 'a player in another clan is refused');
+
+    // Asking from the clan's page: the leader lets fay in.
+    fay.send({ t: 'clan_list' });
+    const listed = (await fay.next('clan_list')).clans;
+    ok(listed.some((/** @type {any} */ k) => k.tag === 'OWL' && k.members === 2) && listed.some((/** @type {any} */ k) => k.tag === 'DEEP'), 'a player in no clan sees the clans with room, with tag and size');
+    fay.send({ t: 'clan_view', id: made.id });
+    const view = (await fay.next('clan_view')).clan;
+    ok(view.name === 'Night Owls' && view.list.length === 2 && view.code === undefined, 'a clan\'s page shows its members, never its code');
+    ana.forget('clan');
+    fay.send({ t: 'clan_ask', id: made.id });
+    await fay.next('clan_notice');
+    ok((await ana.next('clan')).clan.asks.includes('fay'), 'fay asks to join: the leader sees the ask');
+    ana.send({ t: 'clan_answer', name: 'fay', yes: true });
+    ok((await fay.next('clan')).clan?.id === made.id, 'the leader says yes: fay is in');
+    eve.send({ t: 'clan_join', code: made.code });
+    await eve.next('clan');
+    await pause(200);
+
+    // The chat: members only.
+    for (const x of [ana, ben, cy, dee, eve, fay]) x.forget('clan_chat');
+    const outside = (cy.got.clan_chat ?? 0) + (dee.got.clan_chat ?? 0);
+    ana.send({ t: 'clan_say', text: 'hello owls' });
+    const benGot = await ben.next('clan_chat'), anaGot = await ana.next('clan_chat');
+    await pause(200);
+    ok(benGot.line.text === 'hello owls' && benGot.line.name === 'ana' && anaGot.line.n === benGot.line.n, 'a message reaches both members (the sender too)');
+    ok((cy.got.clan_chat ?? 0) + (dee.got.clan_chat ?? 0) === outside, 'a player in no clan and one in another clan hear nothing of it');
+    // The filter.
+    await pause(1100);
+    ana.send({ t: 'clan_say', text: `you ${WORDS[0]}!` });
+    ok((await ben.next('clan_chat')).line.text === 'you ***!', 'a listed word is starred');
+    // A player's own mute: ben mutes ana; ana's next line reaches the others, not ben.
+    ben.forget('clan');
+    ben.send({ t: 'clan_mute', name: 'ana', on: true });
+    ok((await ben.next('clan')).mutes.includes('ana'), 'ben mutes ana, kept on ben\'s account');
+    await pause(1100);
+    for (const x of [ana, ben, fay]) x.forget('clan_chat');
+    const benBefore = ben.got.clan_chat ?? 0;
+    ana.send({ t: 'clan_say', text: 'can you hear me' });
+    await fay.next('clan_chat');
+    await pause(200);
+    ok((ben.got.clan_chat ?? 0) === benBefore, 'a muted member\'s line does not reach the one who muted it');
+    ben.send({ t: 'clan_mute', name: 'ana', on: false });
+    await ben.next('clan');
+    // The rate limit: one a second, ten in 20 s.
+    eve.forget('clan_error');
+    eve.send({ t: 'clan_say', text: 'one' });
+    eve.send({ t: 'clan_say', text: 'two' });
+    ok((await eve.next('clan_error')).error.startsWith('Slow down: one message a second'), 'two messages in the same second: the second is refused, with a word');
+    const errorsBefore = eve.got.clan_error ?? 0;
+    for (let i = 0; i < 10; i++) {
+      await pause(1050);
+      eve.send({ t: 'clan_say', text: `line ${i}` });
+    }
+    await pause(300);
+    const refused = (eve.got.clan_error ?? 0) === errorsBefore + 1 ? (await eve.next('clan_error')).error : '';
+    ok(refused.includes('at most 10 messages in 20 seconds'), 'a steady flood, one a second: the eleventh in 20 s is refused, and only it');
+    // The leader mutes ben in the room for 24 h.
+    ana.send({ t: 'clan_silence', name: 'ben', on: true });
+    await ana.next('clan');
+    ben.forget('clan_error');
+    ben.send({ t: 'clan_say', text: 'let me talk' });
+    ok((await ben.next('clan_error')).error.startsWith('The leader muted you'), 'the leader mutes ben in the room: ben is refused');
+    // A report goes to the hub's log, with the clan, names and time.
+    ben.send({ t: 'clan_report', n: benGot.line.n });
+    await ben.next('clan_notice');
+    const report = said.find((m) => m.startsWith('REPORT'));
+    ok(!!report && report.includes('Night Owls') && report.includes('[OWL]') && report.includes('ben reports ana') && report.includes(benGot.line.at), 'a report is written to the hub\'s log');
+    // The dot: fay goes and comes back.
+    ana.forget('clan');
+    fay.close();
+    const gone = (await ana.next('clan')).clan.members.find((/** @type {any} */ m) => m.name === 'fay');
+    const fay2 = await enter(to, 'fay', 'login');
+    const back = (await ana.next('clan')).clan.members.find((/** @type {any} */ m) => m.name === 'fay');
+    ok(gone?.online === false && back?.online === true, 'the online dot goes out and on again as a member leaves and comes back');
+    // The tag over a hero in the Climb's open world.
+    ana.send({ t: 'world_join', floor: 4, hero: 'Kaia' });
+    await ana.next('world_roster');
+    cy.send({ t: 'world_join', floor: 4, hero: 'Lyra' });
+    const roster = await cy.next('world_roster');
+    ok(roster.players[0]?.name === 'ana' && roster.players[0].tag === 'OWL', 'the open world says a player\'s clan tag beside its name');
+    ana.send({ t: 'world_leave' }); cy.send({ t: 'world_leave' });
+
+    await duels;
+    // The clans' board: by the members' wins this week, then the rating's average.
+    const lb = await boards(ana);
+    ok(lb.clans.length === 2 && lb.clans.some((/** @type {any} */ k) => k.tag === 'OWL' && k.members === 4) && lb.tags.ana === 'OWL', 'the clans\' board lists both clans; names carry their tags');
+
+    // --- a restart: the hub starts again on the same store (a deploy) --------------------------------------------------------
+    for (const x of [guest, ana, ben, cy, dee, eve, fay2]) x.close();
+    server.close();
+    await pause(50);
+    ({ to, server } = await serve());
+    const ana2 = await enter(to, 'ana', 'login');
+    ana2.send({ t: 'clan_get' });
+    const again = (await ana2.next('clan')).clan, hist = (await ana2.next('clan_history')).lines;
+    ok(again?.name === 'Night Owls' && again.members.length === 4 && hist.some((/** @type {any} */ l) => l.text === 'hello owls') && hist.some((/** @type {any} */ l) => l.text === 'you ***!'),
+      `after the hub starts again on the same store, the clan and its room are there (${hist.length} lines)`);
+    const ben2 = await enter(to, 'ben', 'login'), eve2 = await enter(to, 'eve', 'login'), fay3 = await enter(to, 'fay', 'login');
+    ben2.send({ t: 'clan_say', text: 'still muted?' });
+    ok((await ben2.next('clan_error')).error.startsWith('The leader muted you'), 'the leader\'s mute is kept too');
+
+    // Leaving, removing, the lead handed on, an empty clan gone.
+    await pause(150);
+    for (const x of [ana2, ben2, eve2, fay3]) { x.forget('clan_chat'); x.forget('clan'); }
+    ben2.send({ t: 'clan_leave' });
+    const benOut = await ben2.next('clan'), left = await ana2.next('clan_chat');
+    ok(benOut.clan === null && left.line.kind === 'leave' && left.line.name === 'ben', 'ben leaves: no clan for ben, a line in the room');
+    fay3.forget('clan');
+    ana2.send({ t: 'clan_remove', name: 'fay' });
+    const fayOut = await fay3.next('clan'), removed = await ana2.next('clan_chat');
+    ok(fayOut.clan === null && (await fay3.next('clan_notice')).text.includes('removed') && removed.line.kind === 'remove' && removed.line.by === 'ana', 'the leader removes fay: fay is told, a line in the room');
+    ben2.send({ t: 'clan_remove', name: 'eve' });
+    ok((await ben2.next('clan_error')).error.startsWith('Only the leader'), 'only the leader can remove');
+    await pause(150);
+    eve2.forget('clan'); eve2.forget('clan_chat');
+    ana2.send({ t: 'clan_lead', name: 'eve' });
+    const lead = (await eve2.next('clan')).clan;
+    ok(lead.leader === 'eve' && typeof lead.code === 'string' && (await eve2.next('clan_chat')).line.kind === 'lead', 'ana hands the lead to eve: eve sees the code now');
+    eve2.send({ t: 'clan_code' });
+    const recoded = (await eve2.next('clan')).clan.code;
+    ben2.send({ t: 'clan_join', code: made.code });
+    ok(recoded !== made.code && (await ben2.next('clan_error')).error === 'No clan has that code', 'a new code: the old one stops working');
+    ana2.send({ t: 'clan_leave' });
+    await ana2.next('clan');
+    await pause(150);
+    eve2.forget('clan');
+    eve2.send({ t: 'clan_leave' });
+    await eve2.next('clan');
+    await pause(150);
+    ben2.send({ t: 'clan_list' });
+    const after = (await ben2.next('clan_list')).clans;
+    const lb2 = await boards(ben2);
+    ok(!after.some((/** @type {any} */ k) => k.tag === 'OWL') && !lb2.clans.some((/** @type {any} */ k) => k.tag === 'OWL'), 'the last one out: the clan is gone from the list and the board');
+    ben2.send({ t: 'clan_create', name: 'night owls', tag: 'OWL' });
+    ok((await ben2.next('clan')).clan?.tag === 'OWL', 'its name and tag are free again');
+    for (const x of [ana2, ben2, eve2, fay3]) x.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+    for (const m of said) if (m.startsWith('error')) lines.push(`     hub: ${m}`);
+  }
+  for (const s of servers) s.close();
+  return lines;
+}
+
+/**
+ * The R casts the hub must let through for the heroes whose R does not fit its defaults (docs/pipeline/hero-framework.md,
+ * section 8): Fenna's Uproot, recast up to 9.2 s after World Tree, and Pim and Pom's Tag Out, whose cooldown is 8 s. On a server
+ * of its own (it waits about 9 s), beside the rest; its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function relayCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} relay: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  const server = createServer();
+  attachGameServer(server, { dataFile: join(dir, 'accounts-relay.json'), log: () => {}, shop: false });
+  await new Promise((r) => server.listen(0, () => r(undefined)));
+  const to = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`;
+  try {
+    const x = await client(to), y = await client(to);
+    for (const [c, name] of /** @type {[any, string][]} */ ([[x, 'relay_fenna'], [y, 'relay_twins']])) {
+      c.send({ t: 'register', name: `${name}${tag}`, password: 'pw1234' });
+      await c.next('session');
+    }
+    x.send({ t: 'lobby_create' });
+    y.send({ t: 'lobby_join', code: (await x.next('lobby')).lobby.code });
+    await y.next('lobby');
+    x.send({ t: 'lobby_pick', hero: 'Fenna' }); x.send({ t: 'lobby_ready', ready: true });
+    await pause(150);
+    y.send({ t: 'lobby_pick', hero: 'Pim and Pom' }); y.send({ t: 'lobby_ready', ready: true });
+    await x.next('match_start'); await y.next('match_start');
+    x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+    await x.next('match_fight'); await y.next('match_fight');
+    await pause(3200);
+    // Both R now; Fenna's Uproot 5 s later (World Tree's recast is open 9.2 s), Pim and Pom's second Tag Out 8.1 s later.
+    x.send({ t: 'cast', id: 1, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    y.send({ t: 'cast', id: 1, slot: 3, x: 0, z: 13, fx: 0, fz: 13, enemy: false });
+    await Promise.all([y.next('peer_cast'), x.next('peer_cast')]);
+    await pause(5000);
+    x.send({ t: 'cast', id: 2, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    await pause(3100);
+    y.send({ t: 'cast', id: 2, slot: 3, x: 0, z: 13, fx: 0, fz: 13, enemy: false });
+    const late = await y.next('peer_cast', 3000).catch(() => null);
+    ok(late?.id === 2 && late.slot === 3, 'a late Uproot (5 s after World Tree) reaches the other screen');
+    const tag2 = await x.next('peer_cast', 3000).catch(() => null);
+    ok(tag2?.id === 2 && tag2.slot === 3, "Pim and Pom's second Tag Out 8.1 s after the first reaches the other screen");
+    // Still one free second R only: a third R of Fenna's within the gap is dropped.
+    x.send({ t: 'cast', id: 3, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    ok(!(await y.next('peer_cast', 1500).catch(() => null)), "a third R of Fenna's within the gap is still dropped");
+    x.close(); y.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+  }
+  server.close();
+  return lines;
+}
+
+// The shop's cases, the world's and the social ones run beside the rest, on their own servers.
+const only = onlyShop || onlyWorld || onlySocial || onlyRelay;
+const relayRun = target || (only && !onlyRelay) ? null : relayCases();
+const shopRun = target || (only && !onlyShop) ? null : shopCases();
+const worldRun = target || (only && !onlyWorld) ? null : Promise.all([worldCases(), packCases(), doorCases()]).then((l) => l.flat());
+const socialRun = target || (only && !onlySocial) ? null : socialCases();
+
+if (!only) try {
   // The rules version: an older tab is told to reload, before any name or password is looked at.
   const old = await client();
   old.send({ t: 'login', name: 'nobody', password: 'nothing', v: PROTOCOL - 1 });
@@ -1696,8 +2512,13 @@ if (!onlyShop) try {
 } catch (e) {
   check(false, String(e));
 }
+if (relayRun) for (const line of await relayRun) console.log(line);
 if (shopRun) for (const line of await shopRun) console.log(line);
 else console.log('     the shop, the ranks and the boards were not played: they need servers of their own');
+if (worldRun) for (const line of await worldRun) console.log(line);
+else console.log('     the Climb\'s open world was not played: it needs a server of its own');
+if (socialRun) for (const line of await socialRun) console.log(line);
+else console.log('     the leaderboards and clans were not played: they need servers of their own');
 http.close();
 httpPicks.close();
 rmSync(dir, { recursive: true, force: true });

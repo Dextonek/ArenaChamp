@@ -1,0 +1,41 @@
+{
+ "floor": 23,
+ "verdict": "Plays clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Sirix), the trial, the Dune Colossus (the Scarab's model, tinted) and the gate (Silvane) all played. One word on the lair's door fixed.",
+ "found": [
+  {
+   "kind": "fixed",
+   "title": "The lair said “a quest about a seal” for a key",
+   "text": "The Sands' maker picks the main quest's item from the brass seal, the sun key and the scarab seal, but the lair's lock always said “The Star-Reader has a quest about a seal.” Here the item is the sun key. Now the lock names the floor's own item (“... a quest about the sun key”). gen/sands.ts; floors 22 to 30 re-baked, only that line changed on each."
+  },
+  {
+   "kind": "ok",
+   "title": "The bot's 45 s wait in a storm, and the props",
+   "text": "A wait in the lee while the storm passed, as on floor 22. The probe: an arch whose pillar stands among the rim's rocks, red rocks a little sunk at the canyon foot."
+  }
+ ],
+ "pictures": [
+  [
+   "person-villager.jpg",
+   "The Beacon-Keeper at the travellers' court"
+  ],
+  [
+   "pack-d.jpg",
+   "The fallen obelisk's pack"
+  ],
+  [
+   "ruler-close.jpg",
+   "The Dune Colossus"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

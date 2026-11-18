@@ -168,7 +168,7 @@ function dark(z: ZoneCtx, d: Extract<LawDef, { kind: 'dark' }>): Law {
 // --- the war (sides) ----------------------------------------------------------------------------------------------------
 
 /** The numbers of the war: how many of the taken army fight beside the hero, how they walk, and when one comes to fill a gap. */
-export const WAR = { squad: 4, hp: 150, damage: 22, every: 1.4, speed: 3.9, follow: 4.6, near: 16, refill: 18, hostileLeash: 30 } as const;
+export const WAR = { squad: 4, hp: 150, damage: 22, every: 1.4, speed: 3.9, follow: 4.6, near: 16, refill: 18, hostileLeash: 30, reorder: 2.5 } as const;
 /** The squad, in order: footmen and a knight. */
 const SQUAD: ('footman' | 'knight')[] = ['footman', 'knight', 'footman', 'footman'];
 
@@ -252,6 +252,9 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
 
   // The squad: hero-side units of the army taken.
   const squad: (SummonUnit | null)[] = Array.from({ length: WAR.squad }, () => null);
+  // Where each unit is walking to: moved on only when the hero has gone `WAR.reorder` m from it. The navigator plans a route again each
+  // time an order moves 0.6 m, and on a large floor a plan costs 7 to 14 ms: four soldiers following a walking hero planned nearly every frame.
+  const orders: (THREE.Vector3 | null)[] = Array.from({ length: WAR.squad }, () => null);
   let refill = 0, t = 0, fought = 0, maxHero = 0, maxFoes = 0, made = 0, fell = 0, dismissed = false, wasOpen = false, wasNear = false, mustered = false;
   const lookFor = (kind: string) => EXTRA_LOOKS[`${kind}-${taken}`];
   const make = (i: number, at: Spot) => {
@@ -330,13 +333,18 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
       if (awake) fought += dt;
       let alive = 0;
       squad.forEach((u, i) => {
-        if (!u?.alive) { squad[i] = null; return; }
+        if (!u?.alive) { squad[i] = null; orders[i] = null; return; }
         alive++;
         if (awake || u.swing >= 0) return;
         const a = (i / WAR.squad) * Math.PI * 2 + 0.7, to = { x: me.x + Math.cos(a) * 2.6, z: me.z + Math.sin(a) * 2.6 };
         const gap = dist(u.pos, to);
         if (gap < 1.2) return;
-        const step = arena.route(u, u.pos, new THREE.Vector3(to.x, 0, to.z)).point, dx = step.x - u.pos.x, dz = step.z - u.pos.z, len = Math.hypot(dx, dz) || 1;
+        let order = orders[i];
+        if (!order || dist(order, to) > (gap > 14 ? WAR.reorder * 2 : WAR.reorder)) order = orders[i] = new THREE.Vector3(to.x, 0, to.z);
+        if (dist(u.pos, order) < 0.3) return;
+        // In the open (most of the time) straight on; round cover by the navigator.
+        const step = arena.pathClear(u.pos, order) ? order : arena.route(u, u.pos, order).point;
+        const dx = step.x - u.pos.x, dz = step.z - u.pos.z, len = Math.hypot(dx, dz) || 1;
         const sp = gap > 14 ? WAR.speed * 1.6 : WAR.follow;
         u.pos.x += (dx / len) * Math.min(len, sp * dt);
         u.pos.z += (dz / len) * Math.min(len, sp * dt);

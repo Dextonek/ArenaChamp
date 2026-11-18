@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Climb, alive</title>
+<style>
+  :root { --bg: #110f14; --card: #1b1820; --line: #352e3c; --ink: #ece4d6; --dim: #b3a99a; --gold: #d2ae55; --before: #8f8a96; --after: #e8b84a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 700 30px/1.2 Georgia, serif; color: var(--gold); margin: 10px 0 4px; }
+  h2 { font: 700 23px/1.3 Georgia, serif; color: var(--gold); margin: 40px 0 4px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  h3 { font: 600 15px/1.3 system-ui, sans-serif; color: var(--dim); margin: 18px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  p { margin: 8px 0; }
+  .sub { color: var(--dim); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  figure { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure img, figure video { display: block; width: 100%; height: auto; }
+  figcaption { padding: 6px 10px; font-size: 13.5px; color: var(--dim); }
+  figcaption b { color: var(--before); font-weight: 700; }
+  figure.after figcaption b { color: var(--after); }
+  .clips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 760px) { .clips { grid-template-columns: 1fr; } }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code { font-size: 13.5px; color: var(--dim); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 8px 0; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--dim); font-weight: 600; }
+  .note { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 10px 0; }
+  .ask { border-color: var(--gold); }
+  .ask b { color: var(--gold); }
+  h2.ch { font-size: 28px; border-bottom: 2px solid var(--gold); margin-top: 64px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 10px 0 4px; }
+  nav.toc a { color: var(--gold); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 14.5px; }
+</style>
+</head>
+<body>
+<main>
+<h1>The Climb, alive</h1>
+<p class="sub">2026-11-16. Your ask: "look at the map and fill it more, to be more lively". The Sea came first; after your yes the other four
+chapters got the same kind of life, each what fits its lore and look, one chapter at a time.</p>
+<nav class="toc"><a href="#sea">I. The Sea</a><a href="#wood">II. The Wood</a><a href="#sands">III. The Sands</a><a href="#deep">IV. The Deep</a><a href="#war">V. The War</a><a href="#all">For every chapter</a></nav>
+
+<h2 class="ch" id="sea">Chapter I: the Sea (floors 1 to 10)</h2>
+
+<h2>What is new on the Sea floors</h2>
+<ul>
+  <li><b>Gulls.</b> They sit on the lighthouse's gallery, the wrecks, the cottages' ridges, rocks, crates, the stake nets, the sand, the
+    tidal flats and the water. When you walk up they lift off, wheel over you and come down again a little way off. They leave the
+    flats when the tide turns, and a fight nearby scares them up. Wherever you go on a floor, some come over.</li>
+  <li><b>Smoke</b> from the camp fire, the beacons, about half the cottages' chimneys and the cooking fires past the edge.</li>
+  <li><b>Cloth in the wind:</b> washing strung across the village lanes (high over your head), pennants on the tents, on the
+    lighthouse's top and on poles in the water, nets drying on stakes in the shallows, sails on the boats.</li>
+  <li><b>On the water:</b> rowing boats moored at the jetties and fishing boats under sail standing off the shore, all rocking on the
+    swell; rings spreading in the shallows, and now and then a fish leaping.</li>
+  <li><b>People walking</b> beside the paths between places, away from the packs (on a computer only). They stop when you are in their
+    way and turn back from a fight. <i>A stand-in figure for now: see the choices below.</i></li>
+  <li><b>Small things on the ground</b> at the places' edges and on the sand: coils of rope, baskets of fish, glass floats, oars,
+    buckets, folded sails, driftwood. All ankle-high and off the paths, so nothing you walk through looks wrong.</li>
+</ul>
+<p class="sub">Everything follows each floor's own layout (its places, paths, cover and spots), so a floor moved or made again keeps its
+life where it fits. None of it is in a fight: no walls, no enemies, nothing the path finding sees, and the fights play exactly as
+before (checked: the same fight to the last number, life on or off).</p>
+
+<h2>Clips</h2>
+<p class="sub">Real game time, the game's own camera. Pictures can't show what moves, so these matter most.</p>
+<div class="clips">
+  <figure class="after"><video src="shore.mp4" poster="shore.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 1, the shore.</b> Walking up the beach: gulls lift off ahead and wheel; floats and driftwood on the sand.</figcaption></figure>
+  <figure class="after"><video src="lane.mp4" poster="lane.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 5, the village lane.</b> Washing moving over the lane, chimney smoke.</figcaption></figure>
+  <figure class="after"><video src="camp.mp4" poster="camp.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 5, the camp.</b> Gulls about the camp, the fire's smoke, the tents' pennants.</figcaption></figure>
+</div>
+
+<h2>Before and after</h2>
+<p class="sub">The same view, the same moment, life off (left) and on (right). Four of the ten floors.</p>
+<h3>Floor 1, the Drowned Harbour: the camp</h3>
+<div class="pair">
+  <figure><img src="f1-camp-before.jpg" alt="Floor 1, the Drowned Harbour: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f1-camp-after.jpg" alt="Floor 1, the Drowned Harbour: the camp, after: smoke from the fire, gulls on the crates" loading="lazy"><figcaption><b>After:</b> smoke from the fire, gulls on the crates</figcaption></figure>
+</div>
+<h3>Floor 1: the east shore</h3>
+<div class="pair">
+  <figure><img src="f1-shore-before.jpg" alt="Floor 1: the east shore, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f1-shore-after.jpg" alt="Floor 1: the east shore, after: driftwood and glass floats on the sand, gulls" loading="lazy"><figcaption><b>After:</b> driftwood and glass floats on the sand, gulls</figcaption></figure>
+</div>
+<h3>Floor 1: the village lane</h3>
+<div class="pair">
+  <figure><img src="f1-village-before.jpg" alt="Floor 1: the village lane, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f1-village-after.jpg" alt="Floor 1: the village lane, after: washing across the lane, chimney smoke" loading="lazy"><figcaption><b>After:</b> washing across the lane, chimney smoke</figcaption></figure>
+</div>
+<h3>Floor 3, Gull Point: the camp</h3>
+<div class="pair">
+  <figure><img src="f3-camp-before.jpg" alt="Floor 3, Gull Point: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f3-camp-after.jpg" alt="Floor 3, Gull Point: the camp, after: pennants on the tents, smoke, gulls" loading="lazy"><figcaption><b>After:</b> pennants on the tents, smoke, gulls</figcaption></figure>
+</div>
+<h3>Floor 3: the shipyard</h3>
+<div class="pair">
+  <figure><img src="f3-shipyard-before.jpg" alt="Floor 3: the shipyard, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f3-shipyard-after.jpg" alt="Floor 3: the shipyard, after: gulls on the hull and the rocks" loading="lazy"><figcaption><b>After:</b> gulls on the hull and the rocks</figcaption></figure>
+</div>
+<h3>Floor 5, Wreckers’ Cove: the village</h3>
+<div class="pair">
+  <figure><img src="f5-village-before.jpg" alt="Floor 5, Wreckers’ Cove: the village, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f5-village-after.jpg" alt="Floor 5, Wreckers’ Cove: the village, after: washing over the lane, smoke" loading="lazy"><figcaption><b>After:</b> washing over the lane, smoke</figcaption></figure>
+</div>
+<h3>Floor 5: the beacon</h3>
+<div class="pair">
+  <figure><img src="f5-beacon-before.jpg" alt="Floor 5: the beacon, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f5-beacon-after.jpg" alt="Floor 5: the beacon, after: the beacon’s smoke, things on the ground" loading="lazy"><figcaption><b>After:</b> the beacon’s smoke, things on the ground</figcaption></figure>
+</div>
+<h3>Floor 8, the Anchorage: the camp</h3>
+<div class="pair">
+  <figure><img src="f8-camp-before.jpg" alt="Floor 8, the Anchorage: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f8-camp-after.jpg" alt="Floor 8, the Anchorage: the camp, after: gulls about, pennants, smoke" loading="lazy"><figcaption><b>After:</b> gulls about, pennants, smoke</figcaption></figure>
+</div>
+<h3>Floor 8: the beacon</h3>
+<div class="pair">
+  <figure><img src="f8-beacon-before.jpg" alt="Floor 8: the beacon, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="f8-beacon-after.jpg" alt="Floor 8: the beacon, after: smoke, gulls" loading="lazy"><figcaption><b>After:</b> smoke, gulls</figcaption></figure>
+</div>
+
+<h3>Floor 1: at the water, from low on the shore (the game's camera seldom looks this way; this is to see the boats)</h3>
+<div class="pair">
+  <figure><img src="water-before.jpg" alt="A jetty and the sea, before" loading="lazy"><figcaption><b>Before</b> (the pale patches are the sea's own foam)</figcaption></figure>
+  <figure class="after"><img src="water-after.jpg" alt="The jetty with two rowing boats moored, a pole with a pennant, rings on the water, sails off shore" loading="lazy"><figcaption><b>After:</b> two rowing boats moored at the jetty, a marker pole with its pennant, rings on the water, fishing boats under sail off shore</figcaption></figure>
+</div>
+<div class="pair" style="margin-top:10px">
+  <figure class="after"><img src="water-net.jpg" alt="Nets drying on stakes in the shallows, glass floats along the top" loading="lazy"><figcaption><b>After:</b> nets drying on stakes in the shallows, glass floats along their tops</figcaption></figure>
+  <figure class="after"><video src="walker.mp4" poster="walker.jpg" controls muted loop playsinline preload="none"></video><figcaption><b>A walker</b> (floor 5), from close by: the stand-in figure on the game's own walking clip</figcaption></figure>
+</div>
+
+<h2>On a phone</h2>
+<p>Phones get a lighter set: 20 gulls instead of 44, no walking people, no leaping fish, fewer rings and boats. Smoke, cloth and the
+small things stay (they cost almost nothing).</p>
+<div class="pair"><figure class="after"><img src="phone-f5-village.jpg" alt="Floor 5, the village, at a phone’s size" loading="lazy"><figcaption><b>Phone:</b> Floor 5, the village, at a phone’s size</figcaption></figure><figure class="after"><img src="phone-f5-camp.jpg" alt="Floor 5, the camp, at a phone’s size" loading="lazy"><figcaption><b>Phone:</b> Floor 5, the camp, at a phone’s size</figcaption></figure></div>
+
+<h2>What it costs</h2>
+<p>The game's own speed tool (<code>pipeline/tools/perf.py</code>), the hero set down beside one pack after another for 25 s. Life off
+and life on in turns, two of each (the computer was busy with other agents, so each number has a few tenths of noise on a computer and
+several milliseconds on the slowed phone). The middle frame, in milliseconds:</p>
+<table>
+  <tr><th></th><th>Life off</th><th>Life on</th><th>Without the walking people</th><th>Draw calls</th></tr>
+  <tr><td>Computer, floor 1</td><td>9.6 / 9.9</td><td>10.0 / 9.9</td><td>9.7 / 10.4</td><td>243 → 273</td></tr>
+  <tr><td>Computer, floor 5</td><td>9.6 / 10.3</td><td>11.3 / 11.0</td><td>10.1 / 10.4</td><td>244 → 262</td></tr>
+  <tr><td>Phone (a computer slowed four times), floor 1</td><td>26.3 / 32.0</td><td>39.0 / 34.4</td><td>(no people on a phone)</td><td>249 → 266</td></tr>
+  <tr><td>Phone (slowed four times), floor 5</td><td>30.7 / 29.7</td><td>36.8 / 32.1</td><td></td><td>247 → 263</td></tr>
+</table>
+<ul>
+  <li><b>Computer:</b> about 0.3 ms on floor 1 and about 1 ms on floor 5, most of it the walking people (three skinned figures).
+    Sure of this within a few tenths.</li>
+  <li><b>Phone:</b> somewhere between 2 and 5 ms of about 30 (the second pair, measured when the computer was quieter, says about 2.5).
+    Sure of the direction, not of the size: two runs under the same condition differ by as much as the cost itself. The slowed
+    processor is the limit there and each extra draw costs it; if it is too much, the boats can be drawn with fewer draws and the small
+    things made fewer (how much that saves is not measured), or the life can be switched off on phones.</li>
+  <li><b>The fights are the same fights:</b> every run, life on or off, printed the same fight (floor 1 <code>98b0044a</code>, floor 5
+    <code>635120e1</code>). The speed tool's saved fights (<code>docs/perf/data/prints.json</code>) are older than today's code (floor 1 printed
+    <code>98b0044a</code> today with no life code at all, against <code>d862aa08</code> there), so the check is life off against life on, on
+    today's code.</li>
+</ul>
+
+
+<h2>Your choices</h2>
+<p class="note"><b>Decided since</b> (2026-11-16, "you decide"): the walkers stay, as plain workers (now in: a dockhand and a fishwife,
+see <a href="#all" style="color:var(--gold)">For every chapter</a>); the amount as it is; phones keep the lighter set; no sound for now. The land's
+chimneys now smoke too. The rest of this list is as it was asked.</p>
+<div class="note ask"><b>1. The walking people.</b> They stand in with the trader who is not on that floor (the Tide-Broker and the
+Coral-Pedlar take turns floor by floor). Two ways on: (a) keep them; (b) make two or three plain Coast-folk workers in Blender, a dockhand
+and a fishwife, no names, so nobody looks like a named person twice. The clips for work are in the animation pack already (kneeling
+to mend, carrying a load); they would be added to the game's clip file with them.</div>
+<div class="note ask"><b>2. Sound.</b> The game has no sound at all yet, so I added none. Gulls, surf and a bell would suit the Sea well,
+but it is a new system for the whole game: your call.</div>
+<div class="note ask"><b>3. How much.</b> More gulls, fewer? Smoke stronger or as it is (I kept it soft so it never reads as a glow)?</div>
+<div class="note ask"><b>4. Phones.</b> Keep the lighter set on phones (it costs a few milliseconds there), or switch the life off on phones.</div>
+<div class="note"><b>For another agent's file (not changed by me).</b> The land's own boats, sails and the town's houses past the edge are
+drawn in <code>src/tower/world/land.ts</code>, which I may not touch. To let their sails move and their chimneys smoke, and to keep my
+moored boats off its boats for sure, land.ts would only need to leave what it drew where the life can read it:
+<code>into.userData.landLife = { homes, boats: drawn, jetties }</code> before its <code>return</code> (homes with each chimney's top:
+<code>{ x, z, top: y + h + w * 0.42 + 1.2 }</code>). Today the life works out the jetties from the outline the same way land.ts does.</div>
+
+<h2>How it is built</h2>
+<ul>
+  <li>A layer of its own, <code>src/tower/world/life/</code>: <code>core.ts</code> (birds, smoke, cloth, water, floating boats, the
+    ground they keep off), <code>sea.ts</code> (the Sea's), <code>walkers.ts</code> (people), <code>index.ts</code>. No floor's file
+    changed.</li>
+  <li>The hook: three lines in <code>src/tower/world/world.ts</code>, where the floor's people and scenery are made, updated and put
+    away; the life is made, updated and put away beside them.</li>
+  <li>Each kind of thing is one draw for all of them, moved on the graphics card; no shadows. It rolls its own dice, so the fights
+    stay the same fights.</li>
+  <li>Switches: <code>?life=0</code> in the address turns it off; <code>?life=lite</code> shows the phone's set on a computer.</li>
+</ul>
+<h2 class="ch" id="wood">Chapter II: the Wood (floors 11 to 20)</h2>
+<p class="sub">The Walking Wood in its first year of walking (the codex: groves shift in the night, paths close behind you). The zone
+already had fireflies over the glades, leaves drifting down under the trees, birds far over the hills, the burners' smoke and the
+lanterns, so this adds what lives in the wood near you.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Wood pigeons</b> in the crowns of the bands of trees (they burst out as you pass under), on logs, stumps, stones, crates and
+    the burners' roofs, and on the grass of the glades. They lift off when you come near or a fight does, wheel over the trees and
+    settle again away from you.</li>
+  <li><b>Hinds</b> in twos and threes at the glades' edges, <b>foxes</b> near the thickets and dens, <b>hares</b> in the open grass.
+    They graze, lift their heads to look round, and bolt from you (or a fight) into the trees; when you have gone they walk back.
+    No antlers and no crowns on purpose: the Wood's crowned stags are its enemies, and nothing here may be taken for one.</li>
+  <li><b>Woodsmoke</b> from the camp's fire and the burners' huts (through the thatch), and a thin thread of incense at the
+    shrines.</li>
+  <li><b>Cloth:</b> pennants on the camp's tent poles; blankets and hides airing on a line at the camp and at the burners, hung
+    high (their feet 2.5 m up) so you walk under them, as under the Sea's washing.</li>
+  <li><b>Butterflies</b> over the glades, <b>dragonflies</b> and rings on the spring's pool.</li>
+  <li><b>People walking</b> beside the trails (on a computer only), as on the Sea: the Wood's plain worker, a woodcutter with a pack,
+    made for it in Blender (no name, so nobody meets a named person twice).</li>
+</ul>
+<p class="sub">Not caught in a picture or clip here yet (built, but too small or too brief from the game's camera to show): the
+foxes, the butterflies and dragonflies, the shrines' incense.</p>
+<h3>Clips</h3>
+<div class="clips">
+  <figure class="after"><video src="wood/hinds.mp4" poster="wood/hinds.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 12, a glade's edge.</b> Walking towards two hinds grazing behind a band of trees: they look up and bolt north
+    into the wood.</figcaption></figure>
+  <figure class="after"><video src="wood/trail.mp4" poster="wood/trail.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 12, a trail.</b> A walker on the trail (still the stand-in when this was filmed), a pigeon flying over, the fireflies and leaves the Wood had
+    already.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot. Most of what is new moves, so the clips show it better.</p>
+<h3>Floor 11, the Walking Wood: the camp</h3>
+<div class="pair">
+  <figure><img src="wood/f11-camp-before.jpg" alt="Floor 11, the Walking Wood: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f11-camp-after.jpg" alt="Floor 11, the Walking Wood: the camp, after: pennants on the tents, the camp fire's smoke, an airing line" loading="lazy"><figcaption><b>After:</b> pennants on the tents, the camp fire's smoke, an airing line</figcaption></figure>
+</div>
+<h3>Floor 11: the west lamp glade</h3>
+<div class="pair">
+  <figure><img src="wood/f11-lampw-before.jpg" alt="Floor 11: the west lamp glade, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f11-lampw-after.jpg" alt="Floor 11: the west lamp glade, after: a walker on the trail (top right); little else here: the life is spread over the floor" loading="lazy"><figcaption><b>After:</b> a walker on the trail (top right); little else here: the life is spread over the floor</figcaption></figure>
+</div>
+<h3>Floor 12, the Mossway: the burners</h3>
+<div class="pair">
+  <figure><img src="wood/f12-v-before.jpg" alt="Floor 12, the Mossway: the burners, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f12-v-after.jpg" alt="Floor 12, the Mossway: the burners, after: smoke through the huts' thatch, a line of hides, pigeons on the roofs" loading="lazy"><figcaption><b>After:</b> smoke through the huts' thatch, a line of hides, pigeons on the roofs</figcaption></figure>
+</div>
+<h3>Floor 12: the spring</h3>
+<div class="pair">
+  <figure><img src="wood/f12-e-before.jpg" alt="Floor 12: the spring, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f12-e-after.jpg" alt="Floor 12: the spring, after: rings on the pool" loading="lazy"><figcaption><b>After:</b> rings on the pool</figcaption></figure>
+</div>
+<h3>Floor 15, the Antler Glades: the camp</h3>
+<div class="pair">
+  <figure><img src="wood/f15-camp-before.jpg" alt="Floor 15, the Antler Glades: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f15-camp-after.jpg" alt="Floor 15, the Antler Glades: the camp, after: pennants, smoke, an airing line" loading="lazy"><figcaption><b>After:</b> pennants, smoke, an airing line</figcaption></figure>
+</div>
+<h3>Floor 15: the burners</h3>
+<div class="pair">
+  <figure><img src="wood/f15-v-before.jpg" alt="Floor 15: the burners, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f15-v-after.jpg" alt="Floor 15: the burners, after: smoke from the huts, pigeons" loading="lazy"><figcaption><b>After:</b> smoke from the huts, pigeons</figcaption></figure>
+</div>
+<h3>Floor 18, Greyoak Deep: the spring</h3>
+<div class="pair">
+  <figure><img src="wood/f18-c-before.jpg" alt="Floor 18, Greyoak Deep: the spring, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f18-c-after.jpg" alt="Floor 18, Greyoak Deep: the spring, after: rings on the pool" loading="lazy"><figcaption><b>After:</b> rings on the pool</figcaption></figure>
+</div>
+<h3>Floor 18: the shrine</h3>
+<div class="pair">
+  <figure><img src="wood/f18-e-before.jpg" alt="Floor 18: the shrine, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="wood/f18-e-after.jpg" alt="Floor 18: the shrine, after: an animal at the glade's edge (left)" loading="lazy"><figcaption><b>After:</b> an animal at the glade's edge (left), the airing line beyond the shrine (top right)</figcaption></figure>
+</div>
+<h3>The walkers</h3>
+<div class="pair">
+  <figure class="after"><img src="wood/f12-walker.jpg" alt="The woodcutter walking on floor 12" loading="lazy"><figcaption><b>Floor 12:</b> the woodcutter walking by the spring</figcaption></figure>
+  <figure class="after"><img src="sea-walkers.jpg" alt="The Sea's dockhand and fishwife on floor 5" loading="lazy"><figcaption><b>The Sea, floor 5:</b> the dockhand (a crate on his back) and the fishwife now walk there too</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the pigeons, fewer beasts, no butterflies, dragonflies or walkers; the smoke, cloth and rings stay.</p>
+<div class="pair">
+  <figure class="after"><img src="wood/f12-camp-phone.jpg" alt="Floor 12 camp at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 12, the camp</figcaption></figure>
+  <figure class="after"><img src="wood/f12-v-phone.jpg" alt="Floor 12 burners at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 12, the burners</figcaption></figure>
+</div>
+<h3>What it costs</h3>
+<p class="sub">The game's speed tool (<code>pipeline/tools/perf.py</code>), the hero set down beside one pack after another for 25 s,
+life off and on in turn; the phone runs through the new one-at-a-time lock. Today the computer was shared by several agents, and two
+identical desktop runs differed by up to 8 ms, so the frame times below are each run's middle frame, listed as they came.</p>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 11</td><td>13.9 / 18.2 / 14.1 / 13.1 / 11.0 / 16.9</td><td>19.9 / 11.7 / 17.9 / 15.0 / 9.7 / 9.7</td><td>192 → 208</td><td>yes, all 12</td></tr>
+  <tr><td>Computer, floor 12</td><td>16.9 / 20.4</td><td>20.3 / 16.2</td><td>240 → 259</td><td>yes</td></tr>
+  <tr><td>Computer, floor 15</td><td>19.5 / 14.3</td><td>19.4 / 20.5</td><td>244 → 254</td><td>yes</td></tr>
+  <tr><td>Phone (slowed four times), floor 11</td><td>63.9 / 84.3</td><td>24.9 / 101.6</td><td>204 → 210</td><td>yes</td></tr>
+  <tr><td>Phone (slowed four times), floor 15</td><td>25.1</td><td>27.6</td><td>248 → 255</td><td>yes</td></tr>
+</table>
+<ul>
+  <li><b>Computer:</b> too small to see under today's noise. Timed on its own, the Wood's life takes 0.07 to 0.15 ms of the
+    processor a frame (the Sea's: 0.17 to 0.27); the rest is about 16 to 19 more draws, most of them the three walkers.</li>
+  <li><b>Phone:</b> floor 11's two pairs were taken while the computer was swamped (one run 2.5 times another): they say nothing
+    about the cost. Floor 15 says about 2.5 ms of about 25 (as on the Sea), 7 more draws: the phone set has no walkers or butterflies.
+    Sure of the direction, not of the size within a millisecond or two.</li>
+  <li><b>The fights are the same fights:</b> every run, life on or off, printed the same fight (floor 11 <code>433b3ded</code>,
+    floor 12 <code>72213473</code>, floor 15 <code>8e91ae97</code>), with the walkers made and drawn in those scenes (checked), and
+    again after the stand-ins were swapped for the woodcutter. The Sea, checked again with its new walkers: floor 1
+    <code>98b0044a</code> both ways.</li>
+</ul>
+<h2 class="ch" id="sands">Chapter III: the Sands (floors 21 to 30)</h2>
+<p class="sub">The Storm Canyon in the great storm of the year after the Fall: a red canyon, a caravan that never reached Tamerit still
+trying to. The zone already had vultures over the far cliffs, a caravan walking the far dunes, waymark cloths, awnings and prayer
+flags; this adds what lives near you.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Kites</b> (the bird) on the palms' crowns, the standing columns, the walls' tops, the wells' beams, the watchtower and the
+    rocks, a few always circling high. They lift off when you come near, a fight does, <b>or the storm comes</b>, and settle again
+    after it.</li>
+  <li><b>Camels</b> of the lost caravan, tethered at the caravanserai, the oasis and the wells, a turquoise saddle cloth with a gold
+    edge. They don't bolt: they turn their heads to watch you pass, lower them to drink, and step a few metres aside if you walk
+    right up to them (then go back to their place).</li>
+  <li><b>Lizards</b> in the sun at the rocks' feet; they dart off when you come.</li>
+  <li><b>Cloth:</b> pennants on the tents and the watchtower, dyed cloths drying on lines at the caravanserai and the camp (the
+    market's cloths: turquoise, wine, ochre, cream).</li>
+  <li><b>Smoke</b> from the fire bowls and the watchtower's fire; rings on the oasis pools.</li>
+  <li><b>People walking</b> beside the roads (on a computer only): the Sands' water-carrier, a jar on her head.</li>
+  <li>Nothing marks the ground: marks in the sand are the Scarab's tell in the lore, and nothing here may be taken for them.</li>
+  <li><i>Tried and left out:</i> sand blowing low over the ground and dust devils. From the game's high camera the one is sand on
+    sand (invisible) and the other a column seen end on, which read as a pale blob. No heat shimmer either: it would be a new
+    full-screen pass, costly on a phone.</li>
+</ul>
+<p class="sub">Not caught in a picture yet: the kites leaving when the storm comes (it works as the Sea's gulls leave the flats at
+the tide), the watchtower's pennant.</p>
+<h3>Clip</h3>
+<div class="clips">
+  <figure class="after"><video src="sands/serai.mp4" poster="sands/serai.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 22, the caravanserai.</b> Walking past: a camel turns its head to watch you; kites sit on the walls (seen
+    in the pictures below more than here).</figcaption></figure>
+  <figure class="after"><img src="sands/close.jpg" alt="Close: a camel, a lizard, the water-carrier" loading="lazy">
+    <figcaption><b>Closer (floor 22):</b> a camel with its saddle cloth, a lizard at a rock's foot, the water-carrier.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot.</p>
+<h3>Floor 21, the Storm Canyon: the camp</h3>
+<div class="pair">
+  <figure><img src="sands/f21-camp-before.jpg" alt="Floor 21, the Storm Canyon: the camp, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f21-camp-after.jpg" alt="Floor 21, the Storm Canyon: the camp, after: dyed cloths drying on a line (bottom), pennants on the tents" loading="lazy"><figcaption><b>After:</b> dyed cloths drying on a line (bottom), pennants on the tents</figcaption></figure>
+</div>
+<h3>Floor 21: a well</h3>
+<div class="pair">
+  <figure><img src="sands/f21-well1-before.jpg" alt="Floor 21: a well, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f21-well1-after.jpg" alt="Floor 21: a well, after: a camel tethered by it (left)" loading="lazy"><figcaption><b>After:</b> a camel tethered by it (left)</figcaption></figure>
+</div>
+<h3>Floor 22, the Red Wadi: the caravanserai</h3>
+<div class="pair">
+  <figure><img src="sands/f22-v-before.jpg" alt="Floor 22, the Red Wadi: the caravanserai, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f22-v-after.jpg" alt="Floor 22, the Red Wadi: the caravanserai, after: camels tethered round it" loading="lazy"><figcaption><b>After:</b> camels tethered round it</figcaption></figure>
+</div>
+<h3>Floor 22: the oasis</h3>
+<div class="pair">
+  <figure><img src="sands/f22-h-before.jpg" alt="Floor 22: the oasis, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f22-h-after.jpg" alt="Floor 22: the oasis, after: a camel by the court (top right)" loading="lazy"><figcaption><b>After:</b> a camel by the court (top right)</figcaption></figure>
+</div>
+<h3>Floor 25, the Singing Dunes: the caravanserai</h3>
+<div class="pair">
+  <figure><img src="sands/f25-v-before.jpg" alt="Floor 25, the Singing Dunes: the caravanserai, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f25-v-after.jpg" alt="Floor 25, the Singing Dunes: the caravanserai, after: two camels (left), a kite on the wall" loading="lazy"><figcaption><b>After:</b> two camels (left), a kite on the wall</figcaption></figure>
+</div>
+<h3>Floor 28, the Scorpion Steps: the caravanserai</h3>
+<div class="pair">
+  <figure><img src="sands/f28-v-before.jpg" alt="Floor 28, the Scorpion Steps: the caravanserai, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="sands/f28-v-after.jpg" alt="Floor 28, the Scorpion Steps: the caravanserai, after: camels (right)" loading="lazy"><figcaption><b>After:</b> camels (right)</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the kites, fewer camels and lizards, no walkers; the smoke, cloth and rings stay.</p>
+<div class="pair">
+  <figure class="after"><img src="sands/f22-camp-phone.jpg" alt="Floor 22 camp at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 22, the camp</figcaption></figure>
+  <figure class="after"><img src="sands/f22-v-phone.jpg" alt="Floor 22 caravanserai at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 22, the caravanserai</figcaption></figure>
+</div>
+<h3>What it costs</h3>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 21</td><td>24.1</td><td>28.4</td><td>189 → 202</td><td>yes (<code>45b46573</code>)</td></tr>
+  <tr><td>Computer, floor 25</td><td>21.7</td><td>25.2</td><td>215 → 233</td><td>yes (<code>f3eab003</code>)</td></tr>
+  <tr><td>Phone (slowed four times), floor 25</td><td>88.6</td><td>102.4</td><td>221 → 227</td><td>yes</td></tr>
+</table>
+<ul>
+  <li>The computer was loaded by other agents' work through all of these (the same scenes ran at about 13 ms on a computer and 25 on
+    the slowed phone earlier in the day), so the frame times say little; only their print (the same fight) and the draw calls are
+    sure. Timed on its own, the Sands' life takes 0.11 to 0.17 ms of the processor a frame; it adds 13 to 18 draws on a computer
+    (most of them the three walkers) and 6 on a phone.</li>
+  <li>A quiet measurement of all four chapters is in the hand-over (one command, with no other agent running).</li>
+</ul>
+<h2 class="ch" id="deep">Chapter IV: the Deep (floors 31 to 40)</h2>
+<p class="sub">The far halls on the night their crystals went out: "only crystals give light, and beyond their glow you see nothing, and
+the lurkers hunt there." The zone already had bats under the north wall, the waterfall and the glints on the black lake. Two rules
+from the lore shaped this chapter: nothing here makes light of its own (the only living light in the Deep is the Firefly-Seller's, in
+her jars), and nothing dark stands still at the edge of the light (that is what a lurker does). So the Deep's life is quiet, as it
+should be: it shows where there is light.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Moths</b> round every crystal, lamp and fire: pale wings, drawn to the light, seen only in it.</li>
+  <li><b>Spores</b> hanging in the air round you, rising slowly; seen where a crystal lights them.</li>
+  <li><b>Drips</b> falling from the dark into the glowing pools, a ring opening where each lands; a <b>pale blind fish</b> going
+    slowly round a pool here and there.</li>
+  <li><b>Bats</b> flitting low over the halls, a few, never still.</li>
+  <li><b>Smoke</b> from the camp's fire and the stoves of the miners' huts.</li>
+  <li><b>People walking</b> beside the mine's tracks (on a computer only): the Deep's miner.</li>
+</ul>
+<p class="sub">Not caught in a picture yet: the bats (dark and quick in the dark), the stoves' smoke beyond a faint thread.</p>
+<h3>Clip</h3>
+<div class="clips">
+  <figure class="after"><video src="deep/crystal.mp4" poster="deep/crystal.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 32, a great crystal.</b> Moths (pale specks) round the crystal, spores in the air. The clip is the 3D view
+    alone: the dark the game lays over the screen is left out, so it looks brighter than the game.</figcaption></figure>
+  <figure class="after"><img src="deep/close.jpg" alt="A pale fish in a glowing pool, the miner walking" loading="lazy">
+    <figcaption><b>Closer (floor 32):</b> a ring and a pale fish in a glowing pool; the miner walking by the tracks.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot. In the dark the changes are small on purpose; the clip shows them moving.</p>
+<h3>Floor 32, the Amethyst Seam: the pools</h3>
+<div class="pair">
+  <figure><img src="deep/f32-d-before.jpg" alt="Floor 32, the Amethyst Seam: the pools, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f32-d-after.jpg" alt="Floor 32, the Amethyst Seam: the pools, after: rings opening where drops fall, spores in the air" loading="lazy"><figcaption><b>After:</b> rings opening where drops fall, a pale fish in the lower pool, spores in the air</figcaption></figure>
+</div>
+<h3>Floor 31, the Lightless Deep: the pools</h3>
+<div class="pair">
+  <figure><img src="deep/f31-pools-before.jpg" alt="Floor 31, the Lightless Deep: the pools, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f31-pools-after.jpg" alt="Floor 31, the Lightless Deep: the pools, after: rings on the pools, spores" loading="lazy"><figcaption><b>After:</b> rings on the pools, spores</figcaption></figure>
+</div>
+<h3>Floor 38, the Sunless Market: the miners' rest</h3>
+<div class="pair">
+  <figure><img src="deep/f38-v-before.jpg" alt="Floor 38, the Sunless Market: the miners' rest, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="deep/f38-v-after.jpg" alt="Floor 38, the Sunless Market: the miners' rest, after: a faint thread of smoke from a stove (right)" loading="lazy"><figcaption><b>After:</b> a faint thread of smoke from a stove (right): in the dark the smoke is barely seen</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the moths, fewer spores and drips, no fish and no walkers.</p>
+<div class="pair">
+  <figure class="after"><img src="deep/f32-d-phone.jpg" alt="Floor 32 pools at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 32, the pools</figcaption></figure>
+  <figure class="after"><img src="deep/f32-v-phone.jpg" alt="Floor 32 rest at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 32, the miners' rest</figcaption></figure>
+</div>
+<h3>What it costs</h3>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 31</td><td>17.7</td><td>16.8</td><td>186 → 205</td><td>yes (<code>19e8c310</code>)</td></tr>
+  <tr><td>Computer, floor 35</td><td>19.2</td><td>16.4</td><td>194 → 202</td><td>yes (<code>963fdc00</code>)</td></tr>
+  <tr><td>Phone (slowed four times), floor 35</td><td>84.7</td><td>35.4</td><td>194 → 200</td><td>yes</td></tr>
+</table>
+<ul>
+  <li>Again under other agents' load: the frame times only show the noise (here life on came out faster). Sure: the same fight both
+    ways, and 8 to 19 more draws on a computer (the three walkers most of them), 6 on a phone. The Deep's life moves nothing on the
+    processor but the bats and the walkers.</li>
+</ul>
+<h2 class="ch" id="war">Chapter V: the War (floors 41 to 50)</h2>
+<p class="sub">The Field of Banners in the last days of the War: a grey evening after a day of battle, warm low sun through smoke. The
+zone already had crows wheeling far over the field, columns of smoke from the far camps, banners on the roads and the gate towers,
+and the rain; this adds what lives, and smoulders, near you.</p>
+<h3>What is new</h3>
+<ul>
+  <li><b>Crows</b> on the stakes, the palisade, the fences, the walls' broken tops, the wagons, the shields and the field itself.
+    They lift off when you come near or a fight does, wheel, and come down again.</li>
+  <li><b>Ash</b> drifting down everywhere, and <b>smoke</b>: the burned farm still smouldering (dark), the braziers, the camp's
+    cooking fire.</li>
+  <li><b>Horses</b> of the wagon train, tethered at the wagons: they don't bolt; they graze, turn their heads to watch you, and step a
+    few metres aside if you walk right up to them.</li>
+  <li><b>Cloth:</b> sheets and bandages drying on lines at the field hospital (the White Sister's), pennants in their army's colour
+    by the war drums. The standards' own cloth is the law's (it flies the colours), so nothing is added to them.</li>
+  <li><b>People walking</b> beside the roads (on a computer only): the War's gleaner.</li>
+</ul>
+<p class="sub">Not caught in a picture yet: the burned farm's dark smoke, the pennants by the drums.</p>
+<h3>Clip</h3>
+<div class="clips">
+  <figure class="after"><video src="war/wagons.mp4" poster="war/wagons.jpg" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Floor 42, the wagons.</b> Walking in among the wagon train: the horses graze and look up, a crow flies over,
+    ash falls through the rain.</figcaption></figure>
+</div>
+<h3>Before and after</h3>
+<p class="sub">Life off (left) and on (right), the same spot. (The "Two banners" panel is the floor's own and shows in both.)</p>
+<h3>Floor 42, the Mud Fields: the field hospital</h3>
+<div class="pair">
+  <figure><img src="war/f42-v-before.jpg" alt="Floor 42, the Mud Fields: the field hospital, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f42-v-after.jpg" alt="Floor 42, the Mud Fields: the field hospital, after: sheets and bandages drying on a line (top left)" loading="lazy"><figcaption><b>After:</b> sheets and bandages drying on a line (top left)</figcaption></figure>
+</div>
+<h3>Floor 42: the wagons</h3>
+<div class="pair">
+  <figure><img src="war/f42-d-before.jpg" alt="Floor 42: the wagons, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f42-d-after.jpg" alt="Floor 42: the wagons, after: three wagon horses tethered, grazing" loading="lazy"><figcaption><b>After:</b> three wagon horses tethered, grazing</figcaption></figure>
+</div>
+<h3>Floor 45: the field hospital</h3>
+<div class="pair">
+  <figure><img src="war/f45-v-before.jpg" alt="Floor 45: the field hospital, before" loading="lazy"><figcaption><b>Before</b></figcaption></figure>
+  <figure class="after"><img src="war/f45-v-after.jpg" alt="Floor 45: the field hospital, after: a line of bandages (right)" loading="lazy"><figcaption><b>After:</b> a line of bandages (right)</figcaption></figure>
+</div>
+<h3>On a phone</h3>
+<p class="sub">The lighter set: half the crows, one horse a wagon train, less ash, no walkers; the smoke and cloth stay.</p>
+<div class="pair">
+  <figure class="after"><img src="war/f42-camp-phone.jpg" alt="Floor 42 camp at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 42, the camp</figcaption></figure>
+  <figure class="after"><img src="war/f42-d-phone.jpg" alt="Floor 42 wagons at a phone's size" loading="lazy"><figcaption><b>Phone:</b> floor 42, the wagons</figcaption></figure>
+</div>
+<h3>The War's fights, and a fix in the War's rain</h3>
+<p>Here the check first failed: with the life on, the speed tool's fight on floors 41 and 45 came out a different fight, and not even
+the same one twice. Laying one fight over the other die by die found it: <b>the War's rain</b> (a picture only) picked where each
+raindrop starts with the fight's own dice: the two runs parted exactly where a drop landed in one and not the other. How the life
+shifted the drops is not pinned down; what is measured is that with the rain on dice of its own the prints match, life on or off,
+every run. The rain now has dice of its own (one change in <code>src/tower/world/warZone.ts</code>; it looks the same). Since then the War's fight is the same with the
+life on or off, every run. Its print changed with it, so the War floors' saved prints are older than this code.</p>
+<h3>What it costs</h3>
+<table>
+  <tr><th></th><th>Life off (ms)</th><th>Life on (ms)</th><th>Draw calls</th><th>Same fight?</th></tr>
+  <tr><td>Computer, floor 41</td><td>23.3</td><td>27.2</td><td>310 → 316</td><td>yes (<code>5267e5db</code>), after the rain's fix</td></tr>
+  <tr><td>Computer, floor 45</td><td>21.1</td><td>27.2</td><td>339 → 346</td><td>yes (<code>18d15a15</code>, four runs), after the rain's fix</td></tr>
+  <tr><td>Phone (slowed four times)</td><td colspan="4">not measured: the timing lock was busy with another agent's run until the wait ran out</td></tr>
+</table>
+<ul>
+  <li>Under load again (these scenes ran near 13 ms on a quiet computer). Timed on its own, the War's life takes 0.06 to 0.07 ms of
+    the processor a frame. 6 or 7 more draws: the walkers did not come within sight in these scenes, so the walkers' share (as in the
+    other chapters, most of the cost) is not in these two rows.</li>
+</ul>
+
+<h2 class="ch" id="all">For every chapter</h2>
+<h3>The walkers</h3>
+<p>The plain workers made for the walkers in Blender now walk every chapter that has its life: on the Sea a dockhand and a fishwife in
+turn, then one worker a chapter (the Wood's woodcutter, the Sands' water-carrier, the Deep's miner, the War's gleaner). No names, so you
+never meet a named person twice on a floor. Two walkers no longer share a trail side by side (on floors 1, 5 and 8 of the Sea one
+route ran close beside another and was swapped for one of its own). They walk on the game's walking clip; clips of work (mending, carrying) would make the clip
+file a third bigger, so they are not added. Which figure walks where is one line a chapter (<code>src/tower/world/life/walkers.ts</code>,
+<code>WALKER_MODELS</code>).</p>
+<h3>The Sea's land</h3>
+<p>The land past the Sea's edge now tells the life where its houses, chimneys, boats and jetties are (one record in
+<code>src/tower/world/land.ts</code>, no change to what it draws). About half of those houses' chimneys now smoke. The land's own boats
+and their sails stay still: they are merged into the ground's mesh, and moving them would change the land's look with the life off. No
+moored boat of the life lies near one of the land's (the nearest is 8 m off). Everything else on the Sea is as it was: every mesh of its
+life compared on floors 1, 5 and 8, the same but the new smoke.</p>
+<h3>How the fights stay the same</h3>
+<p>None of the life is in a fight: no walls, no enemies, nothing the path finding sees. It rolls dice of its own, so the speed tool's
+fights (a fixed seed, the hero set beside one pack after another) come out the same fight to the last number with the life on or off;
+each chapter's check is in its section.</p>
+<h3>Tools</h3>
+<ul>
+  <li><code>python -I pipeline/tools/life-shots.py --floor 12 --spots camp,v --out docs/tower/life/wood</code>: before and after
+    pictures (a spot is a place, x:z, or <code>@hinds.0:dx:dz</code> beside one of the life's things).</li>
+  <li><code>pipeline/tools/life-clip.js</code>: a clip in the game's camera, the hero walking from one spot to another; frames to
+    <code>frame-sink.mjs</code>, which now takes a port of its own.</li>
+  <li><code>?life=0</code> turns the life off, <code>?life=lite</code> shows the phone's set on a computer.</li>
+</ul>
+
+</main>
+</body>
+</html>

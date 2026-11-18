@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
-import { BARD, BARD_CSS, GLYPH, Lyre, Notes, SoundRings, Stave } from '../../effects/parts/bard';
+import { BARD, BARD_CSS, GLYPH, Lyre, Notes, SoundRings, Stave } from '../../heroes/bard/parts';
 import type { Projectile } from '../../effects/projectile';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';

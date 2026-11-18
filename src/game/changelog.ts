@@ -38,9 +38,262 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    date: '2026-11-16',
+    title: 'The Climb alive and fought together, new spell icons, the heroes’ peoples, lore, clans and leaderboards',
+    live: true,
+    items: [
+      {
+        tag: 'Heroes',
+        title: 'Spells that do what their tooltips say',
+        text: 'Madame Cleaver’s table no longer heals the enemy who eats at it: the 50 HP are hers. Mr. Ledger’s Late Fee and Foreclosure and Barry Cloudsley’s Lightning Risk now hit whoever is in the circle when it lands, not only whoever stood there when it was cast. Online, Fenna’s late Uproot and Pim and Pom’s quick second Tag Out now reach the other player’s screen.',
+      },
+      {
+        tag: 'CPU',
+        title: 'Computer players read their spells right',
+        text: 'A computer player now waits while Tempo, Anka, Zephyr or Marin cannot be touched, instead of throwing spells into it. It treats World Tree and Sinkhole as the roots they are and Shadow Double as a summon, and no longer counts Shepherd’s Crook (a pull and a slow) as a stun. Stampede aims as a 12 m strip. Timed rules of ten heroes (Gus’s wet floor, Wick’s doors, Big Yoko’s ring and others) now follow the game’s clock, so a hidden tab or a pause no longer cuts them short.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Bosses and rulers stay out of the floor',
+        text: 'Ash keeps his feet on the floor when he crouches to slam, charge or kneel, and the Heart of Noon’s crown of rays sways in its last phase instead of turning its long rays down into the floor. On the Climb, a fallen ruler lies on the floor instead of halfway through it, and a kneeling ruler holds its staff up, planted in front of it.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s rulers, told as you meet them',
+        text: 'The Codex now tells each ruler as the Climb shows them: the Pearl Tyrant is a crowned woman, the Bell Below wears the old bell as his helm, the Elder Root is Fenna’s oak in an old man’s shape. The Climb’s named women are “her”, the gates above each chapter’s first are held by champions the Tower drew to them, a won ruler leaves you in front of its door, and Cantor’s spell icons carry engraved gold notes.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Robes that no longer glow, and Frost’s ice spires',
+        text: 'On the Climb, the cream and white robes of the Sands’ and the War’s people are a shade darker, so they no longer glow white in their floors’ bright light. In Frostfall Lake, the ice shard lying at each spire’s foot is smaller, so a hero beside the spire no longer stands in it.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Drowned Admiral, a tidier phone screen, shots from the hand',
+        text: 'Floor 1’s ruler is called the Drowned Admiral, as in the lore, and on a phone the box with your hero’s passive fits what is in it. Bowmen, slingers and net casters loose their shots from the hand, and on the Field of Banners each army waits beside its standard, not inside its stone foot.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The War’s armies off the standards',
+        text: 'On floors 42 to 50, as on the Field of Banners, both armies at each ridge and siege works wait behind their standard instead of inside its stone foot.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s first thirty floors, read again',
+        text: 'The people of the Sea, the Wood and the Sands say what they mean: one name for each market, “the salt pans are overrun”, the lost spade is a spade, the Thorn Mother is “her”, and the brass door names the key it waits for.',
+      },
+      {
+        tag: 'Raid',
+        title: 'The Heart of Noon’s rings fall to the floor',
+        text: 'When the Heart of Noon falls, its three golden rings now drop and lie on the floor round it, instead of sinking out of sight under it. On the Climb, the Hollow Oak’s and the Raider Chief’s health bars sit a little higher, clear of the branches and the raised glaive.',
+      },
+      {
+        tag: 'Arenas',
+        title: 'The harbour’s cannons and the Tide Judge’s glaive',
+        text: 'The two cannons on the Drowned Harbour’s walls are a little smaller, so a hero standing at their back no longer stands inside the gun. On the Climb, the Tide Judge’s glaive no longer runs back through his gown.',
+      },
+      {
+        tag: 'Motion',
+        title: 'Heroes stand on the floor and hold their staffs up',
+        text: 'Every hero now stands and walks with the whole foot on the floor; before, the soles sank a few centimetres in. Hands no longer disappear into long coats, robes and aprons. And the heroes with a staff, scepter, lyre, lantern, quill or broom keep it upright as they cast, instead of laying it sideways across the chest.',
+      },
+      {
+        tag: 'Menus',
+        title: 'A faster start',
+        text: 'The game’s first download is a fifth smaller: about 140 showcase and test spells that are not in the game no longer come with it. The page opens sooner, most of all on a phone.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Sea comes alive',
+        text: 'On the Climb’s first ten floors gulls sit on the roofs, wrecks and sand and lift off as you walk up, smoke rises from fires and chimneys, washing and pennants move in the wind, boats rock at their moorings, fish leap in the shallows and people walk between the places.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb comes alive, chapter by chapter',
+        text: 'Every chapter of the Climb now has life of its own: wood pigeons and hinds that bolt in the Wood, kites and tethered camels in the Sands, moths and dripping pools in the Deep, crows, ash and wagon horses on the War’s field, smoke and cloth in the wind, and workers walking the paths on every floor.'
+      },
+      {
+        tag: 'Heroes',
+        title: 'The Story: why the sun fell, and how it ends',
+        text: 'The Codex has a new book, The Story: fourteen chapters from the making of the Tower to a new sun over it. Find out why the sun fell, what the Tower keeps on its floors, who won the duel nobody remembers, and which heroes came out of the Tower itself.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Six heroes now look like their people',
+        text: 'Opaline has amethyst grown into her skin and the violet eyes of the Gloaming folk; Mr. Ledger is one of the Long Dead, vellum on bone with embers for eyes; Kaia is a sea-tanned storm caller of the Coast in an oilskin coat, tide lines on her arms; Brannoc’s grey Kilnborn skin is cracked with the light of the forge in his chest; Hank wears the Moot’s antlers, sawn short; and Grandma Ironknit’s pointed fae ears show through her hood. Their spells and numbers are unchanged.',
+        image: '/news/heroes-peoples.jpg',
+        alt: 'The six heroes side by side: Opaline in deep amethyst with crystal at her shoulders and dark hair; Mr. Ledger in black and oxblood robes with a pale bony face and glowing orange eyes; Kaia sea-tanned in a rain-blue coat with silver hair; Brannoc grey-skinned with orange cracks on his chest and arms; Hank in green and fur with broad antlers; and tiny Grandma Ironknit in her wine hood with long pointed ears.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Sixteen more heroes show their people',
+        text: 'Wick and Tempo have the umber skin and jaw star lines of the Northerners, and Shiori has hers inked on her hands; Silvane and Vesper the blue-grey skin and shining eyes of the Gloaming folk; Bram, Ada and Referee Whistler the ash-grey skin and amber eyes of the Kilnborn; Madame Cleaver the deep brown skin, kohl and henna of the Dune folk; Barry, Zephyr and Marin the tan, tide lines and sea-glass of the Coast; Cantor and Pip the golden-brown skin and gold thread of Aubade; The Great Zambini’s pointed ears show under his hat; and Anka’s skin glows like the ember she is. Hero portraits now show the new looks too. Spells and numbers are unchanged.',
+        image: '/news/heroes-touches.jpg',
+        alt: 'Sixteen hero faces in two rows: dark-skinned Wick and Tempo with white hair, pale Shiori, blue-grey Silvane and Vesper with shining eyes, grey-skinned Bram, Ada and Referee Whistler with amber eyes, deep brown Madame Cleaver in her crimson headwrap, sea-tanned Barry, masked Zephyr and green-haired Marin, golden-brown Cantor and freckled Pip, The Great Zambini with pointed ears under a top hat, and warm-skinned Anka with her feather crest.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'New spell icons for every hero',
+        text: 'Every hero’s spell icons are drawn anew, in one family: each sits in a gold-edged medallion, lit from the same side, in its hero’s own colours, with one sign of the hero in all four (Bram’s pillar, Mortis’s grave-light, Shiori’s ink). They read at a glance on a phone, too.',
+        image: '/news/spell-icons.jpg',
+        alt: 'A grid of the new spell icons, each hero’s four side by side.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s enemies and rulers move better',
+        text: 'The War’s bowmen level their crossbows at you instead of punching with the empty hand; enemies that back away or circle you step the way they go instead of sliding; the rulers with a staff plant it when they shake the ground instead of driving it through the floor, the long gowns and coats of the Pale One and the rulers stay above the ground when they strike, and the tall enemies’ health bars float over their crowns and plumes instead of through them.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Every hero has a story',
+        text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'The Codex: the world of the Dial in full',
+        text: 'A new Codex screen, from the menu or from any hero’s lore (“More about…”), tells the whole world: the twelve peoples of the Dial, not all of them human, the nine realms on a map, the eight factions and their secrets, a hundred years of history, the Climb’s chapters, rulers and enemies, and every hero’s full story with their voice lines. Each hero’s card now also shows their people.',
+      },
+      {
+        tag: 'Menus',
+        title: 'A tidier bar on a phone',
+        text: 'On a phone the bar along the bottom now shows Play, Raid, Tower and Clan (Shop before you sign in) in letters you can read, and a More tab opens the rest: Lobbies, Boards, Heroes, Shop, Profile, Codex, News, Graphics and Log out. A long name no longer pushes your obols off the screen; tap your name to open your profile.',
+      },
+      {
+        tag: 'Online',
+        title: 'Fight the Climb’s packs together',
+        text: 'Signed in, the players on your floor now fight the same enemies: you see the same foes, their health and their red zones, and a kill counts for everyone who hit it in its last ten seconds. A pack grows tougher with each player in its fight, and a cleared pack comes back after about three minutes.',
+      },
+      {
+        tag: 'Online',
+        title: 'Face a floor’s ruler together',
+        text: 'Walk into a ruler’s lair while another player stands nearby and the door holds for six seconds: whoever walks in too fights the ruler beside you, and the first one in can go in at once. The ruler grows tougher for each of you, a fallen hero can be got up by standing beside it, and the win counts for everyone who struck it. You all come back out together, in front of the door. Gates, vaults and rivals are still fought alone.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s people are their own',
+        text: 'The keepers, quest givers and traders on the Climb are no longer heroes standing in: each chapter has five people of its own, from the Bell-Warden of the Sea to the Herald of the War, and the traders take turns floor by floor. Rivals and gatekeepers are still heroes.',
+        image: '/news/climb-people.jpg',
+        alt: 'The Wood’s five people between the heroes Sefu and Kaia: the Moss-Abbess in a pointed green hood with a curled horn, the Path-Lighter in a wide hat with a lamp on a tall pole, the Kiln-Mother with a basket of charcoal and a fire-rake, the Amber-Seller with a tray of amber, and the Charm-Pedlar with a frame of charms over his head.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s rulers and enemies are their own',
+        text: 'Every ruler on the Climb is now a giant of its own, three to a chapter, from the Drowned Admiral to the Crow King, and the people-shaped enemies are new figures too: dockers and net casters, moss giants and thorn sprites, raiders, lurkers, and soldiers in their army’s colours. Their fights are the same as before; the beasts are as they were.',
+        image: '/news/climb-rulers.jpg',
+        alt: 'The Sands’ three rulers between the heroes Sefu and Kaia: the Scarab King in blue-black shell armour with a horned helm and a hooked sword, the Brass Sphinx with a calm brass mask, a mane and a disc of sun rays, and the Red Jackal with a black jackal’s head and a spear of green glass.',
+      },
+      {
+        tag: 'Tower',
+        title: 'A map of the floor',
+        text: 'The Climb now has a small round map in the top-left corner that follows your hero, with the enemies, people, doors, waystones and the next step of your quest on it. Press M, or tap the small map, to see the whole floor with the names of its places.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The Deep and the War, floor by floor, set right',
+        text: 'Floors 31 to 50 were each played through and looked over. Names on the big map no longer sit on top of each other or run off its edge, and the small map stays over the people walking under it. In the Deep a jetty no longer runs through a ridge of rock and the crystals on the walls stand on the rock instead of hanging beside it. Brannoc on the Field of Banners now shows his crossed swords like every rival, the Turncloak no longer stands in the camp’s bench, and the last floor speaks of Ash and Ember as the two they are.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Clearer fights and your own rival on the Climb',
+        text: 'People’s marks no longer cover the floor’s panel or your spells, and in a ruler’s or a gatekeeper’s fight the title sits under your portrait instead of over it. A trial room now shows the floor you are on. If a floor’s rival is the hero you are playing, another hero takes the rival’s place, so you never duel yourself. And the War’s rulers, its Camp-Mother and a lost trial say what they should.',
+      },
+      {
+        tag: 'Online',
+        title: 'See who waits to duel',
+        text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',
+      },
+      {
+        tag: 'Online',
+        title: 'Leaderboards',
+        text: 'A new Boards screen ranks players by a duel rating (everyone starts at 1000; an online duel of 30 seconds or more moves it), by duel wins this week, by the highest Climb floor and its stars, and clans by their members’ wins. The Raid’s and the Tower’s weekly boards are there too. Your rating is also on your profile.',
+      },
+      {
+        tag: 'Online',
+        title: 'Clans and clan chat',
+        text: 'Found a clan of up to 30 with a tag of your own, or join one with its invite code or by asking its leader. Members see who is online and talk in their own clan chat; the Clan tab counts the messages you have not read. You can mute anyone for yourself and report a message, and your tag stands before your name on the boards and over your hero on the Climb.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Props set right on the Sea and the Wood',
+        text: 'On floors 1 to 20 every prop was looked at one by one and the wrong ones fixed: lanterns hang from their arms, nets, fish and washing hang between their posts, sails sit on their masts, roofs on their walls, houses and boulders on the hillside no longer float, and no lantern or signpost stands in a road or on a waystone any more.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Props set right in the Sands, the Deep and the War',
+        text: 'Things that hung in the air, stood off their slopes or lay in pieces now sit as they should: necks on their jars, swords in their cairns, ropes on the wells, the gateway\'s lintel on its two piers, mushroom caps on their stems, spearheads on their shafts, the hedge\'s lashings on its stakes.',
+      },
+      {
+        tag: 'Tower',
+        title: 'No grass on the cliffs, camps set on their hills',
+        text: 'Grass and dry shrubs no longer grow on steep cliff faces, on any chapter of the Climb. In the War, the tents, burned farmhouses, graveyards and fallen watchtowers past the field\'s edge now sit on their hillsides as one piece, with no gap under their downhill side.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-14',
+    title: 'The Climb grows to fifty floors',
+    live: true,
+    items: [
+      {
+        tag: 'Online',
+        title: 'Meet others on the Climb',
+        text: 'Signed in, you now see the other players on your floor of the Climb: their heroes walk, cast and fall beside yours, with their names over their heads, up to eight on a floor. Each still fights their own foes for now; fighting the packs together comes next.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Five chapters of ten floors',
+        text: 'The Climb is now fifty floors in five chapters: the Sea, the Wood, the Sands, the Deep and the War. Every tenth floor is a crown, a great boss you face alone. The Climb screen shows all fifty, with the floors you can play and the ones still locked.',
+        image: '/news/climb-chapters.jpg',
+        alt: 'The Climb screen: the picked floor, The Storm Canyon, at the top, then five chapters of ten numbered tiles. Floors 1 and 11 show stars, floor 21 is picked, floors 31 and 41 are locked, the floors still being made are dashed and say soon, and every tenth tile has a small crown.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Forty-five new floors',
+        text: 'Each chapter\'s first floor is followed by nine new ones, each with its own places, people, quests, gatekeeper and ruler, and a little harder each time. The crowns: the Sun Warden on floor 10, Ash and Ember on 20, the Heart of Noon on 30, the Sun Warden again, stronger, on 40, and Ash and Ember, stronger, on 50.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Five times the ground',
+        text: 'Every floor is now about five times as large, with a shape of its own instead of a circle: a coast with a ring road, a forest of glades, a desert valley, a cave with a black lake, a battlefield under a siege line. Roads have lanterns, signposts and milestones, every place is dressed as what it is, and the land goes on past the edge.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Something happened here',
+        text: 'Every floor now has twenty or so little scenes along its roads and in its open ground: on the coast a fish stall knocked over and a ship wrecked on the far rocks; in the Wood an axe left in a half-split log and a hunter\'s camp left in a hurry; in the Sands what an ambush left of a caravan, an abandoned dig and a great beast\'s ribs; in the Deep the miners\' last camp and a boat half sunk in the black lake, its lantern still lit; in the War the shields of both armies where the lines met, a field hospital and a burned-out farm.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Enemies fight together',
+        text: 'A pack now picks one target together and comes at it from different sides, and only three strike at once while the rest wait a step back. Each kind has its own way: hounds and mites bite, fall back and lunge; lurkers leap from the dark; crabs and giants slam; knights charge; slingers, sprites and bowmen loose a fan of three; the guards and the named slam and charge in turn, and grow faster when hurt. Every one of these shows its red zone on the ground first: step out of it.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Each chapter has its own way',
+        text: 'In the Wood, walls of roots close some passes by turns. In the Sands, a wall of sand crosses the valley: wait it out behind a rock, and keep the caravan in a rock\'s lee. In the Deep, only crystals, lamps and touched waystones give light. In the War, take a banner and its soldiers fight beside you.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The other floors moved up',
+        text: 'The Walking Wood is now floor 11, the Storm Canyon 21, the Lightless Deep 31 and the Field of Banners 41, each the first floor of its chapter. They are grown to the new size with the same people, quests and fights, and your stars, best times and a floor in progress moved with them.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-14',
+    title: 'The Drowned Harbour by day',
+    live: true,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'Floor 1 is a place, not a platform',
+        text: 'The Drowned Harbour is now a town on a real coast in daylight: grass and dirt roads, the market\'s cobbles, tidal flats where the tide comes in, a cliff along the north, houses and woods beyond the edge, and a beach running down into the sea with jetties and boats. Where you walk and fight is the same.',
+      },
+    ],
+  },
+  {
     date: '2026-11-13',
     title: 'The Tower: five floors that are worlds',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Tower',
@@ -74,7 +327,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-13',
     title: 'A smoother game',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Menus',
@@ -352,7 +605,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
     title: 'Balance: Sirix, Cantor and Nyx',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Balance',

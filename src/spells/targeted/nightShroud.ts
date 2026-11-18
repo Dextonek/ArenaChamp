@@ -5,7 +5,7 @@ import { clearScreenFx, createScreenFx } from '../../effects/parts';
 import type { Projectile } from '../../effects/projectile';
 import {
   Afterimage, CutFlash, CutShape, SHADOW_CSS, ShadowPool, facing, forward, shadowEaseOut,
-} from '../../effects/parts/shadow';
+} from '../../heroes/shadow/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

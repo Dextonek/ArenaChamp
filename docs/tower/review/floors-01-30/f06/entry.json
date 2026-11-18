@@ -1,0 +1,47 @@
+{
+ "floor": 6,
+ "verdict": "Plays clean: cleared, no console error, every spot reachable; the rival (Wick), the trial, the ruler (the Pearl Tyrant) and the gate (Mum) all played. The bot needed four tries at Mum's gate (balance, not a fault). One lore mismatch for you.",
+ "found": [
+  {
+   "kind": "list",
+   "title": "The Pearl Tyrant is a man in the Codex, a crowned woman on the floor",
+   "text": "The Codex (climb/rulers.md): “A pearl merchant ... He drowned holding the strongbox.” Floor 6 draws him with the Gull Queen's model (sea_queen, pieces/rulerModels.ts RULER_OF[6]), a crowned woman in a gown. Either the Codex says “she”, or floor 6 takes the Admiral's or the Judge's model (one number in RULER_OF; the three Sea models would then not be three floors each).",
+   "pics": [
+    [
+     "ruler-close.jpg",
+     "The Pearl Tyrant as drawn"
+    ]
+   ]
+  },
+  {
+   "kind": "ok",
+   "title": "The props the probe flagged",
+   "text": "Pines on the hills and the cliff top, boats on the sea, houses on their plinths, the lair wall's gold edge into the hill, two stones and a tuft just under the ground. Nothing in the air."
+  }
+ ],
+ "pictures": [
+  [
+   "person-rival.jpg",
+   "Wick, the rival"
+  ],
+  [
+   "pack-b.jpg",
+   "The caves' pack"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ],
+  [
+   "phone-person-keeper.jpg",
+   "Phone: the keeper's card"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

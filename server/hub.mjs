@@ -9,10 +9,12 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
+import { Clans } from './clans.mjs';
 import {
-  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX,
-  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
+  CLAN, ELO, LEADER_SIZE, HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
+  WORLD_DOORS, WORLD_PACKS, doorScale, isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, rTiming, shopRotation,
 } from './protocol.mjs';
+import { CLIMB_DOORS, CLIMB_PACKS } from './climb-packs.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -29,12 +31,10 @@ const BREAK_MS = 3000;
 const PICK_MS = 15000;
 const ARENA_ID_RE = /^[a-z]{1,16}$/;
 // A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
-// (R: R_GAP_MS). Lenient on purpose: the real cooldowns live in the kits, which are still changing.
+// (R: its hero's `rTiming(hero).gapMs`, and one free second R, a recast such as Fenna's Uproot, within its `recastMs`).
+// Lenient on purpose: the real cooldowns live in the kits, which are still changing.
 const HIT_WINDOW_MS = 12000;
 const SLOT_GAP_MS = 350;
-const R_GAP_MS = 10000;
-// A free second R (a recast such as Oblivion's Collapse) may follow the first within RECAST_MS.
-const RECAST_MS = 4000;
 // Basic attacks: at most one per ATTACK_GAP_MS, a hit from one at most ATTACK_MAX damage. Heals: one at most HEAL_MAX,
 // at most HEAL_WINDOW_MAX within HEAL_WINDOW_MS. Statuses and shields the clients report are only relayed (for the
 // look on the other screen), clamped to these caps.
@@ -100,20 +100,46 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
 
 /**
  * @typedef {{ send: (text: string) => void, name: string | null, lobby: Lobby | null, queued: { hero: string, since: number } | null,
- *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null }} Client
+ *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null, world?: WorldSeat | null }} Client
  *   `watching`: a duel this client watches without playing in it (it has no `match`, so nothing it sends can act in one).
+ *   `world`: the Climb's floor this client walks, in one of its shards (the open world, pipeline/designs/climb-open-world.md).
+ * @typedef {{ id: string, floor: number, members: Set<Client>, packs: Map<string, WorldPack>, gathers: Map<string, DoorGather> }} WorldShard
+ *   One shard of a Climb floor: at most `WORLD.shardMax` players who see each other. `id`: the floor and the shard's number ("2.1").
+ *   `packs`: the packs someone in it woke or cleared (stage 2); a pack not here is each screen's own. `gathers`: the doors held open
+ *   now for others to come in with whoever walked in first (stage 3), by door id.
+ * @typedef {{ door: string, x: number, z: number, members: Client[], until: number, timer: any }} DoorGather
+ *   A ruler's door held `WORLD_DOORS.gatherS` s by the first in (`members[0]`, who may also go in at once): whoever walks in by
+ *   `until` fights beside them.
+ * @typedef {{ id: string, home: { x: number, z: number }, owner: Client | null, n: number, x: number, z: number, hits: Map<number, number>,
+ *   cleared: boolean, clearedAt: number, lastAt: number }} WorldPack
+ *   A shared pack: whose screen runs it (null once cleared), how many players its numbers are set for (`n`, only ever up), where it
+ *   fights now (its owner's last report), who hit it and when (seat id to the hub's clock), and when it was cleared.
+ * @typedef {{ shard: WorldShard, id: number, hero: string, x: number, z: number, yaw: number, walk: boolean, hp: number,
+ *   moves: number, movesFrom: number, casts: number[], lastLabel: string, lastLabelAt: number,
+ *   rate?: { from: number, states: number, hits: number, hurts: number }, inside?: Match | null, doorsFrom?: number, doors?: number }} WorldSeat
+ *   A player in a shard: its id there (one number for the connection), its hero, where it last said it stood, and its rate limits:
+ *   the moves of the second that began at `movesFrom`, when its last casts went out, and its last spell and when; `rate`: its
+ *   pack messages of the second that began at `rate.from`. `inside`: the door's fight this player is in with others (stage 3): the
+ *   seat is kept, so the player comes out into the same shard, but the floor does not see it, its packs or its place until then;
+ *   `doors`: its `door_enter`s of the second that began at `doorsFrom`.
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[], raid: string | null, open: boolean, max: number }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
  *   heals: { at: number, amount: number }[], rRecast?: boolean, hazardAt?: number, down?: boolean, left?: boolean, dmgAt?: number, dmgSum?: number,
- *   move?: (number | null)[] | null, beaten?: number, at?: { x: number, z: number, yaw: number, r?: number } }} Player
+ *   move?: (number | null)[] | null, beaten?: number, at?: { x: number, z: number, yaw: number, r?: number }, dealt?: number }} Player
  *   `move`: in a party of more than two, this hero's newest walk that the others have not been sent yet.
  *   `at`: in a duel, where this hero last said it stood (a watcher who comes in sees it there; a hero standing still sends nothing).
  *   `beaten`: in a raid, the bosses this player has beaten with others in this run (its rank and the week's board come from it).
+ *   `dealt`: in a raid or a door's fight, the damage its screen laid on the boss (a door's clear counts for whoever hit).
  * @typedef {{ id: string, band: number, hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number,
  *   brainAt: number, revives: number[], stood: Map<string, { id: number, part: number, count: number, from: Set<number>, timer: any, half: number }>,
- *   settled: Set<string>, walls: Set<number>, taken: Set<string>, hpTimer: any, hpAt: number, twin?: RaidTwin }} RaidBoss
+ *   settled: Set<string>, walls: Set<number>, taken: Set<string>, hpTimer: any, hpAt: number, twin?: RaidTwin, rules?: BossRules }} RaidBoss
  *   `band`: the party size this fight is tuned for, from who was there when it started. `brainAt`: when the brain last changed screens.
+ *   `rules`: a Climb ruler's own (a door's fight, stage 3), in place of the Raid's tables for its id.
+ * @typedef {{ phases: number[], kneel: number, rewards: Record<string, { hp?: number, stagger?: number, kneel?: boolean, stun?: number, swap?: boolean }>,
+ *   ring: number, gauge: number }} BossRules
+ *   The shares of health its phases start at, how long it kneels, what a mechanic earns, how far it and the heroes may be reported
+ *   from the room's middle, and how much a mechanic's stagger is worth (the gauge's growth with the party).
  * @typedef {{ hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number, brainAt: number,
  *   hpTimer: any, hpAt: number, dead?: boolean }} RaidPool
  *   What is kept per boss. A boss fought alone is its own pool; Twin Flames has two (`RaidTwin.pools`).
@@ -127,9 +153,11 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
  *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss, ticker?: any, watch?: any, watchers?: Set<Client>,
+ *   door?: { shard: WorldShard, floor: number, id: string, n: number },
  *   run?: { stage: number, tier: number, beaten: number, seconds: number, picks: Set<number>, enters: Set<number>, goes: Set<number>,
  *     sides?: Map<number, string>, sided?: boolean, together?: number, togetherS?: number, togetherTier?: number, inTier?: number } }} Match
- *   `ticker`: a party's walks, batched. `watch`: the look at whether the brain's screen is still there.
+ *   `ticker`: a party's walks, batched. `watch`: the look at whether the brain's screen is still there. `door`: a Climb ruler fought
+ *   by a party of a shard (stage 3): no run, no hall, nothing on the accounts; it ends with `door_end`.
  *   `watchers`: a duel's onlookers (`watch`): they get both heroes' messages, each wrapped in `watch_msg` with the hero's side.
  *   `run.together`: the bosses of this run that count for rewards (beaten by two or more, in a fight long enough to be one), the
  *   run's time and tier when the last of them fell, and how many of them were in the tier that is being fought now.
@@ -159,6 +187,12 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** The duels being fought now, by id: the Lobbies screen lists them and anyone signed in may watch one. Raids are not here. */
   /** @type {Map<string, Match>} */
   const duels = new Map();
+  /** The Climb's open world: each floor's shards. @type {Map<number, WorldShard[]>} */
+  const worlds = new Map();
+  /** The last id a player got in a world shard (one per connection, kept while it is open). */
+  let worldIds = 0;
+  /** Clans and their rooms (clans.mjs), kept in the accounts' store. */
+  const clans = new Clans(accounts);
 
   /**
    * A new connection. `send` writes one text frame. Returns the handlers the host calls for each incoming frame and
@@ -189,6 +223,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         c.closed = true;
         clients.delete(c);
         drop(c, 'disconnect');
+        // The clan sees this player's dot go out.
+        if (c.name) clanPresence(c.name);
       },
     };
   }
@@ -338,8 +374,17 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     }
     // The week's boards are for everyone to read: the Raid and Tower screens are open without an account.
     if (m.t === 'boards') return send(c, boardsMsg());
+    // So are the Leaderboards (with the player's own rows when signed in).
+    if (m.t === 'leaderboards') return send(c, leaderboards(c));
     if (!c.name) return send(c, { t: 'auth_error', error: 'Please log in' });
+    if (m.t.startsWith('clan_')) return clanMessage(c, m);
     switch (m.t) {
+      case 'climb_report': {
+        // The highest Climb floor this signed-in player's own page has cleared, and its stars. NOT VERIFIED: the Climb runs in the
+        // page. It pays nothing; each only grows (accounts.mjs, `reportClimb`).
+        if (accounts.reportClimb(c.name, m.floor, m.stars, now())) boardsChanged();
+        return;
+      }
       case 'shop_buy': {
         // A hero for obols, for good. The account's own obols and the price in the table decide, never the page.
         const a = accounts.get(c.name);
@@ -361,11 +406,38 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (accounts.boardTower(a.name, m.week, m.floor, m.hero, now())) send(c, boardsMsg());
         return;
       }
-      case 'logout':
+      case 'world_join':
+        return worldJoin(c, m);
+      case 'world_leave':
+        return worldLeave(c);
+      case 'world_move':
+        return worldMove(c, m);
+      case 'world_cast':
+        return worldCast(c, m);
+      case 'pack_claim':
+        return packClaim(c, m);
+      case 'pack_state':
+        return packState(c, m);
+      case 'pack_hit':
+        return packHit(c, m);
+      case 'pack_hurt':
+        return packHurt(c, m);
+      case 'pack_clear':
+        return packClear(c, m);
+      case 'pack_release':
+        return packRelease(c, m);
+      case 'door_enter':
+        return doorEnter(c, m);
+      case 'door_go':
+        return doorGo(c);
+      case 'logout': {
+        const was = c.name;
         for (const [tok, n] of sessions) if (n === c.name) sessions.delete(tok);
         drop(c, 'logout');
         c.name = null;
+        clanPresence(was);
         return send(c, { t: 'logged_out', reason: '' });
+      }
       case 'profile':
         return sendProfile(c);
       case 'lobbies':
@@ -376,6 +448,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (c.lobby) return fail(c, 'Leave your lobby first');
         if (c.queued) return fail(c, 'Leave the queue first');
         const match = duels.get(String(m.id ?? ''));
+        // Watching a duel is not walking a floor.
+        worldLeave(c);
         if (!match || match.state === 'over') return fail(c, 'That duel is over');
         if (match.players.some((p) => p.client === c)) return fail(c, 'You are in that duel');
         if (c.watching === match) return send(c, watchState(match));
@@ -476,7 +550,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
         const hall = match.state === 'offer' || match.state === 'gate';
-        const p = clampRing(m.x, m.z, hall ? RAID_HALL_RING : match.boss ? raidRing(match.boss.id, match.boss.band) : RING.r);
+        const p = clampRing(m.x, m.z, hall ? RAID_HALL_RING : match.boss ? ringOf(match.boss) : RING.r);
         const yaw = num(m.yaw) ? m.yaw : 0, ts = num(m.ts) ? m.ts : undefined, r = num(m.r) ? Math.max(0, Math.min(1000, m.r)) : undefined;
         if (match.ticker) {
           // A party: only this hero's newest walk is kept, and goes out with everyone's in the next batch (`partyMoves`).
@@ -494,10 +568,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!match || match.state !== 'fight' || Date.now() < match.fightAt) return;
         if (![0, 1, 2, 3].includes(m.slot) || !num(m.id) || !num(m.x) || !num(m.z) || !num(m.fx) || !num(m.fz)) return;
         const me = match.players[c.side], now = Date.now();
-        const since = now - me.lastSlot[m.slot];
-        if (m.slot === 3 && since < R_GAP_MS) {
+        const since = now - me.lastSlot[m.slot], r = rTiming(me.hero);
+        if (m.slot === 3 && since < r.gapMs) {
           // Only one quick second R (a recast), and it does not restart the long gap.
-          if (since < SLOT_GAP_MS || since > RECAST_MS || me.rRecast) return;
+          if (since < SLOT_GAP_MS || since > r.recastMs || me.rRecast) return;
           me.rRecast = true;
         } else {
           if (since < SLOT_GAP_MS) return;
@@ -677,7 +751,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'boss_move': {
         const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
         if (!boss || !match || !pool || !num(m.x) || !num(m.z)) return;
-        const p = clampRing(m.x, m.z, raidRing(boss.id, boss.band));
+        const p = clampRing(m.x, m.z, ringOf(boss));
         return tell(match, { t: 'boss_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined, which: whichOf(boss, pool) }, c.side);
       }
       // --- the raid: from any screen ----------------------------------------------------------------------------------
@@ -693,6 +767,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const which = reachOf(boss, c.side, m.which);
         if (which < 0) return;
         me.dmgSum = (me.dmgSum ?? 0) + amount;
+        me.dealt = (me.dealt ?? 0) + amount;
         raidDamage(match, amount, which);
         return;
       }
@@ -728,7 +803,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         // A mechanic was done right, says the screen that runs the brain. What it earns comes from the table, once per cast.
         const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
         if (!boss || !match || !pool || !num(m.id) || typeof m.key !== 'string') return;
-        const table = RAID_REWARDS[boss.id], r = Object.hasOwn(table, m.key) ? table[m.key] : null, key = `reward:${m.id}:${m.key}`;
+        const table = rewardsOf(boss), r = table && Object.hasOwn(table, m.key) ? table[m.key] : null, key = `reward:${m.id}:${m.key}`;
         if (!r || boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
         boss.taken.add(key);
         // Not a reward but a request: The Changing of the Flames, for the cast its brain's screen names.
@@ -739,7 +814,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (r.kneel) raidKneel(match, which);
         else if (r.stun) raidStun(match, r.stun, which);
         // The gauge is bigger for a bigger party, and so is what a mechanic puts in it (each of two bosses has half of both).
-        else if (r.stagger && Date.now() >= pool.kneelUntil) raidStagger(match, r.stagger * raidScale(boss.band) * (boss.twin ? 0.5 : 1), which);
+        else if (r.stagger && Date.now() >= pool.kneelUntil) raidStagger(match, r.stagger * (boss.rules?.gauge ?? raidScale(boss.band)) * (boss.twin ? 0.5 : 1), which);
         return;
       }
       case 'boss_stood': {
@@ -929,6 +1004,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     return w;
   }
 
+  /** A boss's phases and kneel: a Climb ruler's own, or the Raid's for its id. @param {RaidBoss} boss */
+  const rulesOf = (boss) => boss.rules ?? RAID_BOSSES[boss.id];
+
+  /** What a boss's mechanics earn: a ruler's own, or the Raid's table. @param {RaidBoss} boss */
+  const rewardsOf = (boss) => boss.rules?.rewards ?? RAID_REWARDS[boss.id];
+
+  /** How far from the room's middle a boss and its heroes may be. @param {RaidBoss} boss */
+  const ringOf = (boss) => boss.rules?.ring ?? raidRing(boss.id, boss.band);
+
   /** The raid `c` is fighting right now, if any. @param {Client} c */
   function raidOf(c) {
     const match = c.match;
@@ -954,6 +1038,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     send(c, { t: 'session', token, profile: accounts.profile(/** @type {any} */ (accounts.get(name))) });
     send(c, lobbyList());
     log(`${name} signed in`);
+    // The clan sees this player's dot light up (the page asks for its clan and the room with `clan_get`).
+    clanPresence(name);
   }
 
   /** @param {Client} c */
@@ -970,14 +1056,16 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (c.match && c.match.state !== 'over') { fail(c, 'You are in a match'); return true; }
     if (c.lobby) { fail(c, 'Leave your lobby first'); return true; }
     if (c.queued) { fail(c, 'Leave the queue first'); return true; }
-    // Watching holds nobody back: going to play a fight of one's own stops it.
+    // Watching holds nobody back: going to play a fight of one's own stops it. Nor does a Climb floor: the player leaves its shard.
     unwatch(c);
+    worldLeave(c);
     return false;
   }
 
   /** Leaves whatever the client is in (lobby, queue, a running match counts as a loss). @param {Client} c @param {string} reason */
   function drop(c, reason) {
     unwatch(c);
+    worldLeave(c);
     leaveLobby(c);
     leaveQueue(c);
     const match = c.match;
@@ -1002,7 +1090,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       id: d.id, names: d.players.map((p) => p.name), heroes: d.players.map((p) => p.hero), round: d.round, score: d.score.slice(),
       watchers: d.watchers?.size ?? 0, since: d.startedAt || d.created,
     }));
-    return { t: 'lobbies', list, raids, live };
+    return { t: 'lobbies', list, raids, live, queue: queue.length };
   }
 
   function broadcastLobbies() {
@@ -1066,6 +1154,616 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (i >= 0) queue.splice(i, 1);
     c.queued = null;
     for (const q of queue) sendQueue(q);
+    queueSize();
+  }
+
+  /**
+   * How many wait in the queue, for everyone signed in and idle (the Play screen shows it before Find match is pressed): sent
+   * when the count changes. The queued have their own `queue` message; the count also rides on `lobbies` (`queue`), so a player
+   * back from a duel has it at once.
+   */
+  let queueSaid = -1;
+  function queueSize() {
+    if (queue.length === queueSaid) return;
+    queueSaid = queue.length;
+    const text = JSON.stringify({ t: 'queue_size', size: queue.length });
+    for (const c of clients) if (c.name && !c.match && !c.watching && !c.queued) sendText(c, text);
+  }
+
+  // --- the Climb's open world, stage 1: presence (pipeline/designs/climb-open-world.md) ---------------------------------
+  // Signed-in players on the same Climb floor are put in one of its shards (at most `WORLD.shardMax` each) and see each other walk
+  // and cast. The hub only relays: no enemies, no hits, no progress. A player in a duel, a raid, a lobby or the queue is in none.
+
+  /** A seat's place as the others are told it. @param {WorldSeat} s */
+  const worldSeen = (s) => ({ x: s.x, z: s.z, yaw: s.yaw, walk: s.walk, hp: s.hp });
+
+  /** One message to everyone in a shard but `except`, written out once. @param {WorldShard} shard @param {any} msg @param {Client | null} except */
+  function tellShard(shard, msg, except) {
+    const text = JSON.stringify(msg);
+    // A player behind a door with others (stage 3) is not on the floor until it comes out.
+    for (const x of shard.members) if (x !== except && !x.world?.inside) sendText(x, text);
+  }
+
+  /**
+   * `world_join { floor, hero, x?, z?, yaw? }`: into a shard of that floor, the fullest that has room (a new one when all are full).
+   * Joining the floor it is already on keeps its shard (a zone built again after a door or a fall): only the roster comes again, and
+   * the others hear `world_joined` again if the hero changed. Answers `world_roster`; a new arrival's shard hears `world_joined`.
+   * @param {Client} c @param {any} m
+   */
+  function worldJoin(c, m) {
+    if (!Number.isInteger(m.floor) || m.floor < 1 || m.floor > TOWER_FLOOR_MAX || !validHero(m.hero)) return;
+    // Not beside a fight of its own, a lobby or the queue (the menu does not let a climb begin then).
+    if ((c.match && c.match.state !== 'over') || c.lobby || c.queued) return;
+    const no = lockedFor(c, m.hero);
+    if (no) return fail(c, no);
+    unwatch(c);
+    const at = worldPlace(m.x, m.z), yaw = num(m.yaw) ? mm(m.yaw) : 0;
+    let seat = c.world;
+    if (seat && seat.shard.floor !== m.floor) {
+      worldLeave(c);
+      seat = null;
+    }
+    if (seat) {
+      // Back from a door's fight (stage 3): on the floor again, in the same shard, where it says it stands.
+      const back = !!seat.inside;
+      seat.inside = null;
+      const changed = seat.hero !== m.hero;
+      seat.hero = m.hero;
+      if (num(m.x) && num(m.z)) Object.assign(seat, at, { yaw });
+      if (changed || back) tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: c.name, tag: tagOf(c.name), hero: seat.hero, ...worldSeen(seat) }, c);
+    } else {
+      const shards = worlds.get(m.floor) ?? [];
+      worlds.set(m.floor, shards);
+      // The fullest shard that has room: players meet rather than spread out.
+      let shard = null;
+      for (const s of shards) if (s.members.size < WORLD.shardMax && (!shard || s.members.size > shard.members.size)) shard = s;
+      if (!shard) {
+        // The lowest number not in use on this floor.
+        let n = 1;
+        while (shards.some((s) => s.id === `${m.floor}.${n}`)) n++;
+        shard = { id: `${m.floor}.${n}`, floor: m.floor, members: new Set(), packs: new Map(), gathers: new Map() };
+        shards.push(shard);
+      }
+      seat = { shard, id: ++worldIds, hero: m.hero, ...at, yaw, walk: false, hp: 1, moves: 0, movesFrom: 0, casts: [], lastLabel: '', lastLabelAt: 0 };
+      c.world = seat;
+      shard.members.add(c);
+      tellShard(shard, { t: 'world_joined', id: seat.id, name: c.name, tag: tagOf(c.name), hero: seat.hero, ...worldSeen(seat) }, c);
+      log(`${c.name} walks floor ${m.floor} (shard ${shard.id}, ${shard.members.size} there)`);
+    }
+    const shard = seat.shard;
+    const players = [];
+    for (const x of shard.members) {
+      if (x === c || !x.world || x.world.inside) continue;
+      players.push({ id: x.world.id, name: x.name, tag: tagOf(x.name), hero: x.world.hero, ...worldSeen(x.world) });
+    }
+    send(c, { t: 'world_roster', shard: shard.id, floor: shard.floor, you: seat.id, max: WORLD.shardMax, players, packs: packList(shard) });
+  }
+
+  /** Out of its shard, if it was in one: the others hear `world_left`, and an empty shard is gone. @param {Client} c */
+  function worldLeave(c) {
+    const seat = c.world;
+    if (!seat) return;
+    c.world = null;
+    const shard = seat.shard;
+    shard.members.delete(c);
+    doorUngather(shard, c);
+    // One behind a door has already left the others' screens.
+    if (!seat.inside) tellShard(shard, { t: 'world_left', id: seat.id }, null);
+    // Its packs go to the oldest member near each (as the Raid's brain is handed on), or to nobody.
+    for (const p of shard.packs.values()) if (p.owner === c) packHandOn(shard, p, now());
+    if (!shard.members.size) {
+      const shards = (worlds.get(shard.floor) ?? []).filter((s) => s !== shard);
+      if (shards.length) worlds.set(shard.floor, shards);
+      else worlds.delete(shard.floor);
+    }
+  }
+
+  /**
+   * `world_move { x, z, yaw, walk, hp, ts? }`: where this hero is now. Kept (a player who comes in later sees it there) and relayed to
+   * the shard as `world_moved { id, ... }`. At most `WORLD.movesPerS` in a second: past that a flood is dropped unread.
+   * @param {Client} c @param {any} m
+   */
+  function worldMove(c, m) {
+    const seat = c.world;
+    if (!seat || seat.inside || !num(m.x) || !num(m.z)) return;
+    const t = Date.now();
+    if (t - seat.movesFrom >= 1000) { seat.movesFrom = t; seat.moves = 0; }
+    if (++seat.moves > WORLD.movesPerS) return;
+    Object.assign(seat, worldPlace(m.x, m.z));
+    if (num(m.yaw)) seat.yaw = mm(m.yaw);
+    seat.walk = !!m.walk;
+    if (num(m.hp)) seat.hp = Math.round(Math.max(0, Math.min(1, m.hp)) * 1000) / 1000;
+    tellShard(seat.shard, { t: 'world_moved', id: seat.id, ...worldSeen(seat), ts: num(m.ts) ? m.ts : undefined }, c);
+    packWatch(seat.shard, now());
+  }
+
+  /**
+   * `world_cast { label, x, z, tx, tz }`: this hero cast a spell (its look only: the others draw it and nothing in it counts). Relayed
+   * as `world_cast { id, ... }`, rate-limited as a duel's casts are: the same spell not again within `SLOT_GAP_MS`, and no more than
+   * `WORLD.casts` in `WORLD.castsMs`.
+   * @param {Client} c @param {any} m
+   */
+  function worldCast(c, m) {
+    const seat = c.world;
+    if (!seat || seat.inside || typeof m.label !== 'string' || !m.label || m.label.length > WORLD.labelMax || !num(m.x) || !num(m.z) || !num(m.tx) || !num(m.tz)) return;
+    const t = Date.now();
+    if (m.label === seat.lastLabel && t - seat.lastLabelAt < SLOT_GAP_MS) return;
+    while (seat.casts.length && t - seat.casts[0] > WORLD.castsMs) seat.casts.shift();
+    if (seat.casts.length >= WORLD.casts) return;
+    seat.casts.push(t);
+    seat.lastLabel = m.label;
+    seat.lastLabelAt = t;
+    const from = worldPlace(m.x, m.z), to = worldPlace(m.tx, m.tz);
+    tellShard(seat.shard, { t: 'world_cast', id: seat.id, label: m.label, x: from.x, z: from.z, tx: to.x, tz: to.z }, c);
+  }
+
+  // --- the Climb's open world, stage 2: shared packs (pipeline/designs/climb-open-world.md) -------------------------------
+  // In a shard, a pack is run by one screen (its owner: the first to wake it) and drawn by the others, who send it their hits through
+  // here. The owner is trusted with its pack (fine for co-op, not for ranked play): the hub checks that the pack is the floor's, that
+  // only its owner speaks for it, clamps the places and limits how fast anyone sends. It counts the players in each fight (for the
+  // pack's numbers), hands a pack on when its owner leaves or goes quiet, and brings a cleared pack back after a while.
+
+  const PK = WORLD_PACKS;
+  /** Each floor's pack ids and homes, from the table (server/climb-packs.mjs). @type {Map<number, Map<string, { x: number, z: number }>>} */
+  const floorPacks = new Map();
+  /** @param {number} floor @param {unknown} id */
+  function packHome(floor, id) {
+    let packs = floorPacks.get(floor);
+    if (!packs) {
+      packs = new Map((CLIMB_PACKS[floor] ?? []).map(([pid, x, z]) => [pid, { x, z }]));
+      floorPacks.set(floor, packs);
+    }
+    return typeof id === 'string' ? packs.get(id) ?? null : null;
+  }
+
+  /** What a newcomer is told of a shard's packs. @param {WorldShard} shard */
+  const packList = (shard) => [...shard.packs.values()].map((p) => ({ id: p.id, owner: p.owner?.world?.id ?? 0, n: p.n, cleared: p.cleared }));
+
+  /**
+   * One of the seat's pack messages of this second: false (drop it) past `max`.
+   * @param {WorldSeat} seat @param {'states' | 'hits' | 'hurts'} kind @param {number} max @param {number} t
+   */
+  function packRate(seat, kind, max, t) {
+    const r = (seat.rate ??= { from: t, states: 0, hits: 0, hurts: 0 });
+    if (t - r.from >= 1000) { r.from = t; r.states = r.hits = r.hurts = 0; }
+    return ++r[kind] <= max;
+  }
+
+  /**
+   * The players in a pack's fight now: its owner, whoever stands within `fightR` m of it, whoever hit it in the last `hitS` s.
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   */
+  function packFight(shard, p, t) {
+    let n = 0;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (!s || s.inside) continue;
+      if (x === p.owner || Math.hypot(s.x - p.x, s.z - p.z) <= PK.fightR || t - (p.hits.get(s.id) ?? -Infinity) <= PK.hitS * 1000) n++;
+    }
+    return Math.max(1, n);
+  }
+
+  /**
+   * A pack whose fight grew is set for more players (never fewer: leaving cannot make it weaker), and the shard hears it.
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t
+   */
+  function packCount(shard, p, t) {
+    if (p.cleared || !p.owner) return;
+    const n = packFight(shard, p, t);
+    if (n <= p.n) return;
+    p.n = n;
+    tellShard(shard, { t: 'pack_scale', pack: p.id, n }, null);
+  }
+
+  /**
+   * The pack's owner is gone (left, went quiet): the oldest member near it takes it on, one heard from lately first (as `nextBrain`
+   * hands the Raid's boss on); with nobody near, nobody runs it and every screen has it to itself again (the record goes). `quiet`: the
+   * owner is still in the shard but said nothing for a while: with nobody near to take the pack, it keeps it (a player alone who put
+   * its tab away for a moment comes back to its fight as it was).
+   * @param {WorldShard} shard @param {WorldPack} p @param {number} t @param {boolean} [quiet]
+   */
+  function packHandOn(shard, p, t, quiet = false) {
+    const was = p.owner;
+    /** @type {Client | null} */
+    let next = null;
+    /** @type {Client | null} */
+    let any = null;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (x === was || !s || s.inside || Math.hypot(s.x - p.x, s.z - p.z) > PK.handR) continue;
+      if (Date.now() - (x.seenAt ?? 0) < PK.quietMs) { next = x; break; }
+      any ??= x;
+    }
+    next ??= any;
+    if (!next && quiet) return;
+    if (!next) {
+      shard.packs.delete(p.id);
+      tellShard(shard, { t: 'pack_owner', pack: p.id, owner: 0, n: p.n }, null);
+      return;
+    }
+    p.owner = next;
+    p.lastAt = t;
+    tellShard(shard, { t: 'pack_owner', pack: p.id, owner: /** @type {WorldSeat} */ (next.world).id, n: p.n }, null);
+  }
+
+  /**
+   * Now and then (each walk in the shard): a fight that grew is counted, an owner quiet for `quietMs` is replaced, and a pack cleared
+   * `respawnS` ago comes back when two or more walk the shard and nobody stands within `clearR` m of its home.
+   * @param {WorldShard} shard @param {number} t
+   */
+  function packWatch(shard, t) {
+    if (!shard.packs.size) return;
+    for (const p of [...shard.packs.values()]) {
+      if (p.cleared) {
+        if (t - p.clearedAt < PK.respawnS * 1000 || shard.members.size < 2) continue;
+        let near = false;
+        for (const x of shard.members) if (x.world && !x.world.inside && Math.hypot(x.world.x - p.home.x, x.world.z - p.home.z) < PK.clearR) near = true;
+        if (near) continue;
+        shard.packs.delete(p.id);
+        tellShard(shard, { t: 'pack_respawn', pack: p.id }, null);
+        continue;
+      }
+      if (t - p.lastAt > PK.quietMs) { packHandOn(shard, p, t, true); continue; }
+      packCount(shard, p, t);
+    }
+  }
+
+  /** The seat's shard and the pack named, if the floor has it. @param {Client} c @param {any} m */
+  function packOf(c, m) {
+    const seat = c.world;
+    if (!seat || seat.inside) return null;
+    const home = packHome(seat.shard.floor, m.pack);
+    if (!home) return null;
+    return { seat, shard: seat.shard, home, id: /** @type {string} */ (m.pack), p: seat.shard.packs.get(m.pack) ?? null };
+  }
+
+  /**
+   * `pack_claim { pack, x, z }`: this screen woke the pack (`x`, `z`: where it stands). Nobody runs it: this screen does, set for the
+   * players near it, and the shard hears `pack_owner`. Another runs it: only this screen hears whose it is (it draws the pack). Cleared:
+   * `pack_cleared` to this screen. A pack the floor does not have: `error`.
+   * @param {Client} c @param {any} m
+   */
+  function packClaim(c, m) {
+    if (!c.world) return;
+    const k = packOf(c, m);
+    if (!k) return fail(c, 'No such pack on this floor');
+    const t = now();
+    if (k.p?.cleared) return send(c, { t: 'pack_cleared', pack: k.id });
+    if (k.p?.owner) {
+      send(c, { t: 'pack_owner', pack: k.id, owner: /** @type {WorldSeat} */ (k.p.owner.world).id, n: k.p.n });
+      return packCount(k.shard, k.p, t);
+    }
+    const at = num(m.x) && num(m.z) ? worldPlace(m.x, m.z) : k.home;
+    /** @type {WorldPack} */
+    const p = { id: k.id, home: k.home, owner: c, n: 1, x: at.x, z: at.z, hits: new Map(), cleared: false, clearedAt: 0, lastAt: t };
+    p.n = packFight(k.shard, p, t);
+    k.shard.packs.set(k.id, p);
+    tellShard(k.shard, { t: 'pack_owner', pack: k.id, owner: k.seat.id, n: p.n }, null);
+  }
+
+  /** A number from a report, finite and within bounds, to the mm. @param {unknown} v */
+  const packNum = (v) => (num(v) ? mm(Math.max(-1e6, Math.min(1e6, v))) : 0);
+
+  /**
+   * `pack_state { packs: [{ id, x, z, ts, u, zn }] }`: the owner's packs, ten times a second (`ts`: its clock). `u`: each unit, 0 when it has fallen, else
+   * `[x, z, yaw, hp, max, walk, swing, pose, shots]`; `zn`: the red zones on the ground. Only the owner's own packs pass, places
+   * clamped, numbers made finite; each goes to the members within `seeR` m of it, with the players it is set for (`n`).
+   * @param {Client} c @param {any} m
+   */
+  function packState(c, m) {
+    const seat = c.world;
+    if (!seat || !Array.isArray(m.packs) || m.packs.length > 16) return;
+    const t = now();
+    if (!packRate(seat, 'states', PK.statesPerS, t)) return;
+    const shard = seat.shard;
+    /** @type {{ p: WorldPack, text: string }[]} */
+    const out = [];
+    for (const r of m.packs) {
+      const p = r && shard.packs.get(r.id);
+      if (!p || p.owner !== c || p.cleared || !Array.isArray(r.u) || r.u.length > PK.units) continue;
+      const at = worldPlace(r.x, r.z);
+      p.x = at.x;
+      p.z = at.z;
+      p.lastAt = t;
+      const u = r.u.map((/** @type {unknown} */ v) => {
+        if (!Array.isArray(v)) return 0;
+        const w = v.slice(0, 10).map(packNum), place = worldPlace(w[0], w[1]);
+        w[0] = place.x;
+        w[1] = place.z;
+        return w;
+      });
+      const zn = Array.isArray(r.zn) ? r.zn.slice(0, PK.zones).filter(Array.isArray).map((/** @type {unknown[]} */ v) => v.slice(0, 10).map(packNum)) : [];
+      out.push({ p, text: JSON.stringify({ id: p.id, n: p.n, x: p.x, z: p.z, ts: num(r.ts) ? r.ts : undefined, u, zn }) });
+    }
+    if (!out.length) return;
+    for (const x of shard.members) {
+      const s = x.world;
+      if (x === c || !s || s.inside) continue;
+      const near = out.filter((o) => Math.hypot(s.x - o.p.x, s.z - o.p.z) <= PK.seeR);
+      if (near.length) sendText(x, `{"t":"pack_state","packs":[${near.map((o) => o.text).join(',')}]}`);
+    }
+    for (const o of out) packCount(shard, o.p, t);
+  }
+
+  /**
+   * `pack_hit { pack, u, dmg }`: this screen's hero hit a unit of a pack another screen runs. Rate-limited (`hitsPerS`, at most `hitMax`
+   * each); goes to the owner as `pack_hit { pack, u, dmg, by }`, and the hitter is in the fight for `hitS` s.
+   * @param {Client} c @param {any} m
+   */
+  function packHit(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.cleared || !k.p.owner || k.p.owner === c) return;
+    if (!Number.isInteger(m.u) || m.u < 0 || m.u >= PK.units || !num(m.dmg) || m.dmg <= 0) return;
+    const t = now();
+    if (!packRate(k.seat, 'hits', PK.hitsPerS, t)) return;
+    k.p.hits.set(k.seat.id, t);
+    send(k.p.owner, { t: 'pack_hit', pack: k.id, u: m.u, dmg: Math.round(Math.min(PK.hitMax, m.dmg) * 10) / 10, by: k.seat.id });
+    packCount(k.shard, k.p, t);
+  }
+
+  /**
+   * `pack_hurt { pack, to, share, x, z, kind?, net? }`: the owner's pack struck another player's hero (`share` of its health before the
+   * hero's own shields and boons, from `x`, `z`; `net`: a hold, `root` or `slow` for `s` seconds). Only the pack's owner, only to a
+   * player in the shard; goes to that player alone.
+   * @param {Client} c @param {any} m
+   */
+  function packHurt(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || !num(m.share) || !Number.isInteger(m.to)) return;
+    const t = now();
+    if (!packRate(k.seat, 'hurts', PK.hurtsPerS, t)) return;
+    let to = null;
+    for (const x of k.shard.members) if (x !== c && x.world?.id === m.to && !x.world.inside) to = x;
+    if (!to) return;
+    const at = worldPlace(m.x, m.z);
+    const net = m.net && (m.net.kind === 'root' || m.net.kind === 'slow') && num(m.net.s) ? { kind: m.net.kind, s: Math.max(0, Math.min(3, m.net.s)) } : undefined;
+    const kind = typeof m.kind === 'string' && m.kind.length <= WORLD.labelMax ? m.kind : undefined;
+    send(to, { t: 'pack_hurt', pack: k.id, share: Math.round(Math.max(0, Math.min(1, m.share)) * 1e4) / 1e4, x: at.x, z: at.z, kind, net, by: k.seat.id });
+  }
+
+  /** `pack_clear { pack }`: the owner's pack is down to the last unit. The shard hears `pack_cleared`; it comes back after `respawnS`. @param {Client} c @param {any} m */
+  function packClear(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || k.p.cleared) return;
+    k.p.cleared = true;
+    k.p.clearedAt = now();
+    k.p.owner = null;
+    tellShard(k.shard, { t: 'pack_cleared', pack: k.id }, c);
+  }
+
+  /** `pack_release { pack }`: the owner's pack gave up and is home asleep: nobody runs it now (`pack_owner` with owner 0). @param {Client} c @param {any} m */
+  function packRelease(c, m) {
+    const k = packOf(c, m);
+    if (!k || !k.p || k.p.owner !== c || k.p.cleared) return;
+    k.shard.packs.delete(k.id);
+    tellShard(k.shard, { t: 'pack_owner', pack: k.id, owner: 0, n: k.p.n }, null);
+  }
+
+  // --- the Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md) ----------------------------------
+  // A ruler's door walked into while another player of the shard stands near it is held `WORLD_DOORS.gatherS` s; whoever else walks
+  // in by then fights the ruler with them. The fight is a raid's (`match.boss`: one screen runs its brain, the others follow its casts,
+  // a fallen hero is got up by a partner, the brain passes on when its screen leaves or goes quiet, and every `boss_*` check holds),
+  // with the ruler's own rules from the floor's table (server/climb-packs.mjs), its health and blows set for the party (`doorScale`),
+  // and nothing on the accounts: a door's result is each player's own run, kept in its browser. The players keep their seats in the
+  // shard, out of the floor's sight (`WorldSeat.inside`), and come out into the same shard. A gate, a trial and a rival stay alone.
+
+  const DR = WORLD_DOORS;
+
+  /** A floor's door from the table: its piece, place and ring, or null. @param {number} floor @param {unknown} id */
+  function doorOf(floor, id) {
+    if (typeof id !== 'string') return null;
+    const row = CLIMB_DOORS[floor]?.doors.find((d) => d[0] === id);
+    return row ? { id: row[0], piece: row[1], x: row[2], z: row[3], r: row[4] } : null;
+  }
+
+  /** A gathering as it stands now: who walked in (the first is who opened it), and the seconds left (0: it closed). @param {DoorGather} g @param {boolean} closed */
+  const gatherMsg = (g, closed) => ({
+    t: 'door_gather', door: g.door, by: g.members[0]?.world?.id ?? 0, ids: g.members.map((x) => x.world?.id ?? 0), names: g.members.map((x) => x.name),
+    left: closed ? 0 : Math.max(0, Math.round((g.until - Date.now()) / 100) / 10),
+  });
+
+  /**
+   * A gathering's news, to whoever is in it and whoever on the floor stands within `nearR` m of its door (those who may still walk in).
+   * @param {WorldShard} shard @param {DoorGather} g @param {boolean} [closed] it is over (gone in, or everyone in it left)
+   */
+  function tellGather(shard, g, closed = false) {
+    const text = JSON.stringify(gatherMsg(g, closed));
+    for (const x of shard.members) {
+      const s = x.world;
+      if (!s || s.inside) continue;
+      if (g.members.includes(x) || Math.hypot(s.x - g.x, s.z - g.z) <= DR.nearR) sendText(x, text);
+    }
+  }
+
+  /**
+   * Whether someone could still come in: a member on the floor, not in the gathering, not behind a door or in a fight, within
+   * `nearR` m of the door. @param {WorldShard} shard @param {{ x: number, z: number, members: Client[] }} g
+   */
+  function doorWaiting(shard, g) {
+    for (const x of shard.members) {
+      const s = x.world;
+      if (!s || s.inside || g.members.includes(x) || (x.match && x.match.state !== 'over')) continue;
+      if (Math.hypot(s.x - g.x, s.z - g.z) <= DR.nearR) return true;
+    }
+    return false;
+  }
+
+  /** Out of whatever door's gathering it is in (it left the shard, or walked into another door). @param {WorldShard} shard @param {Client} c */
+  function doorUngather(shard, c) {
+    for (const g of [...shard.gathers.values()]) {
+      const i = g.members.indexOf(c);
+      if (i < 0) continue;
+      g.members.splice(i, 1);
+      if (g.members.length) { tellGather(shard, g); continue; }
+      clearTimeout(g.timer);
+      shard.gathers.delete(g.door);
+      tellGather(shard, g, true);
+    }
+  }
+
+  /**
+   * `door_enter { door }`: this hero walked into a door that is ready for it (its own run says so). A door the floor does not have:
+   * `error`. A player the hub last heard far from it: dropped. Not a ruler's lair, or nobody else near: `door_solo`, the piece is
+   * played alone as before. Somebody near: the door is held (`door_gather` to those in it and near it) until its time is up, everyone
+   * near is in, or the first in says go (`door_go`). Walking into a held door joins it. At most `entersPerS` a second.
+   * @param {Client} c @param {any} m
+   */
+  function doorEnter(c, m) {
+    const seat = c.world;
+    if (!seat || seat.inside || (c.match && c.match.state !== 'over')) return;
+    const t = Date.now();
+    if (t - (seat.doorsFrom ?? 0) >= 1000) { seat.doorsFrom = t; seat.doors = 0; }
+    seat.doors = (seat.doors ?? 0) + 1;
+    if (seat.doors > DR.entersPerS) return;
+    const shard = seat.shard, door = doorOf(shard.floor, m.door);
+    if (!door) return fail(c, 'No such door on this floor');
+    // Where it last said it stood: far from the door, it did not walk in.
+    if (Math.hypot(seat.x - door.x, seat.z - door.z) > door.r + DR.enterR) return;
+    const solo = () => send(c, { t: 'door_solo', door: door.id });
+    // Only a ruler's lair is fought together (a gate and a rival are duels with the CPU, a trial a room of its own). A crown floor's
+    // lair (a Raid boss) is fought alone for now: its party fight was not played on two screens.
+    const ruler = CLIMB_DOORS[shard.floor]?.ruler;
+    if (door.piece !== 'ruler' || !ruler?.hp || ruler.crown) return solo();
+    let g = shard.gathers.get(door.id);
+    if (g?.members.includes(c)) return send(c, gatherMsg(g, false));
+    doorUngather(shard, c);
+    if (g) {
+      if (g.members.length >= DR.max) return solo();
+      g.members.push(c);
+      tellGather(shard, g);
+      // Everyone near is in: nobody to wait for.
+      if (!doorWaiting(shard, g)) doorStart(shard, g);
+      return;
+    }
+    if (!doorWaiting(shard, { x: door.x, z: door.z, members: [c] })) return solo();
+    const held = /** @type {DoorGather} */ ({ door: door.id, x: door.x, z: door.z, members: [c], until: t + DR.gatherS * 1000, timer: null });
+    held.timer = setTimeout(() => doorStart(shard, held), DR.gatherS * 1000);
+    shard.gathers.set(door.id, held);
+    g = held;
+    tellGather(shard, g);
+  }
+
+  /** `door_go`: the first in a held door goes in now, with whoever has come. @param {Client} c */
+  function doorGo(c) {
+    const shard = c.world?.shard;
+    if (!shard || c.world?.inside) return;
+    for (const g of shard.gathers.values()) if (g.members[0] === c) return doorStart(shard, g);
+  }
+
+  /**
+   * A held door's time is up (or all are in, or its first said go): one in it plays alone (`door_solo`); two or more fight its ruler
+   * together. The fight is a raid's match with a `door`: everyone in it hears `door_start` (their seats, the ruler's health for
+   * the party, whose screen runs its brain: the first in), goes off the floor (the shard hears `world_left`, and `door_busy` names
+   * them) and hands its packs on. Then as a raid: each screen loads and says `match_loaded`, and the countdown starts the fight.
+   * @param {WorldShard} shard @param {DoorGather} g
+   */
+  function doorStart(shard, g) {
+    clearTimeout(g.timer);
+    if (shard.gathers.get(g.door) !== g) return;
+    shard.gathers.delete(g.door);
+    tellGather(shard, g, true);
+    const inn = g.members.filter((x) => !x.closed && x.world?.shard === shard && !x.world.inside && !(x.match && x.match.state !== 'over'));
+    const rules = CLIMB_DOORS[shard.floor]?.ruler;
+    if (inn.length < 2 || !rules || rules.crown) {
+      for (const x of inn) send(x, { t: 'door_solo', door: g.door });
+      return;
+    }
+    const n = inn.length, k = doorScale(n), hp = Math.round(rules.hp * k.hp);
+    /** @type {RaidBoss} */
+    const boss = {
+      id: `ruler-${shard.floor}`, band: 2, hp, max: hp, staggerMax: Math.round(rules.staggerMax * k.hp), phase: 0, gauge: 0,
+      kneelUntil: 0, brain: 0, brainAt: 0, revives: new Array(n).fill(0), stood: new Map(), settled: new Set(), walls: new Set(), taken: new Set(),
+      hpTimer: null, hpAt: 0,
+      rules: { phases: rules.phases, kneel: rules.kneel, rewards: rules.rewards, ring: DR.ring, gauge: k.hp },
+    };
+    /** @type {Match} */
+    const match = {
+      id: randomHex(6),
+      players: inn.map((x) => {
+        const hero = /** @type {WorldSeat} */ (x.world).hero;
+        return {
+          client: x, name: /** @type {string} */ (x.name), hero, first: hero, max: HP, hp: HP, loaded: false,
+          casts: 0, hits: 0, dodges: 0, recent: new Map(), lastSlot: [-Infinity, -Infinity, -Infinity, -Infinity],
+          attacks: new Set(), lastAttack: -Infinity, heals: [], down: false, left: false, dealt: 0,
+        };
+      }),
+      state: 'loading', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null, pick: null, picked: null,
+      boss, door: { shard, floor: shard.floor, id: g.door, n },
+    };
+    const party = match.players.map((p, side) => ({ side, name: p.name, hero: p.hero }));
+    match.players.forEach((p, side) => {
+      const x = p.client, seat = /** @type {WorldSeat} */ (x.world);
+      x.match = match;
+      x.side = side;
+      // Off the floor until it comes out: the others see it go, and its packs go to whoever is near them.
+      tellShard(shard, { t: 'world_left', id: seat.id }, x);
+      seat.inside = match;
+      for (const pk of [...shard.packs.values()]) if (pk.owner === x) packHandOn(shard, pk, now());
+    });
+    match.players.forEach((p, side) => send(p.client, {
+      t: 'door_start', id: match.id, door: g.door, side, you: { name: p.name, hero: p.hero }, party, n, hp, brain: 0, dmg: k.dmg,
+      staggerMax: boss.staggerMax,
+    }));
+    tellShard(shard, { t: 'door_busy', door: g.door, n, names: party.map((p) => p.name) }, null);
+    if (n > 2) match.ticker = setInterval(() => partyMoves(match), MOVES_MS);
+    match.watch = setInterval(() => brainWatch(match), BRAIN_CHECK_MS);
+    match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
+    log(`door ${g.door} of shard ${shard.id}: ${party.map((p) => `${p.name} (${p.hero})`).join(' and ')} against ${boss.id}, ${hp} hp`);
+  }
+
+  /**
+   * Someone leaves a door's fight (`match_leave`, a closed tab). The others fight on as in a raid: the brain goes to the next screen,
+   * every wait for "all who are here" is looked at again, and with nobody left on their feet the door is lost. Nothing goes on the
+   * leaver's account; it is back on the floor when its page joins it again.
+   * @param {Match} match @param {number} side
+   */
+  function doorLeave(match, side) {
+    const me = match.players[side], boss = match.boss;
+    if (!boss || me.left || match.state === 'over') return;
+    me.left = true;
+    const was = me.client;
+    me.client = GONE;
+    me.move = null;
+    // It left the fight but not the floor (`match_leave`): back on the floor at once, where it last said it stood.
+    const seat = was.world;
+    if (seat?.inside === match) {
+      seat.inside = null;
+      tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: was.name, tag: tagOf(was.name), hero: seat.hero, ...worldSeen(seat) }, was);
+    }
+    if (match.players.every((p) => p.left || p.down)) return doorEnd(match, 'lost');
+    if (match.state === 'loading' && match.players.every((p) => p.loaded || p.left)) fight(match);
+    tell(match, { t: 'partner_left', side });
+    if (boss.brain === side) {
+      const next = nextBrain(match, side, Date.now(), 0);
+      if (next >= 0) giveBrain(match, next, 0);
+    }
+    stoodSettle(match);
+  }
+
+  /**
+   * A door's fight is over: the ruler fell (`won`) or everyone still in it is down (`lost`). Each player still in it hears `door_end`
+   * with whether its own screen hit the ruler (a clear counts for whoever hit, as a pack's kill does), and is out of the match; its
+   * page comes back to the floor and joins its shard again. The floor hears the door is free (`door_busy` with nobody).
+   * @param {Match} match @param {'won' | 'lost'} result
+   */
+  function doorEnd(match, result) {
+    const boss = match.boss, door = match.door;
+    if (!boss || !door || match.state === 'over') return;
+    clearTimeout(match.timer);
+    clearTimeout(boss.hpTimer);
+    boss.hpTimer = null;
+    stopTimers(match);
+    for (const s of boss.stood.values()) clearTimeout(s.timer);
+    boss.stood.clear();
+    const seconds = match.fightAt ? Math.max(0, Math.round((Date.now() - match.fightAt) / 100) / 10) : 0;
+    match.state = 'over';
+    match.players.forEach((p) => {
+      if (p.left) return;
+      send(p.client, { t: 'door_end', door: door.id, result, hit: (p.dealt ?? 0) > 0, seconds, hp: boss.hp });
+      p.client.match = null;
+    });
+    tellShard(door.shard, { t: 'door_busy', door: door.id, n: 0, names: [] }, null);
+    log(`door ${door.id} of shard ${door.shard.id}: ${result} in ${seconds} s (${match.players.filter((p) => (p.dealt ?? 0) > 0).length} of ${match.players.length} hit it)`);
   }
 
   /** Pairs the two longest-waiting players with different heroes (one effect per spell label on the client). */
@@ -1081,6 +1779,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
     }
     for (const q of queue) sendQueue(q);
+    queueSize();
   }
 
   // --- matches --------------------------------------------------------------------------------------------
@@ -1185,7 +1884,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(match.timer);
     match.state = 'over';
     const seconds = Math.max(0, Math.round((Date.now() - (match.startedAt || match.created)) / 100) / 10);
-    const at = new Date().toISOString();
+    const at = new Date().toISOString(), winner = match.players[winnerSide];
     match.players.forEach((p, side) => {
       const foe = match.players[1 - side];
       accounts.record(p.name, {
@@ -1194,11 +1893,13 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         rounds: [match.score[side], match.score[1 - side]],
       });
     });
-    const winner = match.players[winnerSide];
     // Obols (pipeline/designs/hero-shop.md): a duel played, a win on top, the first win of the server's UTC day on top of that.
     // A duel shorter than `minDuelS` pays nobody (a foe who left at once, two tabs trading quick wins), and whoever left a duel
     // gets nothing from it.
     const fought = seconds >= SHOP.minDuelS, day = isoWeek(now()).day;
+    // The duel rating and the week's wins count the same duels: long enough to pay. Whoever left a duel that counts loses it.
+    const rated = fought ? accounts.rateDuel(winner.name, match.players[1 - winnerSide].name, isoWeek(now()).id) : 0;
+    if (fought) boardsChanged();
     const lines = match.players.map((p, side) => {
       const won = side === winnerSide;
       /** @type {[string, number][]} */
@@ -1217,6 +1918,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         score: [match.score[side], match.score[1 - side]],
         hp: match.players.map((x) => x.hp), stats: { casts: p.casts, hits: p.hits, dodges: p.dodges },
         profile: a ? accounts.profile(a) : null, earned,
+        // The duel rating after this duel, and how far it moved (0: too short to count).
+        rating: { now: a ? accounts.rating(a) : ELO.start, change: side === winnerSide ? rated : -rated },
       });
       p.client.match = null;
     });
@@ -1530,6 +2233,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
 
   /** The boss fell: a moment on screen, then the next pick, or the choice to go on after the last one. @param {Match} match */
   function raidWon(match) {
+    if (match.door) return doorEnd(match, 'won');
     const run = /** @type {NonNullable<Match['run']>} */ (match.run), boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
     if (match.state !== 'fight') return;
     for (const pool of boss.twin ? [boss, ...boss.twin.pools] : [boss]) {
@@ -1615,7 +2319,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (pool.dead) return;
     pool.hp = Math.max(0, pool.hp - amount);
     if (twin) boss.hp = twin.pools[0].hp + twin.pools[1].hp;
-    const phases = RAID_BOSSES[boss.id].phases;
+    const phases = rulesOf(boss).phases;
     while (pool.phase < phases.length && pool.hp / pool.max <= phases[pool.phase]) {
       pool.phase++;
       tell(match, { t: 'boss_phase', phase: pool.phase, which: whichOf(boss, pool) });
@@ -1670,7 +2374,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
 
   /** The boss kneels, on every screen. @param {Match} match @param {number} [which] */
   function raidKneel(match, which = 0) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), b = RAID_BOSSES[boss.id], pool = poolOf(boss, which);
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), b = rulesOf(boss), pool = poolOf(boss, which);
     pool.gauge = 0;
     pool.kneelUntil = Date.now() + b.kneel * 1000;
     tell(match, { t: 'boss_kneel', seconds: b.kneel, which: whichOf(boss, pool) });
@@ -1732,6 +2436,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
    * @param {Match} match @param {number} side
    */
   function raidLeave(match, side) {
+    if (match.door) return doorLeave(match, side);
     const me = match.players[side], boss = match.boss;
     if (!boss || me.left) return;
     if (match.state !== 'over') {
@@ -1777,6 +2482,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
 
   /** @param {Match} match @param {'cleared' | 'lost'} result */
   function raidEnd(match, result) {
+    if (match.door) return doorEnd(match, result === 'cleared' ? 'won' : 'lost');
     const boss = match.boss;
     if (!boss || match.state === 'over') return;
     clearTimeout(match.timer);
@@ -1811,10 +2517,265 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     return c.match?.players[c.side];
   }
 
+  // --- the Leaderboards (docs/architecture/multiplayer.md, "Leaderboards and clans") -------------------------------------
+  // Built from kept lists (accounts.mjs: the rated accounts in order, the week's wins, the Climb; the week's raid and Tower boards),
+  // never from a pass over every account. The part everyone sees is built once and kept until something on it changes.
+
+  /** @type {{ week: string, duels: any[], weekly: any[], climb: any[], clans: any[], allClans: any[] } | null} */
+  let boardsCache = null;
+  /** A duel counted, a Climb report or a clan's members changed: the shared boards are built again on the next request. */
+  const boardsChanged = () => { boardsCache = null; };
+
+  /** The tag of a player's clan, or ''. @param {string | null} name */
+  const tagOf = (name) => (name ? clans.of(name)?.tag ?? '' : '');
+
+  /** A clan on the boards and the clans' list: its members' duel wins this week, and their rating's average. @param {import('./clans.mjs').Clan} k @param {string} week */
+  function clanRow(k, week) {
+    let wins = 0, sum = 0;
+    for (const m of k.members) {
+      const a = accounts.get(m);
+      wins += a ? accounts.weekOf(a, week).wins : 0;
+      sum += a ? accounts.rating(a) : ELO.start;
+    }
+    return { id: k.id, name: k.name, tag: k.tag, members: k.members.length, wins, rating: Math.round(sum / Math.max(1, k.members.length)) };
+  }
+
+  /** The clans by their members' wins this week, then by their rating's average. @param {string} week */
+  const clanRows = (week) => clans.all().map((k) => clanRow(k, week)).sort((x, y) => y.wins - x.wins || y.rating - x.rating || x.name.localeCompare(y.name));
+
+  function sharedBoards() {
+    const week = isoWeek(now()).id;
+    if (boardsCache?.week === week) return boardsCache;
+    const allClans = clanRows(week);
+    boardsCache = {
+      week, allClans,
+      duels: accounts.rated().slice(0, LEADER_SIZE).map((a) => ({ name: a.name, rating: accounts.rating(a), wins: a.wins, losses: a.losses, hero: accounts.favourite(a) })),
+      weekly: accounts.weekBoard(week).rows.map((r) => ({ name: r.name, wins: r.wins, losses: r.losses })),
+      climb: accounts.climbBoard().map((r) => ({ name: r.name, floor: r.floor, stars: r.stars })),
+      clans: allClans.slice(0, LEADER_SIZE),
+    };
+    return boardsCache;
+  }
+
+  /**
+   * `leaderboards`: every list of the Leaderboards screen, the clan tags of the names on them, and the player's own rows when it is
+   * signed in (`you`; a rank of 0: not on that list).
+   * @param {Client} c
+   */
+  function leaderboards(c) {
+    const shared = sharedBoards(), w = isoWeek(now()), b = accounts.boards(w.id);
+    /** @type {Record<string, string>} */
+    const tags = {};
+    const tagged = (/** @type {string} */ n) => { const t = tagOf(n); if (t) tags[n] = t; };
+    for (const list of [shared.duels, shared.weekly, shared.climb, b.tower]) for (const r of list) tagged(r.name);
+    for (const r of b.raid) for (const n of r.names) tagged(n);
+    const a = c.name ? accounts.get(c.name) : undefined;
+    let you = null;
+    if (a) {
+      tagged(a.name);
+      const wk = accounts.weekOf(a, w.id);
+      you = {
+        name: a.name, rating: accounts.rating(a), rated: a.rated ?? 0, rank: (a.rated ?? 0) ? accounts.rated().indexOf(a) + 1 : 0,
+        wins: a.wins, losses: a.losses, hero: accounts.favourite(a),
+        week: { wins: wk.wins, losses: wk.losses, rank: shared.weekly.findIndex((r) => r.name === a.name) + 1 },
+        climb: a.climb ? { floor: a.climb.floor, stars: a.climb.stars, rank: shared.climb.findIndex((r) => r.name === a.name) + 1 } : null,
+        clan: clans.of(a.name)?.id ?? null,
+      };
+    }
+    const { allClans: _all, ...lists } = shared;
+    return { t: 'leaderboards', week: w.id, next: w.next, ...lists, raid: b.raid, tower: b.tower, tags, you };
+  }
+
+  // --- clans and the clan chat ----------------------------------------------------------------------------------------------
+  // Only the members of a clan hear of it: its state (`clan`), its room's lines (`clan_chat`), the dots going on and off. Nothing about
+  // clans goes to a player who is in none, unless it asks (`clan_list`, `clan_view`).
+
+  /** Who is signed in now, by lower-case name. */
+  function onlineNames() {
+    const s = new Set();
+    for (const x of clients) if (x.name) s.add(x.name.toLowerCase());
+    return s;
+  }
+
+  /** The connections of a clan's members. @param {import('./clans.mjs').Clan} k */
+  function membersOnline(k) {
+    const low = new Set(k.members.map((m) => m.toLowerCase()));
+    return [...clients].filter((x) => x.name && low.has(x.name.toLowerCase()));
+  }
+
+  /**
+   * A clan as one member sees it: every member with its dot, rating, the week's wins and role; the invite code and the asks for the
+   * leader only.
+   * @param {import('./clans.mjs').Clan} k @param {string} viewer @param {Set<string>} online
+   */
+  function clanState(k, viewer, online) {
+    const week = isoWeek(now()).id, leads = k.leader.toLowerCase() === viewer.toLowerCase();
+    const members = k.members.map((m) => {
+      const a = accounts.get(m), until = clans.silencedUntil(k, m);
+      return {
+        name: m, rating: a ? accounts.rating(a) : ELO.start, wins: a ? accounts.weekOf(a, week).wins : 0, online: online.has(m.toLowerCase()),
+        role: m === k.leader ? 'leader' : 'member', silenced: until || undefined,
+      };
+    });
+    return {
+      id: k.id, name: k.name, tag: k.tag, leader: k.leader, max: CLAN.max, created: k.created, members,
+      wins: members.reduce((n, x) => n + x.wins, 0), code: leads ? k.code : undefined, asks: leads ? k.asks.slice() : undefined,
+    };
+  }
+
+  /** This player's clan (or none) and its own mutes. @param {Client} x */
+  function sendClan(x) {
+    if (!x.name) return;
+    const k = clans.of(x.name), a = accounts.get(x.name);
+    send(x, { t: 'clan', clan: k ? clanState(k, x.name, onlineNames()) : null, mutes: a ? accounts.mutes(a) : [] });
+  }
+
+  /** The clan and its room's lines (without the lines of those this player muted), on opening. @param {Client} x */
+  function sendClanAll(x) {
+    sendClan(x);
+    const k = x.name ? clans.of(x.name) : null, a = x.name ? accounts.get(x.name) : undefined;
+    if (!k || !a) return;
+    const muted = new Set(accounts.mutes(a));
+    send(x, { t: 'clan_history', id: k.id, lines: clans.history(k.id).filter((l) => l.kind !== 'say' || !muted.has(l.name.toLowerCase())) });
+  }
+
+  /** Every member online gets the clan as it is now. @param {import('./clans.mjs').Clan} k */
+  function clanPush(k) {
+    const online = onlineNames(), mutes = (/** @type {string} */ n) => { const a = accounts.get(n); return a ? accounts.mutes(a) : []; };
+    for (const x of membersOnline(k)) send(x, { t: 'clan', clan: clanState(k, /** @type {string} */ (x.name), online), mutes: mutes(/** @type {string} */ (x.name)) });
+  }
+
+  /** A player came or went: its clan's members see the dot change. @param {string | null} name */
+  function clanPresence(name) {
+    const k = name ? clans.of(name) : null;
+    if (k) clanPush(k);
+  }
+
+  /**
+   * New lines of a room to every member online, but a member's message not to those who muted it.
+   * @param {import('./clans.mjs').Clan} k @param {import('./clans.mjs').ChatLine[]} lines
+   */
+  function clanTell(k, lines) {
+    for (const x of membersOnline(k)) {
+      const a = accounts.get(/** @type {string} */ (x.name)), muted = new Set(a ? accounts.mutes(a) : []);
+      for (const l of lines) if (l.kind !== 'say' || !muted.has(l.name.toLowerCase())) send(x, { t: 'clan_chat', id: k.id, line: l });
+    }
+  }
+
+  /** @param {Client} c @param {string} error */
+  const clanFail = (c, error) => send(c, { t: 'clan_error', error });
+
+  /** The clans with room, for a player in none: the most wins this week first. @param {Client} c */
+  function clanList(c) {
+    const low = (c.name ?? '').toLowerCase();
+    const list = sharedBoards().allClans.filter((r) => r.members < CLAN.max).slice(0, LEADER_SIZE)
+      .map((r) => ({ ...r, asked: !!clans.get(r.id)?.asks.some((x) => x.toLowerCase() === low) }));
+    send(c, { t: 'clan_list', clans: list });
+  }
+
+  /** @param {Client} c @param {any} m */
+  function clanMessage(c, m) {
+    const me = /** @type {string} */ (c.name);
+    /** What a change did: an error to the player, or the clan pushed to its members, with its new lines. */
+    const after = (/** @type {any} */ r, /** @type {boolean} */ members = true) => {
+      if (r.error) return clanFail(c, r.error), false;
+      if (members) boardsChanged();
+      if (r.lines?.length) clanTell(r.clan, r.lines);
+      if (!r.gone) clanPush(r.clan);
+      return true;
+    };
+    switch (m.t) {
+      case 'clan_get':
+        return sendClanAll(c);
+      case 'clan_list':
+        return clanList(c);
+      case 'clan_view': {
+        // A clan's page, for a player in none (or anyone): its members and their rating, no dots, no code.
+        const k = clans.get(m.id);
+        if (!k) return clanFail(c, 'That clan is gone');
+        const row = clanRow(k, isoWeek(now()).id);
+        return send(c, {
+          t: 'clan_view', clan: {
+            ...row, leader: k.leader, max: CLAN.max, asked: k.asks.some((x) => x.toLowerCase() === me.toLowerCase()),
+            list: k.members.map((n) => { const a = accounts.get(n); return { name: n, rating: a ? accounts.rating(a) : ELO.start, role: n === k.leader ? 'leader' : 'member' }; }),
+          },
+        });
+      }
+      case 'clan_create': {
+        const r = clans.create(me, m.name, m.tag);
+        if (!after(r)) return;
+        log(`${me} founded the clan ${r.clan.name} [${r.clan.tag}]`);
+        return sendClanAll(c);
+      }
+      case 'clan_join': {
+        const r = clans.join(me, m.code);
+        if (after(r)) sendClanAll(c);
+        return;
+      }
+      case 'clan_ask': {
+        const r = clans.ask(me, m.id);
+        if (r.error) return clanFail(c, r.error);
+        clanPush(/** @type {any} */ (r.clan));
+        send(c, { t: 'clan_notice', text: `Asked to join ${r.clan?.name}: its leader decides` });
+        return clanList(c);
+      }
+      case 'clan_answer': {
+        const r = clans.answer(me, m.name, !!m.yes);
+        if (!after(r, !!m.yes)) return;
+        // The one let in, if online, gets its clan and the room.
+        const who = typeof m.name === 'string' ? m.name.toLowerCase() : '';
+        if (m.yes) for (const x of clients) if (x.name?.toLowerCase() === who) sendClanAll(x);
+        return;
+      }
+      case 'clan_leave': {
+        const r = clans.leave(me);
+        if (!after(r)) return;
+        if ('gone' in r && r.gone) log(`the clan ${r.clan.name} [${r.clan.tag}] is gone: its last member left`);
+        return sendClan(c);
+      }
+      case 'clan_remove': {
+        const r = clans.remove(me, m.name);
+        if (!after(r)) return;
+        const who = typeof m.name === 'string' ? m.name.toLowerCase() : '';
+        for (const x of clients) {
+          if (x.name?.toLowerCase() !== who) continue;
+          sendClan(x);
+          send(x, { t: 'clan_notice', text: `You were removed from ${'clan' in r ? r.clan.name : 'the clan'}` });
+        }
+        return;
+      }
+      case 'clan_lead':
+        return void after(clans.lead(me, m.name), false);
+      case 'clan_code':
+        return void after(clans.recode(me), false);
+      case 'clan_silence':
+        return void after(clans.silence(me, m.name, !!m.on, now()), false);
+      case 'clan_say': {
+        const r = clans.say(me, m.text, Date.now());
+        if ('error' in r) return clanFail(c, r.error);
+        return clanTell(r.clan, r.lines);
+      }
+      case 'clan_mute': {
+        // A player's own mute: that name's messages no longer reach it, kept on its account. Anyone's name may be muted.
+        const a = accounts.get(me);
+        if (!a || typeof m.name !== 'string' || !/^[A-Za-z0-9_-]{3,16}$/.test(m.name) || m.name.toLowerCase() === me.toLowerCase()) return clanFail(c, 'No such player');
+        accounts.mute(a, m.name, !!m.on);
+        return sendClan(c);
+      }
+      case 'clan_report': {
+        // A message reported: written to the hub's log with the clan, the names and the time, and nothing more.
+        const k = clans.of(me), line = k ? clans.history(k.id).find((l) => l.n === m.n && l.kind === 'say') : undefined;
+        if (!k || !line) return clanFail(c, 'That message is no longer kept');
+        log(`REPORT clan "${k.name}" [${k.tag}] (${k.id}): ${me} reports ${line.name}'s message #${line.n} of ${line.at}: ${JSON.stringify(line.text)}`);
+        return send(c, { t: 'clan_notice', text: 'Reported. Thank you.' });
+      }
+    }
+  }
+
   return {
     connect,
     /** For tests and the console: what the hub holds right now. */
-    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length }),
+    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length, shards: [...worlds.values()].reduce((n, l) => n + l.length, 0), clans: clans.byId.size }),
   };
 }
 
@@ -1852,6 +2813,12 @@ const mm = (v) => Math.round(v * 1000) / 1000;
 /** @param {unknown} h */
 function validHero(h) {
   return typeof h === 'string' && HERO_RE.test(h);
+}
+
+/** A place on a Climb floor, to the millimetre, kept inside the farthest any floor reaches. @param {unknown} x @param {unknown} z */
+function worldPlace(x, z) {
+  const r = WORLD.reach, clamp = (/** @type {unknown} */ v) => (num(v) ? mm(Math.max(-r, Math.min(r, v))) : 0);
+  return { x: clamp(x), z: clamp(z) };
 }
 
 /** A position kept inside the ring (a raid's room is wider). @param {number} x @param {number} z @param {number} [ring] */

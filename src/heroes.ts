@@ -1,50 +1,16 @@
 /**
  * Hero kits for hero mode (`src/heroMode.ts`): four spells bound to Q / W / E / R, R being the ultimate. A kit is
- * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
+ * data only; its spells are ordinary registered effects (looked up by label).
+ *
+ * Every hero lives in a folder of its own (`src/heroes/<theme>/`, docs/pipeline/hero-framework.md), found by
+ * src/heroes/index.ts: its card brings its kit, model and body, and its place in `HERO_KITS` is the card's `order`. Nothing
+ * here is edited for a new hero.
  */
 import type { BuffKind } from './effects/status';
 import type { BodyLook } from './raid/bodies/look';
 import type { Trait } from './traits/types';
-import { alchemyKit } from './kits/alchemy';
-import { sandKit } from './kits/sand';
-import { shadowKit } from './kits/shadow';
-import { groveKit } from './kits/grove';
-import { tideKit } from './kits/tide';
-import { dawnKit } from './kits/dawn';
-import { skyKit } from './kits/sky';
-import { clockworkKit } from './kits/clockwork';
-import { boneKit } from './kits/bone';
-import { inkKit } from './kits/ink';
-import { chronoKit } from './kits/chrono';
-import { voidKit } from './kits/void';
-import { hiveKit } from './kits/hive';
-import { bardKit } from './kits/bard';
-import { prismKit } from './kits/prism';
-import { stormKit } from './kits/storm';
-import { astralKit } from './kits/astral';
-import { forgeKit } from './kits/forge';
-import { frostKit } from './kits/frost';
-import { bloodKit } from './kits/blood';
-import { mirrorKit } from './kits/mirror';
-import { masonKit } from './kits/mason';
-import { timberKit } from './kits/timber';
-import { balloonKit } from './kits/balloon';
-import { catKit } from './kits/cat';
-import { ledgerKit } from './kits/ledger';
-import { sumoKit } from './kits/sumo';
-import { mimeKit } from './kits/mime';
-import { refereeKit } from './kits/referee';
-import { chefKit } from './kits/chef';
-import { courierKit } from './kits/courier';
-import { janitorKit } from './kits/janitor';
-import { moleKit } from './kits/mole';
-import { yarnKit } from './kits/yarn';
-import { weatherKit } from './kits/weather';
-import { sheepKit } from './kits/sheep';
-import { magicKit } from './kits/magic';
-import { doorKit } from './kits/door';
-import { phoenixKit } from './kits/phoenix';
-import { twinsKit } from './kits/twins';
+import { useVcIcons } from './icons/vc';
+import { HERO_CARDS } from './heroes/index';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -131,11 +97,10 @@ export interface HeroKit {
 }
 
 /**
- * Each hero's rigged figure, the same one in fights and on the Heroes page. _v2: the current style (blender/heroes/moba_figures.py);
- * _v3: the new heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2 file kept beside it; the others
- * are still the first style (blender/heroes/hero_figures.py).
- */
-/**
+ * Each hero's rigged figure is on its card (`model`), the same one in fights and on the Heroes page. _v2: the second style
+ * (blender/heroes/moba_figures.py); _v3: the heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2
+ * file kept beside it; the others the first style (blender/heroes/hero_figures.py).
+ *
  * The fourth style (user, 2026-11-10: "make all heroes in that style"): a realistic body moved by the animation pack's
  * own clips (src/motion/real.ts, pipeline/designs/style-v4). Every hero has such a model beside its older one, named
  * `<theme>_v4.glb`; they are shown unless the address says `?figs=old`.
@@ -144,49 +109,6 @@ const FIGS_OLD = typeof location !== 'undefined' && new URLSearchParams(location
 /** The fourth-style model that stands in for an older one: `models/heroes/blood_v2.glb` -> `models/heroes/blood_v4.glb`. */
 export const modelV4 = (url: string | undefined) => (url && !FIGS_OLD ? url.replace(/^(models\/heroes\/[a-z]+)(_v\d+)?\.glb$/, '$1_v4.glb') : url);
 
-const MODELS: Record<string, string> = {
-  Vesper: 'models/heroes/blood_v2.glb',
-  Brannoc: 'models/heroes/forge_v2.glb',
-  Isolde: 'models/heroes/frost_v2.glb',
-  Lyra: 'models/heroes/astral.glb',
-  Vitriol: 'models/heroes/alchemy.glb',
-  Kaia: 'models/heroes/storm_v2.glb',
-  Sefu: 'models/heroes/sand_v2.glb',
-  Nyx: 'models/heroes/shadow.glb',
-  Fenna: 'models/heroes/grove.glb',
-  Auriel: 'models/heroes/dawn_v2.glb',
-  Marin: 'models/heroes/tide.glb',
-  Zephyr: 'models/heroes/sky_v2.glb',
-  Mortis: 'models/heroes/bone.glb',
-  Ada: 'models/heroes/clockwork.glb',
-  Opaline: 'models/heroes/prism.glb',
-  Sirix: 'models/heroes/hive.glb',
-  Cantor: 'models/heroes/bard.glb',
-  Oblivion: 'models/heroes/void_v2.glb',
-  Shiori: 'models/heroes/ink.glb',
-  Tempo: 'models/heroes/chrono.glb',
-  Silvane: 'models/heroes/mirror_v3.glb',
-  Bram: 'models/heroes/mason_v3.glb',
-  Hank: 'models/heroes/timber_v3.glb',
-  'Professor Puff': 'models/heroes/balloon_v3.glb',
-  'Sir Whiskers': 'models/heroes/cat_v3.glb',
-  'Mr. Ledger': 'models/heroes/ledger_v3.glb',
-  'Big Yoko': 'models/heroes/sumo_v3.glb',
-  Mum: 'models/heroes/mime_v3.glb',
-  'Referee Whistler': 'models/heroes/referee_v3.glb',
-  'Madame Cleaver': 'models/heroes/chef_v3.glb',
-  Pip: 'models/heroes/courier_v3.glb',
-  Gus: 'models/heroes/janitor_v3.glb',
-  Mabel: 'models/heroes/mole_v3.glb',
-  'Grandma Ironknit': 'models/heroes/yarn_v3.glb',
-  'Barry Cloudsley': 'models/heroes/weather_v3.glb',
-  Bo: 'models/heroes/sheep_v3.glb',
-  'The Great Zambini': 'models/heroes/magic_v3.glb',
-  Wick: 'models/heroes/door_v3.glb',
-  // born in the fourth style: there is no older model, so `?figs=old` shows her as she is
-  Anka: 'models/heroes/phoenix_v4.glb',
-};
-
 /**
  * The size each hero's hits are judged with, measured from its model (2026-11-04: the width 90% of its body fits in, and the
  * height 99% of it does). `radius`: half that width plus 0.08 m, at least 0.38, so a bolt that looks like it touched does and one
@@ -194,28 +116,25 @@ const MODELS: Record<string, string> = {
  * The _v3 restyles (2026-11-09 and 11-10) keep the radius of the body they replace where the build is the same; where the
  * vertices' 90% radius or 99% height moved by more than about a tenth it follows (Grandma Ironknit and Bo are narrower
  * without the basket and the sheep; Silvane, Madame Cleaver and Sir Whiskers lost a hair tower, a tall hat and a plume;
- * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.33, so a small hero can still be clicked.
+ * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.29 (Ada, Marin), so a small hero can still
+ * be clicked.
  */
-export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
-  Vesper: { radius: 0.41, height: 2.35 }, Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
-  Lyra: { radius: 0.38, height: 2.38 }, Vitriol: { radius: 0.43, height: 2.37 }, Kaia: { radius: 0.47, height: 3.24 },
-  Sefu: { radius: 0.4, height: 2.86 }, Nyx: { radius: 0.4, height: 2.32 }, Fenna: { radius: 0.42, height: 2.55 },
-  Auriel: { radius: 0.47, height: 2.33 }, Marin: { radius: 0.43, height: 2.29 }, Zephyr: { radius: 0.4, height: 2.37 },
-  Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
-  Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
-  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.34 },
-  Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
-  'Sir Whiskers': { radius: 0.49, height: 2.33 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.49 }, 'Referee Whistler': { radius: 0.44, height: 2.33 },
-  'Madame Cleaver': { radius: 0.58, height: 2.33 }, Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
-  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
-  Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
-  Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
-  Anka: { radius: 0.4, height: 2.4 },
-};
+export const HERO_BODIES: Record<string, { radius: number; height: number }> = Object.fromEntries(HERO_CARDS.map((c) => [c.kit.name, c.body]));
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit, phoenixKit].map((k) => {
-  const kit = { ...k, model: modelV4(k.model ?? MODELS[k.name]) };
+/** The roster in order: each hero's card at its `order` (0 = Vesper ... 39 = Anka); two cards on one place, or a gap, stop the page. */
+function roster(): HeroKit[] {
+  const out: (HeroKit | undefined)[] = [];
+  for (const c of HERO_CARDS) {
+    if (out[c.order]) throw new Error(`Two heroes want place ${c.order} in the roster: ${out[c.order]!.name} and ${c.kit.name}`);
+    out[c.order] = { ...c.kit, model: c.model };
+  }
+  const gap = out.findIndex((k) => !k);
+  if (gap >= 0 || out.length !== HERO_CARDS.length) throw new Error(`No hero's card has place ${gap} in the roster`);
+  return out as HeroKit[];
+}
+
+export const HERO_KITS: HeroKit[] = roster().map((k) => {
+  const kit = { ...k, model: modelV4(k.model) };
   if (kit.alt) {
     // the other twin: its own model, in the same style
     kit.alt.model = modelV4(kit.alt.model);
@@ -223,3 +142,8 @@ export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, al
   }
   return kit;
 });
+
+// The spell icons drawn with VectorCraft (src/icons/vc.ts): the heroes that have them draw them wherever a slot icon shows,
+// each hero's files fetched the first time one of its slots is drawn; the kit's own canvas icon is the fallback. A draft
+// (shown only on the workbench) draws its canvas icons until its release: its SVGs may not be made yet.
+useVcIcons(HERO_KITS, Object.fromEntries(HERO_CARDS.filter((c) => !c.draft).map((c) => [c.kit.name, c.icons])));

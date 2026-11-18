@@ -1,5 +1,5 @@
-//! The heroes that are ported: each one's passive (the hooks of its `Trait` in `src/traits/`) and the rules inside its
-//! four spells (`src/spells/targeted/`). One file per hero; this file is the list of them and what a hero file may
+//! The heroes that are ported: each one's passive (the hooks of its `Trait` in `src/heroes/<theme>/trait.ts`) and the rules inside its
+//! four spells (`src/heroes/<theme>/spells/`). One file per hero; this file is the list of them and what a hero file may
 //! fill in.
 //!
 //! TO ADD A HERO: write `src/hero/<theme>.rs` with a `pub const HERO: Hero = Hero { name: "...", state: ..., spell: ...,

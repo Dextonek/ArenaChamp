@@ -3,11 +3,11 @@ import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import {
   Afterimage, CutFlash, CutShape, CutShards, SHADOW, SHADOW_CSS, ShadowPool, facing, shadowEaseOut,
-} from '../../effects/parts/shadow';
+} from '../../heroes/shadow/parts';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { MARK_SHARE, shadowMarks, type ShadowMarkTally } from '../../traits/shadow';
+import { MARK_SHARE, shadowMarks, type ShadowMarkTally } from '../../heroes/shadow/trait';
 
 /**
  * Shadow Mark (shadow kit, R: the assassin's ultimate). A black crescent sigil with a violet edge settles over the clicked

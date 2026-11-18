@@ -3,6 +3,7 @@
 // a law (the tide) and doors to the set pieces. The route bot plays a floor from its data with no person.
 //
 //   eval(await (await fetch('/pipeline/tools/world-tool.js')).text());
+//   (floors: 1 to 10 the sea, then 11, 21, 31, 41 the handmade Wood, Canyon, Deep and Banners: src/tower/world/floors/index.ts)
 //   await _world({ floor: 1, hero: 'Lyra' })            // manual: you step time (_world.step(s)); { person: true }: the page's own loop runs it
 //   await _worldRoute({ floor: 1, hero: 'Lyra' })       // the bot plays the whole floor, camp to gate; returns the report (see below)
 //   await _worldRoute({ hero: 'Lyra', resume: true })   // continues the saved run (after a page reload)
@@ -95,6 +96,19 @@
   window._world.go = (x, z) => { const h = api.arena.caster.group.position; h.set(x, 0, z); api.heroMode.halt(); api.heroMode.snapCameraNow(); };
   window._world.step = (seconds) => { for (let i = 0; i < Math.round(seconds * 60); i++) frame(); };
   window._world.place = (name) => game.floor.places[name];
+  /**
+   * Was: put a made floor (src/tower/world/floors/gen/) in the Climb's list for this page. Since the renumbering the made floors are in
+   * the list at their numbers (and the handmade ones at 1, 11, 21, 31, 41), so this only says what floor `n` is; `_world({ floor: n })`,
+   * `_worldCheck({ floor: n })` and `_worldRoute({ floor: n })` play any floor that exists. `_worldGen.reset()` does nothing.
+   */
+  window._worldGen = async (n) => {
+    await setup();
+    const def = mod.floors.FLOORS[n];
+    if (!def) return { ok: false, error: `no floor ${n}`, floors: mod.floors.builtFloors() };
+    const pcs = await import('/src/tower/world/pieces/floors.ts'), p = pcs.piecesOf(n);
+    return { ok: true, n, id: def.id, name: def.name, ruler: p?.ruler.name, gate: p?.gate.hero };
+  };
+  window._worldGen.reset = async () => {};
   window._world.game = () => game;
   window._world.at = (name) => (name === 'camp' ? game.floor.start : game.floor.places[name]?.stand);
 
@@ -265,7 +279,7 @@
         ok: game.finished && out.every((c) => c.status === 'done'), floorCleared: game.finished, seconds: r2(run().clock), hp: r2(run().hp), lives: run().lives, shards: run().shards, falls: run().falls, restarts: game.restarts,
         kills: run().kills, stars: run().result?.stars ?? game.stars().map((s) => (s.got ? 1 : 0)), checkpoints: out, notDone: out.filter((c) => c.status !== 'done').map((c) => c.step), errors,
         gateTries: game.log.filter((l) => /^piece gate/.test(l)).length, rulerTries: game.log.filter((l) => /^piece ruler/.test(l)).length, pieceFalls: game.pieceFalls,
-        frames, whyLog: whyLog.slice(-70), gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
+        frames, whyLog: whyLog.slice(-70), whyAll: whyLog, gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
       };
     } finally {
       if (pinned) mod.floors.FLOORS[pinned.n] = pinned.was;

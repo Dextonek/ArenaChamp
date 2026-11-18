@@ -1,7 +1,7 @@
 ---
 title: Multiplayer duel game
-tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight]
-updated: 2026-11-12
+tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight, climb, open-world]
+updated: 2026-11-14
 ---
 
 # Multiplayer duel game
@@ -54,7 +54,8 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | File | Role |
 |---|---|
 | `server/hub.mjs` | `createHub({ accounts, log, loserPicks })`: the runtime-free core (sessions, lobbies, queue, matches, the message handlers); `connect(send)` returns `{ message, closed }`; messages of one connection run one at a time |
-| `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20); `store` is `{ load(), put(key, account) }` |
+| `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20), the duel rating, the week's wins and the Climb's board; `store` is `{ load(), put(key, account), getMeta?, putMeta? }` |
+| `server/clans.mjs`, `server/filter.mjs` | clans and their rooms, kept as store records; the clan chat's word filter (server only) |
 | `server/game-server.mjs` | Node host: `attachGameServer(httpServer, { path, dataFile, log })` (`ws` + `fileStore`: every write re-reads the file and replaces one account, so servers sharing the file don't clobber each other) |
 | `worker/index.mjs`, `wrangler.jsonc` | Cloudflare host: the Worker and the `GameHub` Durable Object (see [Cloudflare](#cloudflare)) |
 | `server/standalone.mjs` | http server for `dist/` plus the game server (port 8787) |
@@ -62,6 +63,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | `game.html` | the second Vite entry (`build.rollupOptions.input` has `editor` and `game`) |
 | `src/net/client.ts` | `NetClient` (connect, auto-reconnect with backoff, resume by token, typed `on(type, fn)`), the `ServerMsg` union and the `Profile` type |
 | `src/game/main.ts` | screens: login / register, play (hero choice, find match), lobbies, lobby room, heroes, profile, play vs CPU; the queue bar; toasts. It sets `duel.onLeave` (the card's leave button ends the CPU fight or the network match) |
+| `src/game/social.ts` | the Leaderboards and Clan screens (see *Leaderboards and clans*) |
 | `src/game/cpu.ts` | `CpuMatch`: an offline fight against the duel AI at a CPU level (no server, no account): set kit, hero mode on, `duel.cpuLevel`, `duel.start('play')`; a Leave button; a won level is reported to the screen |
 | `src/game/match.ts` | `MatchController`: `match_start` → set kit, hero mode on, `duel.startNet`; streams moves at 20 Hz with the sender's clock; warns when its tab is hidden; forwards peer events; the result card; forfeit |
 | `src/game/heroPreview.ts` | the heroes page turntable (its own small renderer, renders only while shown) |
@@ -228,6 +230,263 @@ now, raids later; the players see how many watch, not who). The Lobbies screen l
   fighting and a third coming in 4 s into a live round in Chrome: for a minute the same HP on all three, the arena's clock
   within 0.2 s, the same cover, both heroes within 0.3 m of where their own screens had them, no errors.
 
+## The Climb's open world, stage 1 (since PROTOCOL 16)
+
+The user, 2026-11-14: "let's make it like open world, can we?" ([pipeline/designs/climb-open-world.md](../../pipeline/designs/climb-open-world.md)).
+Stage 1 is presence: signed-in players who walk the same Climb floor see each other. Nothing else is shared yet: each screen keeps
+its own enemies, quests, lives and progress, and nothing one player does can touch another (stage 2 shares the packs).
+
+- **Shards.** The hub keeps each floor's shards (`worlds` in `server/hub.mjs`): at most `WORLD.shardMax` (8) players each, a new
+  player goes into the fullest shard that has room, and a full floor opens another ("2.1", "2.2"; an empty shard is dropped). A
+  player in a duel, a raid, a lobby, the queue or watching a duel is in no shard: going to any of them leaves the floor first.
+- **Relay only.** The hub keeps each player's last place (a newcomer sees everyone where they stand), clamps it (to the mm, inside
+  `WORLD.reach` = 500 m of the floor's middle, health share 0-1), drops walks past 12 a second and casts past 8 in 2 s or the same
+  spell again within 350 ms, and passes the rest on. No HP, no hits, no referee: there is nothing to referee.
+- **The page** (`src/net/world.ts` `WorldLink`, `src/tower/world/others.ts` `WorldOthers`). Each zone built joins the floor's
+  shard and each zone put away leaves it: a door to a set piece, a fall that begins the floor again, the result card, Leave. The
+  hero's place goes out 10 times a second, only when it changed; its casts go out as their spell's name and aim. The others are
+  drawn as the Raid draws its partners: full figures for the nearest 3, light stand-ins past them (looked at twice a second),
+  played back 100 ms late between two reports as in *Smooth movement* (the reports go into a fixed ring of slots and are read back without allocating; the figures and the casts' looks allocate as they do in a raid), a
+  name over each head. A cast plays its look from their figure at the spot they aimed with no hits, knocks, walls or units, and
+  only the pose when this screen's own hero has the same spell or the figure is a stand-in. They are never hit, aimed at or in
+  anyone's way. A fallen one lies down (health share 0) and stands when it is up again. The HUD's floor panel says
+  "2 others on this floor" (hidden when not signed in).
+- **Alone as before.** Not signed in, with no connection, or in the tools (`world-tool.js`, the route bot, the perf scenes): no
+  link, and the Climb is the same as before. A connection that drops clears the others; the resume's `session` joins again.
+- **Limits.** A tab hidden behind another sends its hero's place about once a second (the browser slows a hidden tab), so that
+  hero moves in steps on the others' screens; two windows side by side are smooth. Two others who cast the same spell share one
+  effect (the game keeps one per spell), so the second cuts the first short. A set piece behind a door is alone. A newcomer's
+  model loads when it first comes near enough to be drawn in full.
+- **Test switch:** `game.html?others=7` (or a perf scene with `others`, `gen-2-others`) walks seven made-up others round the hero,
+  casting, through the same drawing path, with no server.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `world_join` | client → hub | `floor`, `hero`, `x`, `z`, `yaw` | into a shard of that floor (the floor it is on: stays in its shard, the roster comes again). A locked hero → `error` |
+| `world_roster` | hub → client | `shard`, `floor`, `you`, `max`, `players: [{ id, name, hero, x, z, yaw, walk, hp }]` | the answer: this player's shard and everyone else in it |
+| `world_joined` | hub → shard | `id`, `name`, `hero`, `x`, `z`, `yaw`, `walk`, `hp` | someone came in (or changed hero) |
+| `world_move` | client → hub | `x`, `z`, `yaw`, `walk`, `hp`, `ts` | this hero's place, facing, whether it walks, its health share; at most 12 a second |
+| `world_moved` | hub → shard | `id` + the same | relayed, clamped |
+| `world_cast` | client → hub | `label`, `x`, `z`, `tx`, `tz` | a spell cast: its name, the caster's spot, the aim |
+| `world_cast` | hub → shard | `id` + the same | relayed (rate-limited as above) |
+| `world_leave` | client → hub | | out of the shard |
+| `world_left` | hub → shard | `id` | left, or the connection dropped, or went to a lobby, the queue or a duel |
+
+Checked (2026-11-14): `npm run test:server` (a page not signed in is refused; two on floor 2 share shard 2.1 and see each other;
+walks relayed and clamped, a flood of 30 cut to 12; casts relayed, a repeat and a long name dropped; floor 3 hears nothing; eight
+fill 2.1 and the ninth opens 2.2; joining again keeps the shard; `world_leave`, a dropped connection and a lobby each send
+`world_left`). Three tabs on the dev server with local test accounts (floor 2, floor 2, floor 3): pictures in
+[docs/tower/openworld/stage1/](../tower/openworld/stage1/).
+
+Speed (`perf.py scenes --scenes gen-2,gen-2-others`, 1500 frames, this computer's card, two runs back to back on a quiet machine;
+`gen-2-others` has seven made-up others circling the hero, each casting every 3 to 6 s). Median / p99 / longest frame (ms):
+
+| Profile | No others | Seven others |
+|---|---|---|
+| desktop | 10.5-10.6 / 20-26 / 121-209 | 11.5-12.1 / 25-26 / 366-426 |
+| phone-4x | 28.0-28.6 / 66-68 / 376-410 | 33.9-37.9 / 75-78 / 438-580 |
+
+So seven others cost a slowed phone 6 to 10 ms a frame, on a floor that is already at 28 ms there. Where (`perf.py census`, phone):
+the others are 50 of the frame's 310 draw calls, 31 of them the three full figures' rigged meshes (79k triangles, no shadows), the
+rest the four stand-ins and seven names; the casts' looks add a few more. Memory churn goes from 19-20 to 25 MB/s (the figures'
+animation and the casts' effects; the reports themselves allocate nothing). The fight under the others is not the same one (their
+casts draw on the scene's seeded dice). The duel and the raid play the same fights as before the change (`duel-temple`,
+`raid-party`: the same prints as the commit before, run beside it; `raid-party` itself comes out as one of two prints from run to
+run, on both).
+
+## The Climb's open world, stage 2: shared packs (since PROTOCOL 18)
+
+The user, 2026-11-14: "do it" to stage 2 of [the design](../../pipeline/designs/climb-open-world.md), with enemies that grow stronger
+"if more enemies are attacking on mob or boss or gatekeeper", by **more players**. In a shard, the players on a floor now fight the same
+packs. Gatekeepers and rulers behind doors are still each player's own here (stage 3, below, shares the rulers).
+
+- **One owner screen a pack.** A pack woken on a screen is claimed (`pack_claim`). Nobody runs it: that screen does (its *owner*) and
+  the shard hears `pack_owner`. Someone does: only the claimer hears whose it is. Until the answer the pack fights on the waking screen
+  alone, as before. The owner runs it as a pack always ran (`src/tower/world/packs.ts`, `tactics.ts` and all), with the other players'
+  heroes within 30 m of it among its victims: its focus, slots and turns are over every hero (`PackMind` counts another screen's hero as
+  a hero), and its swings, bolts and specials reach them (`SummonOptions.others` in `src/effects/summon.ts`: the summon's world and each
+  bolt's are widened, and a hit on another screen's hero goes to that screen, never to the arena). It gives up only when no hero is
+  within its leash. Ten times a second, and at once when a red zone begins, the owner sends its packs in one `pack_state`: each unit's
+  place, facing, health, walk, blow, wind-up and bolts fired, and the red zones.
+- **The others draw copies** (`Pack.mode` `mirror`). The copies are the same summoned units made by the same `Pack.spawn` (`lookOf`
+  and all: a change of a figure shows on every screen), with no mind: `SummonUnit.mirror` keeps them from falling, being pushed or
+  striking here, and their brain places them from the reports, played back 100 ms late through the same ring of slots that draws the
+  other players (`Glide`, others.ts). Their swings, wind-ups and bolts are drawn from the reports (a copy's bolt strikes nothing), their
+  red zones by the same `TelegraphLayer`. They are real targets: this screen's spells and attacks hit them, the hit is shown at once
+  (the bar held down for 400 ms) and goes to the owner (`pack_hit`), who takes it off its unit; the result comes back in the next report.
+  A copy falls when the owner's report says so.
+- **Each screen owns its own hero.** A blow of the owner's pack on another player's hero goes as a share of that hero's health
+  (`pack_hurt`); that screen applies it to its own hero through the same door as its own packs' blows (shields, boons, the floor's law),
+  with a root or a slow when the kind's blow holds.
+- **Health against boons.** A unit's health on a screen is lowered by that screen's hero's damage boons (hits on units pass no boon).
+  So a hit goes to the owner times the hitter's boon (the unit's health before anyone's boons) and comes off divided by the owner's;
+  a copy shows health as a share; a pack handed on keeps its share.
+- **Credit.** A unit's fall counts (a kill, its shards) on every screen whose hero hit it in its last 10 s; on the owner's also when
+  nobody else hit it lately (its law, its hazards: as alone). A pack counts for a player's quests and run (`run.packsCleared`) when that
+  player had a counted kill of it. The quests read the run, not the pack: a pack others cleared does not finish your step, and a pack
+  that comes back does not undo it. Progress stays in each browser (localStorage).
+- **Scaling with players** (`packScale`, server/protocol.mjs). The hub counts `n`, the players in a pack's fight: its owner, whoever
+  stands within 20 m of it (its owner's last report), and whoever hit it in the last 10 s. Health x (1 + 0.6 (n - 1)), blows x
+  (1 + 0.15 (n - 1)). Set when it wakes (`pack_owner` carries `n`), raised when the fight grows (`pack_scale`), never lowered, so leaving
+  cannot make it weaker; the health already lost keeps its share. Two players: x1.6 health, x1.15 blows; three: x2.2, x1.3; eight: x5.2,
+  x2.05.
+- **Hand-over.** When the owner leaves the shard (a closed tab, a dropped connection, a door, Leave) or sends nothing for 4 s (a tab put
+  away), each of its packs goes to the oldest member within 40 m of it, one heard from in the last 4 s first, as the Raid's boss brain is
+  handed on (`pack_owner` with the new owner). That screen already draws the copies: they become its own units where they stand, with
+  their health, and fight on. With nobody near, an owner that left lets it go (`pack_owner` with owner 0): each screen has it to
+  itself again, and it walks home and heals; an owner that is only quiet keeps it (a player alone who puts its tab away for a moment
+  comes back to its fight as it was).
+- **Leashed home.** A pack its owner's screen sees give up and come home asleep is let go (`pack_release`): the next to wake it claims
+  it again, for the players near then.
+- **Cleared and back.** The owner says when the last unit fell (`pack_clear`); the shard hears `pack_cleared` (copies still standing
+  fall then). A newcomer is told in `world_roster.packs`. After 3 minutes (`WORLD_PACKS.respawnS`), when nobody stands within 30 m of
+  its home and two or more walk the shard, the hub brings it back (`pack_respawn`): whole, asleep at home, set for one. Alone in a shard
+  nothing comes back (the Climb plays as it always did). The hub looks at this on each walk in the shard.
+- **Alone, not signed in, the tools.** Signed in and alone in the shard, a pack is claimed and run here as before, set for one, its
+  reports sent to nobody. Not signed in, every pack is local, exactly as before. The tools (`world-tool.js`, the route bot, the perf
+  scenes) have no link and no share at all.
+- **The hub's checks.** A pack id must be the floor's (`server/climb-packs.mjs`, made from the floors by `node pipeline/tools/climb-packs.mjs`;
+  `--check` says whether it is up to date, and the page warns in the console on the dev server when the floor it plays differs from
+  it). Only a pack's owner may report it, hurt with it, clear or release it; a non-owner's hit is relayed only for a pack someone else
+  runs. Places are clamped as walks are, numbers made finite; a report holds at most 12 units and 8 zones. Rates, each a second and a
+  player: 12 reports, 40 hits (at most 600 each), 30 blows; a blow's share is 0-1, its hold at most 3 s. A pack's report goes only to
+  the members within 60 m of it.
+- **Trust.** The owner is trusted with its pack: its places, health, deaths and blows are taken as it says. A cheating owner could
+  make its pack harmless or deadly for the shard. That is acceptable for a co-op world, not for ranked play (as the Raid's boss brain).
+- **The summon cap and the copies' cost.** While other players are on the floor, a side may have 24 live units (`CROWD_CAP`,
+  share.ts), not 6, so their packs' copies can be drawn beside this screen's own; alone it is 6, as before. A copy is a whole figure
+  (about twenty draw calls), so at most 6 copies are drawn at once (`COPY_MAX`), the nearest packs first (looked at twice a second; the
+  first pack is always drawn whole), and a copy casts no shadow (as the other players' figures do not; given back when the pack runs
+  here). A pack past the budget is drawn when it comes among the nearest.
+- **Limits.** The owner judges a blow on another hero where its screen draws that hero (100 ms or more late), not where that hero
+  stands: a dodge at the last moment may still be hit. A copy's red zone fills from when its report arrives, a little after the
+  owner's (the report goes at once when a zone begins). Waves the zone makes for itself (a hold's, the Sands' dust wraiths) are not
+  shared: each screen has its own. A respawned pack pays its shards again. A named enemy's patrol is shared only while it fights.
+  With more than 6 copies near (three or more other packs in one place), the farthest are not drawn here, though their owner's screen
+  may still strike this hero with them. The hub keeps no record of a pack that came back, so a player whose zone is built again (after a
+  door, a fall that begins the floor again) sees a pack its own run cleared as cleared, where the others see it back, until someone
+  wakes it (then this screen draws it again).
+- **Test switches.** `game.html?others=7&packs=3` (or the perf scenes `gen-2-fight-3`, `gen-2-fight-7`): made-up others, each with
+  three made-up packs fighting round the hero as copies, through the same `pack_state` path a real owner's reports take, and this
+  hero's own packs fighting the made-up others too.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `world_roster` | hub → client | + `packs: [{ id, owner, n, cleared }]` | the shard's packs someone woke or cleared; `owner` 0 once cleared |
+| `pack_claim` | client → hub | `pack`, `x`, `z` | this screen woke the pack. → `pack_owner` (to the shard when it is this screen's now, to this screen alone when another's), `pack_cleared` (it is cleared), or `error` "No such pack on this floor" |
+| `pack_owner` | hub → client | `pack`, `owner`, `n` | whose screen runs it (a shard id; 0: nobody, each screen has it to itself) and how many players it is set for |
+| `pack_scale` | hub → shard | `pack`, `n` | the fight grew: set for `n` players |
+| `pack_state` | client → hub | `packs: [{ id, x, z, ts, u, zn }]` | the owner's packs, ten times a second: `u` each unit (0 once fallen) as `[x, z, yaw, hp, max, walk, swing, pose, shots]`, `zn` red zones as `[unit, kind, a, b, c, d, e, t, impact]` (kind 0 a circle x, z, radius; 1 a line x1, z1, x2, z2, width) |
+| `pack_state` | hub → members near | `packs: [{ id, n, x, z, ts, u, zn }]` | relayed to those within 60 m of each pack, clamped, with `n` |
+| `pack_hit` | client → hub | `pack`, `u`, `dmg` | this screen hit unit `u` of a pack another screen runs (`dmg` before anyone's boons) |
+| `pack_hit` | hub → owner | `pack`, `u`, `dmg`, `by` | for the owner to take off |
+| `pack_hurt` | owner → hub | `pack`, `to`, `share`, `x`, `z`, `kind?`, `net?: { kind, s }` | the owner's pack struck player `to`'s hero |
+| `pack_hurt` | hub → that player | `pack`, `share`, `x`, `z`, `kind`, `net`, `by` | for its screen to apply to its own hero |
+| `pack_clear` | owner → hub | `pack` | its last unit fell |
+| `pack_cleared` | hub → shard | `pack` | cleared (to everyone but the owner); also the answer to a claim of a cleared pack |
+| `pack_release` | owner → hub | `pack` | it gave up and is home asleep: nobody runs it (`pack_owner` with owner 0) |
+| `pack_respawn` | hub → shard | `pack` | back: whole, asleep at home, set for one |
+
+Checked (2026-11-14): `npm run test:server` (the first to wake a pack runs it and the shard hears; a second who wakes it is told;
+a pack id the floor does not have is refused; the fight counted when a second player comes within 20 m, and never counted down; the
+owner's report reaches the member near the pack, clamped, and not one 150 m off; a non-owner's report and blow are dropped; a hit goes
+to the owner with the hitter's id, 60 in a second cut to 40, a hit past 600 cut; the owner's blow goes to the hero it struck, its hold
+cut to 3 s; the owner leaves and the pack goes to the member near it, still set for two; an owner quiet for 4 s is replaced; cleared,
+told to a newcomer and to a claim; back after 3 minutes, not before, not while someone stands within 30 m, never alone in a shard;
+alone, a quiet owner keeps its pack).
+Two tabs on the dev server with local test accounts: [docs/tower/openworld/stage2/](../tower/openworld/stage2/) (the drift between the
+two screens, the numbers, the hand-over, the respawn, pictures).
+
+Speed (`perf.py scenes --scenes gen-2,gen-2-fight-3,gen-2-fight-7`, 1500 frames, this computer's card, 2026-11-15). `gen-2-fight-3`
+and `-7` put three or seven made-up others in the hero's fight, each with three made-up packs of three fighting round the hero as copies
+(the worst case: every pack within a few metres), and the hero's own packs fighting them all. Median frame (ms), draw calls:
+
+| Profile | Alone | 3 others, 9 packs | 7 others, 21 packs |
+|---|---|---|---|
+| desktop | 12.1, 251 calls | 15.0, 424 calls | 22.2, 465 calls |
+| phone-4x | 65.5 (39-43 in quieter runs) | 63.6 (52 in another run with this build) | 69.3 |
+
+The first runs drew every copy (24, the raised cap) with its shadow: 778 draw calls, desktop 30 ms, phone-4x 71 and 86 ms. Hence the
+budget of 6 copies with no shadow. The phone-4x numbers moved by 25 ms from run to run on the same build (the computer was busy), so they
+say little beyond this: the floor alone already takes more than a frame there, and the copies, the others' figures and the fight's
+work on every hero add about 170 to 215 draw calls, 1 to 2 ms of step on desktop. The duel and the raid play as before: `duel-temple`
+prints 90b1abaa, as before the change; `raid-party` prints 34f75b29 instead of e83903c0, and so does the commit before this work with a
+dead, never-called function added to src/net/world.ts: the raid scene's print follows how the code is loaded, not what this code does
+(stage 1 saw it come out as one of two prints). (Since 2026-11-15 the perf tool's clock and dice make the print the same every run: raid-party 9c4a9c48; baseline `docs/perf/data/prints.json`.)
+
+## The Climb's open world, stage 3: doors together (since PROTOCOL 19)
+
+The user accepted stage 2 and asked for stage 3 of [the design](../../pipeline/designs/climb-open-world.md): players together on a floor
+go through a ruler's door together and fight what is behind it together. **Only a ruler's lair** is fought together: a gate and a
+rival are duels with a CPU hero, a trial is a room of its own, and a crown floor's lair (every tenth floor: a Raid boss) was not played
+on two screens, so those stay alone, as before (the hub answers `door_solo`).
+
+- **How a player sees it.** Walk into a ruler's lair (its door ready for you, as alone) while another player of your shard stands within
+  30 m of it (`WORLD_DOORS.nearR`): the door holds. A line at the top says "The Drowned Captain's lair: held for others near, 5 s" with a
+  **Go in now** button for the first one in. The players near see "Lyra waits at the Drowned Captain's lair: walk in within 5 s to fight
+  beside them". Whoever walks in by then is in; when the time is up, or everyone near is in, or the first says go, the fight starts for
+  all of them. Nobody else came: it is played alone, as before. With nobody near when you walk in (or alone on the floor, or not signed
+  in) the door is played at once, alone, exactly as before. A lair this run has already won may be walked into to help while another
+  player holds it open (it pays nothing more).
+- **The fight is a raid's.** The hub makes a raid's match (`match.boss`) with a `door`: the first in runs the ruler's brain, the others
+  follow its casts and walk (`NetLink`, `src/tower/world/together.ts`, which does for one door what `RaidController.stage` does for a raid's
+  fight); a fallen hero lies with its gold ring until a partner stands by it for 3 s (twice a fight each); when the brain's screen leaves
+  or says nothing for 4 s, the next one takes it over (`brainWatch`, `nextBrain`). Every `boss_*` check of the Raid holds: only the brain
+  speaks for the ruler, hits are capped (600 a hit, 1400 a second a screen), places are clamped to the room (14 m round its middle,
+  `WORLD_DOORS.ring`), a mechanic is paid once a cast. The ruler's sentries, its guard and its called keepers are each screen's own (as a
+  Raid boss's adds are): each hero clears its own; the brain's felled sentries earn the ruler's stagger once each, through the hub.
+- **Its numbers.** The hub keeps each floor's ruler as its table says (`server/climb-packs.mjs`, `CLIMB_DOORS`, made from the floors by
+  `node pipeline/tools/climb-packs.mjs`, with a floor that has no pieces of its own playing the highest floor's below it, as the page
+  does): its health, the shares of health its phases start at, its gauge and kneel, what a felled sentry earns (a crown floor's row names
+  its Raid boss and tier, and is played alone). With `n` in the fight (`doorScale`): health and the gauge x (1 + 0.75 (n - 1)) (the
+  design's gatekeepers' and rulers' factor), its blows x (1 + 0.15 (n - 1)) (as a pack's). Two: x1.75 and x1.15; three: x2.5 and x1.3;
+  eight: x6.25 and x2.05. Set for those who went in; nobody joins later.
+- **Off the floor, in the same shard.** Each player who goes in keeps its seat in the shard (`WorldSeat.inside`): the floor hears
+  `world_left` for it and `door_busy` (who went in; again with nobody when it is over), its packs go to whoever is near them, and while it
+  is inside it hears nothing of the floor, counts in no pack's fight and is never handed a pack. Its page puts the floor away without
+  leaving the shard (`WorldPresence.away`). After the fight its page builds the zone again and joins: the hub finds the seat and puts it
+  back on the floor (`world_joined` to the others), in the same shard.
+- **The result, for each player its own.** `door_end` tells each player still in the fight whether its own screen hit the ruler. The ruler
+  fell and it hit: the lair is won on its run (quests, stars, the 40 shards, the gate unsealed, as alone). The ruler fell and it never hit:
+  nothing counts, no life lost, the door as it was. Everyone down: lost, a life each, as alone. Either way everyone comes out in front of
+  the door, together (alone a lost lair still wakes the hero at its last waystone; a lost party fight wakes everyone at the door, the
+  life still lost). A player whose connection went mid-fight (a deploy) comes out at once with nothing counted. One who leaves the fight
+  but not the floor (`match_leave`) is back on the floor at once (`world_joined`). Nothing goes on the accounts (no raid run, no obols,
+  no board): a climb's progress stays in each browser.
+- **Limits.** The ruler's sentries, its guard and its called keepers are each screen's own: each hero clears its own, and only the brain's
+  felled sentries earn the stagger or the kneel (on floor 41 only the brain's standard makes the Marshal kneel). A sentry's reward is
+  paid once by its number (`REWARD_ID + fell`, counted on each screen): after a hand-over the new brain's numbers may repeat ones already
+  paid and are dropped. The duel's boss bar stays hidden in a ruler's fight, alone or together, as it always was in the Climb (the
+  Climb's HUD hides it for the floor's own unseen boss); the party list shows each hero's health. A guarded or a still ruler (floors 11,
+  41) was not played in two tabs, nor a party of three or more, nor on a phone.
+- **Trust.** As the Raid's: the brain's screen is trusted with the ruler's moves, each screen with its own hero's HP and its hits (capped).
+  A screen could claim hits it never made and so count a clear: acceptable for a co-op world.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `door_enter` | client → hub | `door` | this hero walked into a door that is ready for it. A door the floor does not have: `error` "No such door on this floor". Dropped from a player the hub last heard more than the door's ring + 8 m from it (`enterR`), past 4 a second, from one behind a door or in a fight. Not a ruler's lair, a crown floor's, or nobody else near: `door_solo` |
+| `door_gather` | hub → those in it and near the door | `door`, `by`, `ids`, `names`, `left` | the door is held: who opened it, who is in, seconds left; `left` 0: it closed (they went in, or all who were in it left the shard) |
+| `door_go` | client → hub | | the first in goes in now, with whoever has come (from anyone else: dropped) |
+| `door_solo` | hub → client | `door` | play it alone, as before |
+| `door_start` | hub → each in the fight | `id`, `door`, `side`, `you`, `party: [{ side, name, hero }]`, `n`, `hp`, `brain`, `dmg`, `staggerMax` | the fight of the party: this player's seat, the ruler's health and gauge for `n`, its blows' factor, whose screen runs the brain. Then as a raid's fight: `match_loaded` from each screen, `match_fight` (the countdown), and the Raid's `boss_*`, `move`/`peer_move`/`party_moves`, `cast`/`peer_cast`, `attack`, `raid_hp`/`partner_hp`, `hero_down`/`peer_down`, `revive`/`revived`, `partner_left`, `boss_brain`/`brain_moved`, `match_leave` |
+| `door_busy` | hub → the floor | `door`, `n`, `names` | these went in together (`n` 0: the fight is over, the door free) |
+| `door_end` | hub → each still in it | `door`, `result` (`won`, `lost`), `hit`, `seconds`, `hp` | the fight is over; `hit`: this player's screen hit the ruler (it counts for it) |
+
+Checked (2026-11-16): `npm run test:server`, 364 checks (the doors' 35 among them: a door id the floor does not have refused; a trial's
+door alone; a player far from the lair not taken in; the lair held when another is near and both told, not one 180 m off; the second
+walks in and nobody else is near: the fight starts at once, the first runs the brain; set for two, 4900 health, the gauge 175, blows
+x1.15; the floor sees both go, a newcomer does not see them, they hear nothing of the floor; the countdown; only the brain's cast passes;
+the ruler's walk clamped; walks relayed with the seat; a hit from either screen comes off on both; a felled cannon's stagger grown with
+the gauge, an unknown mechanic earns nothing; a fall and a revive at half health; the brain's screen closes and the other takes it
+over; the ruler falls at its two phases, won, counting for the one who hit; the floor hears the door is free; coming out into the same
+shard as the same player, seen again; nothing on the account; three in a held door that waits for a fourth near, only the first may say
+go, set for three (7125), the one who stayed out not taken; all three down is lost, only the one who hit said to have hit; a held door
+nobody else walks into played alone after its 6 s; alone on a floor played alone at once; a crown floor's lair alone even with another
+near; one who leaves the fight but not the floor seen on the floor again, its walk heard). Two tabs on the dev server:
+[docs/tower/openworld/stage3/](../tower/openworld/stage3/) (both screens agree on the ruler to 0.05 m p95 after the 100 ms play-back
+delay and on its health to 0.1 %; a revive; the brain handed over from a frozen tab in 4.7 s and from a closed one in 0.37 s; the clear
+on both; out together; a dropped connection mid-fight).
+
 ## The hero shop, raid ranks and the week's boards
 
 Design, decisions and what was checked: [`pipeline/designs/hero-shop.md`](../../pipeline/designs/hero-shop.md). Pictures:
@@ -251,6 +510,80 @@ Design, decisions and what was checked: [`pipeline/designs/hero-shop.md`](../../
   written when a run ends, and the highest Tower floors as each player's own page reported them (`tower_report`, **not verified**).
   The top 20 of each, kept with the accounts, empty again each Monday.
 - **The profile** carries `obols`, `owned` (every hero while the shop is off), `founder`, `rank`, `tower` and `raids.others`.
+
+## Leaderboards and clans (since PROTOCOL 17)
+
+The user, 2026-11-14: "also make like online leaderboards", and "let's make like clans, groups, so that people can chat while being
+in one clan". Pictures: [`docs/game/social/`](../game/social/README.md). The page's two screens are `src/game/social.ts` (Boards and
+Clan in the bar); the hub's side is `server/hub.mjs` (the Leaderboards and clan sections), `server/clans.mjs` (the clans' rules and
+what is kept), `server/filter.mjs` (the word filter) and `server/accounts.mjs` (the rating, the week's wins, the Climb). The numbers
+are `ELO`, `LEADER_SIZE`, `CLIMB_FLOORS` and `CLAN` in `server/protocol.mjs`.
+
+- **The duel rating:** Elo, 1000 to start, K 32, per account (`rating`, `rated`: the duels that moved it). A duel counts exactly
+  as it pays: 30 s or more (`SHOP.minDuelS`); a shorter one moves nobody, and whoever left one that counts loses it. A counted duel
+  also goes on the account's week (`duelWeek`). `match_end` carries `rating: { now, change }`; the profile carries `rating`.
+- **The boards** (`leaderboards`, answered without an account too): the rating's top 50 (with all online wins and losses and the
+  hero played most), the week's top 50 by counted wins, the Climb's all-time top 50 (the highest floor cleared, then the stars of all
+  floors), the clans by their members' wins this week then their rating's average, and the week's Raid and Tower boards as they
+  were (the Raid and Tower screens keep theirs). `tags` gives the clan tag of every name in the message; `you` the player's own
+  rows with its rank on each (0: not listed), which the page shows under a list it is not on.
+- **Cheap:** nothing scans every account on a request. The rated accounts are one list in rating order, built once when the hub
+  starts and re-sorted when a duel counts; the week's wins and the Climb are kept lists of 50 (store records `duelweek`, `climb`), which
+  stay right because each only grows (a new week starts `duelweek` empty); the clans' board adds up at most 30 members a clan. The
+  shared part of the message is built once and kept until a duel counts, a Climb report lands or a clan's members change.
+- **The Climb's board is the page's word,** as the Tower's is: `climb_report { floor, stars }` from a signed-in page (when a floor is
+  cleared, at sign-in, on opening the Boards), read from the Climb's saves (`tower.world.stars`). The hub takes floors 1-50 and at
+  most four stars a floor, each only upward; it pays nothing and the screen says so. The one line in `src/tower/world/game.ts` that
+  says a floor was cleared is a `climb-cleared` event on the window.
+- **A clan:** a name of 3-24 letters, digits and spaces, unique in any case; a tag of 2-4 letters or digits, also unique, shown as
+  [TAG]; a leader (the founder) and up to 30 members; one clan a player. In by the invite code (6 characters; the leader can make a
+  new one, and the old stops working), or by asking from the clan's page (`clan_ask`) and the leader's yes (`clan_answer`). The
+  leader can remove a member, hand on the lead, and mute a member in the room for 24 h. A leader who leaves hands the lead to the
+  member who has been in longest; the last one out ends the clan, and its name and tag are free again. Names and tags that hold a
+  listed word are refused.
+- **The clan chat:** signed-in members only, one room a clan, nothing outside a clan. A message is plain text on one line (control
+  characters become spaces), at most 200 characters; the page puts every word in with `textContent`. At most one a second and 10 in
+  20 s per sender (in the hub's memory); a refused one is answered `clan_error` with the reason and does not count. The listed words
+  (`server/filter.mjs`, server only, a short list of slurs; it catches case, plurals and digits for letters) become `***`. Joins,
+  leaves, removals, the lead and the leader's mutes are lines of the room too. The last 100 lines are kept in the store, so a reload
+  or a deploy still shows them, and sent on `clan_get`.
+- **Safety:** each player can mute anyone for itself (`clan_mute`), kept on its account (`mutes`): the hub sends it none of that
+  name's messages, now or in the history. Report (`clan_report { n }`) writes the message with the clan, both names and the time to
+  the hub's log (`REPORT clan "…"`), nothing more.
+- **Presence:** the hub knows who is signed in; a member's sign-in and its last connection closing send the clan (`clan`) to its
+  members online, with the dots. Only members are ever sent anything about a clan unasked.
+- **Unread:** the page counts the messages from others newer than the last one it showed on the Clan screen (kept per account and
+  clan in localStorage) and shows the count on the Clan tab. Messages still arrive during a fight; the count waits under the fight
+  and nothing of the chat is drawn over a duel.
+- **The open world:** `world_roster` and `world_joined` carry `tag` beside `name`; the page draws "[TAG] name" over the hero.
+- **Stored** as the store's small records, so neither host changed: `clans` (the ids), `clan:<id>` (one clan: name, tag, leader,
+  members, code, asks, the room mutes, the last line's number), `chat:<id>` (its last 100 lines); a clan that is gone has both written
+  as null. Who is in which clan is worked out in memory when the hub starts. On Cloudflare that is the `meta` table of the Durable
+  Object's SQLite storage; on Node the `meta` part of the JSON file.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `leaderboards` | client → hub | | anyone, signed in or not → `leaderboards` |
+| `leaderboards` | hub → client | `week`, `next`, `duels`, `weekly`, `climb`, `clans`, `raid`, `tower`, `tags`, `you` | every list (see above); `you` null when not signed in |
+| `climb_report` | client → hub | `floor`, `stars` | the Climb's highest floor cleared and the stars of all floors; not verified, only upward, no answer |
+| `clan_get` | client → hub | | → `clan`, and `clan_history` when in one; the page asks at sign-in and on opening the Clan screen |
+| `clan` | hub → client | `clan` (or null), `mutes` | the player's clan as members see it: `id`, `name`, `tag`, `leader`, `max`, `created`, `wins`, `members: [{ name, rating, wins, online, role, silenced? }]`, and for the leader `code` and `asks`; sent again on every change and dot |
+| `clan_history` | hub → client | `id`, `lines` | the room's kept lines, oldest first, without those of names this player muted |
+| `clan_chat` | hub → members | `id`, `line` | a new line: `{ n, at, kind, name, text?, by? }`, `kind` one of `say`, `found`, `join`, `leave`, `remove`, `lead`, `silence`, `unsilence` |
+| `clan_list` | client ↔ hub | → `clans: [{ id, name, tag, members, wins, rating, asked }]` | the clans with room, the most wins this week first (50 at most) |
+| `clan_view` | client ↔ hub | `id` → `clan: { …row, leader, max, asked, list: [{ name, rating, role }] }` | a clan's page: no dots, no code |
+| `clan_create` | client → hub | `name`, `tag` | → `clan` and `clan_history`, or `clan_error` |
+| `clan_join` | client → hub | `code` | by the invite code (any case) → `clan`, or `clan_error`: no such code, full, already in a clan |
+| `clan_ask` | client → hub | `id` | ask to join → `clan_notice`, and the leader's `clan` shows the ask |
+| `clan_answer` | client → hub | `name`, `yes` | the leader only: let the asker in (it gets its `clan` at once) or not |
+| `clan_leave` | client → hub | | → `clan` null; the members get a `leave` line (and `lead` when the leader left) |
+| `clan_remove`, `clan_lead` | client → hub | `name` | the leader only; the removed player gets `clan` null and `clan_notice` |
+| `clan_code` | client → hub | | the leader only: a new invite code |
+| `clan_silence` | client → hub | `name`, `on` | the leader only: mute (or let speak) a member in the room for 24 h |
+| `clan_say` | client → hub | `text` | → `clan_chat` to every member online (the sender too), or `clan_error` (too long, too fast, muted by the leader) |
+| `clan_mute` | client → hub | `name`, `on` | this player's own mute of a name, kept on its account → `clan` with the new `mutes` |
+| `clan_report` | client → hub | `n` | a message of the room to the hub's log → `clan_notice` |
+| `clan_error`, `clan_notice` | hub → client | `error` / `text` | a refusal, or a word to the player |
 
 ## Rules version
 
@@ -313,7 +646,7 @@ daily limits, check Cloudflare's pricing page):
 |---|---|
 | Worker `arena-of-kits` (`worker/index.mjs`) | `/` redirects to `/game.html` (the game is the front page; the editor stays at `/index.html`); `/ws` goes to the hub; every other path is a file from `dist/` (`assets.run_worker_first: ["/ws", "/"]`) |
 | Durable Object `GameHub` | one instance (`idFromName('main')`) so every player meets in one place; runs `createHub` from `server/hub.mjs`; WebSockets with `accept()` (no hibernation: the object stays in memory while players are connected) |
-| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change. Table `meta (key, json)` (made on first start if it is not there): the day the hero shop arrived and the week's boards. The Node server keeps the same two under `users` and `meta` in its JSON file |
+| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change. Table `meta (key, json)` (made on first start if it is not there): the day the hero shop arrived, the week's boards, and since PROTOCOL 17 the duel and Climb boards, the clans and their rooms. The Node server keeps the same two under `users` and `meta` in its JSON file |
 | `SHOP` (`vars` in `wrangler.jsonc`) | "on": heroes are locked behind the shop. "off": every hero is free |
 | Lost on eviction | sessions (players log in again), open lobbies and the queue; a running match keeps the object alive |
 

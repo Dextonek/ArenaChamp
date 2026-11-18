@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RING, canvasTexture, flatRing, floorDisc, seeded } from '../../arenas/common';
-import { HARBOUR_OBSTACLES, harbourArena } from '../../arenas/harbour';
-import { Glows, Sea, realProps } from '../../arenas/real';
+import { RING, seeded } from '../../arenas/common';
+import { HARBOUR_OBSTACLES } from '../../arenas/harbour';
+import { Glows, realProps } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
 import { pillar, wall, type Obstacle } from '../../obstacles';
+import { buildLand } from './land';
 
 /**
  * Stage 0 of the Tower's floors as worlds (pipeline/designs/tower-worlds-build.md): one walking zone in the Drowned Harbour's
@@ -26,9 +27,18 @@ import { pillar, wall, type Obstacle } from '../../obstacles';
  * flat (z 55) and the others reach 49.3. `ArenaDef` should carry its middle and the clamp should follow `arena.bounds`.
  */
 export const ZONE_R = 48;
-const KERB = 0.8;
-const SEA = -1.7;
+const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
+  const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
+  const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
+  return Math.hypot(px - (ax + ex * t), pz - (az + ez * t));
+};
 const at = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
+
+/** The tide's low ground (floor 1's law, floors/harbour.ts): kept here because the ground is drawn from it (tidal flats, land.ts). */
+export const TIDE_LOW = [
+  { ...at(-16, 19), rx: 8, rz: 5, rot: 0.3 }, { ...at(12, 11), rx: 5, rz: 4 }, { ...at(-9, -22), rx: 8, rz: 5 }, { ...at(35, -12), rx: 6, rz: 5 },
+  { ...at(-33, -17), rx: 6, rz: 4 }, { ...at(20, 31), rx: 7, rz: 4 }, { ...at(4, -33), rx: 7, rz: 3 },
+];
 
 export interface Place { id: string; name: string; x: number; z: number; r: number; /** Open ground to walk to: the middle of a place can be cover. */ stand: { x: number; z: number } }
 /** The five places: where each stands, and how wide its plaza is. */
@@ -51,8 +61,9 @@ const PATHS: [number, number][][] = [
   [[25, -20], [28, -8], [27, 5]],
 ];
 
-type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post';
-interface Piece { o: Obstacle; look: Look }
+/** `edge`: a piece of the zone's outline (an invisible wall that keeps a walk inside; the land draws what stands there). */
+export type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post' | 'edge';
+export interface Piece { o: Obstacle; look: Look }
 
 const piece = (look: Look, o: Obstacle, height?: number): Piece => ({ look, o: height ? { ...o, height } : o });
 const P = (look: Look, dx: number, dz: number, r: number, h: number) => piece(look, { ...pillar(RING.x + dx, RING.z + dz, r), height: h });
@@ -82,7 +93,7 @@ function cover(): Piece[] {
   list.push(piece('hull', { ...wall(RING.x + 28.5, RING.z + 6.5, RING.x + 36, RING.z + 17), r: 1.7, height: 3 }), P('post', 38, 19, 0.5, 5), P('rock', 27, 16, 1.3, 1.6), P('rock', 36.5, 5, 1.5, 2));
   // The ruined customs house in the middle: three walls, open to the south.
   list.push(W('house', -6, -8, 6, -8, 0.45, 3.4), W('house', -6, -8, -6, -1.5, 0.45, 3.4), W('house', 6, -8, 6, -1.5, 0.45, 3.4));
-  // The Drowned Captain's lair: a long wall across the north with a doorway in the middle (the door itself is the floor's: floors/harbour.ts).
+  // The Drowned Admiral's lair: a long wall across the north with a doorway in the middle (the door itself is the floor's: floors/harbour.ts).
   list.push(W('house', -26, -41, -3.4, -41, 0.5, 3.6), W('house', 3.4, -41, 26, -41, 0.5, 3.6));
   // Rocks and crates in the open, some on the paths so the way bends round them.
   list.push(
@@ -104,105 +115,16 @@ export const PACK_HOMES = [
 
 // --- the look ---------------------------------------------------------------------------------------------------
 
-const STAGE: ArenaStage = { ...harbourArena.stage, fogNear: 48, fogFar: 150 };
-const px = (x: number, c: number, ppm: number) => c + (x - RING.x) * ppm;
-const pz = (z: number, c: number, ppm: number) => c + (z - RING.z) * ppm;
-
-/** The ground, drawn as a map: dark slabs, lighter cobbles in each plaza, flagged paths, puddles, a brass ring near the rim. */
-function groundTexture() {
-  return canvasTexture(2048, (g, size) => {
-    const rnd = seeded(77), c = size / 2, ppm = size / (2 * ZONE_R);
-    g.fillStyle = '#16171c';
-    g.fillRect(0, 0, size, size);
-    const slab = (x0: number, z0: number, w: number, h: number, base: number[], spread: number) => {
-      const t = 1 - spread + 2 * spread * rnd(), warm = (rnd() - 0.5) * 6;
-      g.fillStyle = `rgb(${Math.round(base[0] * t + warm)},${Math.round(base[1] * t)},${Math.round(base[2] * t - warm)})`;
-      g.fillRect(px(x0, c, ppm) + 1, pz(z0, c, ppm) + 1, w * ppm - 2, h * ppm - 2);
-    };
-    // the quay's dark slabs everywhere
-    for (let z = RING.z - ZONE_R; z < RING.z + ZONE_R; z += 2.4) for (let x = RING.x - ZONE_R; x < RING.x + ZONE_R; x += 2.4) slab(x + (((z / 2.4) | 0) % 2) * 1.2, z, 2.4, 2.4, [41, 44, 52], 0.14);
-    // the plazas: smaller, lighter cobbles inside a circle
-    for (const pl of Object.values(PLACES)) {
-      g.save();
-      g.beginPath();
-      g.arc(px(pl.x, c, ppm), pz(pl.z, c, ppm), pl.r * ppm, 0, Math.PI * 2);
-      g.clip();
-      g.fillStyle = '#101116';
-      g.fillRect(px(pl.x - pl.r, c, ppm), pz(pl.z - pl.r, c, ppm), pl.r * 2 * ppm, pl.r * 2 * ppm);
-      for (let z = pl.z - pl.r; z < pl.z + pl.r; z += 1.1) for (let x = pl.x - pl.r; x < pl.x + pl.r; x += 1.1) slab(x + (((z / 1.1) | 0) % 2) * 0.55, z, 1.1, 1.1, [66, 68, 78], 0.16);
-      g.restore();
-      g.strokeStyle = '#7a6030';
-      g.lineWidth = 0.1 * ppm;
-      g.beginPath();
-      g.arc(px(pl.x, c, ppm), pz(pl.z, c, ppm), (pl.r - 0.3) * ppm, 0, Math.PI * 2);
-      g.stroke();
-    }
-    // the paths: a wide flagged band with a dark edge
-    g.lineCap = g.lineJoin = 'round';
-    for (const path of PATHS) {
-      const trace = () => {
-        g.beginPath();
-        path.forEach(([dx, dz], i) => (i ? g.lineTo(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm)) : g.moveTo(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm))));
-      };
-      g.strokeStyle = '#0f1015';
-      g.lineWidth = 3.9 * ppm;
-      trace();
-      g.stroke();
-      g.strokeStyle = '#3a3d48';
-      g.lineWidth = 3.3 * ppm;
-      trace();
-      g.stroke();
-      g.strokeStyle = '#242730';
-      g.lineWidth = 3.3 * ppm;
-      g.setLineDash([0.12 * ppm, 1.6 * ppm]);
-      trace();
-      g.stroke();
-      g.setLineDash([]);
-    }
-    // puddles of sea water, where the quay is low
-    g.fillStyle = 'rgba(40,86,112,0.35)';
-    for (const [dx, dz, rx, rz] of [[-18, 20, 3, 1.6], [12, 12, 2.4, 1.3], [-6, -22, 3.2, 1.7], [35, -12, 2.6, 1.5], [-33, -18, 2.2, 1.2], [20, 32, 2.4, 1.3]]) {
-      g.beginPath();
-      g.ellipse(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm), rx * ppm, rz * ppm, 0.3, 0, Math.PI * 2);
-      g.fill();
-    }
-    // a brass ring near the rim and a brass star in the middle, as the harbour's quay has
-    g.strokeStyle = '#7a6030';
-    g.lineWidth = 0.14 * ppm;
-    for (const r of [ZONE_R - 0.9, 5.5]) {
-      g.beginPath();
-      g.arc(c, pz(RING.z, c, ppm), r * ppm, 0, Math.PI * 2);
-      g.stroke();
-    }
-  });
-}
-
-function blockTexture() {
-  return canvasTexture(512, (g, size) => {
-    const rnd = seeded(5), rows = 4, h = size / rows;
-    g.fillStyle = '#17181d';
-    g.fillRect(0, 0, size, size);
-    for (let r = 0; r < rows; r++) {
-      const n = 3, w = size / n, off = (r % 2) * (w / 2);
-      for (let k = -1; k < n; k++) {
-        const t = 0.8 + 0.3 * rnd();
-        g.fillStyle = `rgb(${Math.round(41 * t)},${Math.round(44 * t)},${Math.round(52 * t)})`;
-        g.fillRect(off + k * w + 3, r * h + 3, w - 6, h - 6);
-      }
-    }
-  });
-}
-
-/** The kerb and the quay's wall, as the harbour's, at the zone's radius. */
-function quayGeometry() {
-  const r = ZONE_R;
-  const profile = [[r + KERB + 0.12, SEA - 2.5], [r + KERB + 0.03, -0.5], [r + KERB, 0.08], [r + KERB - 0.1, 0.17], [r + 0.02, 0.17], [r - 0.05, 0.0]].map(([x, y]) => new THREE.Vector2(x, y));
-  const geo = new THREE.LatheGeometry(profile, 256);
-  const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 60, uv.getY(i) * 1.6);
-  geo.translate(RING.x, 0, RING.z);
-  return geo;
-}
+/**
+ * Daylight, late in the afternoon (the user, 2026-11-13: the floors should look like the real world). A shade muted, as the house
+ * style asks (the world stays behind the heroes); the fog is the far haze over land and sea.
+ */
+const STAGE: ArenaStage = {
+  background: 0x9db4c6, zenith: 0x5a83b0, horizon: 0xc6d2d6, glow: 0xf0d2a2, stars: 0,
+  fog: 0xa9b8c0, fogNear: 70, fogFar: 240,
+  hemiSky: 0xd2e0ec, hemiGround: 0x4c4636, hemiIntensity: 0.85,
+  sun: 0xffe8c8, sunIntensity: 1.6, rim: 0xa4bedf, rimIntensity: 0.35,
+};
 
 /**
  * The dressing, collected as geometry and merged per material and per square of ground `CELL` m across: a few draw calls for the
@@ -267,8 +189,36 @@ const PROPS: { i: number; dx: number; dz: number; yaw: number }[] = [
   { i: 7, dx: -12, dz: 30, yaw: 0.3 }, { i: 8, dx: 17, dz: 31, yaw: -0.4 }, { i: 7, dx: 40, dz: -20, yaw: 0.9 }, { i: 8, dx: -40, dz: -6, yaw: 0.2 },
 ];
 
-/** Builds the zone's meshes. The harbour's own props load from its file and join the dressing when they arrive. */
-export function buildZone(): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+/**
+ * What a sea zone is drawn from (floor 1's is below; the generator's floors of the sea chapter carry their own, floors/gen/): its
+ * places (world), paths (offsets), cover with its looks, the tide's flats (world), the sea's side, the land's seed, the caves' middle
+ * (offset; a dark back wall and crystals) and copies of the harbour file's props (offsets).
+ */
+export interface SeaLook {
+  /** The walkable outline: radii round the middle (land.ts `LandSpec.rim`); none is floor 1's circle. */
+  rim?: number[];
+  places: { id: string; kind?: string; x: number; z: number; r: number }[];
+  paths: [number, number][][];
+  pieces: Piece[];
+  flats: { x: number; z: number; rx: number; rz: number; rot?: number }[];
+  mirror: 1 | -1;
+  seed: number;
+  caves?: { dx: number; dz: number };
+  props?: { i: number; dx: number; dz: number; yaw: number }[];
+  /** The ruined customs house's floor (offset), when there is one. */
+  ruin?: { dx: number; dz: number };
+}
+const FLOOR1_LOOK: SeaLook = { places: Object.values(PLACES), paths: PATHS, pieces: PIECES, flats: TIDE_LOW, mirror: 1, seed: 0, caves: { dx: -17, dz: -32 }, props: PROPS, ruin: { dx: 0, dz: -5 } };
+/** The outline of a look: its own, or floor 1's circle. */
+const rimOf = (look: SeaLook) => look.rim ?? new Array(48).fill(ZONE_R);
+
+/** Floor 1's zone. */
+export function buildZone() {
+  return buildSeaZone(FLOOR1_LOOK);
+}
+
+/** Builds a sea zone's meshes. The harbour's own props load from its file and join the dressing when they arrive. */
+export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const mat = (color: number, rough = 0.85, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
@@ -276,37 +226,28 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
     own.push(m);
     return m;
   };
-  const stone = mat(0x4a4e5a), rock = mat(0x383c46, 0.95), wood = mat(0x4a3626), darkWood = mat(0x2a1f1a), cream = mat(0xcfc8b4, 0.7), wine = mat(0x6a2535), teal = mat(0x2b5560), sail = mat(0x6f6652, 0.95, { side: THREE.DoubleSide });
+  const stone = mat(0x4a4e5a), rock = mat(0x383c46, 0.95), wood = mat(0x4a3626), darkWood = mat(0x2a1f1a), cream = mat(0xb6ae9a, 0.7), wine = mat(0x6a2535), teal = mat(0x2b5560), sail = mat(0x6f6652, 0.95, { side: THREE.DoubleSide });
   const gold = mat(0xc9a24a, 0.4, { metalness: 0.8, emissive: 0xffb050, emissiveIntensity: 0.22 });
   const iron = mat(0x23252c, 0.55, { metalness: 0.5 });
   const crystal = new THREE.MeshBasicMaterial({ color: 0x7ad8ff });
   own.push(crystal);
 
-  const paving = new THREE.MeshStandardMaterial({ map: groundTexture(), roughness: 0.5, envMapIntensity: 0.3 });
-  const floor = floorDisc(ZONE_R, paving, 0.012, 192);
-  const quayMat = new THREE.MeshStandardMaterial({ map: blockTexture(), color: 0xf0f2ff, roughness: 0.7, envMapIntensity: 0.2 });
-  const quay = new THREE.Mesh(quayGeometry(), quayMat);
-  quay.receiveShadow = true;
-  const line = flatRing(ZONE_R + 0.3, ZONE_R + 0.4, 0x9a7a38, 1, 0.176, 192);
-  g.add(floor, quay, line);
-  own.push(floor.geometry, paving.map!, paving, quay.geometry, quayMat.map!, quayMat, line.geometry, line.material as THREE.Material);
-
-  const sea = new Sea({ y: SEA, inner: ZONE_R + KERB + 0.1, deep: 0x0b2a3c, sky: 0x7c7490, band: 0x2c5f7c, glint: 0xffc890, sun: new THREE.Vector3(0.85, 0.2, 0.25), foam: 0x9fb0c0 });
-  g.add(sea.mesh);
-  own.push(sea);
-
   const kit = new Kit();
+  // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
+  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o), sceneCover: L.pieces.filter((p) => p.look !== 'edge').map((p) => p.o), sceneTaken: (L.props ?? []).map((p) => { const o = HARBOUR_OBSTACLES[p.i]; return { x: RING.x + p.dx, z: RING.z + p.dz, r: (o ? Math.hypot(o.bx - o.ax, o.bz - o.az) / 2 + o.r : 1.5) + 0.6 }; }), keep }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
   const glowSpots: { x: number; y: number; z: number; size?: number }[] = [];
 
-  for (const { look, o } of PIECES) {
+  for (const { look, o } of L.pieces) {
     const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az), len = Math.hypot(o.bx - o.ax, o.bz - o.az), mx = (o.ax + o.bx) / 2, mz = (o.az + o.bz) / 2, r = o.r, h = o.height;
     switch (look) {
-      case 'crate':
-        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, 0);
+      case 'crate': {
+        const cy = rnd() * 3; // its band turned with it (it was square to the world: its corners stood out of the crate's sides)
+        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, cy).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, cy);
         break;
+      }
       case 'barrel':
         kit.add(wood, cyl(r * 0.9, r, h, 9), o.ax, 0, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.3, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.75, o.az);
         break;
@@ -318,7 +259,8 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
       case 'stall': {
         kit.add(wood, box(r * 2, h * 0.55, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h * 0.55, mz, yaw);
         if (h > 2) {
-          for (const s of [-1, 1]) kit.add(darkWood, cyl(0.07, 0.07, h, 5), o.ax + Math.sin(yaw) * (len / 2) * s, 0, o.az + Math.cos(yaw) * (len / 2) * s);
+          // a pole at each end of the counter, under the awning's ends (one stood in its middle, the other half its length past its end)
+          for (const s of [-1, 1]) kit.add(darkWood, cyl(0.07, 0.07, h, 5), mx + Math.sin(yaw) * (len / 2) * s, 0, mz + Math.cos(yaw) * (len / 2) * s);
           kit.add(rnd() < 0.5 ? wine : teal, new THREE.BoxGeometry(1.6, 0.06, len + 0.6).translate(0, h, 0), mx, 0, mz, yaw, 1, 1, 1, 0);
         }
         break;
@@ -327,6 +269,24 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
         kit.add(sail, new THREE.ConeGeometry(r * 1.25, h * 1.4, 7).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(gold, cyl(0.05, 0.05, h * 1.9, 4), o.ax, 0, o.az);
         break;
       case 'house': {
+        if (r >= 1.2) {
+          // A cottage (a village's row): walls, gables and a pitched roof along its length, a chimney, a door and windows on both long
+          // sides. (Drawn as a wall with a flat gold top, a village read as two long slabs.)
+          const w = r * 2, d = len + r * 2, rh = w * 0.45, ux = Math.cos(yaw), uz = -Math.sin(yaw);
+          kit.add(cream, box(w, h, d), mx, 0, mz, yaw);
+          const gable = new THREE.Shape([new THREE.Vector2(-w / 2, 0), new THREE.Vector2(w / 2, 0), new THREE.Vector2(0, rh)]);
+          kit.add(cream, new THREE.ExtrudeGeometry(gable, { depth: d, bevelEnabled: false }).translate(0, 0, -d / 2), mx, h, mz, yaw);
+          const slope = Math.hypot(w / 2 + 0.35, rh + 0.25), ang = Math.atan2(rh + 0.25, w / 2 + 0.35), roof = [wine, teal, stone][Math.floor(rnd() * 3)];
+          for (const s of [-1, 1]) kit.add(roof, new THREE.BoxGeometry(slope, 0.18, d + 0.6).translate(0, 0.09, 0).rotateZ(-s * ang).translate(s * (w / 4 + 0.05), rh / 2 + 0.02, 0), mx, h - 0.1, mz, yaw);
+          kit.add(gold, new THREE.BoxGeometry(0.12, 0.12, d + 0.65).translate(0, rh + 0.22, 0), mx, h, mz, yaw);
+          kit.add(stone, box(0.55, rh + 1.1, 0.55), mx + ux * w * 0.22 + Math.sin(yaw) * d * 0.25, h, mz + uz * w * 0.22 + Math.cos(yaw) * d * 0.25);
+          for (const s of [-1, 1]) {
+            const fx = mx + ux * s * (w / 2 + 0.03), fz = mz + uz * s * (w / 2 + 0.03);
+            kit.add(darkWood, box(0.08, 1.9, 1.0), fx, 0, fz, yaw);
+            for (const t of [-1, 1]) kit.add(iron, box(0.07, 0.8, 0.7), fx + Math.sin(yaw) * t * d * 0.3, 1.2, fz + Math.cos(yaw) * t * d * 0.3, yaw).add(gold, box(0.09, 0.06, 0.82), fx + Math.sin(yaw) * t * d * 0.3, 1.15, fz + Math.cos(yaw) * t * d * 0.3, yaw);
+          }
+          break;
+        }
         kit.add(cream, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h, mz, yaw);
         // fallen blocks at its foot
         kit.add(stone, box(0.7, 0.5, 0.9), mx + 0.9, 0, mz + 0.6, rnd() * 3).add(stone, box(0.9, 0.4, 0.6), mx - 1.1, 0, mz - 0.7, rnd() * 3);
@@ -337,7 +297,8 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
         kit.add(darkWood, box(r * 2, h * 0.7, len + r * 2), mx, 0, mz, yaw, 1, 1, 1, 0).add(wood, box(r * 1.2, h, len * 0.7), mx, 0.3, mz, yaw);
         for (let k = 0; k <= 6; k++) {
           const t = k / 6, x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t;
-          kit.add(wood, cyl(0.12, 0.2, h * 1.4, 5), x + Math.cos(yaw) * r * 0.9, 0, z - Math.sin(yaw) * r * 0.9, 0, 1, 1, 1, 0.3).add(wood, cyl(0.12, 0.2, h * 1.2, 5), x - Math.cos(yaw) * r * 0.9, 0, z + Math.sin(yaw) * r * 0.9, 0, 1, 1, 1, -0.3);
+          // the ribs lean in across the hull, each side towards the other (they leaned along the world's z, whatever the hull's heading)
+          kit.add(wood, cyl(0.12, 0.2, h * 1.4, 5), x + Math.cos(yaw) * r * 0.9, 0, z - Math.sin(yaw) * r * 0.9, yaw + Math.PI / 2, 1, 1, 1, -0.3).add(wood, cyl(0.12, 0.2, h * 1.2, 5), x - Math.cos(yaw) * r * 0.9, 0, z + Math.sin(yaw) * r * 0.9, yaw + Math.PI / 2, 1, 1, 1, 0.3);
         }
         kit.add(darkWood, cyl(0.2, 0.3, 6, 6), mx, 1.5, mz, yaw, 1, 1, 1, 1.15);
         break;
@@ -355,6 +316,8 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
         kit.add(cream, new THREE.CylinderGeometry(2.0, 2.9, 11, 12).translate(0, 5.5, 0), o.ax, 0, o.az).add(wine, new THREE.CylinderGeometry(1.7, 2.0, 2.4, 12).translate(0, 11 + 1.2, 0), o.ax, 0, o.az);
         kit.add(cream, new THREE.CylinderGeometry(1.45, 1.7, 2.6, 12).translate(0, 13.4 + 1.3, 0), o.ax, 0, o.az).add(gold, new THREE.CylinderGeometry(2.3, 2.3, 0.22, 12).translate(0, 16.1, 0), o.ax, 0, o.az);
         kit.add(iron, new THREE.ConeGeometry(1.8, 1.4, 12).translate(0, 17.9, 0), o.ax, 0, o.az).add(wine, new THREE.CylinderGeometry(2.1, 2.9, 0.5, 12).translate(0, 4, 0), o.ax, 0, o.az);
+        // the lantern room's posts, from the gallery up to the roof (the roof floated a metre over the gallery on nothing)
+        for (let k = 0; k < 6; k++) kit.add(iron, cyl(0.06, 0.06, 1.04, 5), o.ax + Math.cos((k / 6) * Math.PI * 2) * 1.32, 16.18, o.az + Math.sin((k / 6) * Math.PI * 2) * 1.32);
         glowSpots.push({ x: o.ax, y: 16.9, z: o.az, size: 7 });
         break;
       }
@@ -364,11 +327,14 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   // The caves: a dark back wall inside the horseshoe and crystals that glow in it.
   const dark = new THREE.MeshBasicMaterial({ color: 0x03050a, side: THREE.DoubleSide });
   own.push(dark);
+  if (L.caves) {
+  const cv = L.caves;
   const back = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.6, 5.4, 24, 1, true, Math.PI * 0.62, Math.PI * 0.76).translate(0, 2.7, 0), dark);
-  back.position.set(-17 + RING.x, 0, -32 + RING.z);
+  back.position.set(cv.dx + RING.x, 0, cv.dz + RING.z);
   g.add(back);
   own.push(back.geometry);
-  for (const [dx, dz, s] of [[-20, -35, 1], [-15, -36.5, 1.4], [-12.5, -34, 0.8], [-22, -32.4, 0.7]] as const) {
+  for (const [ox, oz, s] of [[-3, -3, 1], [2, -4.5, 1.4], [4.5, -2, 0.8], [-5, -0.4, 0.7]] as const) {
+    const dx = cv.dx + ox, dz = cv.dz + oz;
     const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.5 * s).scale(0.6, 1.8, 0.6).translate(0, 0.6 * s, 0), crystal);
     m.position.set(RING.x + dx, 0, RING.z + dz);
     m.rotation.z = (rnd() - 0.5) * 0.5;
@@ -376,25 +342,27 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
     own.push(m.geometry);
     glowSpots.push({ x: RING.x + dx, y: 1.0 * s, z: RING.z + dz, size: 3.2 * s });
   }
-  // Basalt stacks out in the sea, and posts with lanterns along the rim.
-  for (let k = 0; k < 14; k++) {
-    const a = rnd() * Math.PI * 2, d = 58 + rnd() * 40, s = 2 + rnd() * 3.5;
-    kit.add(rock, new THREE.ConeGeometry(s, 8 + rnd() * 10, 6).translate(0, 4, 0), RING.x + Math.sin(a) * d, SEA - 1, RING.z + Math.cos(a) * d, rnd() * 3);
   }
-  for (let k = 0; k < 24; k++) {
-    const a = (k / 24) * Math.PI * 2 + 0.07;
-    const x = RING.x + Math.sin(a) * (ZONE_R - 0.9), z = RING.z + Math.cos(a) * (ZONE_R - 0.9);
-    kit.add(darkWood, cyl(0.13, 0.17, 2.2, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.2, z);
-    glowSpots.push({ x, y: 2.45, z, size: 1.2 });
-  }
-  // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle.
-  for (const pl of Object.values(PLACES)) {
-    const a = Math.atan2(RING.x - pl.x, RING.z - pl.z), x = pl.x + Math.sin(a) * (pl.r - 1), z = pl.z + Math.cos(a) * (pl.r - 1);
+  // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle, turned along the rim until it stands
+  // off the roads' middles, the floor's spots and the cover (it stood on the road into the plaza, and on a person or a waystone).
+  const roads: [number, number, number, number][] = [];
+  for (const pth of L.paths) for (let i = 1; i < pth.length; i++) roads.push([RING.x + pth[i - 1][0], RING.z + pth[i - 1][1], RING.x + pth[i][0], RING.z + pth[i][1]]);
+  const clearAt = (x: number, z: number) => roads.every(([ax, az, bx, bz]) => segDist(x, z, ax, az, bx, bz) > 2.3) && keep.every((k) => Math.hypot(k.x - x, k.z - z) > 1.6)
+    && L.pieces.every((pc) => segDist(x, z, pc.o.ax, pc.o.az, pc.o.bx, pc.o.bz) > pc.o.r + 0.4);
+  for (const pl of L.places) {
+    const a0 = Math.atan2(RING.x - pl.x, RING.z - pl.z), rr = pl.r - 1;
+    let a = a0; // (if no turn of it is clear, as it was)
+    if (!clearAt(pl.x + Math.sin(a0) * rr, pl.z + Math.cos(a0) * rr)) for (let k = 1; k <= 18; k++) {
+      const t = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+      if (clearAt(pl.x + Math.sin(t) * rr, pl.z + Math.cos(t) * rr)) { a = t; break; }
+    }
+    const x = pl.x + Math.sin(a) * rr, z = pl.z + Math.cos(a) * rr;
     kit.add(darkWood, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.6 });
   }
   kit.build(g, own);
 
+  glowSpots.push(...land.glows);
   const glows = new Glows(glowSpots, 0xffa040, 1.5);
   g.add(glows.group);
   own.push(glows);
@@ -409,9 +377,14 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   }).then((loaded) => {
     if (disposed) return;
     const extra = new Kit();
-    for (const p of PROPS) {
+    // A copy that would stand in one drawn before it (two piles of chests in each other) is left out.
+    const stood: { x: number; z: number; r: number }[] = [];
+    for (const p of L.props ?? []) {
       const src = loaded.cover[p.i], from = ORIGINAL[p.i];
       if (!src) continue;
+      const ob = HARBOUR_OBSTACLES[p.i], reach = ob ? Math.hypot(ob.bx - ob.ax, ob.bz - ob.az) / 2 + ob.r : 1.2, px = RING.x + p.dx, pz = RING.z + p.dz;
+      if (stood.some((q) => Math.hypot(q.x - px, q.z - pz) < (q.r + reach) * 0.8)) continue;
+      stood.push({ x: px, z: pz, r: reach });
       const wrap = new THREE.Group(), inner = src.clone(true);
       inner.position.set(-from.x, 0, -from.z);
       wrap.add(inner);
@@ -426,7 +399,7 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   return {
     group: g,
     update(_dt, time) {
-      sea.update(time);
+      land.update(time);
       glows.update(time);
     },
     dispose() {
@@ -438,7 +411,13 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   };
 }
 
-/** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look the harbour's. */
+/** A sea floor made by the generator, as an arena: its own layout, the same stage. */
+export function seaArena(id: string, name: string, look: SeaLook, keep: { x: number; z: number }[] = []): ArenaDef {
+  // The ring is the circle round the whole outline: the walk's box and the checks' grid; the outline's own walls keep a walk inside it.
+  return { id, name, ring: Math.ceil(Math.max(...rimOf(look)) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look, keep) };
+}
+
+/** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look a coast by day (land.ts). */
 export const zoneArena: ArenaDef = {
   id: 'tower-zone-harbour',
   name: 'The Drowned Harbour, a zone',

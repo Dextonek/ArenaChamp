@@ -1,0 +1,132 @@
+{
+ "floor": 25,
+ "part": "climb-review-shots",
+ "wallSeconds": 38.1,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 25,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-cover-6",
+   "probe-cover-7",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-120.8,-47.6 y30.17 depth out39n w0.51 h0.36 m0.09 p1 #8a7a4a",
+  "probe-float-1": "-25.9,121.8 y2.02 depth out3s w0.71 h0.51 m0.11 p1 #8a7a4a",
+  "probe-float-2": "-104.4,113.1 y27.04 depth out46s w0.4 h0.29 m0.07 p1 #8a7a4a",
+  "probe-float-3": "-129.3,37.5 y27.64 depth out39s w0.63 h0.45 m0.07 p1 #8a7a4a",
+  "probe-gap-4": "-87.3,-24 y3.96 depth edge w1.89 h0.3 m3.27 sunk-0.6 #248985",
+  "probe-gap-5": "-91.9,3.7 y1.97 depth edge w1.46 h0.3 m0.92 sunk-1.98 #248985",
+  "probe-cover-6": "-24.9,32.1 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+  "probe-cover-7": "-63.4,-23.7 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a",
+  "frames": {
+   "at": [
+    -56,
+    26
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 9.4,
+     "p95": 12.2,
+     "worst": 24.8
+    },
+    {
+     "med": 9,
+     "p95": 16.8,
+     "worst": 26.8
+    },
+    {
+     "med": 7.9,
+     "p95": 10.2,
+     "worst": 12.2
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Glass Serpent",
+   "title": "Sand burnt to glass",
+   "model": "models/tower/sands_jackal_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 2757,
+   "frames": 481,
+   "at": [
+    0,
+    13
+   ],
+   "heroAt": [
+    0,
+    20
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

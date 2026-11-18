@@ -1,0 +1,107 @@
+{
+ "floor": 21,
+ "part": "climb-review-shots",
+ "wallSeconds": 13.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 21,
+  "shots": [
+   "phone-start",
+   "phone-camp",
+   "phone-map",
+   "phone-person-pip",
+   "phone-fight"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "status": {
+   "clock": 5.97,
+   "hero": {
+    "x": -35.76,
+    "z": 33.3,
+    "hp": 471,
+    "max": 520
+   },
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty: not taken",
+    "kaia-fires: not taken",
+    "kaia-tower: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": null,
+   "law": {
+    "text": "The storm comes in 142 s",
+    "active": false,
+    "warn": false
+   },
+   "packs": [
+    {
+     "id": "well1",
+     "state": "awake",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "well2",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "ridge",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "fort",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "gate",
+     "state": "unborn",
+     "left": 3,
+     "total": 3
+    },
+    {
+     "id": "mother",
+     "state": "unborn",
+     "left": 1,
+     "total": 1
+    }
+   ],
+   "liveUnits": 3,
+   "log": [
+    {
+     "t": 2.98,
+     "text": "well1: appears"
+    },
+    {
+     "t": 3,
+     "text": "well1: wakes (near)"
+    }
+   ],
+   "gameLog": []
+  }
+ }
+}

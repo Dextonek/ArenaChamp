@@ -22,6 +22,18 @@
   const realRandom = Math.random;
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
   const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  /**
+   * The page's breath between frames (every 20th), with dice of its own. Only here can a model that was loading come in, and three.js
+   * rolls the dice for the id of every object it makes, a model's parts too: with the fight's dice, a model that came in at this breath
+   * or the next (real time decides) moved every die of the fight after it (the Climb's floors' prints, 2026-11-15). Now what comes in
+   * between frames rolls these; the fight's dice are rolled by the frames alone.
+   */
+  const aside = (() => { let seed = 104729; return () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+  const breathe = async () => {
+    const fight = Math.random;
+    Math.random = aside;
+    try { await tick(); } finally { Math.random = fight; }
+  };
 
   // --- the frame loop, taken over -------------------------------------------------------------------------------------
   let manual = false, queue = [];
@@ -47,6 +59,8 @@
     }
   }
 
+  /** Where the tool's clock starts (ms): one instant every run, far past any real time the page has seen before a scene. */
+  const CLOCK0 = 1e7;
   const mulberry = (seed) => () => {
     seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -206,6 +220,8 @@
     // The spells' effects built at the first cast, as before the warm-up built them: the dice then fall as they did.
     if (set.noPrebuild) { const warm = a.duel.host.warmUp; a.duel.host.warmUp = () => warm([]); }
     if (set.quality && a.quality) a.quality.set(set.quality);
+    // Switches a build reads from `globalThis`, for an A/B of one part of a zone (e.g. {"globals": {"__warScenes": false}}).
+    if (set.globals) Object.assign(globalThis, set.globals);
   };
 
   const quant = (v) => Math.round(v * 10) / 10;
@@ -295,6 +311,10 @@
           }
         },
         print: () => [Math.round(d.playerHp), d.foe ? Math.round(a.arena.hpOf(d.foe)) : -1, quant(a.arena.caster.group.position.x), quant(a.arena.caster.group.position.z), fights],
+        // For a trace: the same to the last bit, the boss's place, and what has loaded.
+        fine: () => [d.playerHp, d.foe ? a.arena.hpOf(d.foe) : -1, a.arena.caster.group.position.x, a.arena.caster.group.position.z, d.foe?.group.position.x, d.foe?.group.position.z, fights,
+          [...d.party.values()].map((p) => (p.lite ? 'L' : p.figure.loaded ? 1 : 0)).join(''), d.figure.loaded ? 1 : 0, a.heroMode.figureLoaded ? 1 : 0],
+        ready: () => ({ party: [...d.party.values()].map((p) => (p.lite ? 'L' : p.figure.loaded ? 1 : 0)).join(''), foe: d.figure.loaded, hero: a.heroMode.figureLoaded, quality: a.quality?.level, pr: a.renderer.getPixelRatio() }),
       };
     },
 
@@ -320,6 +340,43 @@
         print: () => [Math.round(d.playerHp ?? 0), plan.n, quant(a.arena.caster.group.position.x), quant(a.arena.caster.group.position.z), climbs],
       };
     },
+  };
+
+  /**
+   * A hero's fight print (pipeline/tools/hero-prints.py, docs/pipeline/hero-framework.md "The fight prints"): the duel scene, one
+   * hero against a fixed opponent on a fixed arena, both at the CPU's balance level, and a finer print than the duel's: every half
+   * second both heroes' health (to a tenth), places (to a hundredth of a metre), the four cooldowns of each (to a tenth of a second,
+   * so every cast shows), the units alive on each side and the round. Two runs of the same code must give the same print; a hero
+   * moved into its new folder must give the print it gave before.
+   */
+  scenes.hero = async (o) => {
+    const a = api(), d = a.duel, s = await scenes.duel(o);
+    // The fight must be the one asked for: the duel never puts a hero against itself (it draws another by lot), and every spell
+    // either side can cast must have been built in the setup (`warmUp`), not at its first cast, which would roll the fight's dice.
+    if (d.opponentKit?.name !== o.foe) throw new Error(`the foe is ${d.opponentKit?.name}, not ${o.foe}`);
+    const labels = new Set();
+    for (const kit of [a.heroMode.currentKit, d.opponentKit]) for (const k of [kit, kit.base, kit.alt]) for (const sp of k?.spells ?? []) labels.add(sp.label);
+    const unbuilt = [...labels].filter((l) => !a.slots.get(l)?.effect);
+    if (unbuilt.length) throw new Error(`not built before the fight: ${unbuilt.join(', ')}`);
+    // Casts per slot, both sides, counted where every cast passes once (the side's trait runtime, as pipeline/sim/page.js counts
+    // them): a charge's short gap or a free recast never shows in a cooldown sampled every half second, a count does.
+    const casts = { hero: [0, 0, 0, 0], opponent: [0, 0, 0, 0] };
+    const proto = Object.getPrototypeOf(d.heroRt ?? d.oppRt);
+    const cast0 = proto.cast;
+    proto.cast = function (slot, ...rest) {
+      const tally = casts[this.side];
+      if (tally && slot >= 0 && slot < 4) tally[slot]++;
+      return cast0.call(this, slot, ...rest);
+    };
+    const r1 = (v) => Math.round(v * 10) / 10, r2 = (v) => Math.round(v * 100) / 100;
+    const units = (side) => { try { return a.arena.summons.alive(side).length; } catch { return -1; } };
+    return {
+      ...s,
+      every: 30,
+      print: () => [r1(d.playerHp), r1(a.arena.hpOf(d.foe)), r2(a.arena.caster.group.position.x), r2(a.arena.caster.group.position.z),
+        r2(d.foe.group.position.x), r2(d.foe.group.position.z), (a.heroMode.cooldowns ?? []).map(r1), (d.cooldowns ?? []).map(r1),
+        units('hero'), units('opponent'), d.result ? 1 : 0, [...casts.hero], [...casts.opponent]],
+    };
   };
 
   // --- the graphics card's own timer, for each step of drawing a frame ---------------------------------------------------
@@ -380,11 +437,16 @@
     (0, eval)(await (await fetch('/pipeline/tools/world-tool.js')).text());
     await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Kaia', mode: 'run' });
     const game = window._worldGame;
+    // Stage 2's shared packs (src/tower/world/share.ts): `packs` made-up packs for each made-up other, fighting round the hero as copies
+    // of another screen's packs are drawn, and this hero's packs fighting the others too (the zone is built again with a share for it).
+    if (o.packs) { game.others.fake(o.others ?? 0, a.arena.caster.group.position); game.fakePacks(o.packs); }
     const packs = [...game.zone.packs.values()].filter((p) => !p.def.named);
     let k = 0;
     const visit = () => { const p = packs[k++ % packs.length]; if (p) window._world.go(p.def.at.x + 2.5, p.def.at.z + 2.5); };
     visit();
     await d.whenReady();
+    // The open world (src/tower/world/others.ts): `others` made-up players walking about the hero and casting, drawn as real ones are.
+    if (o.others && !o.packs) game.others.fake(o.others, a.arena.caster.group.position);
     return {
       stepped: true,
       // The run's own tick comes after the duel's step, as the game's loop has it; it is part of the step's time.
@@ -422,8 +484,34 @@
       console.error = (...x) => { if (errors.length < 10) errors.push(x.map((v) => String(v?.stack ?? v)).join(' ').slice(0, 300)); logError(...x); };
       const onError = (e) => { if (errors.length < 10) errors.push(String(e.error?.stack ?? e.message).slice(0, 300)); };
       window.addEventListener('error', onError);
-      Math.random = mulberry(o.seed ?? 7);
+      // `set: { trace: { from, to } }`: where two runs part (docs/pipeline/performance.md, "When the print changes"): the dice's calls
+      // counted and a fine state written every frame, and who rolled each die from frame `from` to `to` (their stacks).
+      const tr = o.set?.trace ? { ...o.set.trace, n: 0, frame: -1, rolls: [], states: o.set.trace.states === false ? false : [], who: [], at: [] } : null;
+      const dice = (seed) => {
+        const roll = mulberry(seed);
+        if (!tr) return roll;
+        return () => {
+          tr.n++;
+          if ((tr.windows ?? [[tr.from ?? 0, tr.to ?? -1]]).some(([a, b]) => tr.frame >= a && tr.frame <= b) && tr.who.length < 6000) tr.who.push(`${tr.frame} ${tr.n} ${(new Error().stack ?? '').split('\n').slice(2, 7).map((l) => l.trim().replace(/https?:\/\/[^/]+\//, '').replace(/\?[^:]*/, '')).join(' < ')}`);
+          return roll();
+        };
+      };
+      Math.random = dice(o.seed ?? 7);
+      if (tr) performance.setResourceTimingBufferSize(20000);
       let out;
+      // The tool's clock, from the start of the setup: it stands still until the frames begin, and it starts at the same instant every
+      // run (`CLOCK0`). It started at the real time the setup happened to end, and the game reads the clock in its rules: a raid partner's
+      // trees (traits/timber.ts `timberNow`, the clock when no trait writes one) grow at "planted + 1.2 s" and "+ 2.5 s", which came out
+      // on one frame or the next with the fractions of that start; and anything the setup stamped (it takes a different real time every
+      // run: the models' loading, the warm-up) was that much older or younger when the fight began. A tree built a frame early or late
+      // shifts every die after it, because three.js rolls the fight's dice for the id of every object it makes. So the raid's print
+      // followed the machine's load and how the code loaded (2026-11-15: e83903c0, 34f75b29, b53a2f62, 9c4a9c48 on the same code). Waits
+      // in the setup are on timers or on what has loaded, not on this clock; Graphics `auto` times real frames to settle its pixels, so its
+      // check gets the real clock.
+      let simMs = CLOCK0;
+      performance.now = () => simMs;
+      const calibrate = a.quality?.calibrate;
+      if (calibrate) a.quality.calibrate = async (...x) => { delete performance.now; try { return await calibrate.apply(a.quality, x); } finally { performance.now = () => simMs; } };
       try {
         apply(o.set);
         // Nothing of a fight moves until the frames are this tool's: the wait for the models is a different length every run.
@@ -434,9 +522,9 @@
         await new Promise((ok) => realRaf(() => ok()));
         await tick();
         info.autoReset = false;
-        let simMs = realNow();
-        performance.now = () => simMs;
-        Math.random = mulberry(o.seed ?? 7);
+        if (tr) tr.setup = { rolls: tr.n, ready: scene.ready?.() };
+        Math.random = dice(o.seed ?? 7);
+        if (tr) tr.n = 0;
         const objects0 = objects(), memory0 = { geometries: info.memory.geometries, textures: info.memory.textures };
         const timer = o.passes ? passTimer() : null;
         const flips = o.flips ? flipWatch() : null;
@@ -450,6 +538,7 @@
         let known = new Set(info.programs ?? []);
         const began = realNow();
         for (let i = 0; i < frames; i++) {
+          if (tr) { tr.frame = i; tr.at.push(realNow()); if (i) { tr.rolls.push(tr.n); if (tr.states !== false) tr.states.push(JSON.stringify(scene.fine?.() ?? scene.print())); } }
           const wait = scene.frame(i);
           if (wait) await wait;
           if (o.set?.lightsAllLayers) a.scene.traverse((q) => { if (q.isLight) q.layers.enableAll(); });
@@ -477,11 +566,12 @@
           lastHeap = h;
           if (i % 10 === 0) { calls.push(info.render.calls); tris.push(info.render.triangles); glDraws.push(draws); }
           if (i % 30 === 0) { parts.push(particles()); heap.push(h); programsAt.push(info.programs?.length ?? 0); }
-          if (i % 60 === 59) print.push(scene.print());
+          // the print every second (a scene may ask for it more often: `every`, in frames)
+          if (i % (scene.every ?? 60) === (scene.every ?? 60) - 1) print.push(scene.print());
           // The page must breathe: model loads, timers and the tool's own time limit all need the event loop.
           timer?.next();
           flips?.frame();
-          if (i % 20 === 19) { await tick(); timer?.collect(); }
+          if (i % 20 === 19) { await breathe(); timer?.collect(); }
         }
         const wall = realNow() - began;
         delete performance.now;
@@ -512,11 +602,14 @@
           passes: timer?.result() ?? null, compiles, flips: flips?.result() ?? null, census: o.census ? census() : null,
           compiledShaders: compiles.reduce((n, c) => n + c.n, 0), compileMs: +compiles.reduce((n, c) => n + c.ms, 0).toFixed(0),
           print, printHash: (hash >>> 0).toString(16), errors,
+          // and the files that came in during the frames, each with the frame it came in by (what a load racing the fight looks like)
+          trace: tr ? { setup: tr.setup, rolls: tr.rolls, states: tr.states, who: tr.who, files: performance.getEntriesByType('resource').filter((e) => e.responseEnd > tr.at[0]).map((e) => `${tr.at.findIndex((t) => t > e.responseEnd)} ${e.name.replace(/^https?:\/\/[^/]+/, '')}`) } : undefined,
         };
       } catch (e) {
         delete performance.now;
         out = { scene: o.scene, opts: o, crashed: String(e?.stack ?? e).slice(0, 600), errors };
       }
+      if (calibrate) a.quality.calibrate = calibrate;
       Math.random = realRandom;
       console.error = logError;
       window.removeEventListener('error', onError);
@@ -532,14 +625,15 @@
     async parts(o) {
       const a = api(), r = a.renderer;
       Math.random = mulberry(o.seed ?? 7);
+      // the same still clock from the setup on as `run` (see there)
+      let simMs = CLOCK0;
+      performance.now = () => simMs;
       apply(o.set);
       a.view.paused = true;
       const scene = await scenes[o.scene](o);
       manual = true;
       await new Promise((ok) => realRaf(() => ok()));
       await tick();
-      let simMs = realNow();
-      performance.now = () => simMs;
       for (let i = 0; i < (o.at ?? 600); i++) {
         const wait = scene.frame(i);
         if (wait) await wait;
@@ -547,7 +641,7 @@
         if (scene.stepped) a.step(1 / 60);
         scene.tick?.();
         if (i % 4 === 0) { flush(simMs); sync(); }
-        if (i % 20 === 19) await tick();
+        if (i % 20 === 19) await breathe();
       }
       delete performance.now;
       Math.random = realRandom;

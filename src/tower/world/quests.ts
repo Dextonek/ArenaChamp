@@ -82,7 +82,8 @@ export class Quests {
     switch (step.verb) {
       case 'fell': {
         let n = 0, left = 0;
-        for (const id of step.packs) { const pk = z.packs.get(id); if (pk) { n += pk.total; left += pk.state === 'cleared' ? 0 : pk.left; } }
+        // A pack counts as this player's own run says (the open world: a pack others cleared, or one back after a while, is not yours).
+        for (const id of step.packs) { const pk = z.packs.get(id); if (pk) { n += pk.total; left += z.run.packsCleared.includes(id) ? 0 : pk.left; } }
         return { k: n - left, n };
       }
       case 'light': return { k: step.things.filter((t) => z.run.lit.includes(t.id)).length, n: step.things.length };
@@ -240,11 +241,11 @@ export class Quests {
         break;
       case 'fell': {
         const { k, n } = this.progressOf(step, st);
-        if (n > 0 && k >= n && step.packs.every((id) => z.packs.get(id)?.state === 'cleared')) this.finishStep(q);
+        if (n > 0 && k >= n && step.packs.every((id) => z.packs.has(id) && z.run.packsCleared.includes(id))) this.finishStep(q);
         break;
       }
       case 'fell-named':
-        if (z.packs.get(step.pack)?.state === 'cleared') this.finishStep(q);
+        if (z.packs.has(step.pack) && z.run.packsCleared.includes(step.pack)) this.finishStep(q);
         break;
       case 'light': {
         for (const th of step.things) {

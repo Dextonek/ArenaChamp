@@ -2,7 +2,7 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: plays whole fights; six of 40 heroes ported (Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger) and graded against the real game; no breakable walls, no events
+status: plays whole fights; seven of 40 heroes ported (Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger, Barry Cloudsley) and graded against the real game; no breakable walls, no events
 ---
 
 # The full Rust simulator
@@ -107,13 +107,14 @@ fights do not depend on how fast the computer is.
 | The way round cover (`src/nav.ts`) | `nav.rs` | ported, tested |
 | Skillshot bolts: the plain path and piercing (`src/effects/projectile.ts`) | `bolt.rs` | ported, tested; curve, bank, bounce, split, wind walls, doors stop the program |
 | The frame's order, each CPU's own part (`ai`, `pilot`, `castSpell`, `castNow`), `resolve`, the passives' engine | `fight.rs` | ported, graded |
-| Brannoc (`src/traits/forge.ts`, four spells) | `hero/forge.rs` | ported, graded |
-| Isolde (`src/traits/frost.ts`, four spells) | `hero/frost.rs` | ported, graded |
+| Brannoc (`src/heroes/forge/`: `trait.ts`, four spells) | `hero/forge.rs` | ported, graded |
+| Isolde (`src/heroes/frost/`: `trait.ts`, four spells) | `hero/frost.rs` | ported, graded |
 | Kaia (`storm`) | `hero/storm.rs` | ported, graded (800 real fights) |
 | Auriel (`dawn`) | `hero/dawn.rs` | ported, graded; her ultimate lands too rarely to judge |
 | Sirix (`hive`) | `hero/hive.rs` | ported, graded; W cast 8 to 15% more often (few real casts) |
 | Mr. Ledger (`ledger`) | `hero/ledger.rs` | ported, graded; as the player's hero against Isolde his R is cast too rarely (0.71 against 0.81 a fight), cause not found |
-| 34 more heroes (Anka last: her kit may still move) | | to do |
+| Barry Cloudsley (`weather`) | `hero/weather.rs` | ported, graded (800 real fights, 2026-11-11) |
+| 33 more heroes (Anka last: her kit may still move) | | to do |
 | Summoned units (`summon.ts`), spells that dash, flee, summon; charges; hold-to-charge; resources | | to do, each with the first hero that needs it |
 | Breakable walls (the Night Temple) | | to do: 60 lines in `duel.ts` (`blastWalls`) |
 | Arena events and closing stages, Last stand, the Raid, two screens | | out for now |

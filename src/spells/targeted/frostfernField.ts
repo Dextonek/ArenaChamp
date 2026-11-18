@@ -4,7 +4,7 @@ import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../effects/parts';
 import {
   FROST, FROST_CSS, FrostBreath, FrostFerns, IceCrystals, RimeSleeves, Snow,
-} from '../../effects/parts/frost';
+} from '../../heroes/frost/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

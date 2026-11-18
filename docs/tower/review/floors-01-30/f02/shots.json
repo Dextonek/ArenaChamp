@@ -1,0 +1,120 @@
+{
+ "floor": 2,
+ "part": "climb-review-shots",
+ "wallSeconds": 34.3,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 2,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "118.5,-121 y12.49 depth out70n w4.33 h5.85 m0.86 p3 #304837",
+  "probe-float-1": "189.6,-29.3 y5 depth out70n w5.71 h7.7 m1.37 p3 #304837",
+  "probe-float-2": "141.8,123 y5.07 depth out71s w3.9 h5.25 m0.88 p3 #304837",
+  "probe-float-3": "163.4,95.8 y5.85 depth out71s w3.79 h5.11 m0.96 p3 #304837",
+  "probe-gap-4": "-0.9,-69.8 y10.11 depth out3n w5.36 h4.02 m8.78 sunk-0.78 #304837",
+  "probe-gap-5": "47.3,-70 y8.33 depth edge w5.12 h3.85 m8.24 sunk-1.71 #304837",
+  "probe-gap-6": "50.4,-70.5 y9.33 depth edge w4.85 h3.65 m8.23 sunk-0.68 #304837",
+  "frames": {
+   "at": [
+    14,
+    -54
+   ],
+   "units": 5,
+   "runs": [
+    {
+     "med": 10.7,
+     "p95": 17.5,
+     "worst": 52.1
+    },
+    {
+     "med": 11.3,
+     "p95": 17.2,
+     "worst": 109.7
+    },
+    {
+     "med": 11,
+     "p95": 14.8,
+     "worst": 50.3
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Drowned Admiral",
+   "title": "Fleet, cannon and tide",
+   "model": "models/tower/sea_admiral_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 5095,
+   "frames": 481
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ten New Heroes</title>
+<style>
+:root {
+  --bg: #0e0b0c; --card: #17120f; --line: #3a3242; --gold: #ffd27a; --gold-dim: #a89870; --text: #f2e6c8; --muted: #c8bca0;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 ui-sans-serif, system-ui, sans-serif; }
+header { padding: 28px 16px 8px; max-width: 1180px; margin: 0 auto; }
+h1 { font: 700 30px ui-serif, Georgia, serif; letter-spacing: 2px; color: var(--gold); margin: 0 0 6px; }
+header p { color: var(--muted); margin: 4px 0; max-width: 820px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 16px; padding: 16px; max-width: 1180px; margin: 0 auto; }
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; padding: 10px; } }
+.card { background: var(--card); border: 1px solid #4a4032; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--acc); }
+.top { display: flex; gap: 14px; align-items: center; }
+.icon { flex: none; width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2a2026, #0c090a); border: 2px solid var(--acc); display: flex; align-items: center; justify-content: center; }
+.icon svg { width: 52px; height: 52px; }
+.num { font: 700 12px ui-sans-serif, system-ui; color: var(--gold-dim); letter-spacing: .1em; }
+h2 { font: 700 22px ui-serif, Georgia, serif; margin: 0; color: var(--text); }
+.title { color: var(--acc); font: 600 14px ui-serif, Georgia, serif; font-style: italic; }
+.role { display: inline-block; margin-top: 4px; font: 700 11px ui-sans-serif, system-ui; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 20px; padding: 2px 9px; }
+.sentence { font: 500 16px/1.4 ui-serif, Georgia, serif; color: var(--text); }
+.new { background: rgba(255, 210, 122, 0.08); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; padding: 7px 10px; }
+.new b { color: var(--gold); }
+dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; margin: 0; font-size: 14px; }
+dt { color: var(--gold-dim); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; padding-top: 2px; }
+dd { margin: 0; color: var(--muted); }
+.chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 5px; }
+.chip i { display: inline-block; width: 16px; height: 16px; border-radius: 4px; border: 1px solid #000; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+td { padding: 6px 6px; border-top: 1px solid #2a2226; vertical-align: top; }
+td.k { width: 30px; font: 700 13px ui-sans-serif, system-ui; color: var(--bg); text-align: center; }
+td.k span { display: inline-block; min-width: 24px; padding: 2px 0; border-radius: 5px; background: var(--acc); }
+td .n { color: var(--text); font-weight: 700; }
+td .fx { color: #9fb6c8; font-style: italic; }
+.look { font-size: 13.5px; color: var(--muted); }
+.look b { color: var(--text); }
+.lore { font-size: 13.5px; color: var(--muted); border-top: 1px solid #2a2226; padding-top: 8px; }
+.lore b { color: var(--gold); }
+.lore a { color: var(--gold); }
+footer { max-width: 1180px; margin: 0 auto; padding: 8px 16px 40px; color: var(--muted); font-size: 14px; }
+footer h3 { color: var(--gold); font: 700 18px ui-serif, Georgia, serif; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ten new heroes</h1>
+  <p>Gate 1 cards (docs/pipeline/new-hero.md): each a mythic role in one sentence, a shape you can draw as an icon, an accent and a pale foil, and
+  <b>one thing the game does not have yet</b>. Under each: the question it asks the opponent, its weakness, the choice its own player keeps
+  making, its five spells with what the effect looks like, and how the figure looks.</p>
+  <p>Added 2026-11-14: each card now names the hero's faction and gives a line of their legend; the whole world, its factions and every
+  hero's story are on the <a href="../../lore/index.html" style="color:var(--gold)">lore page</a>, the second ten new heroes on
+  <a href="../next20/index.html" style="color:var(--gold)">their own page</a>, and full kit sheets for all twenty on <a href="../kits20/index.html" style="color:var(--gold)">the kits page</a>.</p>
+  <p>Nothing here is built. Pick the ones you like (or change them while they are words): each picked hero then goes through the look gate
+  (the model, beside Sefu and Kaia) before any spell is made.</p>
+</header>
+
+<div class="grid">
+
+<!-- 1 -->
+<section class="card" style="--acc:#3fbf9a">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><ellipse rx="25" ry="14" fill="#efeae0" stroke="#1d3a32" stroke-width="2"/><circle r="11" fill="#3fbf9a" stroke="#123026" stroke-width="2"/><ellipse rx="3" ry="10" fill="#0c1a16"/><path d="M-25 0 Q-30 -12 -20 -16 M25 0 Q30 12 20 16" stroke="#3fbf9a" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>
+    <div><div class="num">1 · gorgon</div><h2>Lithea</h2><div class="title">the Stone Gaze</div><span class="role">controller · ranged</span></div>
+  </div>
+  <div class="sentence">A veiled gorgon priestess whose look turns whoever meets it to marble.</div>
+  <div class="new"><b>New: the gaze.</b> Her spells care which way you face. Facing her when they land turns you to stone a little; facing away, they barely touch you. No hero uses facing today.</div>
+  <dl>
+    <dt>Question</dt><dd>"Can you fight me without looking at me?" Walking at her means facing her; backing off means turning your back.</dd>
+    <dt>Weakness</dt><dd>She must face you too: from behind or the side she has nothing, and her big casts are slow.</dd>
+    <dt>Her choice</dt><dd>Veil down (armour, weak gaze) or lifted (full gaze, no armour): she changes it, and both screens show it.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Marble Grace.</span> Each gaze hit on a face turned to her adds a stone stack (three: stone 1 s). <span class="fx">Marble creeps up the legs in veined white plates.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Serpent Strike</span> (line). A bronze snake lunges 9 m. <span class="fx">A verdigris serpent ribbon, the hit flaking stone dust.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Garden of Statues</span> (ground). Raises three marble statues: cover for anyone, and they gaze too. <span class="fx">Statues rise out of cracking floor, eyes glinting green.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Coil</span> (dash). A slither 6 m, leaving a coil that slows. <span class="fx">A scaled S-curve drawn on the floor in bronze.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">Unveiling</span>. 1.5 s wind-up, a great eye opens on the floor; whoever faces her within 12 m at the end turns to stone 1.6 s. Answer: turn away. <span class="fx">The veil lifts, the eye's slit pupil narrows, a white flash, marble shell.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#3fbf9a"></i>verdigris</span><span class="chip"><i style="background:#efeae0"></i>marble foil</span><span>· nearest: Sefu (gold sand), Isolde (stone-like frost)</span></div>
+  <div class="look"><b>Look:</b> tall, a sheer verdigris veil over the face, bronze serpent coils as a crown that move a little, a marble-white gown with bronze edges, a short bronze staff with a serpent eye.</div>
+  <div class="lore"><b>Faction:</b> The Dune Throne. <b>Legend:</b> The last veiled priestess of the tombs of the Sands. A guard of the Night Temple who looked at her too long became Corbel the gargoyle, and Silvane carries the one mirror that turns her gaze. <a href="../../lore/index.html#h-lithea">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> The veil lifts by itself for 2.5 s after each spell (the card had her switch it; there is no fifth key). Q is a serpent that seeks a clicked enemy, not a line: as a line her four shapes were Silvane's (line, terrain, dash, self). W raises two statues, not three (the budget). Colour clash: the card's accent `#3fbf9a` is 10 from Mortis's colour (under 12 reads as the same). A nearby colour that keeps apart: `#2cb28b`. Or keep it and let the figure tell them apart; to decide at the look. <a href="../../../pipeline/designs/kit-gorgon.md">Kit sheet</a></div>
+</section>
+
+<!-- 2 -->
+<section class="card" style="--acc:#bfe8a0">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M0 -4 C-8 -26 -28 -22 -24 -6 C-21 4 -10 4 0 0 C10 4 21 4 24 -6 C28 -22 8 -26 0 -4 Z" fill="#bfe8a0" stroke="#2c3a22" stroke-width="2"/><path d="M0 2 C-6 8 -16 22 -10 26 C-6 28 -3 16 0 6 C3 16 6 28 10 26 C16 22 6 8 0 2 Z" fill="#a4d488" stroke="#2c3a22" stroke-width="2"/><circle cx="-13" cy="-10" r="4" fill="#efe6d8" stroke="#6a5a3a"/><circle cx="13" cy="-10" r="4" fill="#efe6d8" stroke="#6a5a3a"/><rect x="-1.6" y="-8" width="3.2" height="22" rx="1.6" fill="#3a2a10"/></svg></div>
+    <div><div class="num">2 · moth</div><h2>Vela</h2><div class="title">the Dream Moth</div><span class="role">support · ranged</span></div>
+  </div>
+  <div class="sentence">A luna-moth priestess whose wing dust carries sleep.</div>
+  <div class="new"><b>New: sleep.</b> A sleeping hero cannot act until damage wakes them, and the hit that wakes them lands harder. Nobody puts heroes to sleep today, so she has to choose: let them sleep, or wake them with something big.</div>
+  <dl>
+    <dt>Question</dt><dd>"Will you stay in my dust?" Three dust stacks in four seconds and you sleep.</dd>
+    <dt>Weakness</dt><dd>Her own damage wakes you. She is frail, and dust is slow to build.</dd>
+    <dt>Her choice</dt><dd>Wake the sleeper with a big hit, or keep them asleep to walk away, heal, or set up her lanterns.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Powdered Wings.</span> The first hit on her every 6 s is softened 30%, and a melee attacker gets a dust stack. <span class="fx">A puff of pale green powder off the wings.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Dream Dust</span> (cone). Adds a drowsy stack. <span class="fx">A soft cone of glittering mint powder that hangs a moment.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Moonlit Lantern</span> (ground, 2 charges). A paper lantern on a post: enemy bolts within 5 m bend into it (it takes two), and allies in its light heal. <span class="fx">A pale green paper lantern, bolts curving into it and going out in a puff.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Flutter</span> (dash). A quick flight to one of her lanterns or 5 m. <span class="fx">Wings open wide, a trail of drifting scales.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">Lullaby of Wings</span>. 1.2 s wind-up, then a ring 7 m: two drowsy stacks to all inside, and every lantern flares. <span class="fx">A giant moth's silhouette spreads over the floor, dust falling like snow.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#bfe8a0"></i>luna green</span><span class="chip"><i style="background:#efe6d8"></i>powder ivory</span><span>· nearest: Fenna (deep green and pink), Grandma Ironknit (support)</span></div>
+  <div class="look"><b>Look:</b> a slender priestess with great pale green moth wings with long trailing tails and two ivory eye spots, a soft fur collar, a grey-lilac gown, feathered antennae as a circlet; a lantern staff in the left hand.</div>
+  <div class="lore"><b>Faction:</b> The Greenwood Moot. <b>Legend:</b> The moth priestess who lays the Walking Wood to sleep each dusk and hangs paper lanterns in its glades, so that travellers sleep safe; a friend of Sirix and of Saga. <a href="../../lore/index.html#h-vela">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> Sleep lasts 1.5 s at most (the lock rule) and leaves 5 s without stacks. The ultimate is a 4.5 m circle at a point, not a 7 m ring round her: from its middle a 7 m ring needs 2 s to leave and warned 1.2 s. <a href="../../../pipeline/designs/kit-moth.md">Kit sheet</a></div>
+</section>
+
+<!-- 3 -->
+<section class="card" style="--acc:#7d9bb0">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><circle r="22" fill="none" stroke="#f4f1ea" stroke-width="5" stroke-dasharray="7 3"/><path d="M0 -14 L0 12 M-4 -14 L4 -14 M-6 6 L0 14 L6 6" stroke="#7d9bb0" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div><div class="num">3 · salt</div><h2>Morwen</h2><div class="title">the Saltwarden</div><span class="role">controller · ranged</span></div>
+  </div>
+  <div class="sentence">A hedge witch who draws circles of salt that no spell can cross.</div>
+  <div class="new"><b>New: lines that stop spells but not feet.</b> Walls stop everything. Her salt lines let anyone walk across but no spell, from either side. To trade spells with her you have to come in.</div>
+  <dl>
+    <dt>Question</dt><dd>"Will you step inside my circle?"</dd>
+    <dt>Weakness</dt><dd>Up close she is soft; the circle shelters the enemy from her spells too.</dd>
+    <dt>Her choice</dt><dd>Draw the circle round herself (a shelter) or round the enemy (a cage for their spells).</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Hearthward.</span> Inside her own salt she heals slowly. <span class="fx">Candle-small flames on the line nearest her.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Iron Nail</span> (line). A thrown iron nail that slows. <span class="fx">A black nail with a cold blue-white glint, rust flakes.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Salt Circle</span> (zone, 4 m). Drawn over 0.6 s, holds 5 s: no spell crosses its edge. <span class="fx">A pouring white salt line, crystals catching light, spells breaking on it in sparks.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Hex Bundle</span> (target). The enemy's next dash fizzles. <span class="fx">A bundle of herbs tied with red thread smoulders above them.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">The Boundary</span>. A 12 m line: for 2 s nothing crosses it, then it stays 6 s as a salt line. <span class="fx">A wall of blowing salt and iron filings that settles into a line.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#7d9bb0"></i>cold iron</span><span class="chip"><i style="background:#f4f1ea"></i>salt white</span><span>· nearest: Mum (walls), Referee Whistler (no spells)</span></div>
+  <div class="look"><b>Look:</b> a hooded hedge witch, grey-blue wool and a pale linen apron, iron keys and herb bundles at the belt, a pouch of salt pouring from the left hand, a black iron staff with a candle cage.</div>
+  <div class="lore"><b>Faction:</b> The Truce of the Ring. <b>Legend:</b> The hedge witch who salts the Ring's edge every dawn so that no spell reaches the crowd. Mortis's dead cannot cross her lines, and Kohaku has tried every night. <a href="../../lore/index.html#h-morwen">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> None to the idea. The numbers are new: circle 4 m for 5 s, the Boundary a wall for 2 s and a salt line for 6 s more. <a href="../../../pipeline/designs/kit-salt.md">Kit sheet</a></div>
+</section>
+
+<!-- 4 -->
+<section class="card" style="--acc:#ffb21e">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M6 -24 L22 -6 L6 12 L-10 -6 Z" fill="#ffb21e" stroke="#3a2406" stroke-width="2"/><path d="M6 -24 L6 12 M-10 -6 L22 -6" stroke="#3a2406" stroke-width="1.5"/><path d="M6 12 Q2 18 -4 16 Q-10 14 -14 20 Q-18 26 -24 24" stroke="#c9d2f0" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M-4 16 l-3 -4 M-14 20 l-3 -4" stroke="#ffb21e" stroke-width="3" stroke-linecap="round"/></svg></div>
+    <div><div class="num">4 · kite</div><h2>Lian</h2><div class="title">the Kite Master</div><span class="role">marksman · ranged</span></div>
+  </div>
+  <div class="sentence">A kite master whose paper dragon flies where she points and strikes from the sky.</div>
+  <div class="new"><b>New: a second place to cast from.</b> Her kite flies on a 9 m string toward the pointer. Two of her spells start at the kite, not at her, and the string between them cuts whoever stands across it.</div>
+  <dl>
+    <dt>Question</dt><dd>"Where is the danger: the kite, or me?"</dd>
+    <dt>Weakness</dt><dd>The kite can be hit down (three hits; 6 s to fly it again), and she walks slower while flying it.</dd>
+    <dt>Her choice</dt><dd>Fly the kite close to the enemy (strong, but the string is in reach) or keep it safe.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Long String.</span> The string cuts lightly whoever crosses it. <span class="fx">A thin silk line that hums and glints indigo.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Paper Dart</span> (from the kite). A folded dart to the target. <span class="fx">Saffron paper folding in the air, a crisp tear on hit.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Reel In</span>. The kite flies home fast; the string sweeps everything between. <span class="fx">The string glowing as it whips round, paper streamers.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Firecracker</span> (from the kite). A string of crackers drops below it, 1 s fuse. <span class="fx">Red-gold paper crackers popping in a chain of small flashes and smoke.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">Dragon Dance</span>. The kite becomes a long paper dragon that follows its own path 4 s, cutting what it crosses. <span class="fx">A paper dragon with a saffron head and indigo scales, ribbons streaming.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#ffb21e"></i>saffron</span><span class="chip"><i style="background:#c9d2f0"></i>pale indigo</span><span>· nearest: Lyra (marksman), Professor Puff (things in the air)</span></div>
+  <div class="look"><b>Look:</b> a light, quick figure in a saffron silk coat with indigo cuffs, a wide sash, braided hair with paper ribbons; the reel in the left hand, the dragon kite flying above.</div>
+  <div class="lore"><b>Faction:</b> The Windward. <b>Legend:</b> The best kite flier of the Spires. Shiori taught her to fold paper, and she flies her paper dragon on Zephyr's winds, which he never lets her forget. <a href="../../lore/index.html#h-lian">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> The kite is placed where she flies it, not steered: a thing that moves on its own drifts apart on the two screens (units do). W is Let Fly, with Reel In as its recast. Colour clash: the card's accent `#ffb21e` is 6 from Sirix's colour (under 12 reads as the same). A nearby colour that keeps apart: `#ffa119`. Or keep it and let the figure tell them apart; to decide at the look. <a href="../../../pipeline/designs/kit-kite.md">Kit sheet</a></div>
+</section>
+
+<!-- 5 -->
+<section class="card" style="--acc:#c08a4a">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><rect x="-26" y="-9" width="24" height="18" rx="9" fill="none" stroke="#c08a4a" stroke-width="6"/><rect x="2" y="-9" width="24" height="18" rx="9" fill="none" stroke="#d8dde2" stroke-width="6"/><path d="M-4 -16 L4 -16 M-4 16 L4 16" stroke="#c08a4a" stroke-width="3"/></svg></div>
+    <div><div class="num">5 · chain</div><h2>Kessa</h2><div class="title">the Chainwarden</div><span class="role">juggernaut · melee</span></div>
+  </div>
+  <div class="sentence">The warden of a drowned prison, who never lets a prisoner go.</div>
+  <div class="new"><b>New: trading places.</b> Chained to the enemy, she can swap places with them in a blink: off a ledge of fire, behind a wall, into her own trap.</div>
+  <dl>
+    <dt>Question</dt><dd>"Where will you be in a second: here, or where I stand?"</dd>
+    <dt>Weakness</dt><dd>Everything needs the chain: dodge the shackle and she is a slow fighter. A dash breaks the chain.</dd>
+    <dt>Her choice</dt><dd>Swap now, or hold the chain and drag them.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Iron Will.</span> Takes 15% less while a chain holds. <span class="fx">Links glow warm along her arm.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Shackle</span> (hook). Chains the enemy 4 s: they cannot go beyond 8 m from her (dragged and slowed). <span class="fx">A heavy copper-iron chain uncoiling, a shackle snapping shut with sparks.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Bulwark of Links</span> (self). Armour; recast breaks the chain in a stunning slam. <span class="fx">Chains wrapping her like mail, then bursting out in a ring.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Exchange</span>. Swaps places with the chained enemy. <span class="fx">Both figures blur into links and land in each other's place.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">The Iron Post</span>. A post drops between them; both are chained to it 3 s (4 m). <span class="fx">An iron post hammered into the floor, two chains drawing tight.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#c08a4a"></i>tarnished copper</span><span class="chip"><i style="background:#d8dde2"></i>pale steel</span><span>· nearest: Brannoc (forge), Ada (hook)</span></div>
+  <div class="look"><b>Look:</b> a broad warden in dark plate with copper rivets, a long sea-worn coat, a great ring of keys, chains wound round both forearms; a heavy shackle in the right hand.</div>
+  <div class="lore"><b>Faction:</b> The Truce of the Ring. <b>Legend:</b> Warden of the Gaol of Oaths under the Drowned Harbour, the Truce's prison for oath-breakers. Asenet, the Uncrowned, is the one prisoner who ever slipped her chain. <a href="../../lore/index.html#h-kessa">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> The ultimate is renamed The Iron Post: a published game is called The Iron Oath. Exchange is named for what it is, a swap of places, which moves the enemy farther than the engine's 4 m pull cap; it reaches only as far as the chain (7 m). The chain's reach is 7 m (the card said 8). Colour clash: the card's accent `#c08a4a` is 8 from Wick's colour (under 12 reads as the same). A nearby colour that keeps apart: `#d89f77`. Or keep it and let the figure tell them apart; to decide at the look. <a href="../../../pipeline/designs/kit-chain.md">Kit sheet</a></div>
+</section>
+
+<!-- 6 -->
+<section class="card" style="--acc:#6af2c0">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M-24 18 C-20 -6 -12 -20 -6 -22 C-4 -6 -10 8 -12 20 Z" fill="#6af2c0" opacity=".9"/><path d="M-6 20 C-2 -6 6 -22 12 -24 C14 -8 8 8 6 22 Z" fill="#b48cff" opacity=".85"/><path d="M10 20 C14 0 20 -12 26 -14 C27 0 22 10 22 22 Z" fill="#ff8ad0" opacity=".85"/><path d="M-26 22 L26 22" stroke="#eef6ff" stroke-width="2"/></svg></div>
+    <div><div class="num">6 · aurora</div><h2>Saga</h2><div class="title">the Northern Light</div><span class="role">mage · ranged</span></div>
+  </div>
+  <div class="sentence">A sky dancer of the far north who hangs the aurora's curtains across the battle.</div>
+  <div class="new"><b>New: lines that change whoever crosses them.</b> Her curtains don't stop anyone. Walking through one gives its colour: green slows, violet silences, rose marks you for more damage. She gets speed from her own.</div>
+  <dl>
+    <dt>Question</dt><dd>"Will you cross the light, or walk around?"</dd>
+    <dt>Weakness</dt><dd>Curtains are lines: going around them is always possible. She is frail.</dd>
+    <dt>Her choice</dt><dd>Her next curtain's colour (green, violet, rose, in turn): cast now, or hold for the colour she needs. Both screens show the next one.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Polar Light.</span> Crossing her own curtain: haste 1.5 s. <span class="fx">The curtain ripples where she passes.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Shimmer</span> (line). A streak that leaves a short curtain where it lands. <span class="fx">A thin luminous ribbon folding upward.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Curtain</span>. A 10 m curtain of the next colour, 6 s. <span class="fx">Tall soft folds of light, bright at the hem, fading up into stars.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Skate</span> (dash). Glides 6 m on rime. <span class="fx">A white frost trail with sparkles.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">The Sky Opens</span>. Every curtain swings round its middle over 3 s: lines that move. <span class="fx">The whole floor washed in green and violet, curtains turning like doors.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#6af2c0"></i>aurora green</span><span class="chip"><i style="background:#eef6ff"></i>snow</span><span>· nearest: Isolde (frost), Opaline (light)</span></div>
+  <div class="look"><b>Look:</b> a tall dancer in deep night-blue with a white fur-trimmed mantle, silver embroidery like star charts, long pale braids, a crown of thin silver rays; a slim silver wand in the left hand.</div>
+  <div class="lore"><b>Faction:</b> The Hourkeepers. <b>Legend:</b> She dances the aurora that tells the hour at Frostfall: Isolde's sister, Lyra's partner at the observatory, and Kaia's rival for the sky. <a href="../../lore/index.html#h-saga">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> None to the idea. The ultimate swings each curtain 90 degrees in 2.5 s, and its fans show on the floor 1.0 s before. <a href="../../../pipeline/designs/kit-aurora.md">Kit sheet</a></div>
+</section>
+
+<!-- 7 -->
+<section class="card" style="--acc:#30d0c0">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><circle r="24" fill="#16121c" stroke="#30d0c0" stroke-width="2"/><path d="M-20 -12 L20 12 M-18 14 L18 -14" stroke="#30d0c0" stroke-width="3"/><path d="M0 -8 L5 0 L0 8 L-5 0 Z" fill="#d8dce8"/><path d="M-3 -16 L0 -26 L3 -16 Z M-3 16 L0 26 L3 16 Z" fill="#d8dce8"/></svg></div>
+    <div><div class="num">7 · obsidian</div><h2>Itzel</h2><div class="title">the Obsidian Herald</div><span class="role">bruiser · melee</span></div>
+  </div>
+  <div class="sentence">A herald with a black glass blade who splits the ground, and only she can cross what she splits.</div>
+  <div class="new"><b>New: ground that only she can cross.</b> Her strikes split the floor: for 3 s each crack is a chasm to the enemy (go round, or dash over) and a road to her (she walks across, and runs along it). <i>Changed on the kit sheet: the first version made the danger where two cracks cross, and that is Shiori's ink.</i></div>
+  <dl>
+    <dt>Question</dt><dd>"Which side of the crack do you want to be on?"</dd>
+    <dt>Weakness</dt><dd>Every crack is straight, at most 9 m, shows as a bright line and closes in 3 s; any dash jumps it. Without cracks she is an ordinary fighter.</dd>
+    <dt>Her choice</dt><dd>Cut the enemy off from cover and keep them near her, or cut a road away for herself.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Fault Lines.</span> Her cracks are chasms to the enemy for 3 s, then harmless scars; she walks across them. <span class="fx">Black glass lips, turquoise deep inside: bright while a chasm, dim as a scar.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Obsidian Edge</span> (cone). A sweep that leaves a 6 m crack along its middle. <span class="fx">An obsidian arc with a turquoise inner edge.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Rift</span> (line). A 9 m crack from her feet, opening over 0.5 s. <span class="fx">A turquoise glint running ahead, the ground splitting behind it.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Shatterstep</span> (dash). Runs 6 m, cracking the floor behind her. <span class="fx">Glass shards kicked up at each step.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">Obsidian Sun</span>. A star of eight cracks from her opens after 1.2 s, then walls the ground round her into eight wedges for 3 s. <span class="fx">A disc of black glass with a turquoise rim rises behind her as the floor bursts.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#30d0c0"></i>turquoise</span><span class="chip"><i style="background:#d8dce8"></i>obsidian sheen</span><span>· nearest: Bram (ground bursts), Mabel (holes)</span></div>
+  <div class="look"><b>Look:</b> a lean warrior in black lacquered armour inlaid with turquoise, a feathered mantle in deep jade and white, a gold collar; a broad black glass blade in the right hand.</div>
+  <div class="lore"><b>Faction:</b> The Underforge. <b>Legend:</b> Herald of the Underforge, who speaks for the fallen sun's fire where it cools into black glass in the Ember Caldera. She thinks Campana's bronze would crack in a real fire. <a href="../../lore/index.html#h-itzel">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> Her new thing changed. The card made the danger where two cracks cross; that is Shiori's ink, whose strokes already burst where they cross (rule 2). Now her cracks are ground only she can cross. Glass Edge is renamed Obsidian Edge (glass edge is taken), and Black Sun is renamed Obsidian Sun (the black sun is a far-right symbol). Colour clash: the card's accent `#30d0c0` is 3 from Sefu accent's colour (under 12 reads as the same). A nearby colour that keeps apart: `#47b2ae`. Or keep it and let the figure tell them apart; to decide at the look. <a href="../../../pipeline/designs/kit-obsidian.md">Kit sheet</a></div>
+</section>
+
+<!-- 8 -->
+<section class="card" style="--acc:#7fe6ff">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M0 22 C-14 20 -18 6 -12 -4 C-10 4 -6 6 -4 4 C-8 -6 -4 -18 4 -24 C2 -14 10 -10 12 -2 C14 -6 14 -10 12 -14 C22 -4 20 18 0 22 Z" fill="#7fe6ff" stroke="#123a48" stroke-width="2"/><path d="M0 18 C-6 16 -6 8 -2 4 C0 10 6 10 6 4 C10 10 6 18 0 18 Z" fill="#f2f6fa"/></svg></div>
+    <div><div class="num">8 · fox</div><h2>Kohaku</h2><div class="title">the Foxfire</div><span class="role">assassin · melee</span></div>
+  </div>
+  <div class="sentence">A fox spirit who steals the name of a spell and calls it with her own fire.</div>
+  <div class="new"><b>New: stealing a spell.</b> She takes the last spell you cast: it waits 4 s longer for you, and she gets one foxfire copy of its kind (a bolt, a dash, a ring or a shield).</div>
+  <dl>
+    <dt>Question</dt><dd>"What did you cast last?" Feed her a small spell and keep the big one safe.</dd>
+    <dt>Weakness</dt><dd>She has to get within 7 m; she is fragile, and the steal is wasted on a weak spell.</dd>
+    <dt>Her choice</dt><dd>Steal now, or wait for the enemy's big spell.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Tails of Foxfire.</span> Each stolen spell lights one of her tails; nine lit: her next hit burns blue. <span class="fx">Tails of pale blue flame, counted on her back for both players.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Foxfire Bite</span> (dash-strike). <span class="fx">A blue-white fox head of flame snapping shut.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Glamour</span> (self). Leaves a fox-shaped decoy and is unseen 1 s. <span class="fx">A fox of white smoke that runs on and puffs out.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Borrowed Name</span> (target, 7 m). The steal. <span class="fx">The stolen spell's icon drawn in blue fire, pulled from the enemy into her paw.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">Wisp Hunt</span>. Nine foxfire wisps circle her, then hunt the enemy one by one. <span class="fx">Flickering blue flames with white hearts, streaking in curves.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#7fe6ff"></i>foxfire blue</span><span class="chip"><i style="background:#f2f6fa"></i>snow-fox white</span><span>· nearest: Sir Whiskers (feline), Kaia (blue-white)</span></div>
+  <div class="look"><b>Look:</b> a slim woman in a white and pale grey layered robe with a rust-red under-sash, a carved white fox mask pushed to the side of her head, a long white-tipped fox tail of fur; a fan in the left hand.</div>
+  <div class="lore"><b>Faction:</b> The Court of Dusk. <b>Legend:</b> A fox spirit of Gloaming who steals the names of spells. She once stole the word off Hesk's first golem, and Sir Whiskers has chased her for longer than either admits. <a href="../../lore/index.html#h-kohaku">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> The steal seals the key for 4 s rather than adding to its cooldown, so it works on Vesper, Brannoc and Cantor, who have no cooldowns. Nine tails became three lit tails (a round is too short for nine), and the passive is renamed Tails of Foxfire (the Nine-Tails is a famous character of another series). <a href="../../../pipeline/designs/kit-fox.md">Kit sheet</a></div>
+</section>
+
+<!-- 9 -->
+<section class="card" style="--acc:#d29a4a">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M-16 12 C-16 -6 -12 -18 0 -18 C12 -18 16 -6 16 12 L20 16 L-20 16 Z" fill="#d29a4a" stroke="#3a2406" stroke-width="2"/><circle cy="20" r="4" fill="#cfe8dc" stroke="#3a2406"/><rect x="-3" y="-24" width="6" height="7" rx="2" fill="#d29a4a" stroke="#3a2406" stroke-width="1.5"/><path d="M-26 6 A28 28 0 0 1 -22 -10 M26 6 A28 28 0 0 0 22 -10" stroke="#cfe8dc" stroke-width="2" fill="none"/></svg></div>
+    <div><div class="num">9 · bell</div><h2>Campana</h2><div class="title">the Bellwright</div><span class="role">tank · melee</span></div>
+  </div>
+  <div class="sentence">A temple bell-founder whose bronze bells ring each other into a chorus.</div>
+  <div class="new"><b>New: chain reactions between her things.</b> Hit one of her bells and its ring spreads out; a ring reaching another bell rings that one too. One blow can set off the whole floor.</div>
+  <dl>
+    <dt>Question</dt><dd>"Inside the ring, or past it?" Only the edge of a ring hurts and stuns.</dd>
+    <dt>Weakness</dt><dd>Without bells she is a slow tank; bells can be broken (two hits).</dd>
+    <dt>Her choice</dt><dd>Where to set each bell, so that the chain runs through the enemy.</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Resonance.</span> A ring that reaches a bell rings it. <span class="fx">Thin bronze sound rings expanding on the floor, pale patina at the rim.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Clapper</span> (melee). A heavy strike that rings the nearest bell within 6 m. <span class="fx">A bronze hammer arc and a deep shiver in the air.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">Cast a Bell</span> (ground, 2 charges). Sets a bronze bell. <span class="fx">A bell dropped from above, landing with dust and a hum.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Toll</span> (dash). Charges to a bell and rings it. <span class="fx">A bronze streak, the bell swinging.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">The Great Bell</span>. 1.0 s shadow warning, then a great bell drops over the enemy: inside it 1.5 s, no spells, then it rings every bell in a chain. <span class="fx">A huge bronze bell falling, a deep boom, rings racing bell to bell.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#d29a4a"></i>bronze</span><span class="chip"><i style="background:#cfe8dc"></i>pale patina</span><span>· nearest: Big Yoko (tank, rings), Cantor (sound)</span></div>
+  <div class="look"><b>Look:</b> a strong founder in a heavy leather apron over temple robes of deep plum, bronze bracers, a small bell on a cord at the hip; a bronze hammer in the right hand.</div>
+  <div class="lore"><b>Faction:</b> The Noonsworn. <b>Legend:</b> She cast every bell of Aubade, the bells that ring the thin sun up each morning, and believes enough bells rung at the Tower's top would call the sun back. <a href="../../lore/index.html#h-campana">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> Rings are born at the bell's lip (1.5 m), so the safe places are next to a bell or past 5 m. Bells have 90 HP rather than "two hits". Colour clash: the card's accent `#d29a4a` is 4 from Sefu's colour (under 12 reads as the same). A nearby colour that keeps apart: `#b2962c`. Or keep it and let the figure tell them apart; to decide at the look. <a href="../../../pipeline/designs/kit-bell.md">Kit sheet</a></div>
+</section>
+
+<!-- 10 -->
+<section class="card" style="--acc:#d8e86a">
+  <div class="top">
+    <div class="icon"><svg viewBox="-30 -30 60 60"><path d="M-26 10 Q-10 4 0 10 T26 10" stroke="#5a8ab0" stroke-width="5" fill="none"/><path d="M-26 18 Q-10 12 0 18 T26 18" stroke="#3a6080" stroke-width="4" fill="none"/><path d="M-12 8 L14 8 L10 0 L-8 0 Z" fill="#2a2026" stroke="#d8e86a" stroke-width="1.5"/><path d="M8 0 L16 -22" stroke="#cfc6b8" stroke-width="2"/><circle cx="16" cy="-20" r="4" fill="#d8e86a"/></svg></div>
+    <div><div class="num">10 · ferry</div><h2>Ostrel</h2><div class="title">the Ferryman</div><span class="role">skirmisher · ranged</span></div>
+  </div>
+  <div class="sentence">The ferryman of the dead, who lays rivers of pale light and rides them.</div>
+  <div class="new"><b>New: ground that carries you.</b> His rivers are strips that move whoever stands on them along their flow, enemy or him. Downstream is quick, upstream is a crawl.</div>
+  <dl>
+    <dt>Question</dt><dd>"Will you cross the river, or be carried?"</dd>
+    <dt>Weakness</dt><dd>The rivers are narrow (2.5 m): a step across is always there. Away from water he is ordinary.</dd>
+    <dt>His choice</dt><dd>Which way each river flows: toward him (to bring them close) or away (to carry himself out).</dd>
+  </dl>
+  <table>
+    <tr><td class="k"><span>P</span></td><td><span class="n">Ferry Toll.</span> On his own river his spells come back faster. <span class="fx">His lantern burns brighter on the water.</span></td></tr>
+    <tr><td class="k"><span>Q</span></td><td><span class="n">Pole Sweep</span> (cone). A push of 3 m. <span class="fx">A long pole arc with a spray of pale water.</span></td></tr>
+    <tr><td class="k"><span>W</span></td><td><span class="n">River of Souls</span>. A 12 m strip flowing 3 m/s one way, 6 s. <span class="fx">Pale blue water with drifting lantern lights and faint faces in the current.</span></td></tr>
+    <tr><td class="k"><span>E</span></td><td><span class="n">Toll Mark</span> (target). A marked enemy carried by a river takes damage per metre. <span class="fx">A green-gold coin floating over their head, spinning.</span></td></tr>
+    <tr><td class="k"><span>R</span></td><td><span class="n">The Last Crossing</span>. A river across the floor that slowly turns into a whirl, drawing to its middle 4 s. <span class="fx">A wide pale river curling into a whirlpool, lanterns spinning in.</span></td></tr>
+  </table>
+  <div class="chips"><span class="chip"><i style="background:#d8e86a"></i>lantern green-gold</span><span class="chip"><i style="background:#cfc6b8"></i>fog grey</span><span>· nearest: Marin (tide), Gus (wet floor)</span></div>
+  <div class="look"><b>Look:</b> a tall gaunt figure in a long fog-grey hooded coat with a deep blue lining, a pale calm face, coins sewn on the hem; a long ferry pole with a hanging lantern in the left hand.</div>
+  <div class="lore"><b>Faction:</b> a loner. <b>Legend:</b> Ferryman of the dead, who serves no faction because every faction's dead ride with him. He brings the Sands' dead to Nebet's scale; Mortis keeps the dead back, and they are sworn enemies. <a href="../../lore/index.html#h-ostrel">Lore</a></div>
+  <div class="lore changed"><b>Changed on the kit sheet:</b> The way a river flows is chosen by a recast (away from him on the cast, toward him on the recast). The ultimate's whirl lasts 2.2 s and carries 4 m at most, inside the pull cap. <a href="../../../pipeline/designs/kit-ferry.md">Kit sheet</a></div>
+</section>
+
+</div>
+
+<footer>
+  <h3>What happens next</h3>
+  <p>Pick any of the ten (or change them while they are words). Each picked hero goes through the gates one at a time: the look first (the model
+  beside Sefu and Kaia, for your yes), then the kit on paper with every number and answer, then the spells, the CPU and balance (40-60%),
+  then release. The colours above are first picks; each gets checked against the palette rows before the look.</p>
+</footer>
+</body>
+</html>

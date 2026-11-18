@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero framework</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f4ef; --card: #fffdf8; --ink: #1d1b17; --ink2: #57534b; --muted: #8a857a; --line: #e2ddd2;
+  --bar: #2a78d6; --bar2: #9cc0ec; --ok: #1f8a4c; --okbg: #e3f3e8; --warn: #b5530c; --warnbg: #fbeadc;
+  --gold: #b8862b; --ember: #c23a22; --code: #f1ede3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+    --bar: #3987e5; --bar2: #2c4f7c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+    --gold: #e0b55a; --ember: #ff7b5a; --code: #26241e;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15140f; --card: #1f1d18; --ink: #f0efec; --ink2: #c3c2b7; --muted: #8f8b80; --line: #34312a;
+  --bar: #3987e5; --bar2: #2c4f7c; --ok: #4cc27c; --okbg: #183022; --warn: #f0965a; --warnbg: #3a2416;
+  --gold: #e0b55a; --ember: #ff7b5a; --code: #26241e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { font-size: 26px; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 34px 0 10px; }
+p { margin: 6px 0 10px; color: var(--ink2); }
+.sub { color: var(--muted); font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 28px; line-height: 1.1; }
+.tile span { color: var(--ink2); font-size: 14px; }
+.files { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.file { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); font-size: 14px; }
+.file code { font-size: 12.5px; word-break: break-all; }
+.file .len { height: 6px; border-radius: 3px; background: var(--ember); margin-top: 6px; }
+.file small { color: var(--muted); display: block; }
+.tree { font: 13.5px/1.6 ui-monospace, Consolas, monospace; background: var(--code); border-radius: 10px; padding: 12px; overflow-x: auto; white-space: pre; }
+.tree em { font-style: normal; color: var(--muted); }
+.tree b { color: var(--gold); }
+.chart .row { display: grid; grid-template-columns: minmax(110px, 38%) 1fr 34px; align-items: center; gap: 8px; margin: 3px 0; font-size: 14px; cursor: default; }
+.chart .row:hover .fill { filter: brightness(1.15); }
+.chart .track { height: 16px; }
+.chart .fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
+.chart .n { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+.chart .name { color: var(--ink2); }
+.stack { display: flex; height: 30px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--card); }
+.stack div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; white-space: nowrap; overflow: hidden; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink2); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+pre { background: var(--code); border-radius: 10px; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 6px 0; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.prints { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.print { background: var(--okbg); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+.print b { display: block; }
+.print code { color: var(--ok); font-size: 12px; }
+.print.bad { background: var(--warnbg); }
+.print.bad code { color: var(--warn); }
+ul.found { padding-left: 18px; margin: 6px 0; }
+ul.found li { margin: 5px 0; color: var(--ink2); }
+ul.found li b { color: var(--ink); }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--ink2); font-size: 14px; }
+table { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+td, th { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; }
+td.r { text-align: right; font-variant-numeric: tabular-nums; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 13px; padding: 5px 8px; border-radius: 6px; opacity: 0; transition: opacity .1s; max-width: 260px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The hero framework</h1>
+  <p class="sub">Steps 1 and 2: the audit, the design, the fight prints. No hero has been moved yet. 2026-11-16.
+    The full text: <code>docs/pipeline/hero-framework.md</code>.</p>
+  <div class="card"><b>Step 3 is done: Anka is moved.</b> She plays exactly as before (all 80 fight prints the same) and the game's
+    first download is a fifth smaller. <a href="anka.html">Anka before and after, and every check</a>.</div>
+  <div class="card"><b>Step 4, the folder move, is done: all 40 heroes live in folders.</b> The other 39 moved in five batches; after each one all 80
+    fight prints were the same. Their spells are as they were (onto the blocks comes next). <a href="progress.html">Every batch and its checks</a>.</div>
+  <div class="card"><b>Step 5 is done: new heroes are made with one command, played on a workbench and checked with one command.</b>
+    A new hero is a draft (not in the game) until its gates pass. <a href="new-hero-tools.html">The command, the workbench, the check</a>.</div>
+
+  <div class="tiles">
+    <div class="tile"><b>163</b><span>spells read, in 40 kits</span></div>
+    <div class="tile"><b>55 + 102</b><span>plain blocks, and blocks plus a small hook</span></div>
+    <div class="tile"><b>6</b><span>spells stay code</span></div>
+    <div class="tile"><b id="t-prints">40 / 40</b><span>fight prints repeat</span></div>
+  </div>
+
+  <h2>Today: Anka is spread over these places</h2>
+  <p>The bar is each file's length. Most of the kit file is drawing icons; most of every spell file is its look.</p>
+  <div class="files" id="files"></div>
+
+  <h2>Planned: one folder</h2>
+  <div class="tree"><b>src/heroes/phoenix/</b>
+  hero.ts          <em>the card: name, colours, HP, model, body, shop, lore and model pointers,</em>
+                   <em>the four spells' cards (range, cooldown, flags, tooltip made from the numbers)</em>
+  numbers.ts       <em>every number, once</em>
+  trait.ts         <em>the passive: Ashborn and the embers</em>
+  spells/
+    emberQuill.ts  <em>rules as blocks + the look, as it is today</em>
+    fanTheFlames.ts
+    emberFlight.ts
+    firebird.ts
+  parts.ts         <em>feathers, nest, egg</em>
+  fight.ts         <em>what a fight loads: her spells and parts</em>
+  icons.ts         <em>the old canvas icons, only where an SVG is missing</em>
+<em>public/icons/spells/anka-q.svg ... stay where they are</em>
+<em>The game finds the folder by itself: no list to edit.</em></div>
+
+  <h2>What the spells are made of</h2>
+  <p>Each spell's main shape. Hover or tap a bar for the count.</p>
+  <div class="card chart" id="shapes"></div>
+  <details><summary>As a table</summary><table id="shapes-t"></table></details>
+
+  <h2>What they do to the enemy</h2>
+  <div class="card chart" id="statuses"></div>
+
+  <h2>How they fit the blocks</h2>
+  <div class="stack" id="fit"></div>
+  <div class="legend" id="fit-l"></div>
+  <p>The blocks write a spell's <b>rules</b> short: the shape, the timing, the hit, the danger zone and the tooltip from the same
+    numbers. The <b>look</b> (about seven eighths of each file) moves as it is.</p>
+
+  <h2>Three spells, today and new</h2>
+  <div class="two">
+    <div class="card"><div class="label">Cobra Spit (Sefu Q), today: 223 lines, rules spread through them</div>
+<pre>const WIND_T = 0.25, REACH = 9,
+      SPEED = 20, RADIUS = 0.35;
+if (!this.fired &amp;&amp; t &gt;= WIND_T) {
+  this.fired = true;
+  this.bolt = ctx.projectile({ from, dir,
+    speed: SPEED, range: REACH,
+    radius: RADIUS, hit: { damage: 62,
+    knock: 1, status: blind 1.2 } });
+}
+telegraphs() { /* the same line again */ }
+// and the blurb, by hand, in kits/sand.ts</pre></div>
+    <div class="card"><div class="label">New: the rules in one place</div>
+<pre>spell({
+  card: { key: 'Q', name: 'Cobra Spit',
+    range: 9, cooldown: 5, aim: 'line',
+    blurb: (r) =&gt; `... ${r.hit.damage}
+      damage and blinded ...` },
+  rules: { windup: 0.25,
+    shape: bolt(20 m/s, 9 m, 0.35),
+    hit: { damage: 62, knock: 1,
+           status: ['blind', 1.2] } },
+  look: CobraLook,  // unchanged
+})</pre></div>
+  </div>
+  <div class="two">
+    <div class="card"><div class="label">Helium Bomb (Professor Puff W)</div>
+<pre>rules: { shape: circle at the aim, 2.5 m,
+  delay: 1.0,
+  hit: { damage: 50, knock: 5,
+         from: 'centre' } }</pre></div>
+    <div class="card"><div class="label">The Shove (Bram W): stays code</div>
+      <p>Gerald, a pillar with HP, slides along the aim, carries whoever he touches and stuns them against a wall. No block says
+        that; it moves into Bram's folder as the code it is.</p></div>
+  </div>
+
+  <h2>Anka before and after (the plan; done: <a href="anka.html">see her page</a>)</h2>
+  <div class="two">
+    <div class="card"><div class="label">Today: 12 places</div>
+      <ul class="found">
+        <li>kit: 650 lines, 540 of them icons</li>
+        <li>4 spell files: 1,299 lines</li>
+        <li>passive: 487 lines, holding every spell's numbers</li>
+        <li>look parts: 833 lines</li>
+        <li>3 registries, the icon list, the server's shop row</li>
+        <li>tools that find her by path</li>
+      </ul></div>
+    <div class="card"><div class="label">After: one folder</div>
+      <ul class="found">
+        <li><b>Q</b> a bolt; where it stops it lays an ember</li>
+        <li><b>W</b> circles at her embers, 0.8 s, one hit of 54; then they burn out</li>
+        <li><b>E</b> a dash to the chosen ember; a 1.8 m circle where she lands</li>
+        <li><b>R</b> 1 s wind-up, a 12 x 3 m lane she crosses in 0.5 s; an ember at take-off</li>
+        <li>the server's shop row stays, checked against her card</li>
+      </ul></div>
+  </div>
+
+  <h2>The start of the page</h2>
+  <p>Today 7.5 MB of script loads before the first picture (2.1 MB compressed). What it is made of:</p>
+  <div class="stack" id="start"></div>
+  <div class="legend" id="start-l"></div>
+  <p>The orange part, spells the game never uses (tool-page showcases, retired hero spells, tests), leaves the game with the first move. The hero
+    spells then load per fight. The start gets smaller, never bigger.</p>
+
+  <h2>The fight prints</h2>
+  <p>Each hero fights twice, 60 s each, in the Harbour, the same inputs every time: against Isolde, who keeps her distance, and
+    against Brannoc, who closes in. Green: the same print in every run (the two codes are the two fights). The Isolde fights were
+    run six times each, the Brannoc fights twice: always the same.</p>
+  <div class="prints" id="prints"></div>
+  <p class="sub" id="cover"></p>
+
+  <h2>Found broken (not fixed)</h2>
+  <ul class="found">
+    <li><b>Madame Cleaver's table heals the enemy 50 too</b>; the tooltip says the 50 is for her.</li>
+    <li><b>Gus's Flood bonus does nothing:</b> the mop's flood damage equals its normal damage.</li>
+    <li><b>Late Fee, Foreclosure, Lightning Risk</b> only hit who stood in the circle at the cast, not who walks in.</li>
+    <li><b>Six kit flags do not match their spell</b> (Ember Flight is a dash without the flag ...). They may be meant, and the CPU
+      reads them: yours to decide; the move leaves them as they are.</li>
+    <li><b>Some rules run on the computer's clock</b> instead of the fight's (recasts of Crosswind, Barbed Stinger, Collapse ...).</li>
+    <li><b>Online:</b> a late Uproot and a quick second Tag Out are dropped by the server; old hits make the HP drift.</li>
+    <li><b>A dead CPU rule</b> (Isolde's ice block, Oblivion's maw) never fires.</li>
+    <li><b>About 80 spell comments give old numbers</b>; the tooltips are right (but for 3).</li>
+    <li><b>126 spell files the game never uses</b> (showcases, retired hero spells, tests) ship in its start.</li>
+  </ul>
+  <p class="sub">The full list with files and lines is in section 8 of the design.</p>
+</main>
+<div id="tip"></div>
+<script>
+const FILES = [
+  ['src/kits/phoenix.ts', 650, 'kit + 540 lines of icons'], ['spells/targeted/emberQuill.ts', 363, 'Q'],
+  ['spells/targeted/fanTheFlames.ts', 307, 'W'], ['spells/targeted/emberFlight.ts', 288, 'E'], ['spells/targeted/firebird.ts', 341, 'R'],
+  ['src/traits/phoenix.ts', 487, 'passive + all the numbers'], ['src/effects/parts/phoenix.ts', 833, 'look parts'],
+  ['src/heroes.ts', 3, 'model, body, list'], ['traits/index.ts + targeted/index.ts', 9, 'two registries'],
+  ['src/icons/vc.ts + 4 SVGs', 1, 'the new icons'], ['server/protocol.mjs', 2, 'shop row'], ['docs/lore, blender/heroes/real', 0, 'lore, model'],
+];
+const SHAPES = [['bolt', 26], ['ground circle with a delay', 19], ['sure hit on the chosen enemy', 18], ['dash', 15], ['cone', 11],
+  ['bolts: several, piercing, banked', 9], ['leap, blink, charge, hook', 8], ['wall', 8], ['ring round the caster', 6], ['lasting zone', 6],
+  ['shield or self buff', 10], ['summon or placed thing', 10], ['lane', 3], ['channel, stance, mark, veil ...', 9], ['something else', 5]];
+const STATUSES = [['slow', 23], ['knockback', 21], ['stun', 13], ['pull', 10], ['damage over time', 10], ['root', 10], ['silence', 9],
+  ['vulnerable', 8], ['blind', 6], ['knock-up', 5], ['lifesteal, grounded, weaken', 6], ['execute, sealed, charm', 3]];
+const PRINTS = /*PRINTS*/[{"name":"Vesper","a":"41e3fa67","b":"519149f1","ok":true,"never":[]},{"name":"Brannoc","a":"ac9c039d","b":"ac9c039d","ok":true,"never":[]},{"name":"Isolde","a":"a0e6410d","b":"a0e6410d","ok":true,"never":[]},{"name":"Lyra","a":"2bdb8f4d","b":"5261b545","ok":true,"never":[]},{"name":"Vitriol","a":"ace85744","b":"f33fe38c","ok":true,"never":[]},{"name":"Kaia","a":"cf160412","b":"7066a6c8","ok":true,"never":[]},{"name":"Sefu","a":"bfb83e68","b":"34f91874","ok":true,"never":["E"]},{"name":"Nyx","a":"1f37facd","b":"68bb32c1","ok":true,"never":[]},{"name":"Fenna","a":"e9b330c1","b":"c74cea48","ok":true,"never":[]},{"name":"Auriel","a":"a99f1e58","b":"3ec4edb0","ok":true,"never":[]},{"name":"Marin","a":"f096e586","b":"7f652b0a","ok":true,"never":[]},{"name":"Zephyr","a":"52c8eeea","b":"54d690e4","ok":true,"never":[]},{"name":"Mortis","a":"9fe5ac1d","b":"13b36e57","ok":true,"never":[]},{"name":"Ada","a":"dfa56168","b":"6a0e4385","ok":true,"never":[]},{"name":"Sirix","a":"6b64495f","b":"84f6e3aa","ok":true,"never":[]},{"name":"Cantor","a":"f94337b3","b":"aec07208","ok":true,"never":[]},{"name":"Opaline","a":"810e6ddd","b":"e411d108","ok":true,"never":[]},{"name":"Oblivion","a":"1cb7174b","b":"6d51e911","ok":true,"never":[]},{"name":"Shiori","a":"a0bfbdd1","b":"706bd042","ok":true,"never":[]},{"name":"Tempo","a":"885a74d","b":"95d815df","ok":true,"never":["E"]},{"name":"Silvane","a":"1b5db327","b":"d23a4cb0","ok":true,"never":[]},{"name":"Bram","a":"790dcb3c","b":"d6593a9e","ok":true,"never":[]},{"name":"Hank","a":"cf28c15a","b":"5f259224","ok":true,"never":[]},{"name":"Professor Puff","a":"952101c","b":"b8ca7728","ok":true,"never":[]},{"name":"Sir Whiskers","a":"130757cd","b":"5e6210fb","ok":true,"never":[]},{"name":"Mr. Ledger","a":"2018f6cf","b":"4e2fcf02","ok":true,"never":["E","R"]},{"name":"Big Yoko","a":"989362e4","b":"2ef23b0a","ok":true,"never":[]},{"name":"Mum","a":"e0aa624a","b":"792580f2","ok":true,"never":[]},{"name":"Referee Whistler","a":"fddedfb6","b":"cb8c1c1e","ok":true,"never":[]},{"name":"Madame Cleaver","a":"d912ec30","b":"46d9cdfe","ok":true,"never":[]},{"name":"Pip","a":"65b9dbac","b":"2f907682","ok":true,"never":["R"]},{"name":"Gus","a":"5263a8ff","b":"1175a175","ok":true,"never":[]},{"name":"Mabel","a":"873ec3e0","b":"e34cac41","ok":true,"never":[]},{"name":"Grandma Ironknit","a":"fecc9651","b":"8c9247ca","ok":true,"never":[]},{"name":"Barry Cloudsley","a":"42531c7c","b":"38ff8636","ok":true,"never":[]},{"name":"Bo","a":"4f151283","b":"9c21cf26","ok":true,"never":[]},{"name":"The Great Zambini","a":"4a2a7388","b":"3ba75143","ok":true,"never":[]},{"name":"Wick","a":"44e0fbe8","b":"ad451a5e","ok":true,"never":[]},{"name":"Pim and Pom","a":"47ca23fb","b":"d2ffff57","ok":true,"never":[]},{"name":"Anka","a":"bae036d3","b":"4ef3d6f9","ok":true,"never":[]}];
+const tip = document.getElementById('tip');
+const show = (e, text) => { tip.textContent = text; tip.style.opacity = 1; tip.style.left = Math.min(innerWidth - 270, e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; };
+const hide = () => { tip.style.opacity = 0; };
+const max = Math.max(...FILES.map((f) => f[1]));
+document.getElementById('files').innerHTML = FILES.map(([f, n, w]) => `<div class="file"><code>${f}</code><small>${w}${n ? ` · ${n} lines` : ''}</small>${n ? `<div class="len" style="width:${Math.max(2, (100 * n) / max)}%"></div>` : ''}</div>`).join('');
+const chart = (id, rows, total) => {
+  rows = [...rows].sort((x, y) => y[1] - x[1]);
+  const m = Math.max(...rows.map((r) => r[1]));
+  const el = document.getElementById(id);
+  el.innerHTML = rows.map(([k, v]) => `<div class="row" data-t="${k}: ${v} of ${total} spells"><span class="name">${k}</span><div class="track"><div class="fill" style="width:${(100 * v) / m}%"></div></div><span class="n">${v}</span></div>`).join('');
+  for (const r of el.querySelectorAll('.row')) { r.onmousemove = (e) => show(e, r.dataset.t); r.onmouseleave = hide; r.onclick = (e) => show(e, r.dataset.t); }
+};
+chart('shapes', SHAPES, 163);
+chart('statuses', STATUSES, 163);
+document.getElementById('shapes-t').innerHTML = '<tr><th>Main shape</th><th>Spells</th></tr>' + SHAPES.map(([k, v]) => `<tr><td>${k}</td><td class="r">${v}</td></tr>`).join('');
+const stack = (id, parts) => {
+  const el = document.getElementById(id), tot = parts.reduce((s, p) => s + p[1], 0);
+  el.innerHTML = parts.map(([k, v, c]) => `<div style="flex:${v};background:${c}" data-t="${k}: ${v}%">${v >= 9 ? v + '%' : ''}</div>`).join('');
+  for (const d of el.children) { d.onmousemove = (e) => show(e, d.dataset.t); d.onmouseleave = hide; d.onclick = (e) => show(e, d.dataset.t); }
+  document.getElementById(id + '-l').innerHTML = parts.map(([k, v, c]) => `<span><i style="background:${c}"></i>${k} ${v}%</span>`).join('');
+};
+stack('fit', [['plain blocks', 34, '#1baf7a'], ['blocks + a small hook', 63, '#2a78d6'], ['stay code', 4, '#eb6834']]);
+stack('start', [['the Climb', 32, '#6250d6'], ['spells the game never uses', 18, '#eb6834'], ['hero spells', 10, '#2a78d6'], ['three.js', 10, '#7d7a72'],
+  ['effects and parts', 9, '#1baf7a'], ['kits (icons)', 4, '#eda100'], ['arenas, Raid, motion', 9, '#e87ba4'], ['the rest', 8, '#a8a397']]);
+const pr = document.getElementById('prints');
+pr.innerHTML = PRINTS.map((p) => `<div class="print${p.ok ? '' : ' bad'}"><b>${p.name}</b><code>${p.a || 'differs'} · ${p.b || 'differs'}</code></div>`).join('') || '<p>not taken</p>';
+const missing = PRINTS.filter((p) => p.never && p.never.length);
+document.getElementById('cover').textContent = missing.length
+  ? 'Not cast in either fight, so not proven by the prints: ' + missing.map((p) => `${p.name} ${p.never.join('')}`).join(', ') + '.'
+  : 'Every hero cast all four of its spells.';
+document.getElementById('t-prints').textContent = `${PRINTS.filter((p) => p.ok).length} / ${PRINTS.length}`;
+</script>
+</body>
+</html>

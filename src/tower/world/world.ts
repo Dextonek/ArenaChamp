@@ -11,10 +11,15 @@ import type { ZoneCtx } from './ctx';
 import type { DoorDef, FloorDef, PackDef, Spot } from './def';
 import type { WorldHud } from './hud';
 import { buildLaw, type Law } from './law';
+import { buildLife } from './life';
 import { Pack, type PackEnv, type PackState } from './packs';
 import { People } from './people';
+import { prewarmFoes } from './prewarm';
 import { Quests } from './quests';
 import { Scenery } from './scenery';
+import { PackShare } from './share';
+import type { WorldOthers } from './others';
+import type { WorldPresence } from '../../net/world';
 import type { WorldRun } from './state';
 
 /**
@@ -36,6 +41,8 @@ export interface ZoneHooks {
   /** The hero fell. `revive`: a life is left, stand it up; `restart`: none was, the owner rebuilds the floor. */
   fell(): 'revive' | 'restart';
   door(d: DoorDef): void;
+  /** The open world's stage 3: another player holds this door open, so it may be walked into though this run has won it already. */
+  joinable?(d: DoorDef): boolean;
   save(): void;
   offerBoon(label: string): void;
   giveRelic(): void;
@@ -45,6 +52,8 @@ export interface Zone {
   def: BossDef;
   link: TowerLink;
   packs: Map<string, Pack>;
+  /** The packs shared with the floor's shard (the open world, stage 2), or null (the tools; alone as always). */
+  share: PackShare | null;
   quests: Quests | null;
   people: People | null;
   scenery: Scenery | null;
@@ -71,12 +80,16 @@ export function wakeSpot(def: FloorDef, run: WorldRun): Spot {
   return w ? { x: w.at.x + 1.6, z: w.at.z } : def.start;
 }
 
-export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: WorldHud, hooks: ZoneHooks, o: { mode: 'play' | 'run'; start?: Spot } = { mode: 'play' }): Zone {
+/** The open world's share of a zone: the link to the floor's shard (null: none, only made-up others) and who draws the others. */
+export interface ZoneShare { link: WorldPresence | null; others: WorldOthers }
+
+export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: WorldHud, hooks: ZoneHooks, o: { mode: 'play' | 'run'; start?: Spot; share?: ZoneShare } = { mode: 'play' }): Zone {
   const arena = api.arena;
   const log: Zone['log'] = [];
   const kit = api.kits.find((k) => k.name === run.hero);
   if (!kit) throw new Error(`no hero named ${run.hero}`);
-  const num = floorNumbers(floor.n);
+  // A handmade floor that moved up keeps the numbers it was tuned at (`tunedAs`).
+  const num = floorNumbers(floor.tunedAs ?? floor.n);
   const say = (text: string) => log.push({ t: +run.clock.toFixed(2), text });
   const packs = new Map<string, Pack>();
   let ctx: ZoneCtx | null = null;
@@ -98,9 +111,18 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
       if (pack.def.named && pack.state === 'cleared') ctx?.say(`${pack.def.named.name} falls`, '#ffd27a', at);
       hooks.save();
     },
+    // The last of a pack fell on any screen: it counts in the run when this hero had a kill of it that counted (the open world).
+    cleared: (pack) => {
+      if (!pack.tookPart || pack.hunter || run.packsCleared.includes(pack.id)) return;
+      run.packsCleared.push(pack.id);
+      hooks.save();
+    },
     log: say,
   };
+  const share = o.share ? new PackShare(api, o.share.link, o.share.others, floor, (def) => new Pack(def, penv)) : null;
+  penv.link = share;
   for (const p of floor.packs) packs.set(p.id, new Pack(p, penv, run.packsCleared.includes(p.id)));
+  if (share) for (const p of packs.values()) share.add(p);
   const total = [...packs.values()].reduce((n, p) => n + p.total, 0);
 
   let lie = -1;
@@ -125,7 +147,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
 
   const speeds = new Map<string, number>();
   const zoneRef: Zone = {
-    def: undefined as unknown as BossDef, link: undefined as unknown as TowerLink, packs, quests: null, people: null, scenery: null, law: null, ctx: null, log,
+    def: undefined as unknown as BossDef, link: undefined as unknown as TowerLink, packs, share, quests: null, people: null, scenery: null, law: null, ctx: null, log,
     get falls() { return zone.falls; },
     begin: () => zoneRef.link.on.cast({ id: WORLD_CAST, move: 'floor', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: 0 }),
     respawn: () => wakeSpot(floor, run),
@@ -186,7 +208,12 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     const quests = (zoneRef.quests = new Quests(c));
     const people = (zoneRef.people = new People(c, quests));
     const scenery = (zoneRef.scenery = new Scenery(c));
+    // The floor's life (life/): birds, smoke, cloth, boats, the shallows. In no fight, under dice of its own.
+    const life = buildLife(c, law);
+    // Every enemy kind of the floor compiled with the fight (prewarm.ts): the first pack no longer freezes the game.
+    const warm = prewarmFoes(api, floor.enemies);
     scenery.enter = (d) => hooks.door(d);
+    scenery.joinable = (d) => hooks.joinable?.(d) ?? false;
     scenery.read = (lines) => {
       if (o.mode === 'run') return;
       hud.openCard({ for: 'lore', name: floor.lore.name, role: 'A carved stone', lines, buttons: [{ label: 'Close', click: () => hud.closeCard() }] });
@@ -234,12 +261,14 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           if (!run.result) run.clock += dt;
           const down = api.duel.heroHp <= 0;
           for (const k of packs.values()) k.update(dt, hero);
+          share?.update(dt, hero);
           law!.update(dt);
           quests.update(dt);
           // A door walked into ends this zone from inside the frame: nothing after it may touch what was put away.
           scenery.update(dt);
           if (gone) return;
           people.update(dt);
+          life?.update(dt);
           // One place for every slow and quicken: the boons' Long Stride times the flood, the carry and the rest.
           let mul = run.boons.speedMul;
           for (const m of speeds.values()) mul *= m;
@@ -280,8 +309,11 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
         dispose() {
           gone = true;
           for (const k of packs.values()) k.dispose();
+          share?.dispose();
+          warm.dispose();
           quests.dispose();
           people.dispose();
+          life?.dispose();
           scenery.dispose();
           law?.dispose();
           hud.pointTo(null);

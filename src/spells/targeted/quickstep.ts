@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { Afterimage, Dial, FrozenMotes } from '../../effects/parts/chrono';
+import { Afterimage, Dial, FrozenMotes } from '../../heroes/chrono/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

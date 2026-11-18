@@ -3,12 +3,15 @@ soft boots with gold toes, a red skirt to the knee under a layer of amber feathe
 clasp and a teal stone. Bare arms with gold bands. Long dark-red hair under a gold circlet with a crest of three
 feathers. Two wings of flame feathers swept down and back from the shoulder blades like a cloak (Auriel's are raised
 plates of light; these hang), a train of five long tail feathers with eyes, and an open feather fan upright in the LEFT hand
-(hold = torch: she casts with it as others do with a staff, and flicks it to throw a feather)."""
+(hold = torch: she casts with it as others do with a staff, and flicks it to throw a feather).
+An Ember (docs/lore/codex/revamp.md, the touches, 2026-11-16): her skin lit faintly from within, warmer and brighter at its edges (the
+jaw, the hairline, the fingertips)."""
 import math
 
 from realkit import PI, Real
 from real import parts_a as P
 from real.parts_a import V
+from real.parts_d import ember_skin
 
 
 def feather(f, a, b, width, normal, eye=True, vane="red", n=7):
@@ -26,6 +29,7 @@ def feather(f, a, b, width, normal, eye=True, vane="red", n=7):
 
 def build():
     R = Real("phoenix", sex="f", height=1.0, width=0.95, depth=0.95, skin="#c98e66")
+    ember_skin(R, strength=0.34, edge_alpha=0.7)
     z = R.z
     R.mat("red", "#c23a22", rough=0.55, double=True)
     R.mat("deep", "#4c1410", rough=0.6)

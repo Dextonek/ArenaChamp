@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import type { MinionLook, MinionPalette } from '../../effects/parts/minion';
 import type { EnemySpec } from './def';
 import { EXTRA_LOOKS } from './f45/looks';
+import { BUILT, FOE_MODELS } from './foeKinds';
+import { modelLook } from './foeModels';
 import { wildLook } from './looksWild';
 
 /**
@@ -199,7 +201,16 @@ const LOOKS: Record<string, MinionLook> = {
   mate: (k, p) => drowned(k, p, { body: 0x2c3f7a, trim: 0xffd060, big: true, coat: true }),
   barnacle: (k, p) => drowned(k, p, { body: 0x5a6a3a, trim: 0xf0ead0, big: true, weed: true, barnacles: true }),
 };
-export const lookOf = (spec: EnemySpec): MinionLook => EXTRA_LOOKS[spec.look as string] ?? LOOKS[spec.look] ?? wildLook(spec.look) ?? LOOKS.docker;
+/** The look drawn in code for a kind (the model looks fall back on it while their file loads). */
+export const codeLookOf = (spec: EnemySpec): MinionLook => EXTRA_LOOKS[spec.look as string] ?? LOOKS[spec.look] ?? wildLook(spec.look) ?? LOOKS.docker;
+/**
+ * A kind's look: its own model where it has one (foeKinds.ts: the people-shaped kinds), else the code look.
+ * `globalThis.__codeFoes = true` draws every kind in code (the A/B).
+ */
+export const lookOf = (spec: EnemySpec): MinionLook => {
+  const code = codeLookOf(spec), m = FOE_MODELS[spec.look as string];
+  return m && BUILT.has(m.id) && !(globalThis as { __codeFoes?: boolean }).__codeFoes ? modelLook(m, code, spec) : code;
+};
 
 /** A small plain figure for someone who is led (Tam the net-mender): a coat, a cap, a net over the shoulder. */
 export const personLook = (colour = 0x9a7a4a): MinionLook => (_kind, p) => {

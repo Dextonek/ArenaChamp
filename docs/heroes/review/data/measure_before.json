@@ -1,0 +1,863 @@
+{
+ "blood": {
+  "hero": "Vesper",
+  "feet": 5,
+  "armIdle": 7,
+  "armMove": [
+   7,
+   "idle"
+  ],
+  "armAny": [
+   7,
+   "idle"
+  ],
+  "heldCast": [
+   8,
+   "W Mist Waltz (lunge)"
+  ],
+  "heldAny": [
+   8,
+   "W Mist Waltz (lunge)"
+  ]
+ },
+ "forge": {
+  "hero": "Brannoc",
+  "feet": 7,
+  "armIdle": 3,
+  "armMove": [
+   3,
+   "idle"
+  ],
+  "armAny": [
+   3,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "astral": {
+  "hero": "Lyra",
+  "feet": 6,
+  "armIdle": 4,
+  "armMove": [
+   4,
+   "sprint"
+  ],
+  "armAny": [
+   7,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "alchemy": {
+  "hero": "Vitriol",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   0,
+   ""
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "dawn": {
+  "hero": "Auriel",
+  "feet": 6,
+  "armIdle": 5,
+  "armMove": [
+   5,
+   "idle"
+  ],
+  "armAny": [
+   6,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   5,
+   "idle"
+  ]
+ },
+ "bone": {
+  "hero": "Mortis",
+  "feet": 3,
+  "armIdle": 10,
+  "armMove": [
+   10,
+   "sprint"
+  ],
+  "armAny": [
+   10,
+   "sprint"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "clockwork": {
+  "hero": "Ada",
+  "feet": 6,
+  "armIdle": 3,
+  "armMove": [
+   4,
+   "sprint"
+  ],
+  "armAny": [
+   5,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "bard": {
+  "hero": "Cantor",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   0,
+   ""
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "stun"
+  ]
+ },
+ "chrono": {
+  "hero": "Tempo",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   3,
+   "E Time Skip (lunge)"
+  ],
+  "heldCast": [
+   8,
+   "E Time Skip (lunge)"
+  ],
+  "heldAny": [
+   8,
+   "E Time Skip (lunge)"
+  ]
+ },
+ "balloon": {
+  "hero": "Professor Puff",
+  "feet": 10,
+  "armIdle": 3,
+  "armMove": [
+   3,
+   "idle"
+  ],
+  "armAny": [
+   5,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   8,
+   "hit"
+  ]
+ },
+ "cat": {
+  "hero": "Sir Whiskers",
+  "feet": 4,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   3,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "chef": {
+  "hero": "Madame Cleaver",
+  "feet": 7,
+  "armIdle": 6,
+  "armMove": [
+   6,
+   "idle"
+  ],
+  "armAny": [
+   7,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "stun"
+  ]
+ },
+ "courier": {
+  "hero": "Pip",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   3,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "door": {
+  "hero": "Wick",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   0,
+   ""
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "stun"
+  ]
+ },
+ "frost": {
+  "hero": "Isolde",
+  "feet": 5,
+  "armIdle": 3,
+  "armMove": [
+   3,
+   "idle"
+  ],
+  "armAny": [
+   5,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "grove": {
+  "hero": "Fenna",
+  "feet": 5,
+  "armIdle": 4,
+  "armMove": [
+   4,
+   "sprint"
+  ],
+  "armAny": [
+   7,
+   "stun"
+  ],
+  "heldCast": [
+   8,
+   "E Pollen Glide (lunge)"
+  ],
+  "heldAny": [
+   10,
+   "run"
+  ]
+ },
+ "hive": {
+  "hero": "Sirix",
+  "feet": 6,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   13,
+   "Q Barbed Stinger (lunge)"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "stun"
+  ]
+ },
+ "ink": {
+  "hero": "Shiori",
+  "feet": 5,
+  "armIdle": 10,
+  "armMove": [
+   10,
+   "idle"
+  ],
+  "armAny": [
+   10,
+   "stun"
+  ],
+  "heldCast": [
+   7,
+   "E Flowing Script (lunge)"
+  ],
+  "heldAny": [
+   7,
+   "E Flowing Script (lunge)"
+  ]
+ },
+ "mirror": {
+  "hero": "Silvane",
+  "feet": 5,
+  "armIdle": 4,
+  "armMove": [
+   4,
+   "idle"
+  ],
+  "armAny": [
+   7,
+   "E Through the Glass (lunge)"
+  ],
+  "heldCast": [
+   4,
+   "E Through the Glass (lunge)"
+  ],
+  "heldAny": [
+   5,
+   "stun"
+  ]
+ },
+ "mason": {
+  "hero": "Bram",
+  "feet": 6,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   3,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "ledger": {
+  "hero": "Mr. Ledger",
+  "feet": 3,
+  "armIdle": 7,
+  "armMove": [
+   8,
+   "walk"
+  ],
+  "armAny": [
+   9,
+   "hit"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "mime": {
+  "hero": "Mum",
+  "feet": 4,
+  "armIdle": 6,
+  "armMove": [
+   8,
+   "sprint"
+  ],
+  "armAny": [
+   8,
+   "sprint"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "janitor": {
+  "hero": "Gus",
+  "feet": 6,
+  "armIdle": 3,
+  "armMove": [
+   3,
+   "idle"
+  ],
+  "armAny": [
+   4,
+   "stun"
+  ],
+  "heldCast": [
+   15,
+   "E Mop Bucket (lunge)"
+  ],
+  "heldAny": [
+   15,
+   "stun"
+  ]
+ },
+ "mole": {
+  "hero": "Mabel",
+  "feet": 12,
+  "armIdle": 8,
+  "armMove": [
+   8,
+   "idle"
+  ],
+  "armAny": [
+   10,
+   "stun"
+  ],
+  "heldCast": [
+   6,
+   "Q Claw (swing)"
+  ],
+  "heldAny": [
+   6,
+   "Q Claw (swing)"
+  ]
+ },
+ "magic": {
+  "hero": "The Great Zambini",
+  "feet": 3,
+  "armIdle": 10,
+  "armMove": [
+   11,
+   "walk"
+  ],
+  "armAny": [
+   11,
+   "walk"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "pim": {
+  "hero": "Pim and Pom",
+  "feet": 5,
+  "armIdle": 4,
+  "armMove": [
+   4,
+   "idle"
+  ],
+  "armAny": [
+   6,
+   "Q Bonk (swing)"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   2,
+   "sprint"
+  ]
+ },
+ "pom": {
+  "hero": "Pim and Pom",
+  "feet": 5,
+  "armIdle": 4,
+  "armMove": [
+   4,
+   "idle"
+  ],
+  "armAny": [
+   4,
+   "idle"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "phoenix": {
+  "hero": "Anka",
+  "feet": 5,
+  "armIdle": 3,
+  "armMove": [
+   4,
+   "sprint"
+  ],
+  "armAny": [
+   6,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   9,
+   "stun"
+  ]
+ },
+ "storm": {
+  "hero": "Kaia",
+  "feet": 6,
+  "armIdle": 10,
+  "armMove": [
+   10,
+   "idle"
+  ],
+  "armAny": [
+   11,
+   "W Thunder Rod (point)"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "sand": {
+  "hero": "Sefu",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   12,
+   "E Scarab Stride (lunge)"
+  ],
+  "heldCast": [
+   6,
+   "E Scarab Stride (lunge)"
+  ],
+  "heldAny": [
+   6,
+   "E Scarab Stride (lunge)"
+  ]
+ },
+ "shadow": {
+  "hero": "Nyx",
+  "feet": 5,
+  "armIdle": 6,
+  "armMove": [
+   7,
+   "sprint"
+  ],
+  "armAny": [
+   7,
+   "sprint"
+  ],
+  "heldCast": [
+   4,
+   "attack"
+  ],
+  "heldAny": [
+   6,
+   "sprint"
+  ]
+ },
+ "tide": {
+  "hero": "Marin",
+  "feet": 4,
+  "armIdle": 14,
+  "armMove": [
+   15,
+   "sprint"
+  ],
+  "armAny": [
+   15,
+   "sprint"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "sky": {
+  "hero": "Zephyr",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   0,
+   ""
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "prism": {
+  "hero": "Opaline",
+  "feet": 5,
+  "armIdle": 5,
+  "armMove": [
+   5,
+   "sprint"
+  ],
+  "armAny": [
+   7,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "hit"
+  ]
+ },
+ "void": {
+  "hero": "Oblivion",
+  "feet": 9,
+  "armIdle": 6,
+  "armMove": [
+   9,
+   "back"
+  ],
+  "armAny": [
+   10,
+   "E Phase Step (lunge)"
+  ],
+  "heldCast": [
+   11,
+   "W Null Zone (burst)"
+  ],
+  "heldAny": [
+   11,
+   "W Null Zone (burst)"
+  ]
+ },
+ "timber": {
+  "hero": "Hank",
+  "feet": 7,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   4,
+   "stun"
+  ],
+  "heldCast": [
+   3,
+   "Q Axe Swing (swing)"
+  ],
+  "heldAny": [
+   3,
+   "Q Axe Swing (swing)"
+  ]
+ },
+ "sumo": {
+  "hero": "Big Yoko",
+  "feet": 8,
+  "armIdle": 8,
+  "armMove": [
+   10,
+   "sprint"
+  ],
+  "armAny": [
+   13,
+   "E Charge (lunge)"
+  ],
+  "heldCast": [
+   9,
+   "Q Palm Strike (swing)"
+  ],
+  "heldAny": [
+   9,
+   "Q Palm Strike (swing)"
+  ]
+ },
+ "referee": {
+  "hero": "Referee Whistler",
+  "feet": 5,
+  "armIdle": 6,
+  "armMove": [
+   6,
+   "walk"
+  ],
+  "armAny": [
+   6,
+   "walk"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   0,
+   ""
+  ]
+ },
+ "yarn": {
+  "hero": "Grandma Ironknit",
+  "feet": 6,
+  "armIdle": 6,
+  "armMove": [
+   6,
+   "idle"
+  ],
+  "armAny": [
+   6,
+   "hit"
+  ],
+  "heldCast": [
+   9,
+   "Q Knitting Needle (thrust)"
+  ],
+  "heldAny": [
+   9,
+   "Q Knitting Needle (thrust)"
+  ]
+ },
+ "weather": {
+  "hero": "Barry Cloudsley",
+  "feet": 3,
+  "armIdle": 0,
+  "armMove": [
+   0,
+   ""
+  ],
+  "armAny": [
+   6,
+   "stun"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   3,
+   "stun"
+  ]
+ },
+ "sheep": {
+  "hero": "Bo",
+  "feet": 5,
+  "armIdle": 3,
+  "armMove": [
+   3,
+   "sprint"
+  ],
+  "armAny": [
+   3,
+   "hit"
+  ],
+  "heldCast": [
+   0,
+   ""
+  ],
+  "heldAny": [
+   6,
+   "stun"
+  ]
+ }
+}

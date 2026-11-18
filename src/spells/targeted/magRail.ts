@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { CLOCKWORK, CLOCKWORK_CSS, MagCoil, RailBeam, Sparks, SteamPuffs } from '../../effects/parts/clockwork';
+import { CLOCKWORK, CLOCKWORK_CSS, MagCoil, RailBeam, Sparks, SteamPuffs } from '../../heroes/clockwork/parts';
 import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import type { SummonUnit } from '../../effects/summon';
 import { frameCast, type CastContext } from '../../effects/targeting';

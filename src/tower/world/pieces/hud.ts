@@ -1,3 +1,4 @@
+import { TOUCH } from '../../../touch';
 /**
  * What a set piece puts on the page while a person plays it (nothing in the autopilot's run): a line of goal at the top left, and
  * big words across the screen for a moment ("At the gate your boons are set aside"). Page elements with their own styles, as the
@@ -14,7 +15,8 @@ export class PieceHud {
   private goal = '';
 
   constructor(title: string) {
-    this.root.style.cssText = 'position:fixed;left:10px;top:64px;z-index:8;max-width:300px;padding:6px 10px;border-radius:8px;background:rgba(8,6,10,0.78);border:1px solid #3a3242;pointer-events:none;';
+    // Under the hero's panel (a desktop's name and health, a phone's portrait and F key), not over it.
+    this.root.style.cssText = `position:fixed;left:10px;top:calc(${TOUCH ? 172 : 160}px + env(safe-area-inset-top, 0px));z-index:8;max-width:300px;padding:6px 10px;border-radius:8px;background:rgba(8,6,10,0.78);border:1px solid #3a3242;pointer-events:none;`;
     this.title.style.cssText = 'font:700 12px ui-sans-serif,system-ui;color:#ffd27a;letter-spacing:1px;';
     this.goalEl.style.cssText = 'font:600 13px ui-sans-serif,system-ui;color:#f2e6c8;margin-top:2px;';
     this.title.textContent = title;

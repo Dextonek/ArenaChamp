@@ -44,6 +44,9 @@ export interface FloorPlan {
   duel?: DuelTwist;
   /** The floor's own seed: its layout, its brain's rolls and the boons offered after it. */
   seed: string;
+  /** The number written in the room, when it is not `n`: a Climb floor's trial or duel is built at the weekly height it was tuned at
+   * (`n`) and shows the Climb's own floor. */
+  label?: number;
 }
 
 /** The ISO week of a moment, in UTC: "2026-W46", and when the next one begins. */

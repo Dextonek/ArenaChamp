@@ -28,6 +28,8 @@ export declare const raidRing: (id: string, band: number) => number;
 /** The hero shop (pipeline/designs/hero-shop.md): the six kinds of play, every hero's kind and shelf (0: a starter), the numbers. */
 export declare const HERO_KINDS: Record<string, { name: string; blurb: string }>;
 export declare const HERO_SHOP: Record<string, { kind: string; shelf: number }>;
+export declare const R_TIMING: Record<string, { gapMs: number; recastMs: number }>;
+export declare function rTiming(hero: string | null | undefined): { gapMs: number; recastMs: number };
 export declare const SHOP: {
   start: number; shelves: number[]; rotation: number;
   earn: { duel: number; win: number; firstWin: number; boss: number; tier: number };
@@ -45,3 +47,31 @@ export declare const RAID_RANKS: { id: string; name: string; from: number }[];
 export declare const raidRank: (bosses: number) => { id: string; name: string; from: number } | null;
 export declare const BOARD_SIZE: number;
 export declare const TOWER_FLOOR_MAX: number;
+/** The Climb's open world, stage 1: shard size, rate limits, how far a place may be, how often a page sends its place. */
+export declare const WORLD: { shardMax: number; movesPerS: number; reach: number; casts: number; castsMs: number; labelMax: number; sendHz: number };
+/** The Climb's open world, stage 2: shared packs (server/protocol.mjs says what each number is). */
+export declare const WORLD_PACKS: {
+  fightR: number; hitS: number; hp: number; dmg: number; respawnS: number; clearR: number; handR: number; quietMs: number; seeR: number;
+  stateHz: number; statesPerS: number; hitsPerS: number; hitMax: number; hurtsPerS: number; units: number; zones: number;
+};
+/** A pack fought by `n` players: its health and its blows, times. */
+export declare const packScale: (n: number) => { hp: number; dmg: number };
+/** The Climb's open world, stage 3: doors together (server/protocol.mjs says what each number is). */
+export declare const WORLD_DOORS: { gatherS: number; nearR: number; enterR: number; hp: number; dmg: number; max: number; entersPerS: number; ring: number };
+/** A ruler fought by `n` players: its health (and gauge) and its blows, times. */
+export declare const doorScale: (n: number) => { hp: number; dmg: number };
+/** The duel rating (Elo): where an account starts and the K factor. */
+export declare const ELO: { start: number; k: number };
+/** How many rows each of the Leaderboards screen's lists holds. */
+export declare const LEADER_SIZE: number;
+/** The Climb's floors (a report names the highest cleared, 1-50). */
+export declare const CLIMB_FLOORS: number;
+/** Clans: members, the name's and tag's lengths, open asks kept, the chat's limits, the leader's mute in hours. */
+export declare const CLAN: {
+  max: number; nameMin: number; nameMax: number; tagMin: number; tagMax: number; asks: number;
+  chat: { max: number; keep: number; gapMs: number; windowMs: number; inWindow: number };
+  silenceH: number;
+};
+export declare const clanName: (v: unknown) => string;
+export declare const CLAN_NAME_RE: RegExp;
+export declare const CLAN_TAG_RE: RegExp;

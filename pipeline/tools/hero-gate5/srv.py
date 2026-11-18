@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "pipeline" / "sim" / "out" / "gate5"
 OUT.mkdir(parents=True, exist_ok=True)
-PORT = 5193
+# another port when 5193 is taken (another agent's server): GATE5_PORT=5194
+PORT = int(os.environ.get("GATE5_PORT", "5193"))
 ARGS = ["--mute-audio", "--ignore-gpu-blocklist", "--disable-background-timer-throttling",
         "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"]
 

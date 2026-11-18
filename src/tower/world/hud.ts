@@ -14,6 +14,13 @@ export interface CardButton { label: string; sub?: string; off?: boolean; tone?:
 export interface Mark { id: string; glyph: string; label?: string; tone: string; x: number; y: number; show: boolean; click(): void }
 
 const small = () => TOUCH || innerWidth < 760;
+/** The top of the hero's plate on a phone (heroMode's touch HUD), without the minimap; the panel keeps 6 px under its bottom. */
+export const PLATE_TOP = 78;
+/**
+ * While the Climb's panel shows (`world-hud-on` on the page): the plate's buff row is hidden when it is empty (it kept 18 px under the
+ * passive's name), so the plate fits what is in it.
+ */
+let room: HTMLStyleElement | null = null;
 const TONES = { gold: '#ffd27a', green: '#9df0b4', blue: '#8cc4ff', red: '#ff9a8a' };
 
 export class WorldHud {
@@ -23,6 +30,8 @@ export class WorldHud {
   private hearts = document.createElement('div');
   private hpFill = document.createElement('div');
   private statEl = document.createElement('div');
+  /** The open world's line: how many others walk this floor's shard (hidden when the climb is alone, offline). */
+  private othersEl = document.createElement('div');
   private quests = document.createElement('div');
   private banner = document.createElement('div');
   private arrow = document.createElement('div');
@@ -30,12 +39,24 @@ export class WorldHud {
   private card = document.createElement('div');
   private cards = document.createElement('div');
   private result = document.createElement('div');
+  /** The open world's door line (stage 3): a door held for others, or another player's held door to walk into. */
+  private doorEl = document.createElement('div');
+  private doorKey = '';
   private marks = new Map<string, HTMLButtonElement>();
   private bannerLeft = 0;
   private lives = -1;
   private lawText = '';
   private questKey = '';
   private statKey = '';
+  /**
+   * On a phone, the hero's plate (the touch HUD's portrait and passive, in heroMode) sits over this panel: its height is kept in the
+   * page's `--plate-h`, so the minimap's rule (map.ts) puts the panel under it. Looked for once a second (a new hero builds a new plate).
+   */
+  private plate: HTMLElement | null = null;
+  private plateWatch = TOUCH && typeof ResizeObserver !== 'undefined'
+    ? new ResizeObserver(() => document.documentElement.style.setProperty('--plate-h', `${this.plate?.offsetHeight ?? 0}px`))
+    : null;
+  private plateLook = 0;
   /** What the screen's talk card is for, so the zone can close it when the hero walks off. */
   cardFor = '';
   onLeave: (() => void) | null = null;
@@ -44,7 +65,7 @@ export class WorldHud {
     const s = small();
     this.root.className = 'world-hud';
     this.root.style.cssText =
-      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 182 : 150}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
+      `position:fixed;left:${s ? 6 : 12}px;top:calc(max(${s ? 182 : 150}px, ${PLATE_TOP + 6}px + var(--plate-h, 0px)) + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
       `padding:${s ? '4px 8px 5px' : '5px 11px 6px'};border-radius:10px;background:rgba(8,6,10,0.82);border:1px solid #6a5a3a;box-shadow:0 2px 10px #000a;` +
       `max-width:${s ? '62vw' : '270px'};box-sizing:border-box;pointer-events:none;user-select:none;font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;`;
     this.titleEl.style.cssText = `font:700 ${s ? 13 : 15}px ui-serif,Georgia,serif;letter-spacing:1px;color:#ffd27a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
@@ -59,7 +80,8 @@ export class WorldHud {
     row.append(this.hearts, bar);
     this.statEl.style.cssText = `font:600 ${s ? 11 : 12}px ui-sans-serif,system-ui;color:#f2e6c8;display:flex;gap:10px;`;
     this.quests.style.cssText = `display:flex;flex-direction:column;gap:3px;margin-top:2px;border-top:1px solid #3a3242;padding-top:3px;font:600 ${s ? 11 : 12}px/1.25 ui-sans-serif,system-ui;`;
-    this.root.append(this.titleEl, this.lawEl, row, this.statEl, this.quests);
+    this.othersEl.style.cssText = `font:600 ${s ? 10 : 11}px ui-sans-serif,system-ui;color:#a8e0b0;display:none;`;
+    this.root.append(this.titleEl, this.lawEl, row, this.statEl, this.othersEl, this.quests);
 
     this.banner.style.cssText = `position:fixed;left:50%;top:${s ? 46 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;text-shadow:0 3px 14px #000;transition:opacity 0.5s;`;
     this.arrow.style.cssText = 'position:fixed;left:0;top:0;z-index:5;pointer-events:none;display:none;width:34px;height:34px;margin:-17px 0 0 -17px;';
@@ -67,7 +89,12 @@ export class WorldHud {
     this.card.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;width:min(440px,calc(100vw - 20px));box-sizing:border-box;padding:12px 14px;border-radius:12px;background:rgba(14,11,12,0.95);border:2px solid #8a7a52;box-shadow:0 6px 24px #000c;color:#f2e6c8;font:500 14px/1.4 ui-sans-serif,system-ui;`;
     this.cards.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;gap:8px;width:min(620px,calc(100vw - 12px));box-sizing:border-box;`;
     this.result.style.cssText = 'position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(4,3,6,0.72);';
-    document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result);
+    this.doorEl.className = 'world-door';
+    // Above the hero's spell bar, clear of the banner a door's opening puts up top.
+    this.doorEl.style.cssText = `position:fixed;left:50%;bottom:calc(${TOUCH ? 236 : 168}px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:9;display:none;` +
+      `align-items:center;gap:10px;padding:${s ? '6px 10px' : '8px 14px'};border-radius:10px;background:rgba(12,9,10,0.9);border:1px solid #c9a24a;` +
+      `box-shadow:0 3px 14px #000b;max-width:calc(100vw - 20px);box-sizing:border-box;font:600 ${s ? 12 : 14}px/1.3 ui-sans-serif,system-ui;color:#f2e6c8;`;
+    document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl);
     // The duel's boss bar would say "13 / 13" for the whole floor (the zone's unseen boss has no health to speak of): hidden while a zone is on.
     this.hideBar.id = 'world-hide-bosshud';
     this.hideBar.textContent = 'body > div[style*="z-index: 6"][style*="left: 50%"][style*="width: min("][style*="flex-direction: column"]{display:none !important}';
@@ -77,6 +104,12 @@ export class WorldHud {
 
   show(on: boolean) {
     this.root.style.display = on ? 'flex' : 'none';
+    if (on && !room) {
+      room = document.createElement('style');
+      room.textContent = 'body.world-hud-on .hero-plate > div > div:last-child:empty{display:none !important}';
+      document.head.append(room);
+    }
+    document.body.classList.toggle('world-hud-on', on);
     if (!on) { this.banner.style.display = 'none'; this.arrow.style.display = 'none'; this.flood.style.display = 'none'; this.closeCard(); this.clearCards(); this.result.style.display = 'none'; this.clearMarks(); }
   }
 
@@ -110,6 +143,12 @@ export class WorldHud {
     const share = Math.max(0, Math.min(1, hp / Math.max(1, max)));
     this.hpFill.style.width = `${share * 100}%`;
     this.hpFill.style.background = share < 0.3 ? 'linear-gradient(180deg,#ff8a6a,#b03a2a)' : 'linear-gradient(180deg,#8ee6a4,#3f9a5c)';
+  }
+
+  /** How many others are on this floor's shard (the open world), or null for none of it (not signed in, offline). */
+  setOthers(n: number | null) {
+    this.othersEl.style.display = n === null ? 'none' : '';
+    if (n !== null) this.othersEl.textContent = n === 0 ? 'No one else on this floor yet' : `${n} ${n === 1 ? 'other' : 'others'} on this floor`;
   }
 
   stats(shards: number, seconds: number, extra = '') {
@@ -148,6 +187,30 @@ export class WorldHud {
     })()] : []));
   }
 
+  /**
+   * The door line (the open world's stage 3): `text` (null hides it) and, for the first in a held door, a button to go in now. Set every
+   * frame; the page changes only when the words do.
+   */
+  door(text: string | null, go?: { label: string; click(): void }) {
+    const key = text === null ? '' : `${text}|${go?.label ?? ''}`;
+    if (key === this.doorKey) return;
+    this.doorKey = key;
+    if (text === null) { this.doorEl.style.display = 'none'; this.doorEl.replaceChildren(); return; }
+    const line = document.createElement('span');
+    line.textContent = text;
+    const parts: HTMLElement[] = [line];
+    if (go) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = go.label;
+      b.style.cssText = 'pointer-events:auto;cursor:pointer;border-radius:8px;border:1px solid #ffd27a;background:#3a2a12;color:#ffd27a;font:700 13px ui-sans-serif,system-ui;padding:5px 10px;white-space:nowrap;';
+      b.addEventListener('click', () => go.click());
+      parts.push(b);
+    }
+    this.doorEl.replaceChildren(...parts);
+    this.doorEl.style.display = 'flex';
+  }
+
   /** Two lines across the screen for a moment. */
   say(title: string, sub = '', seconds = 2.6) {
     const s = small();
@@ -165,6 +228,15 @@ export class WorldHud {
 
   /** Once a frame. */
   update(dt: number) {
+    if (this.plateWatch && (this.plateLook -= dt) <= 0) {
+      this.plateLook = 1;
+      const p = document.querySelector<HTMLElement>('.hero-plate');
+      if (p !== this.plate) {
+        if (this.plate) this.plateWatch.unobserve(this.plate);
+        this.plate = p;
+        if (p) this.plateWatch.observe(p);
+      }
+    }
     if (this.bannerLeft <= 0) return;
     this.bannerLeft -= dt;
     if (this.bannerLeft <= 0.5) this.banner.style.opacity = '0';
@@ -205,7 +277,8 @@ export class WorldHud {
         el = document.createElement('button');
         el.type = 'button';
         el.dataset.mark = m.id;
-        el.style.cssText = 'position:fixed;left:0;top:0;z-index:7;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
+        // Layer 5: under the floor's panel, the spell bar (6) and the minimap (8), over the world and the law's flood (1, 2).
+        el.style.cssText = 'position:fixed;left:0;top:0;z-index:5;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
         el.addEventListener('click', (e) => { e.stopPropagation(); this.marks.get(m.id) && (el as HTMLButtonElement & { act?: () => void }).act?.(); });
         document.body.append(el);
         this.marks.set(m.id, el);
@@ -387,7 +460,10 @@ export class WorldHud {
   }
 
   dispose() {
+    this.plateWatch?.disconnect();
+    document.documentElement.style.removeProperty('--plate-h');
+    document.body.classList.remove('world-hud-on');
     this.show(false);
-    for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.hideBar]) e.remove();
+    for (const e of [this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result, this.doorEl, this.hideBar]) e.remove();
   }
 }

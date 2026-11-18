@@ -143,6 +143,8 @@ export interface PlateData {
   shield: number;
   /** Cuts in the HP bar (`HeroKit.hpChunks`); 0: none. */
   chunks: number;
+  /** Cuts at these HP values (`Trait.barCuts`: Ramet's lion in front of his own part); beats `chunks`. */
+  cuts?: number[] | null;
   /** The viewer's own hero: green; the enemy: red. */
   mine: boolean;
   meter: { name: string; value: number; max: number; color: string } | null;
@@ -189,7 +191,16 @@ function drawPlate(c: HTMLCanvasElement, d: PlateData) {
     g.fillStyle = 'rgba(232, 240, 250, 0.9)';
     g.fillRect(x + w * Math.min(hpK, 1 - sh), hpY, w * sh, hpH);
   }
-  if (d.chunks > 1) {
+  if (d.cuts?.length) {
+    // A wider cut, with a pale edge, so a part of the bar reads as its own.
+    for (const v of d.cuts) {
+      const cx = x + w * Math.max(0, Math.min(1, v / d.max));
+      g.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      g.fillRect(cx - 3, hpY, 6, hpH);
+      g.fillStyle = 'rgba(255, 236, 190, 0.85)';
+      g.fillRect(cx - 0.75, hpY, 1.5, hpH);
+    }
+  } else if (d.chunks > 1) {
     g.fillStyle = 'rgba(0, 0, 0, 0.8)';
     for (let i = 1; i < d.chunks; i++) g.fillRect(x + (w * i) / d.chunks - 1.5, hpY, 3, hpH);
   }
@@ -271,7 +282,7 @@ export class TraitFx {
     const m = d.meter;
     // Its feet at `height`: without a meter the empty lower half of the canvas hangs below that.
     p.sprite.center.set(0.5, m ? 0 : 0.47);
-    const key = [Math.ceil(d.hp), d.max, Math.ceil(d.shield), d.mine, d.chunks, m?.name, m && Math.round(m.value), m?.max, m?.color].join('|');
+    const key = [Math.ceil(d.hp), d.max, Math.ceil(d.shield), d.mine, d.chunks, d.cuts?.map(Math.round).join(','), m?.name, m && Math.round(m.value), m?.max, m?.color].join('|');
     if (p.key !== key) {
       p.key = key;
       drawPlate(p.canvas, d);

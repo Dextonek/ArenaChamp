@@ -410,3 +410,6 @@ function selfTest(label: string, seconds = 6) {
   scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return rt.active?.effect; },
 };
+
+// The hero workbench (src/workbench/, docs/pipeline/hero-framework.md section 13): only with ?bench, loaded on demand.
+if (new URLSearchParams(location.search).has('bench')) void import('../workbench').then((w) => w.mountWorkbench(rt, gui));

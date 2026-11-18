@@ -1,0 +1,141 @@
+{
+ "floor": 15,
+ "part": "climb-review-shots",
+ "wallSeconds": 24.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 15,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "70.2,-7.5 y3.82 depth in w0.21 h0.09 m3.82 p1 #ffffff",
+  "probe-float-1": "69.8,-7 y1.28 depth in w0.17 h0.11 m1.28 p1 #ffffff",
+  "probe-float-2": "-34.3,-79.4 y5.45 depth in w0.18 h0.11 m5.45 p1 #ffffff",
+  "probe-float-3": "29.4,-77.9 y1.1 depth in w0.2 h0.12 m1.1 p1 #ffffff",
+  "probe-gap-4": "75.8,-75.7 y8.71 depth out18n w5.29 h4.16 m4.46 sunk-0.63 #2e4435",
+  "probe-gap-5": "75.6,-76.2 y9.02 depth out18n w5.5 h4.3 m4.43 sunk-0.78 #2e4435",
+  "probe-gap-6": "76.4,-73.9 y8.5 depth out17n w5.46 h4.29 m4.35 sunk-0.77 #2e4435",
+  "probe-cover-7": "10.1,-16.8 y0 depth in w0.69 h3.28 m4.34 r4.34  #4b3525",
+  "probe-cover-8": "10.1,-16.8 y2.57 depth in w3.94 h3.35 m4.34 r4.34  #405a35",
+  "probe-cover-9": "-64.9,-88.9 y0 depth in w0.51 h2.19 m4.27 r4.27  #4b3525",
+  "probe-cover-10": "-64.9,-88.9 y4.22 depth in w1.73 h2.03 m4.23 r4.27  #2e4435",
+  "frames": {
+   "at": [
+    16,
+    -55
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 6.4,
+     "p95": 11,
+     "worst": 45.1
+    },
+    {
+     "med": 8.9,
+     "p95": 12.5,
+     "worst": 57.8
+    },
+    {
+     "med": 9.5,
+     "p95": 13,
+     "worst": 40.7
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Hollow Elder",
+   "title": "Older than the paths",
+   "model": "models/tower/wood_elder_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 5216,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 55.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}

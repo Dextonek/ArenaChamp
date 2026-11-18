@@ -3,11 +3,11 @@ import { Emitter } from '../../emitter';
 import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import {
   Afterimage, CutFlash, CutShape, CutShards, SHADOW_CSS, ShadowPool, facing,
-} from '../../effects/parts/shadow';
+} from '../../heroes/shadow/parts';
 import type { TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { shadowDaggers, type ShadowDagger } from '../../traits/shadow';
+import { shadowDaggers, type ShadowDagger } from '../../heroes/shadow/trait';
 
 /**
  * Shadow Swap (shadow kit, W: a dagger she can swap to). Nyx flicks a flat black dagger with a violet edge down the aim

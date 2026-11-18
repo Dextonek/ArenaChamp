@@ -1,0 +1,128 @@
+{
+ "floor": 29,
+ "part": "climb-review-shots",
+ "wallSeconds": 14.0,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 29,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-gap-1",
+   "probe-gap-2",
+   "probe-gap-3",
+   "probe-cover-4",
+   "probe-cover-5",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "102.8,15.2 y0.63 depth edge w0.53 h0.38 m0.05 p1 #8a7a4a",
+  "probe-gap-1": "-90.4,8.6 y3.9 depth edge w1.49 h0.3 m3.15 sunk-0.06 #248985",
+  "probe-gap-2": "22,-96.9 y3.8 depth out5n w8.15 h0.1 m1.66 sunk-9.16 #c9a24a",
+  "probe-gap-3": "-90.3,2.2 y1.89 depth edge w1.49 h0.3 m1.46 sunk-1.61 #248985",
+  "probe-cover-4": "-34.3,-13.6 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+  "probe-cover-5": "-69.3,-13.2 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a",
+  "frames": {
+   "at": [
+    -55,
+    27
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 3.3,
+     "p95": 5.1,
+     "worst": 54
+    },
+    {
+     "med": 3.6,
+     "p95": 6,
+     "worst": 8.4
+    },
+    {
+     "med": 3.9,
+     "p95": 6.3,
+     "worst": 9.5
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Sun-Eater",
+   "title": "It swallowed noon once",
+   "model": "models/tower/sands_sphinx_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 1554,
+   "frames": 301,
+   "at": [
+    0,
+    13
+   ],
+   "heroAt": [
+    0,
+    20
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

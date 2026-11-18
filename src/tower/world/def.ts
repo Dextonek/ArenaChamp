@@ -43,6 +43,12 @@ export interface PackDef {
   named?: { name: string; patrol: Spot[]; speed: number; bounty: { shards: number; relic: boolean } };
   /** An elite among them: the pack's first unit is this kind and is bigger. */
   elite?: string;
+  /**
+   * How far the hero may be from the pack's home before it gives up, walks home and heals (m; default `PACK.leash`, 16). The made
+   * floors give 24: a fight drifting 16 m from home reset the pack while its units stood next to the hero, and a ranged hero who steps
+   * back as it shoots woke it, lost it and woke it again (floor 8's wreck: the route bot never cleared it).
+   */
+  leash?: number;
 }
 
 /** A thing a quest step asks, one verb with its place and number (closed list: pipeline/designs/tower-worlds-build.md). */
@@ -71,8 +77,13 @@ export interface QuestDef {
 
 export interface PersonDef {
   id: string;
-  /** The roster hero whose model stands there. */
+  /** The roster hero whose model stands there (a rival's; the others are drawn as `figure` when it is set). */
   hero: string;
+  /**
+   * The Climb's own person drawn there instead of the hero (`models/tower/<figure>_v4.glb`, folk.ts): set for every person but the
+   * rival by `withFolk` when the floors are listed (floors/index.ts), from the floor's number.
+   */
+  figure?: string;
   name: string;
   role: 'keeper' | 'giver' | 'trader' | 'rival';
   at: Spot;
@@ -133,7 +144,14 @@ export interface RivalDef {
 }
 
 export interface FloorDef {
+  /** Its number in the Climb (1 to 50; pipeline/designs/tower-50.md). */
   n: number;
+  /**
+   * The number it was tuned at, when it differs from `n`: the four handmade floors that moved when the Climb became 50 floors (the
+   * Wood was floor 2 and is 11, the Canyon 3 and 21, the Deep 4 and 31, the Banners 5 and 41). Its roaming enemies' numbers
+   * (`floorNumbers`) follow it, so its fights play as they did; its set pieces' seeds follow `PiecesDef.tunedAs` the same way.
+   */
+  tunedAs?: number;
   id: string;
   name: string;
   blurb: string;

@@ -1,5 +1,5 @@
-//! Mr. Ledger, the Tithe-Keeper. Ports of his passive On Your Tab (`src/traits/ledger.ts`) and of the rules inside his
-//! four spells (`src/spells/targeted/invoice.ts`, `lateFee.ts`, `callItIn.ts`, `foreclosure.ts`).
+//! Mr. Ledger, the Tithe-Keeper. Ports of his passive On Your Tab (`src/heroes/ledger/trait.ts`) and of the rules inside his
+//! four spells (`src/heroes/ledger/spells/invoice.ts`, `lateFee.ts`, `callItIn.ts`, `foreclosure.ts`).
 //!
 //! Damage numbers that are a spell's own settings come from the game's export (`Spell::num`). The numbers below are
 //! constants inside those files, mirrored here BY HAND: when one of the files changes, this file must follow.
@@ -16,7 +16,7 @@ use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::{Buff, Status};
 use crate::zone::{Shape, Zone};
 
-// src/traits/ledger.ts
+// src/heroes/ledger/trait.ts
 const INVOICE_RANGE: f64 = 9.0;
 const INVOICE_SPEED: f64 = 20.0;
 const INVOICE_WIND: f64 = 0.25;
@@ -198,7 +198,7 @@ pub fn victim_tick(w: &mut World, s: Side, _dt: f64) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-// src/spells/targeted/invoice.ts
+// src/heroes/ledger/spells/invoice.ts
 const MUZZLE: f64 = 0.8;
 const INVOICE_MAX_T: f64 = 2.2;
 const FLIGHT: f64 = INVOICE_RANGE - MUZZLE;
@@ -255,10 +255,10 @@ impl Spell for Invoice {
     }
 }
 
-// src/spells/targeted/lateFee.ts
+// src/heroes/ledger/spells/lateFee.ts
 const FEE_DURATION: f64 = 2.4;
 
-/// W Late Fee: at 1 s whoever of the cast's targets stands in the 2.5 m ring now takes the hit (on the tab) and a slow.
+/// W Late Fee: at 1 s whoever stands in the 2.5 m ring now takes the hit (on the tab) and a slow.
 #[derive(Clone, Debug, Default)]
 pub struct LateFee {
     ctx: Option<Ctx>,
@@ -286,8 +286,8 @@ impl Spell for LateFee {
         }
         if !self.landed && self.time >= FEE_DELAY {
             self.landed = true;
-            // `ctx.targets`: the enemy was near the aimed spot at the cast; then its live position against the spot.
-            if c.has_target && w.pos(c.side.other()).dist(c.point) <= FEE_RADIUS {
+            // `ctx.enemies()`: whoever stands in the ring when it lands, wherever they stood at the cast.
+            if w.pos(c.side.other()).dist(c.point) <= FEE_RADIUS {
                 let spell = &w.kits[c.side.i()].spells[c.slot];
                 let hit = Hit { damage: spell.num("damage"), knock: Some(2.0), from: Some(c.point), status: Some((Status::Slow, spell.num("slow"))), ..Hit::default() };
                 w.spell_hit(&c, hit);
@@ -296,10 +296,10 @@ impl Spell for LateFee {
     }
 }
 
-// src/spells/targeted/foreclosure.ts
+// src/heroes/ledger/spells/foreclosure.ts
 const STAMP_DURATION: f64 = 2.7;
 
-/// R Foreclosure: at 0.8 s whoever of the cast's targets stands in the 2.2 m ring now AND is still seen by him takes a
+/// R Foreclosure: at 0.8 s whoever stands in the 2.2 m ring now AND is still seen by him takes a
 /// hit that `dealt` turns into the whole tab x 1.6, with +20% damage taken for 3 s. It lands even on an empty tab.
 #[derive(Clone, Debug, Default)]
 pub struct Foreclosure {
@@ -328,9 +328,7 @@ impl Spell for Foreclosure {
         }
         if !self.landed && self.time >= STAMP_DELAY {
             self.landed = true;
-            if !c.has_target {
-                return;
-            }
+            // `ctx.enemies()`: whoever stands in the ring when it lands, wherever they stood at the cast.
             let q = w.pos(c.side.other());
             if q.dist(c.point) > STAMP_RADIUS {
                 return;

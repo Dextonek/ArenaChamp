@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, QueenBody, Swarm, waspLook } from '../../effects/parts/hive';
+import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, QueenBody, Swarm, waspLook } from '../../heroes/hive/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 

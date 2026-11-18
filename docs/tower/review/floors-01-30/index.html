@@ -1,0 +1,576 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Climb Review 1 to 30</title><style>
+:root{--bg:#f6f1e7;--fg:#2a241c;--mut:#6b5f4f;--card:#fffaf0;--line:#e2d6bf;--gold:#a5781d;--ok:#2f7a45;--fix:#1f5e9e;--list:#a1402c}
+@media (prefers-color-scheme: dark){:root:not([data-theme=light]){--bg:#17140f;--fg:#ede4d3;--mut:#a8997f;--card:#211c15;--line:#3a3124;--gold:#d8ae55;--ok:#6cc38a;--fix:#7fb4ea;--list:#ec8a73}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,'Times New Roman',serif}
+main{max-width:980px;margin:0 auto;padding:16px}h1{font-size:1.6em;margin:.4em 0}h2{font-size:1.25em;margin:1.6em 0 .3em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+h3{font-size:1.05em;margin:.9em 0 .2em}.mut{color:var(--mut)}.toc{display:flex;flex-wrap:wrap;gap:6px;margin:.6em 0}.toc a{padding:4px 9px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--fg);background:var(--card);font-size:.9em}
+.toc a.f{border-color:var(--fix)}.toc a.l{border-color:var(--list)}
+section.floor{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0}
+.tag{display:inline-block;font:12px/1.6 system-ui,sans-serif;padding:0 7px;border-radius:9px;color:#fff;margin-right:6px}.tag.fixed{background:var(--fix)}.tag.list{background:var(--list)}.tag.ok{background:var(--ok)}
+ul{padding-left:1.2em;margin:.3em 0}li{margin:.15em 0}.nums li{font-size:.92em}
+.pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin:.5em 0}.pics figure{margin:0}.pics img{width:100%;border-radius:6px;border:1px solid var(--line);display:block}
+.pics figure.ph img{max-width:200px}figcaption{font-size:.85em;color:var(--mut)}details summary{cursor:pointer;color:var(--gold)}
+.sum{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+</style></head><body><main>
+<h1>The Climb, floor by floor: 1 to 30</h1>
+<p class="mut">Each floor played in the real game (headless browser, time stepped by hand): the route bot from camp to gate, every person, pack, door and the ruler, the map, the phone view, the props probe, the texts against the lore. Faults that were clearly slips were fixed (blue); bigger ones or matters of taste are listed for you (red). The look was judged by eye against the art bible (mythic and elegant, never cartoon-goofy); the texts against the Codex Climb pages (docs/lore/codex/climb/). Times are rough: the machine was shared with other agents.</p>
+<div class="sum"><b>30 floors checked</b> · <b>8 fixed</b> · <b>5 for you</b></div>
+<h2 id="fixed-after">Fixed after (2026-11-16)</h2>
+<p class="mut">Two of the items below, done after the review (notes: <a href="fixed-after/README.md">fixed-after/README.md</a>).</p>
+<ul>
+<li><b>Floor 1&#x27;s ruler is the Drowned Admiral.</b> His name, first phase, the keeper&#x27;s greeting, the quest&#x27;s last words, the lair&#x27;s door and the gate&#x27;s line; floor 1 re-baked, only those four strings changed. Checked in the game: the map, the door, the banner.</li>
+<li><b>Phone: the passive box fits what is in it.</b> Its empty buff row is hidden on the Climb (82 px tall, was 100), and the floor panel stays under the plate of a hero with a resource bar (Brannoc&#x27;s ran 24 px over it), with or without the minimap. Desktop unchanged. Left for you: the quest&#x27;s key is still “The Captain&#x27;s Key” (“only the captain&#x27;s key will lift” the Admiral&#x27;s chain): rename it?</li>
+</ul>
+<div class="pics">
+<figure><a href="fixed-after/f01-ruler-admiral.jpg"><img loading="lazy" src="fixed-after/f01-ruler-admiral.jpg" alt="Floor 1&#x27;s ruler fight: The Drowned Admiral"></a><figcaption>Floor 1&#x27;s ruler: “The Drowned Admiral”</figcaption></figure>
+<figure><a href="fixed-after/f01-map-admiral.jpg"><img loading="lazy" src="fixed-after/f01-map-admiral.jpg" alt="The M map: The Drowned Admiral&#x27;s lair"></a><figcaption>The map: “The Drowned Admiral&#x27;s lair”</figcaption></figure>
+</div>
+<p><a href="fixed-after/plate-sheet.jpg"><img loading="lazy" src="fixed-after/plate-sheet.jpg" alt="Phone plate before and after on floors 1, 21, 41 and Brannoc on 21" style="width:100%;border-radius:6px;border:1px solid var(--line)"></a></p>
+<p class="mut" style="font-size:.85em">Pairs, before then after: floor 1, floor 21, floor 41 (Lyra), floor 21 (Brannoc, with a resource bar), and Brannoc in the floor&#x27;s first moments before the minimap shows.</p>
+<div class="pics">
+<figure class="ph"><a href="fixed-after/before-phone-f01.jpg"><img loading="lazy" src="fixed-after/before-phone-f01.jpg" alt="before phone-f01"></a><figcaption>Before: phone, floor 1</figcaption></figure>
+<figure class="ph"><a href="fixed-after/after-phone-f01.jpg"><img loading="lazy" src="fixed-after/after-phone-f01.jpg" alt="after phone-f01"></a><figcaption>After: phone, floor 1</figcaption></figure>
+<figure class="ph"><a href="fixed-after/before-phone-f21.jpg"><img loading="lazy" src="fixed-after/before-phone-f21.jpg" alt="before phone-f21"></a><figcaption>Before: phone, floor 21</figcaption></figure>
+<figure class="ph"><a href="fixed-after/after-phone-f21.jpg"><img loading="lazy" src="fixed-after/after-phone-f21.jpg" alt="after phone-f21"></a><figcaption>After: phone, floor 21</figcaption></figure>
+<figure class="ph"><a href="fixed-after/before-phone-f41.jpg"><img loading="lazy" src="fixed-after/before-phone-f41.jpg" alt="before phone-f41"></a><figcaption>Before: phone, floor 41</figcaption></figure>
+<figure class="ph"><a href="fixed-after/after-phone-f41.jpg"><img loading="lazy" src="fixed-after/after-phone-f41.jpg" alt="after phone-f41"></a><figcaption>After: phone, floor 41</figcaption></figure>
+<figure class="ph"><a href="fixed-after/before-brannoc-phone-f21.jpg"><img loading="lazy" src="fixed-after/before-brannoc-phone-f21.jpg" alt="before brannoc-phone-f21"></a><figcaption>Before: phone, floor 21, Brannoc</figcaption></figure>
+<figure class="ph"><a href="fixed-after/after-brannoc-phone-f21.jpg"><img loading="lazy" src="fixed-after/after-brannoc-phone-f21.jpg" alt="after brannoc-phone-f21"></a><figcaption>After: phone, floor 21, Brannoc</figcaption></figure>
+<figure><a href="fixed-after/before-desk-f01.jpg"><img loading="lazy" src="fixed-after/before-desk-f01.jpg" alt="before desk-f01"></a><figcaption>Before: desktop, floor 1</figcaption></figure>
+<figure><a href="fixed-after/after-desk-f01.jpg"><img loading="lazy" src="fixed-after/after-desk-f01.jpg" alt="after desk-f01"></a><figcaption>After: desktop, floor 1</figcaption></figure>
+<figure><a href="fixed-after/before-desk-f21.jpg"><img loading="lazy" src="fixed-after/before-desk-f21.jpg" alt="before desk-f21"></a><figcaption>Before: desktop, floor 21</figcaption></figure>
+<figure><a href="fixed-after/after-desk-f21.jpg"><img loading="lazy" src="fixed-after/after-desk-f21.jpg" alt="after desk-f21"></a><figcaption>After: desktop, floor 21</figcaption></figure>
+<figure><a href="fixed-after/before-desk-f41.jpg"><img loading="lazy" src="fixed-after/before-desk-f41.jpg" alt="before desk-f41"></a><figcaption>Before: desktop, floor 41</figcaption></figure>
+<figure><a href="fixed-after/after-desk-f41.jpg"><img loading="lazy" src="fixed-after/after-desk-f41.jpg" alt="after desk-f41"></a><figcaption>After: desktop, floor 41</figcaption></figure>
+</div>
+<h2>For you to decide</h2><ul>
+<li><a href="#f01">Floor 1</a>: <b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</li>
+<li><a href="#f06">Floor 6</a>: <b>The Pearl Tyrant is a man in the Codex, a crowned woman on the floor.</b> The Codex (climb/rulers.md): “A pearl merchant ... He drowned holding the strongbox.” Floor 6 draws him with the Gull Queen&#x27;s model (sea_queen, pieces/rulerModels.ts RULER_OF[6]), a crowned woman in a gown. Either the Codex says “she”, or floor 6 takes the Admiral&#x27;s or the Judge&#x27;s model (one number in RULER_OF; the three Sea models would then not be three floors each).</li>
+<li><a href="#f07">Floor 7</a>: <b>Rulers the Codex calls beasts or things are drawn as people.</b> The ruler models are robed giants (their line-ups were accepted on 2026-11-15, STATUS “Decided”), but the Codex (climb/rulers.md) describes many of them otherwise: the Bell Below “the harbour&#x27;s old bell” (floor 7, in the Tide Judge&#x27;s figure), the Lantern Leviathan “a great fish” (8), the Lantern Root, a root with an amber lantern (17), the Grey Oak, a dead oak (18), the Mire Heart, a bog (19), and in the Sands the Scarab Colossus “a beetle the size of a house” (21), the Scarab King, its son (22), the Dune Colossus “a giant of sand and stone” (23), the Brass Sphinx “a lion of brass with a woman&#x27;s face” (24), the Glass Serpent (25). Since the figures are accepted, the likely fix is the Codex&#x27;s words (these as the realm&#x27;s people who carry those names, or the Tower&#x27;s echo of them in a giant&#x27;s shape); else new models (Blender, one at a time). Yours to say.</li>
+<li><a href="#f22">Floor 22</a>: <b>Named enemies are all “it”.</b> On the made floors the keeper says “Fell it ... while it does” of every named enemy, so the Dune Mother is “her” on floor 21 and “it” here, as are Mother Kelp, Barnacle Bess, the Brine Widow, Grandmother Thorn, the Bark Widow. For beasts and things “it” is right. Giving the women their “her” is a word list in each chapter&#x27;s maker (sea.ts, wood.ts, sands.ts...) and a re-bake; a matter of voice, so yours to say.</li>
+<li><a href="#f30">Floor 30</a>: <b>Phone: the hero&#x27;s passive box runs under the floor panel.</b> On a phone, once the minimap shows, the box with the hero&#x27;s badge and passive (Far Sight) is taller than what is in it and its frame runs behind the floor&#x27;s panel (time, lives, shards). Every floor; small. The merge fixed the people&#x27;s marks over the HUD and the map&#x27;s names (pictures: after the merge). The fix would be in the Climb&#x27;s HUD (src/tower/world/hud.ts): fit the box to its content, or step the floor panel down by the box&#x27;s height while the minimap shows.</li>
+</ul>
+<h2>Fixed</h2><ul>
+<li><a href="#f01">Floor 1</a>: <b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</li>
+<li><a href="#f02">Floor 2</a>: <b>Names on the M map lay over each other (every floor).</b> Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door&#x27;s up, a place&#x27;s down). Only the map&#x27;s drawing changed (src/tower/world/map.ts). The floors 31-50 review fixed the same thing for all chapters at the same time (its version also keeps a name inside the map&#x27;s edge); on merging, that version was kept. The pictures are from my version.</li>
+<li><a href="#f04">Floor 4</a>: <b>“The salt pans is overrun”.</b> The keeper&#x27;s greeting is made from the main place&#x27;s name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea&#x27;s maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.</li>
+<li><a href="#f12">Floor 12</a>: <b>“The Lost Spade” asked for a bundle.</b> The Wood&#x27;s maker names the camp giver&#x27;s second quest “The Lost Spade”, “The Lost Lantern” or “The Lost Bundle”, but its words always spoke of a bundle. Now the thing dropped, carried and named on the HUD is the one in the quest&#x27;s name (src/tower/world/gen/wood.ts; floors 12 to 20 re-baked: only those words changed, on seven floors; it is still drawn as a bundle in the hand).</li>
+<li><a href="#f13">Floor 13</a>: <b>The keeper called the Thorn Mother “it”.</b> “... cut the roots that feed it, and its door opens”, for the Thorn Mother, the Moss Warden, the Antler King, the Briar Witch, and “Ash and Ember waits” on the crown. The Wood&#x27;s maker now gives each its word: her, him, them (a tree, a root or a bog stays “it”). src/tower/world/gen/wood.ts; floors 12-20 re-baked, only those lines changed (five floors).</li>
+<li><a href="#f20">Floor 20</a>: <b>“Once Ash and Ember has fallen”.</b> The gate&#x27;s lock spoke of the twin crown in the singular. The Wood&#x27;s maker now says “have” for them (with floor 13&#x27;s fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed.</li>
+<li><a href="#f23">Floor 23</a>: <b>The lair said “a quest about a seal” for a key.</b> The Sands&#x27; maker picks the main quest&#x27;s item from the brass seal, the sun key and the scarab seal, but the lair&#x27;s lock always said “The Star-Reader has a quest about a seal.” Here the item is the sun key. Now the lock names the floor&#x27;s own item (“... a quest about the sun key”). gen/sands.ts; floors 22 to 30 re-baked, only that line changed on each.</li>
+<li><a href="#f28">Floor 28</a>: <b>“The red tents is full of raiders”.</b> As on the Sea&#x27;s floor 4: the keeper&#x27;s greeting put “is” after a plural place. The Sands&#x27; maker now says “are” for a name ending in s (gen/sands.ts; floors 22 to 30 re-baked, only floor 28&#x27;s line changed).</li>
+</ul>
+<h2>Floors</h2><div class="toc">
+<a class="f l" href="#f01">1</a>
+<a class="f" href="#f02">2</a>
+<a class="" href="#f03">3</a>
+<a class="f" href="#f04">4</a>
+<a class="" href="#f05">5</a>
+<a class="l" href="#f06">6</a>
+<a class="l" href="#f07">7</a>
+<a class="" href="#f08">8</a>
+<a class="" href="#f09">9</a>
+<a class="" href="#f10">10</a>
+<a class="" href="#f11">11</a>
+<a class="f" href="#f12">12</a>
+<a class="f" href="#f13">13</a>
+<a class="" href="#f14">14</a>
+<a class="" href="#f15">15</a>
+<a class="" href="#f16">16</a>
+<a class="" href="#f17">17</a>
+<a class="" href="#f18">18</a>
+<a class="" href="#f19">19</a>
+<a class="f" href="#f20">20</a>
+<a class="" href="#f21">21</a>
+<a class="l" href="#f22">22</a>
+<a class="f" href="#f23">23</a>
+<a class="" href="#f24">24</a>
+<a class="" href="#f25">25</a>
+<a class="" href="#f26">26</a>
+<a class="" href="#f27">27</a>
+<a class="f" href="#f28">28</a>
+<a class="" href="#f29">29</a>
+<a class="l" href="#f30">30</a>
+</div>
+<h2>I. The Sea</h2>
+<section class="floor" id="f01"><h3>Floor 1: The Drowned Harbour</h3><p>Plays from the camp to the gate with no error and no stuck spot; every person, pack, door and the ruler work, the ruler in its own model. One slip in the words fixed (the market had two names); the ruler&#x27;s name left for you.</p>
+<p><span class="tag fixed">fixed</span><b>The market had two names.</b> The map, the keeper and the place said “the fish market”, but the main quest&#x27;s step said “Clear the oyster market” and its waystone was “The oyster market stone”; the step “Light the lighthouse and the signal fire” named a place the map calls “The beacon”. Cause: the floor&#x27;s maker (src/tower/world/gen/harbour.ts) renamed the places but not the words that name them. Now the steps and the stone follow the new names (only these three strings changed in the baked floor).</p>
+<div class="pics">
+<figure><a href="f01/fix-words-before.jpg"><img loading="lazy" src="f01/fix-words-before.jpg" alt="Before: the keeper&#x27;s quest card (phone)"></a><figcaption>Before: the keeper&#x27;s quest card (phone)</figcaption></figure>
+<figure><a href="f01/fix-words-after.jpg"><img loading="lazy" src="f01/fix-words-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag list">list</span><b>The ruler&#x27;s name: Captain or Admiral?</b> The floor calls its ruler “the Drowned Captain” (keeper&#x27;s line, the lair, the quest, the boss card); the Codex (climb/rulers.md, climb/sea.md) says the Drowned Admiral rules floors 1 and 2, and floor 2 calls him the Drowned Admiral. Its model is the Admiral&#x27;s. Renaming floor 1&#x27;s to “the Drowned Admiral” is five strings in gen/harbour.ts and a re-bake; say if you want it.</p>
+<div class="pics">
+<figure><a href="f01/ruler.jpg"><img loading="lazy" src="f01/ruler.jpg" alt="Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”"></a><figcaption>Floor 1&#x27;s ruler: the Admiral&#x27;s model under the name “The Drowned Captain”</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>On the map, “The gate up” sat on “The camp”.</b> Fixed for every floor on floor 2 (names on the M map step aside); this phone picture is from before.</p>
+<div class="pics">
+<figure class="ph"><a href="f01/phone-map.jpg"><img loading="lazy" src="f01/phone-map.jpg" alt="The M map on a phone"></a><figcaption>The M map on a phone</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> 14 “float” are pines on the hills past the edge (the probe measures them against the play ground, not the hill under them) and boats on the sea; 56 “gap” are pines on the cliff top whose root side hangs over the cliff. Each looked at from low: they stand on their ground.</p>
+<div class="pics">
+<figure><a href="f01/probe-float-1.jpg"><img loading="lazy" src="f01/probe-float-1.jpg" alt="“Float”: pines and oaks past the edge, on their hill"></a><figcaption>“Float”: pines and oaks past the edge, on their hill</figcaption></figure>
+<figure><a href="f01/probe-gap-4.jpg"><img loading="lazy" src="f01/probe-gap-4.jpg" alt="“Gap”: a pine on the cliff top"></a><figcaption>“Gap”: a pine on the cliff top</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The trader (checked here for every chapter).</b> The trader&#x27;s card and its four buys were run on floors 1, 11 and 21: a life back (80 shards), a hint (15: a pillar of light over a cache) and a boon (55: the pick of three) each took their price; a heal is greyed out at full health, as meant. On their routes the bot bought heals, lives and boons from the traders of many floors (floor 1: “heal, boon”, “heal, life”).</p>
+<div class="pics">
+<figure><a href="f01/trader-boon.jpg"><img loading="lazy" src="f01/trader-boon.jpg" alt="Floor 1: the trader&#x27;s boon, the pick of three"></a><figcaption>Floor 1: the trader&#x27;s boon, the pick of three</figcaption></figure>
+</div>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34968 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 14 float, 56 gap, 0 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1604 game s, every checkpoint reached; 23 kills, 2 falls, stars 1101; ruler tries 1, gate tries 3; page errors 0</li><li>Ruler: The Drowned Captain (Anchor, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes (its picture taken 2419 ms of real time into the fight)</li><li>Frame check at the busiest spot (-71, -67), 5 units awake: median 11.4, 10.8, 10.4 ms, p95 18, 17.6, 14.7 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online (alone a cleared pack does not come back: as designed, pipeline/designs/climb-open-world.md)</p>
+</details>
+<div class="pics">
+<figure><a href="f01/start.jpg"><img loading="lazy" src="f01/start.jpg" alt="The floor as it opens (the minimap comes a moment later, once the zone has drawn)"></a><figcaption>The floor as it opens (the minimap comes a moment later, once the zone has drawn)</figcaption></figure>
+<figure><a href="f01/map.jpg"><img loading="lazy" src="f01/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f01/person-gus.jpg"><img loading="lazy" src="f01/person-gus.jpg" alt="The Bell-Warden&#x27;s card"></a><figcaption>The Bell-Warden&#x27;s card</figcaption></figure>
+<figure><a href="f01/person-villager.jpg"><img loading="lazy" src="f01/person-villager.jpg" alt="The Lamp-Bearer out in the old village"></a><figcaption>The Lamp-Bearer out in the old village</figcaption></figure>
+<figure><a href="f01/route-pack-caves.jpg"><img loading="lazy" src="f01/route-pack-caves.jpg" alt="The route bot fighting the caves&#x27; pack"></a><figcaption>The route bot fighting the caves&#x27; pack</figcaption></figure>
+<figure><a href="f01/pack-market.jpg"><img loading="lazy" src="f01/pack-market.jpg" alt="The fish market&#x27;s pack at home"></a><figcaption>The fish market&#x27;s pack at home</figcaption></figure>
+<figure><a href="f01/route-gate-5.jpg"><img loading="lazy" src="f01/route-gate-5.jpg" alt="The gate: Marin"></a><figcaption>The gate: Marin</figcaption></figure>
+<figure><a href="f01/door-lair.jpg"><img loading="lazy" src="f01/door-lair.jpg" alt="The lair&#x27;s chain, shut"></a><figcaption>The lair&#x27;s chain, shut</figcaption></figure>
+<figure><a href="f01/overview.jpg"><img loading="lazy" src="f01/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f01/phone-camp.jpg"><img loading="lazy" src="f01/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
+<figure class="ph"><a href="f01/phone-fight.jpg"><img loading="lazy" src="f01/phone-fight.jpg" alt="Phone: a fight"></a><figcaption>Phone: a fight</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f02"><h3>Floor 2: The Salt Docks</h3><p>Clean: the route bot cleared it with all four stars and no fall, the rival (Hank), the trial, the ruler (the Drowned Admiral, own model) and the gate (Vesper) all played; no console error. The M map&#x27;s names stood on each other: fixed for every floor.</p>
+<p><span class="tag fixed">fixed</span><b>Names on the M map lay over each other (every floor).</b> Two places or a door close together wrote their names in the same spot: “The signal fire” ran into “The drowned chapel”, “The gate up” sat on “The camp” (on every floor: the gate is beside the camp). Now a name that would cover one already written steps one line away (a door&#x27;s up, a place&#x27;s down). Only the map&#x27;s drawing changed (src/tower/world/map.ts). The floors 31-50 review fixed the same thing for all chapters at the same time (its version also keeps a name inside the map&#x27;s edge); on merging, that version was kept. The pictures are from my version.</p>
+<div class="pics">
+<figure><a href="f02/fix-map-before-crop.jpg"><img loading="lazy" src="f02/fix-map-before-crop.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure><a href="f02/fix-map-after-crop.jpg"><img loading="lazy" src="f02/fix-map-after-crop.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> “Float”: pines on the hills past the edge, boats on the sea, and the slats of a jetty 9 cm over the sand; “gap”: houses on the hillside (they stand on their stone plinths, as set right in the props pass) and pines on the cliff top; one stone 22 cm under the sand. Looked at from low: nothing in the air.</p>
+<div class="pics">
+<figure><a href="f02/probe-house.jpg"><img loading="lazy" src="f02/probe-house.jpg" alt="A house on the slope the probe flagged: on its plinth"></a><figcaption>A house on the slope the probe flagged: on its plinth</figcaption></figure>
+</div>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34918 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 25 float, 54 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1729 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Drowned Admiral (Fleet, cannon and tide), model models/tower/sea_admiral_v4.glb, loaded yes (its picture taken 5095 ms of real time into the fight)</li><li>Frame check at the busiest spot (14, -54), 5 units awake: median 10.7, 11.3, 11 ms, p95 17.5, 17.2, 14.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f02/camp.jpg"><img loading="lazy" src="f02/camp.jpg" alt="The camp"></a><figcaption>The camp</figcaption></figure>
+<figure><a href="f02/person-keeper.jpg"><img loading="lazy" src="f02/person-keeper.jpg" alt="The Bell-Warden&#x27;s card"></a><figcaption>The Bell-Warden&#x27;s card</figcaption></figure>
+<figure><a href="f02/person-rival.jpg"><img loading="lazy" src="f02/person-rival.jpg" alt="Hank, the rival, before his arch"></a><figcaption>Hank, the rival, before his arch</figcaption></figure>
+<figure><a href="f02/route-rival-1.jpg"><img loading="lazy" src="f02/route-rival-1.jpg" alt="The duel with Hank"></a><figcaption>The duel with Hank</figcaption></figure>
+<figure><a href="f02/pack-d.jpg"><img loading="lazy" src="f02/pack-d.jpg" alt="The broken galley&#x27;s pack and the Mate"></a><figcaption>The broken galley&#x27;s pack and the Mate</figcaption></figure>
+<figure><a href="f02/ruler.jpg"><img loading="lazy" src="f02/ruler.jpg" alt="The Drowned Admiral&#x27;s fight"></a><figcaption>The Drowned Admiral&#x27;s fight</figcaption></figure>
+<figure><a href="f02/overview.jpg"><img loading="lazy" src="f02/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f02/phone-person-keeper.jpg"><img loading="lazy" src="f02/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+<figure class="ph"><a href="f02/phone-map.jpg"><img loading="lazy" src="f02/phone-map.jpg" alt="Phone: the map (names apart)"></a><figcaption>Phone: the map (names apart)</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f03"><h3>Floor 3: Gull Point</h3><p>Clean: cleared with four stars and no fall; the rival (Nyx), the trial (a horde), the ruler (the Salt King, in the Admiral&#x27;s model tinted) and the gate (Tempo) all played; no console error, every spot reachable, the texts match the Codex (the Salt King rules floor 3).</p>
+<p><span class="tag ok">ok</span><b>A boss that stands between the camera and the hero fades.</b> In the first pictures the Salt King looked see-through. That is the duel&#x27;s own rule (duel.ts: a boss that hides the hero fades to a tenth), not a fault: with the hero on its other side it stands in full.</p>
+<div class="pics">
+<figure><a href="f03/ruler-close.jpg"><img loading="lazy" src="f03/ruler-close.jpg" alt="The Salt King, the hero below him"></a><figcaption>The Salt King, the hero below him</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> As on floors 1 and 2: pines on the hills and the cliff top, boats on the sea, a stone just under the sand; two pines whose trunks touch the edge of a cliff-top rock. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34953 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 16 float, 80 gap, 1 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1480 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Salt King (Crowned in brine), model models/tower/sea_admiral_v4.glb, loaded yes (its picture taken 4447 ms of real time into the fight)</li><li>Frame check at the busiest spot (-76, 39), 6 units awake: median 11.8, 9.4, 9.6 ms, p95 18, 11.8, 12.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f03/map.jpg"><img loading="lazy" src="f03/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f03/person-keeper.jpg"><img loading="lazy" src="f03/person-keeper.jpg" alt="The Bell-Warden"></a><figcaption>The Bell-Warden</figcaption></figure>
+<figure><a href="f03/person-villager.jpg"><img loading="lazy" src="f03/person-villager.jpg" alt="The Lamp-Bearer in the fishers&#x27; row"></a><figcaption>The Lamp-Bearer in the fishers&#x27; row</figcaption></figure>
+<figure><a href="f03/pack-d.jpg"><img loading="lazy" src="f03/pack-d.jpg" alt="The shipyard&#x27;s pack"></a><figcaption>The shipyard&#x27;s pack</figcaption></figure>
+<figure><a href="f03/busy.jpg"><img loading="lazy" src="f03/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
+<figure><a href="f03/overview.jpg"><img loading="lazy" src="f03/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f03/phone-person-keeper.jpg"><img loading="lazy" src="f03/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f04"><h3>Floor 4: The Sunken Mile</h3><p>Clean but for one line of the keeper&#x27;s: cleared with four stars and no fall; the rival (Auriel), the trial, the ruler (Mother of Wrecks, in the Gull Queen&#x27;s model) and the gate (Ada) all played; no console error, every spot reachable.</p>
+<p><span class="tag fixed">fixed</span><b>“The salt pans is overrun”.</b> The keeper&#x27;s greeting is made from the main place&#x27;s name with “is overrun”; a plural place read wrong (here, and “The drying racks is overrun” on floor 5). The sea&#x27;s maker (src/tower/world/gen/sea.ts) now says “are” for a name ending in s; floors 2 to 10 re-baked, and only these two lines changed.</p>
+<div class="pics">
+<figure class="ph"><a href="f04/phone-fix-overrun-before.jpg"><img loading="lazy" src="f04/phone-fix-overrun-before.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure class="ph"><a href="f04/phone-fix-overrun-after.jpg"><img loading="lazy" src="f04/phone-fix-overrun-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, three shells 10 cm over the sand, the gold edge of the lair&#x27;s wall where it runs into the hill (seen and left in the props pass). Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 35004 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 18 float, 58 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1613 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: Mother of Wrecks (She keeps what sinks), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 5111 ms of real time into the fight)</li><li>Frame check at the busiest spot (20, -54), 6 units awake: median 13.3, 14.1, 11.2 ms, p95 24.8, 21.7, 16.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f04/ruler-close.jpg"><img loading="lazy" src="f04/ruler-close.jpg" alt="Mother of Wrecks"></a><figcaption>Mother of Wrecks</figcaption></figure>
+<figure><a href="f04/person-rival.jpg"><img loading="lazy" src="f04/person-rival.jpg" alt="Auriel, the rival"></a><figcaption>Auriel, the rival</figcaption></figure>
+<figure><a href="f04/pack-b.jpg"><img loading="lazy" src="f04/pack-b.jpg" alt="The sea caves&#x27; pack"></a><figcaption>The sea caves&#x27; pack</figcaption></figure>
+<figure><a href="f04/person-villager.jpg"><img loading="lazy" src="f04/person-villager.jpg" alt="The Lamp-Bearer in the fishers&#x27; row"></a><figcaption>The Lamp-Bearer in the fishers&#x27; row</figcaption></figure>
+<figure><a href="f04/overview.jpg"><img loading="lazy" src="f04/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f04/phone-fight.jpg"><img loading="lazy" src="f04/phone-fight.jpg" alt="Phone: a fight"></a><figcaption>Phone: a fight</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f05"><h3>Floor 5: Wreckers’ Cove</h3><p>Clean: cleared with four stars and no fall; the rival (Sefu), the trial (The Salt Cellar), the ruler (the Tide Judge, own model) and the gate (Bram) all played; no console error, every spot reachable. The keeper&#x27;s “drying racks are overrun” is the line fixed on floor 4.</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths on the hillside. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34930 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 19 float, 68 gap, 0 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1763 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Tide Judge (Every tide a sentence), model models/tower/sea_judge_v4.glb, loaded yes (its picture taken 3689 ms of real time into the fight)</li><li>Frame check at the busiest spot (-64, 36), 6 units awake: median 3.2, 3.5, 4.3 ms, p95 4.8, 4.5, 6.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f05/ruler-close.jpg"><img loading="lazy" src="f05/ruler-close.jpg" alt="The Tide Judge"></a><figcaption>The Tide Judge</figcaption></figure>
+<figure><a href="f05/person-rival.jpg"><img loading="lazy" src="f05/person-rival.jpg" alt="Sefu, the rival"></a><figcaption>Sefu, the rival</figcaption></figure>
+<figure><a href="f05/route-trial-1.jpg"><img loading="lazy" src="f05/route-trial-1.jpg" alt="The trial: the Salt Cellar"></a><figcaption>The trial: the Salt Cellar</figcaption></figure>
+<figure><a href="f05/map.jpg"><img loading="lazy" src="f05/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f05/overview.jpg"><img loading="lazy" src="f05/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f05/phone-camp.jpg"><img loading="lazy" src="f05/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f06"><h3>Floor 6: The Lantern Coast</h3><p>Plays clean: cleared, no console error, every spot reachable; the rival (Wick), the trial, the ruler (the Pearl Tyrant) and the gate (Mum) all played. The bot needed four tries at Mum&#x27;s gate (balance, not a fault). One lore mismatch for you.</p>
+<p><span class="tag list">list</span><b>The Pearl Tyrant is a man in the Codex, a crowned woman on the floor.</b> The Codex (climb/rulers.md): “A pearl merchant ... He drowned holding the strongbox.” Floor 6 draws him with the Gull Queen&#x27;s model (sea_queen, pieces/rulerModels.ts RULER_OF[6]), a crowned woman in a gown. Either the Codex says “she”, or floor 6 takes the Admiral&#x27;s or the Judge&#x27;s model (one number in RULER_OF; the three Sea models would then not be three floors each).</p>
+<div class="pics">
+<figure><a href="f06/ruler-close.jpg"><img loading="lazy" src="f06/ruler-close.jpg" alt="The Pearl Tyrant as drawn"></a><figcaption>The Pearl Tyrant as drawn</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths, the lair wall&#x27;s gold edge into the hill, two stones and a tuft just under the ground. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34872 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 12 float, 56 gap, 2 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1964 game s, every checkpoint reached; 23 kills, 3 falls, stars 1100; ruler tries 1, gate tries 4; page errors 0</li><li>Ruler: The Pearl Tyrant (Hoarder of the shallows), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 5659 ms of real time into the fight)</li><li>Frame check at the busiest spot (15, -74), 5 units awake: median 13.9, 12.1, 13.8 ms, p95 24.4, 20.8, 23 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f06/person-rival.jpg"><img loading="lazy" src="f06/person-rival.jpg" alt="Wick, the rival"></a><figcaption>Wick, the rival</figcaption></figure>
+<figure><a href="f06/pack-b.jpg"><img loading="lazy" src="f06/pack-b.jpg" alt="The caves&#x27; pack"></a><figcaption>The caves&#x27; pack</figcaption></figure>
+<figure><a href="f06/map.jpg"><img loading="lazy" src="f06/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f06/overview.jpg"><img loading="lazy" src="f06/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f06/phone-person-keeper.jpg"><img loading="lazy" src="f06/phone-person-keeper.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f07"><h3>Floor 7: Kelp Hollow</h3><p>Plays clean: cleared, no console error, every spot reachable; the rival (Silvane), the trial (a horde), the ruler (the Bell Below; the bot lost the first try and won the second, as a person may) and the gate (Kaia) all played.</p>
+<p><span class="tag list">list</span><b>Rulers the Codex calls beasts or things are drawn as people.</b> The ruler models are robed giants (their line-ups were accepted on 2026-11-15, STATUS “Decided”), but the Codex (climb/rulers.md) describes many of them otherwise: the Bell Below “the harbour&#x27;s old bell” (floor 7, in the Tide Judge&#x27;s figure), the Lantern Leviathan “a great fish” (8), the Lantern Root, a root with an amber lantern (17), the Grey Oak, a dead oak (18), the Mire Heart, a bog (19), and in the Sands the Scarab Colossus “a beetle the size of a house” (21), the Scarab King, its son (22), the Dune Colossus “a giant of sand and stone” (23), the Brass Sphinx “a lion of brass with a woman&#x27;s face” (24), the Glass Serpent (25). Since the figures are accepted, the likely fix is the Codex&#x27;s words (these as the realm&#x27;s people who carry those names, or the Tower&#x27;s echo of them in a giant&#x27;s shape); else new models (Blender, one at a time). Yours to say.</p>
+<div class="pics">
+<figure><a href="f07/ruler-close.jpg"><img loading="lazy" src="f07/ruler-close.jpg" alt="The Bell Below as drawn"></a><figcaption>The Bell Below as drawn</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths, three shells just under the sand. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34888 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 17 float, 81 gap, 3 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1841 game s, every checkpoint reached; 23 kills, 1 falls, stars 1101; ruler tries 2, gate tries 1; page errors 0</li><li>Ruler: The Bell Below (It rings the sea in), model models/tower/sea_judge_v4.glb, loaded yes (its picture taken 4851 ms of real time into the fight)</li><li>Frame check at the busiest spot (-65, 29), 6 units awake: median 12.9, 11.6, 11.1 ms, p95 23.1, 21.4, 15.6 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f07/person-rival.jpg"><img loading="lazy" src="f07/person-rival.jpg" alt="Silvane, the rival"></a><figcaption>Silvane, the rival</figcaption></figure>
+<figure><a href="f07/pack-d.jpg"><img loading="lazy" src="f07/pack-d.jpg" alt="The boat sheds&#x27; pack"></a><figcaption>The boat sheds&#x27; pack</figcaption></figure>
+<figure><a href="f07/person-villager.jpg"><img loading="lazy" src="f07/person-villager.jpg" alt="The Lamp-Bearer in the old village"></a><figcaption>The Lamp-Bearer in the old village</figcaption></figure>
+<figure><a href="f07/map.jpg"><img loading="lazy" src="f07/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f07/overview.jpg"><img loading="lazy" src="f07/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f08"><h3>Floor 8: The Anchorage</h3><p>Plays clean: cleared, no console error, every spot reachable; the rival (Gus), the trial, the ruler (the Lantern Leviathan; the bot&#x27;s first try lost, the second won) and the gate (Mabel) all played. The Leviathan, “a great fish” in the Codex, is drawn with the Tide Judge&#x27;s figure: see floor 7&#x27;s item.</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths, two stones under the ground. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34910 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 17 float, 67 gap, 2 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1819 game s, every checkpoint reached; 24 kills, 1 falls, stars 1101; ruler tries 2, gate tries 1; page errors 0</li><li>Ruler: The Lantern Leviathan (A light that eats ships), model models/tower/sea_judge_v4.glb, loaded yes (its picture taken 3093 ms of real time into the fight)</li><li>Frame check at the busiest spot (40, -79), 5 units awake: median 4.2, 3.9, 3.5 ms, p95 8.7, 9, 8.2 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f08/ruler-close.jpg"><img loading="lazy" src="f08/ruler-close.jpg" alt="The Lantern Leviathan, in the Judge&#x27;s figure"></a><figcaption>The Lantern Leviathan, in the Judge&#x27;s figure</figcaption></figure>
+<figure><a href="f08/person-rival.jpg"><img loading="lazy" src="f08/person-rival.jpg" alt="Gus, the rival"></a><figcaption>Gus, the rival</figcaption></figure>
+<figure><a href="f08/pack-a.jpg"><img loading="lazy" src="f08/pack-a.jpg" alt="The oyster market&#x27;s pack"></a><figcaption>The oyster market&#x27;s pack</figcaption></figure>
+<figure><a href="f08/overview.jpg"><img loading="lazy" src="f08/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f09"><h3>Floor 9: The Brine Steps</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable; the rival (Fenna), the trial, the ruler (the Gull Queen, in her own model) and the gate (Zephyr) all played.</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths, a tuft under the ground. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34888 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 14 float, 67 gap, 1 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1716 game s, every checkpoint reached; 19 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Gull Queen (Wings and anchors), model models/tower/sea_queen_v4.glb, loaded yes (its picture taken 3461 ms of real time into the fight)</li><li>Frame check at the busiest spot (-72, 34), 6 units awake: median 4.8, 3.9, 3.8 ms, p95 8.3, 6.5, 5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f09/ruler-close.jpg"><img loading="lazy" src="f09/ruler-close.jpg" alt="The Gull Queen"></a><figcaption>The Gull Queen</figcaption></figure>
+<figure><a href="f09/person-villager.jpg"><img loading="lazy" src="f09/person-villager.jpg" alt="The Lamp-Bearer in the lane of nets"></a><figcaption>The Lamp-Bearer in the lane of nets</figcaption></figure>
+<figure><a href="f09/pack-d.jpg"><img loading="lazy" src="f09/pack-d.jpg" alt="The wreck&#x27;s pack"></a><figcaption>The wreck&#x27;s pack</figcaption></figure>
+<figure><a href="f09/overview.jpg"><img loading="lazy" src="f09/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f10"><h3>Floor 10: The Crown of the Sea</h3><p>Clean: the Sea&#x27;s crown. Cleared with four stars and no fall, no console error, every spot reachable; the Sun Warden (the Raid&#x27;s boss, its own model, alone in the Sun Court) fought and fell to the bot on the first try; the rival (Isolde), the trial and the gate (Shiori) all played.</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> Pines on the hills and the cliff top, boats on the sea, houses on their plinths. Nothing in the air.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34825 m²; 51 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 16 float, 67 gap, 0 buried, 0 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 1</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1776 game s, every checkpoint reached; 23 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Sun Warden (Keeper of the Sun Court), model models/bosses/warden.glb, loaded yes (its picture taken 4123 ms of real time into the fight)</li><li>Frame check at the busiest spot (38, -63), 5 units awake: median 5.7, 5.4, 5.7 ms, p95 8.8, 7.6, 10.1 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f10/ruler.jpg"><img loading="lazy" src="f10/ruler.jpg" alt="The Sun Court: the Sun Warden&#x27;s fight as it opens"></a><figcaption>The Sun Court: the Sun Warden&#x27;s fight as it opens</figcaption></figure>
+<figure><a href="f10/ruler-close.jpg"><img loading="lazy" src="f10/ruler-close.jpg" alt="The Sun Warden"></a><figcaption>The Sun Warden</figcaption></figure>
+<figure><a href="f10/person-rival.jpg"><img loading="lazy" src="f10/person-rival.jpg" alt="Isolde, the rival"></a><figcaption>Isolde, the rival</figcaption></figure>
+<figure><a href="f10/map.jpg"><img loading="lazy" src="f10/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f10/overview.jpg"><img loading="lazy" src="f10/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<h2>II. The Wood</h2>
+<section class="floor" id="f11"><h3>Floor 11: The Walking Wood</h3><p>Clean: the Wood&#x27;s handmade floor. Cleared with four stars and no fall, no console error; every spot reachable in both states of the walking paths; the wisps, the roots, the rival (Nyx), the trial, the Elder Root (own model) and the gate (Fenna) all played; the people and their lines match the Codex (the Moss-Abbess&#x27;s horn, the Path-Lighter&#x27;s spore lamps).</p>
+<p><span class="tag ok">ok</span><b>Two packs the bot never woke.</b> The bramble&#x27;s thorn sprites and the giants&#x27; glade sleep through the bot&#x27;s route: nothing it is asked to do takes it near them (they spawn and fight as anyone walks in: pictures below).</p>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> The Wood&#x27;s trees are its cover, so the probe&#x27;s thousands of “in cover” are the trees themselves; the “float” are white spore motes drifting in the air (meant), and pines on the hills past the edge; a few leaves lie a hair under the ground.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31761 m², 31761 m²; 48 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 58 float, 72 gap, 12 buried, 3170 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1031 game s, every checkpoint reached; 10 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Elder Root (The heart of the wood), model models/tower/wood_elder_v4.glb, loaded yes (its picture taken 4725 ms of real time into the fight)</li><li>Frame check at the busiest spot (-77, 23), 4 units awake: median 6.6, 5.7, 6.5 ms, p95 9.7, 8.4, 8.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f11/start.jpg"><img loading="lazy" src="f11/start.jpg" alt="The camp as it opens"></a><figcaption>The camp as it opens</figcaption></figure>
+<figure><a href="f11/person-bo.jpg"><img loading="lazy" src="f11/person-bo.jpg" alt="The Moss-Abbess"></a><figcaption>The Moss-Abbess</figcaption></figure>
+<figure><a href="f11/pack-bramble.jpg"><img loading="lazy" src="f11/pack-bramble.jpg" alt="The bramble&#x27;s thorn sprites"></a><figcaption>The bramble&#x27;s thorn sprites</figcaption></figure>
+<figure><a href="f11/pack-giants.jpg"><img loading="lazy" src="f11/pack-giants.jpg" alt="The giants&#x27; glade and the Stag-Crowned"></a><figcaption>The giants&#x27; glade and the Stag-Crowned</figcaption></figure>
+<figure><a href="f11/ruler-close.jpg"><img loading="lazy" src="f11/ruler-close.jpg" alt="The Elder Root"></a><figcaption>The Elder Root</figcaption></figure>
+<figure><a href="f11/map.jpg"><img loading="lazy" src="f11/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f11/overview.jpg"><img loading="lazy" src="f11/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f11/phone-person-bo.jpg"><img loading="lazy" src="f11/phone-person-bo.jpg" alt="Phone: the keeper&#x27;s card"></a><figcaption>Phone: the keeper&#x27;s card</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f12"><h3>Floor 12: The Mossway</h3><p>Plays clean: cleared, no console error, every spot reachable in both states of the paths; the wisps, the roots, the rival (Vesper), the trial, the ruler (the Moss Warden, in the Elder&#x27;s model) and the gate (Nyx; second try) all played. One quest&#x27;s words fixed.</p>
+<p><span class="tag fixed">fixed</span><b>“The Lost Spade” asked for a bundle.</b> The Wood&#x27;s maker names the camp giver&#x27;s second quest “The Lost Spade”, “The Lost Lantern” or “The Lost Bundle”, but its words always spoke of a bundle. Now the thing dropped, carried and named on the HUD is the one in the quest&#x27;s name (src/tower/world/gen/wood.ts; floors 12 to 20 re-baked: only those words changed, on seven floors; it is still drawn as a bundle in the hand).</p>
+<div class="pics">
+<figure><a href="f12/fix-spade-before.jpg"><img loading="lazy" src="f12/fix-spade-before.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure><a href="f12/fix-spade-after.jpg"><img loading="lazy" src="f12/fix-spade-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The props the probe flagged.</b> As on floor 11: the trees are the cover; spore motes in the air; trees on the hills past the edge. Nothing out of place by eye.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31826 m², 31827 m²; 57 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 57 float, 132 gap, 4 buried, 3174 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1421 game s, every checkpoint reached; 21 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Moss Warden (Green over everything), model models/tower/wood_elder_v4.glb, loaded yes (its picture taken 3436 ms of real time into the fight)</li><li>Frame check at the busiest spot (-59, 5), 5 units awake: median 4.2, 4.6, 4.4 ms, p95 5.5, 5.7, 5.1 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f12/person-villager.jpg"><img loading="lazy" src="f12/person-villager.jpg" alt="The Kiln-Mother at the burners&#x27; clearing"></a><figcaption>The Kiln-Mother at the burners&#x27; clearing</figcaption></figure>
+<figure><a href="f12/pack-d.jpg"><img loading="lazy" src="f12/pack-d.jpg" alt="The old stones and the Stag-Crowned"></a><figcaption>The old stones and the Stag-Crowned</figcaption></figure>
+<figure><a href="f12/ruler-close.jpg"><img loading="lazy" src="f12/ruler-close.jpg" alt="The Moss Warden"></a><figcaption>The Moss Warden</figcaption></figure>
+<figure><a href="f12/map.jpg"><img loading="lazy" src="f12/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f12/overview.jpg"><img loading="lazy" src="f12/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f13"><h3>Floor 13: Hollowmere</h3><p>Clean but for one line: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Mabel), the trial, the Thorn Mother (own model) and the gate (Mortis) all played.</p>
+<p><span class="tag fixed">fixed</span><b>The keeper called the Thorn Mother “it”.</b> “... cut the roots that feed it, and its door opens”, for the Thorn Mother, the Moss Warden, the Antler King, the Briar Witch, and “Ash and Ember waits” on the crown. The Wood&#x27;s maker now gives each its word: her, him, them (a tree, a root or a bog stays “it”). src/tower/world/gen/wood.ts; floors 12-20 re-baked, only those lines changed (five floors).</p>
+<div class="pics">
+<figure><a href="f13/fix-her-before.jpg"><img loading="lazy" src="f13/fix-her-before.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure><a href="f13/fix-her-after.jpg"><img loading="lazy" src="f13/fix-her-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The stag glade&#x27;s pack slept through the bot&#x27;s route (nothing it is asked takes it there); the props probe&#x27;s hits are the Wood&#x27;s trees, its spore motes and the trees on the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31625 m², 31624 m²; 57 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 60 float, 91 gap, 9 buried, 3365 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1438 game s, every checkpoint reached; 21 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Thorn Mother (She grows the walls), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 5393 ms of real time into the fight)</li><li>Frame check at the busiest spot (-6, -38), 4 units awake: median 8.8, 8.6, 8.8 ms, p95 12.4, 15.6, 11.7 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f13/person-rival.jpg"><img loading="lazy" src="f13/person-rival.jpg" alt="Mabel, the rival"></a><figcaption>Mabel, the rival</figcaption></figure>
+<figure><a href="f13/pack-d.jpg"><img loading="lazy" src="f13/pack-d.jpg" alt="The standing stones and the Stag-Crowned"></a><figcaption>The standing stones and the Stag-Crowned</figcaption></figure>
+<figure><a href="f13/ruler-close.jpg"><img loading="lazy" src="f13/ruler-close.jpg" alt="The Thorn Mother"></a><figcaption>The Thorn Mother</figcaption></figure>
+<figure><a href="f13/map.jpg"><img loading="lazy" src="f13/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f13/overview.jpg"><img loading="lazy" src="f13/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f14"><h3>Floor 14: The Thornfold</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Sirix), the trial, the Antler King (own model) and the gate (Isolde) all played. The keeper&#x27;s “feed him, and his door” is floor 13&#x27;s fix.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The thicket&#x27;s pack slept through the bot&#x27;s route; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 32010 m², 32011 m²; 60 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 58 float, 94 gap, 9 buried, 3112 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1449 game s, every checkpoint reached; 20 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Antler King (Crowned in branches), model models/tower/wood_antler_v4.glb, loaded yes (its picture taken 4659 ms of real time into the fight)</li><li>Frame check at the busiest spot (-62, -70), 4 units awake: median 6.5, 8.7, 8.6 ms, p95 10.1, 15, 13.6 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f14/ruler-close.jpg"><img loading="lazy" src="f14/ruler-close.jpg" alt="The Antler King"></a><figcaption>The Antler King</figcaption></figure>
+<figure><a href="f14/person-villager.jpg"><img loading="lazy" src="f14/person-villager.jpg" alt="The Kiln-Mother at the charcoal clearing"></a><figcaption>The Kiln-Mother at the charcoal clearing</figcaption></figure>
+<figure><a href="f14/pack-a.jpg"><img loading="lazy" src="f14/pack-a.jpg" alt="The thorn brake&#x27;s pack"></a><figcaption>The thorn brake&#x27;s pack</figcaption></figure>
+<figure><a href="f14/overview.jpg"><img loading="lazy" src="f14/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f15"><h3>Floor 15: The Antler Glades</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Sefu), the trial (a horde), the Hollow Elder (the Elder&#x27;s model, tinted) and the gate (Silvane) all played.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The standing stones&#x27; pack slept through the bot&#x27;s route; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31487 m², 31488 m²; 57 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 56 float, 69 gap, 5 buried, 3283 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1314 game s, every checkpoint reached; 22 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Hollow Elder (Older than the paths), model models/tower/wood_elder_v4.glb, loaded yes (its picture taken 5216 ms of real time into the fight)</li><li>Frame check at the busiest spot (16, -55), 4 units awake: median 6.4, 8.9, 9.5 ms, p95 11, 12.5, 13 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f15/ruler-close.jpg"><img loading="lazy" src="f15/ruler-close.jpg" alt="The Hollow Elder"></a><figcaption>The Hollow Elder</figcaption></figure>
+<figure><a href="f15/pack-d.jpg"><img loading="lazy" src="f15/pack-d.jpg" alt="The stag glade and the Stag-Crowned"></a><figcaption>The stag glade and the Stag-Crowned</figcaption></figure>
+<figure><a href="f15/map.jpg"><img loading="lazy" src="f15/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f15/overview.jpg"><img loading="lazy" src="f15/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f16"><h3>Floor 16: Lanternroot</h3><p>Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Pip), the trial, the Briar Witch (own model, tinted) and the gate (Hank) all played. The bot needed six tries at Hank&#x27;s gate (the most of any floor so far): a balance note, not a fault.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The hounds&#x27; den slept through the bot&#x27;s route; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31839 m², 31839 m²; 57 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 66 float, 61 gap, 8 buried, 3120 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1509 game s, every checkpoint reached; 21 kills, 5 falls, stars 1101; ruler tries 1, gate tries 6; page errors 0</li><li>Ruler: The Briar Witch (Every thorn a word), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 3760 ms of real time into the fight)</li><li>Frame check at the busiest spot (-25, -63), 5 units awake: median 8, 5.1, 5.7 ms, p95 18.9, 7.5, 15.9 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f16/ruler-close.jpg"><img loading="lazy" src="f16/ruler-close.jpg" alt="The Briar Witch"></a><figcaption>The Briar Witch</figcaption></figure>
+<figure><a href="f16/person-rival.jpg"><img loading="lazy" src="f16/person-rival.jpg" alt="Pip, the rival"></a><figcaption>Pip, the rival</figcaption></figure>
+<figure><a href="f16/route-gate-1.jpg"><img loading="lazy" src="f16/route-gate-1.jpg" alt="The gate: Hank"></a><figcaption>The gate: Hank</figcaption></figure>
+<figure><a href="f16/overview.jpg"><img loading="lazy" src="f16/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f17"><h3>Floor 17: The Whispering Stand</h3><p>Plays clean: cleared, no console error, every spot reachable in both states of the paths; the rival (Lyra), the trial, the Lantern Root (in the Antler King&#x27;s model) and the gate (Bram; second try) all played.</p>
+<p><span class="tag ok">ok</span><b>Meeting yourself as the rival (fixed by the floors 31-50 review).</b> The bot played Lyra, and floor 17&#x27;s rival was Lyra: “Another climber. I am Lyra.” The floors 31-50 review has since made a rival who is the player&#x27;s own hero step aside for the next hero on the roster (merged).</p>
+<div class="pics">
+<figure><a href="f17/person-rival.jpg"><img loading="lazy" src="f17/person-rival.jpg" alt="Lyra meets Lyra"></a><figcaption>Lyra meets Lyra</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>The Lantern Root&#x27;s figure.</b> The Codex&#x27;s Lantern Root is a root with an amber lantern; it is drawn with the Antler King&#x27;s stag-crowned figure (RULER_OF). Listed with the other rulers whose Codex form is not a person (floor 7&#x27;s item).</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31926 m², 31926 m²; 56 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 72 float, 99 gap, 7 buried, 3125 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1539 game s, every checkpoint reached; 25 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Lantern Root (It drinks the light), model models/tower/wood_antler_v4.glb, loaded yes (its picture taken 6948 ms of real time into the fight)</li><li>Frame check at the busiest spot (23, -72), 4 units awake: median 11.6, 10, 9.9 ms, p95 21.9, 15.7, 13.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f17/ruler-close.jpg"><img loading="lazy" src="f17/ruler-close.jpg" alt="The Lantern Root"></a><figcaption>The Lantern Root</figcaption></figure>
+<figure><a href="f17/busy.jpg"><img loading="lazy" src="f17/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
+<figure><a href="f17/overview.jpg"><img loading="lazy" src="f17/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f18"><h3>Floor 18: Greyoak Deep</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Cantor), the trial, the Grey Oak (in the Antler King&#x27;s model: a dead oak in the Codex, see floor 7&#x27;s item) and the gate (Brannoc) all played.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> Every pack fought and cleared; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31882 m², 31881 m²; 59 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 68 float, 133 gap, 4 buried, 3164 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1579 game s, every checkpoint reached; 25 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Grey Oak (Bark like a shield), model models/tower/wood_antler_v4.glb, loaded yes (its picture taken 4448 ms of real time into the fight)</li><li>Frame check at the busiest spot (-94, 42), 4 units awake: median 10.2, 8.9, 8.1 ms, p95 13.8, 11.6, 10.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f18/ruler-close.jpg"><img loading="lazy" src="f18/ruler-close.jpg" alt="The Grey Oak"></a><figcaption>The Grey Oak</figcaption></figure>
+<figure><a href="f18/pack-d.jpg"><img loading="lazy" src="f18/pack-d.jpg" alt="The old stones and the Stag-Crowned"></a><figcaption>The old stones and the Stag-Crowned</figcaption></figure>
+<figure><a href="f18/map.jpg"><img loading="lazy" src="f18/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f18/overview.jpg"><img loading="lazy" src="f18/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f19"><h3>Floor 19: The Briar Gate</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; the rival (Fenna), the trial, the Mire Heart (in the Thorn Mother&#x27;s figure: a bog in the Codex, see floor 7&#x27;s item) and the gate (Kaia) all played.</p>
+<p><span class="tag ok">ok</span><b>The bot stood still 45 s on its way to a cache: not a stuck spot.</b> The trial&#x27;s door (the Hollow Stump) stands in the grass on the straight line from the camp&#x27;s cache to cache c2, so the bot walked into it and the trial began (a door starts its piece when walked into, on every floor); its pause came after, while its goal was stale. Walked again from five spots round the door in both states of the paths, the hero reaches the cache in 13 to 31 s with no stop.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> Every pack fought and cleared; the probe&#x27;s hits are the Wood&#x27;s trees, spore motes and the hills past the edge.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 31736 m², 31735 m²; 56 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 63 float, 85 gap, 6 buried, 3160 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1459 game s, every checkpoint reached; 26 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Mire Heart (It beats under the moss), model models/tower/wood_briar_v4.glb, loaded yes (its picture taken 3766 ms of real time into the fight)</li><li>Frame check at the busiest spot (28, -49), 4 units awake: median 5.5, 4.4, 4.7 ms, p95 7.5, 6.3, 6.2 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f19/door-trial.jpg"><img loading="lazy" src="f19/door-trial.jpg" alt="The trial&#x27;s door in the grass"></a><figcaption>The trial&#x27;s door in the grass</figcaption></figure>
+<figure><a href="f19/map.jpg"><img loading="lazy" src="f19/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f19/ruler-close.jpg"><img loading="lazy" src="f19/ruler-close.jpg" alt="The Mire Heart"></a><figcaption>The Mire Heart</figcaption></figure>
+<figure><a href="f19/overview.jpg"><img loading="lazy" src="f19/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f20"><h3>Floor 20: The Crown of the Wood</h3><p>Clean but for one word: the Wood&#x27;s crown. Cleared with four stars and no fall, no console error, every spot reachable in both states of the paths; Ash and Ember (the Raid&#x27;s twin bosses, their own models, in the Cinder Court) fell on the first try; the rival (Anka), the trial and the gate (Tempo) all played.</p>
+<p><span class="tag fixed">fixed</span><b>“Once Ash and Ember has fallen”.</b> The gate&#x27;s lock spoke of the twin crown in the singular. The Wood&#x27;s maker now says “have” for them (with floor 13&#x27;s fix, the keeper already says “Ash and Ember wait ... feed them, and their door opens”). gen/wood.ts; re-baked, only that line changed.</p>
+<p><span class="tag ok">ok</span><b>The same words on floor 50: fixed by the floors 31-50 review.</b> Floor 50 said “Ash and Ember has fallen”; the War&#x27;s agent fixed it at the same time (merged).</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 32043 m², 32042 m²; 60 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 71 float, 97 gap, 10 buried, 3104 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1321 game s, every checkpoint reached; 25 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: Ash and Ember (Keepers of the Cinder Pit), model models/bosses/ash.glb, loaded yes (its picture taken 5171 ms of real time into the fight)</li><li>Frame check at the busiest spot (-86, 44), 4 units awake: median 9, 8.2, 8.8 ms, p95 12.7, 14.2, 11.2 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f20/ruler.jpg"><img loading="lazy" src="f20/ruler.jpg" alt="The Cinder Court: Ash and Ember as the fight opens"></a><figcaption>The Cinder Court: Ash and Ember as the fight opens</figcaption></figure>
+<figure><a href="f20/ruler-close.jpg"><img loading="lazy" src="f20/ruler-close.jpg" alt="Ash"></a><figcaption>Ash</figcaption></figure>
+<figure><a href="f20/person-rival.jpg"><img loading="lazy" src="f20/person-rival.jpg" alt="Anka, the rival"></a><figcaption>Anka, the rival</figcaption></figure>
+<figure><a href="f20/map.jpg"><img loading="lazy" src="f20/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f20/overview.jpg"><img loading="lazy" src="f20/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<h2>III. The Sands</h2>
+<section class="floor" id="f21"><h3>Floor 21: The Storm Canyon</h3><p>Clean: the Sands&#x27; handmade floor. Cleared with four stars and no fall through the storms, no console error, every spot reachable; the wells, the caravan, the rival (Vesper, as the Codex has it), the trial, the Scarab Colossus (own model) and the gate (Sefu) all played; the people and their lines match the Codex (the Star-Reader, the Storm-Counter).</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The ridge&#x27;s slingers and the fort&#x27;s raiders slept through the bot&#x27;s route (they fight as anyone walks in: picture). The probe: 47 red rocks at the canyon foot sunk a little into the sand (nothing shows), a house at the cliff foot and a crate on the rocks with a gap the eye does not see, two shrubs on the rim.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34305 m²; 59 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 2 float, 3 gap, 47 buried, 3 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 3</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1604 game s, every checkpoint reached; 43 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Scarab Colossus (Under the sand), model models/tower/sands_scarab_v4.glb, loaded yes (its picture taken 3178 ms of real time into the fight)</li><li>Frame check at the busiest spot (-80, -61), 3 units awake: median 6.1, 5.2, 3.7 ms, p95 8.1, 15.7, 6.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f21/start.jpg"><img loading="lazy" src="f21/start.jpg" alt="The camp as it opens"></a><figcaption>The camp as it opens</figcaption></figure>
+<figure><a href="f21/person-pip.jpg"><img loading="lazy" src="f21/person-pip.jpg" alt="The Star-Reader"></a><figcaption>The Star-Reader</figcaption></figure>
+<figure><a href="f21/person-kaia.jpg"><img loading="lazy" src="f21/person-kaia.jpg" alt="The Storm-Counter"></a><figcaption>The Storm-Counter</figcaption></figure>
+<figure><a href="f21/pack-fort.jpg"><img loading="lazy" src="f21/pack-fort.jpg" alt="The old fort and the Raider Chief"></a><figcaption>The old fort and the Raider Chief</figcaption></figure>
+<figure><a href="f21/ruler-close.jpg"><img loading="lazy" src="f21/ruler-close.jpg" alt="The Scarab Colossus"></a><figcaption>The Scarab Colossus</figcaption></figure>
+<figure><a href="f21/map.jpg"><img loading="lazy" src="f21/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f21/overview.jpg"><img loading="lazy" src="f21/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+<figure class="ph"><a href="f21/phone-camp.jpg"><img loading="lazy" src="f21/phone-camp.jpg" alt="Phone: the camp"></a><figcaption>Phone: the camp</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f22"><h3>Floor 22: The Red Wadi</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Bram), the trial, the Scarab King (the Colossus&#x27;s model, tinted) and the gate (Cantor) all played.</p>
+<p><span class="tag list">list</span><b>Named enemies are all “it”.</b> On the made floors the keeper says “Fell it ... while it does” of every named enemy, so the Dune Mother is “her” on floor 21 and “it” here, as are Mother Kelp, Barnacle Bess, the Brine Widow, Grandmother Thorn, the Bark Widow. For beasts and things “it” is right. Giving the women their “her” is a word list in each chapter&#x27;s maker (sea.ts, wood.ts, sands.ts...) and a re-bake; a matter of voice, so yours to say.</p>
+<p><span class="tag ok">ok</span><b>The bot&#x27;s 45 s wait in a storm.</b> Once the bot stood 45 s on its way to a lee during a storm, then went on: the storm&#x27;s own wait (it shelters until the band has passed), not a stuck spot.</p>
+<p><span class="tag ok">ok</span><b>Props.</b> A mesa past the north edge on its own high ground (the probe measures it against the play ground), a pillar on the sand, red rocks a little sunk at the canyon foot.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34300 m²; 59 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 1 float, 1 gap, 18 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 1</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1968 game s, every checkpoint reached; 61 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Scarab King (Crowned in a shell), model models/tower/sands_scarab_v4.glb, loaded yes (its picture taken 2418 ms of real time into the fight)</li><li>Frame check at the busiest spot (52, 20), 6 units awake: median 3.3, 3.7, 3.6 ms, p95 5.8, 5.2, 5.4 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f22/person-keeper.jpg"><img loading="lazy" src="f22/person-keeper.jpg" alt="The Star-Reader"></a><figcaption>The Star-Reader</figcaption></figure>
+<figure><a href="f22/ruler-close.jpg"><img loading="lazy" src="f22/ruler-close.jpg" alt="The Scarab King"></a><figcaption>The Scarab King</figcaption></figure>
+<figure><a href="f22/map.jpg"><img loading="lazy" src="f22/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f22/overview.jpg"><img loading="lazy" src="f22/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f23"><h3>Floor 23: The Glass Flats</h3><p>Plays clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Sirix), the trial, the Dune Colossus (the Scarab&#x27;s model, tinted) and the gate (Silvane) all played. One word on the lair&#x27;s door fixed.</p>
+<p><span class="tag fixed">fixed</span><b>The lair said “a quest about a seal” for a key.</b> The Sands&#x27; maker picks the main quest&#x27;s item from the brass seal, the sun key and the scarab seal, but the lair&#x27;s lock always said “The Star-Reader has a quest about a seal.” Here the item is the sun key. Now the lock names the floor&#x27;s own item (“... a quest about the sun key”). gen/sands.ts; floors 22 to 30 re-baked, only that line changed on each.</p>
+<p><span class="tag ok">ok</span><b>The bot&#x27;s 45 s wait in a storm, and the props.</b> A wait in the lee while the storm passed, as on floor 22. The probe: an arch whose pillar stands among the rim&#x27;s rocks, red rocks a little sunk at the canyon foot.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34093 m²; 52 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 0 float, 3 gap, 23 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1716 game s, every checkpoint reached; 58 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Dune Colossus (A hill that walks), model models/tower/sands_scarab_v4.glb, loaded yes (its picture taken 2717 ms of real time into the fight)</li><li>Frame check at the busiest spot (-55, 21), 6 units awake: median 5.8, 7, 6.7 ms, p95 7.6, 9.2, 9.9 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f23/person-villager.jpg"><img loading="lazy" src="f23/person-villager.jpg" alt="The Beacon-Keeper at the travellers&#x27; court"></a><figcaption>The Beacon-Keeper at the travellers&#x27; court</figcaption></figure>
+<figure><a href="f23/pack-d.jpg"><img loading="lazy" src="f23/pack-d.jpg" alt="The fallen obelisk&#x27;s pack"></a><figcaption>The fallen obelisk&#x27;s pack</figcaption></figure>
+<figure><a href="f23/ruler-close.jpg"><img loading="lazy" src="f23/ruler-close.jpg" alt="The Dune Colossus"></a><figcaption>The Dune Colossus</figcaption></figure>
+<figure><a href="f23/map.jpg"><img loading="lazy" src="f23/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f23/overview.jpg"><img loading="lazy" src="f23/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f24"><h3>Floor 24: Caravan Rest</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Anka), the trial, the Brass Sphinx (own model) and the gate (Lyra) all played.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The mud fort&#x27;s pack slept through the bot&#x27;s route; the probe: the lair wall&#x27;s gold edge where it runs into the dune, crates on the rim&#x27;s slope, red rocks a little sunk at the canyon foot.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34194 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 2 float, 6 gap, 32 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 1</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1761 game s, every checkpoint reached; 56 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Brass Sphinx (Riddles and claws), model models/tower/sands_sphinx_v4.glb, loaded yes (its picture taken 3864 ms of real time into the fight)</li><li>Frame check at the busiest spot (46, 26), 6 units awake: median 12.8, 11.9, 12 ms, p95 20.7, 19.3, 19.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f24/ruler-close.jpg"><img loading="lazy" src="f24/ruler-close.jpg" alt="The Brass Sphinx"></a><figcaption>The Brass Sphinx</figcaption></figure>
+<figure><a href="f24/person-rival.jpg"><img loading="lazy" src="f24/person-rival.jpg" alt="Anka, the rival"></a><figcaption>Anka, the rival</figcaption></figure>
+<figure><a href="f24/busy.jpg"><img loading="lazy" src="f24/busy.jpg" alt="The busiest spot (the frame check)"></a><figcaption>The busiest spot (the frame check)</figcaption></figure>
+<figure><a href="f24/overview.jpg"><img loading="lazy" src="f24/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f25"><h3>Floor 25: The Singing Dunes</h3><p>Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Sefu), the trial, the Glass Serpent (in the Red Jackal&#x27;s figure: a serpent in the Codex, see floor 7&#x27;s item) and the gate (Kaia) all played.</p>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The kings&#x27; tombs&#x27; pack slept through the bot&#x27;s route; the probe: four small shrubs on the high rim (a few cm), crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 33962 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 4 float, 2 gap, 27 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1916 game s, every checkpoint reached; 57 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Glass Serpent (Sand burnt to glass), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 2757 ms of real time into the fight)</li><li>Frame check at the busiest spot (-56, 26), 6 units awake: median 9.4, 9, 7.9 ms, p95 12.2, 16.8, 10.2 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f25/ruler-close.jpg"><img loading="lazy" src="f25/ruler-close.jpg" alt="The Glass Serpent"></a><figcaption>The Glass Serpent</figcaption></figure>
+<figure><a href="f25/person-villager.jpg"><img loading="lazy" src="f25/person-villager.jpg" alt="The Beacon-Keeper"></a><figcaption>The Beacon-Keeper</figcaption></figure>
+<figure><a href="f25/map.jpg"><img loading="lazy" src="f25/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f25/overview.jpg"><img loading="lazy" src="f25/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f26"><h3>Floor 26: The Brass Road</h3><p>Plays clean: cleared, no console error, every spot reachable; the caravan, the rival (Tempo), the trial, the Mirage Lord (the Sphinx&#x27;s model, tinted) and the gate (Gus; second try) all played.</p>
+<p><span class="tag ok">ok</span><b>A mesa the probe called floating.</b> A 33 m mesa past the west edge (and one on floor 22) “floats” by the probe&#x27;s measure, which knows only the play ground; from low beside it, it stands on the outer sand.</p>
+<div class="pics">
+<figure><a href="f26/probe-mesa.jpg"><img loading="lazy" src="f26/probe-mesa.jpg" alt="The mesa from low beside it"></a><figcaption>The mesa from low beside it</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>Packs and other props.</b> The old fort&#x27;s pack slept through the bot&#x27;s route; the lair wall&#x27;s gold edge runs into the dune; crates on the rim&#x27;s slope; red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34169 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 2 float, 8 gap, 30 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 2213 game s, every checkpoint reached; 60 kills, 1 falls, stars 1100; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Mirage Lord (Never where it stands), model models/tower/sands_sphinx_v4.glb, loaded yes (its picture taken 2428 ms of real time into the fight)</li><li>Frame check at the busiest spot (47, 30), 6 units awake: median 6.3, 6, 5.9 ms, p95 9.9, 11.1, 9.4 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f26/ruler-close.jpg"><img loading="lazy" src="f26/ruler-close.jpg" alt="The Mirage Lord"></a><figcaption>The Mirage Lord</figcaption></figure>
+<figure><a href="f26/pack-d.jpg"><img loading="lazy" src="f26/pack-d.jpg" alt="The scarab dig&#x27;s pack"></a><figcaption>The scarab dig&#x27;s pack</figcaption></figure>
+<figure><a href="f26/overview.jpg"><img loading="lazy" src="f26/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f27"><h3>Floor 27: The Dry Wells</h3><p>Plays clean: cleared, no console error, every spot reachable; the caravan, the rival (Mum), the trial, the Sand Tyrant (the Red Jackal&#x27;s model, tinted) and the gate (Nyx; second try) all played.</p>
+<p><span class="tag ok">ok</span><b>The shut lair holds.</b> Checked because a picture run seemed to start the ruler early (it was the run&#x27;s own door, at the end): from five spots outside, on floors 2, 12, 22 and 27, a hero walking at the shut lair never starts its fight; the door only opens to the quest (scenery.ts `ready`). On floors 2, 22 and 27 the hero can walk round the end of the shut wall and stand on the door&#x27;s spot; nothing happens there.</p>
+<p><span class="tag ok">ok</span><b>The Sand Tyrant hits hard early.</b> A hero who stands still in his hall falls in about 7 s (the bot, fighting, won with nearly all its health): a boss, not a fault.</p>
+<p><span class="tag ok">ok</span><b>Props.</b> A mesa past the north edge on its own high ground, the lair wall&#x27;s gold edge into the dune, crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34030 m²; 58 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 3 float, 4 gap, 21 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 2126 game s, every checkpoint reached; 59 kills, 1 falls, stars 1101; ruler tries 1, gate tries 2; page errors 0</li><li>Ruler: The Sand Tyrant (Every grain obeys), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 1644 ms of real time into the fight)</li><li>Frame check at the busiest spot (-57, 25), 6 units awake: median 3.5, 4.1, 3.6 ms, p95 5.4, 6.2, 6 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f27/ruler-close.jpg"><img loading="lazy" src="f27/ruler-close.jpg" alt="The Sand Tyrant"></a><figcaption>The Sand Tyrant</figcaption></figure>
+<figure><a href="f27/person-rival.jpg"><img loading="lazy" src="f27/person-rival.jpg" alt="Mum, the rival"></a><figcaption>Mum, the rival</figcaption></figure>
+<figure><a href="f27/map.jpg"><img loading="lazy" src="f27/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f27/overview.jpg"><img loading="lazy" src="f27/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f28"><h3>Floor 28: The Scorpion Steps</h3><p>Clean but for one word: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Auriel), the trial, the Red Jackal (own model) and the gate (Isolde) all played.</p>
+<p><span class="tag fixed">fixed</span><b>“The red tents is full of raiders”.</b> As on the Sea&#x27;s floor 4: the keeper&#x27;s greeting put “is” after a plural place. The Sands&#x27; maker now says “are” for a name ending in s (gen/sands.ts; floors 22 to 30 re-baked, only floor 28&#x27;s line changed).</p>
+<div class="pics">
+<figure><a href="f28/fix-tents-before.jpg"><img loading="lazy" src="f28/fix-tents-before.jpg" alt="Before"></a><figcaption>Before</figcaption></figure>
+<figure><a href="f28/fix-tents-after.jpg"><img loading="lazy" src="f28/fix-tents-after.jpg" alt="After"></a><figcaption>After</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>Props.</b> Shrubs on the high rim (a few cm), crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 33938 m²; 58 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 4 float, 2 gap, 25 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 1</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1824 game s, every checkpoint reached; 58 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Red Jackal (It runs the wadi), model models/tower/sands_jackal_v4.glb, loaded yes (its picture taken 1545 ms of real time into the fight)</li><li>Frame check at the busiest spot (52, 32), 6 units awake: median 2.7, 3, 3 ms, p95 4.3, 5.1, 5.5 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f28/ruler-close.jpg"><img loading="lazy" src="f28/ruler-close.jpg" alt="The Red Jackal"></a><figcaption>The Red Jackal</figcaption></figure>
+<figure><a href="f28/pack-a.jpg"><img loading="lazy" src="f28/pack-a.jpg" alt="The red tents&#x27; pack"></a><figcaption>The red tents&#x27; pack</figcaption></figure>
+<figure><a href="f28/overview.jpg"><img loading="lazy" src="f28/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f29"><h3>Floor 29: The Mirage Road</h3><p>Clean, and the longest floor so far: the bot&#x27;s first run ran out of its 2400 game seconds just before the gate (everything else done); given 3200 it cleared in 2241 s with all four stars and no fall, under the floor&#x27;s own par (2332 s). No console error, every spot reachable; the caravan, the rival (Fenna), the trial, the Sun-Eater (the Sphinx&#x27;s model, tinted) and the gate (Brannoc) all played.</p>
+<p><span class="tag ok">ok</span><b>The Beacon-Keeper behind a wall.</b> In the first picture only her mark showed, over the caravanserai&#x27;s roof. She stands on the sand beside its wall (the probe finds no person in cover).</p>
+<div class="pics">
+<figure><a href="f29/villager-near.jpg"><img loading="lazy" src="f29/villager-near.jpg" alt="The Beacon-Keeper beside the wall"></a><figcaption>The Beacon-Keeper beside the wall</figcaption></figure>
+</div>
+<p><span class="tag ok">ok</span><b>Packs and props.</b> The tombs&#x27; and the mud fort&#x27;s packs slept through the bot&#x27;s route; the probe: the lair wall&#x27;s gold edge into the dune, crates on the rim&#x27;s slope, red rocks a little sunk.</p>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34051 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 1 float, 4 gap, 34 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 2241 game s, every checkpoint reached; 65 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Sun-Eater (It swallowed noon once), model models/tower/sands_sphinx_v4.glb, loaded yes (its picture taken 1554 ms of real time into the fight)</li><li>Frame check at the busiest spot (-55, 27), 6 units awake: median 3.3, 3.6, 3.9 ms, p95 5.1, 6, 6.3 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f29/ruler-close.jpg"><img loading="lazy" src="f29/ruler-close.jpg" alt="The Sun-Eater"></a><figcaption>The Sun-Eater</figcaption></figure>
+<figure><a href="f29/pack-d.jpg"><img loading="lazy" src="f29/pack-d.jpg" alt="The fallen obelisk&#x27;s pack"></a><figcaption>The fallen obelisk&#x27;s pack</figcaption></figure>
+<figure><a href="f29/overview.jpg"><img loading="lazy" src="f29/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+<section class="floor" id="f30"><h3>Floor 30: The Crown of the Sands</h3><p>Clean: the Sands&#x27; crown. Cleared with four stars and no fall, no console error, every spot reachable; the Heart of Noon (the Raid&#x27;s boss, its own model, in the Sunken Heart) fell on the first try; the caravan, the rival (Zephyr), the trial and the gate (Bo) all played.</p>
+<p><span class="tag ok">ok</span><b>Props.</b> The probe&#x27;s “gap” is a gateway&#x27;s lintel over its passage (meant); shrubs on the rim a few cm up; red rocks a little sunk.</p>
+<p><span class="tag list">list</span><b>Phone: the hero&#x27;s passive box runs under the floor panel.</b> On a phone, once the minimap shows, the box with the hero&#x27;s badge and passive (Far Sight) is taller than what is in it and its frame runs behind the floor&#x27;s panel (time, lives, shards). Every floor; small. The merge fixed the people&#x27;s marks over the HUD and the map&#x27;s names (pictures: after the merge). The fix would be in the Climb&#x27;s HUD (src/tower/world/hud.ts): fit the box to its content, or step the floor panel down by the box&#x27;s height while the minimap shows.</p>
+<div class="pics">
+<figure class="ph"><a href="f30/phone-after-merge-fight.jpg"><img loading="lazy" src="f30/phone-after-merge-fight.jpg" alt="Phone, after the merge: the passive box over the floor panel"></a><figcaption>Phone, after the merge: the passive box over the floor panel</figcaption></figure>
+<figure class="ph"><a href="f30/phone-after-merge-map.jpg"><img loading="lazy" src="f30/phone-after-merge-map.jpg" alt="Phone, after the merge: the map&#x27;s names inside its edge"></a><figcaption>Phone, after the merge: the map&#x27;s names inside its edge</figcaption></figure>
+</div>
+<details><summary>What was measured</summary><ul class="nums"><li>Reachable from the camp: 34013 m²; 55 spots of the floor&#x27;s data, 0 cut off</li><li>Props probe: 3 float, 3 gap, 20 buried, 2 in cover (sorted by kind; one or more of each kind looked at by eye)</li><li>Grass and small things on ground steeper than 31°: 0</li><li>Packs table for the open world (server/climb-packs.mjs): matches</li><li>Route bot (Lyra): cleared in 1840 game s, every checkpoint reached; 56 kills, 0 falls, stars 1111; ruler tries 1, gate tries 1; page errors 0</li><li>Ruler: The Heart of Noon (The Fallen Sun), model models/bosses/heart.glb, loaded yes (its picture taken 1851 ms of real time into the fight)</li><li>Frame check at the busiest spot (40, 23), 6 units awake: median 3.3, 3.6, 4.9 ms, p95 5.6, 8.3, 8.8 ms (desktop, machine shared: rough)</li><li>Console errors while taking the pictures: 0</li></ul>
+<p class="mut">Not checked: the shared packs online</p>
+</details>
+<div class="pics">
+<figure><a href="f30/ruler.jpg"><img loading="lazy" src="f30/ruler.jpg" alt="The Sunken Heart as the fight opens"></a><figcaption>The Sunken Heart as the fight opens</figcaption></figure>
+<figure><a href="f30/ruler-close.jpg"><img loading="lazy" src="f30/ruler-close.jpg" alt="The Heart of Noon"></a><figcaption>The Heart of Noon</figcaption></figure>
+<figure><a href="f30/person-rival.jpg"><img loading="lazy" src="f30/person-rival.jpg" alt="Zephyr, the rival"></a><figcaption>Zephyr, the rival</figcaption></figure>
+<figure><a href="f30/map.jpg"><img loading="lazy" src="f30/map.jpg" alt="The M map"></a><figcaption>The M map</figcaption></figure>
+<figure><a href="f30/overview.jpg"><img loading="lazy" src="f30/overview.jpg" alt="From the south edge"></a><figcaption>From the south edge</figcaption></figure>
+</div>
+</section>
+</main></body></html>

@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cliffs and hillsides</title><style>:root{--bg:#f6f3ec;--fg:#1d1b21;--mut:#5e5a54;--card:#fffdf8;--line:#e2dccf;--acc:#9a2c2c}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#17161a;--fg:#ece6da;--mut:#a39d92;--card:#211f25;--line:#34313a;--acc:#e08a6a}}
+:root[data-theme=dark]{--bg:#17161a;--fg:#ece6da;--mut:#a39d92;--card:#211f25;--line:#34313a;--acc:#e08a6a}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}h1{font-size:24px;margin:8px 0}h2{font-size:19px;margin:28px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+p,li{color:var(--fg)}.mut{color:var(--mut)}.f{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;margin:12px 0}
+.f h3{margin:0 0 6px;font-size:16px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.pair figure{margin:0}.pair img{width:100%;height:auto;border-radius:4px;display:block}
+figcaption{font-size:12px;color:var(--mut)}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;font-size:14px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}code{font-size:13px}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}</style></head><body><main>
+<h1>Cliffs and hillsides: grass off the cliff faces, the War's camps on their hills, the same raid every run</h1>
+<p class="mut">2026-11-15. Three leftovers of the props pass (<a href="../sands/index.html">the Sands</a>, <a href="../war/index.html">the War</a>) and of the perf tool, each fixed at its cause. Pictures: <code>pipeline/tools/climb-props-shots.js</code>, the same camera on the branch's base (fedf346, "before") and after. Numbers: <code>pipeline/tools/climb-grass-probe.js</code> (new) and <code>climb-props-probe.js</code>, both measuring against the ground as it is drawn.</p>
+
+<h2>1. Grass on cliff faces, every chapter</h2>
+<p><b>What was wrong.</b> Grass was tested for steepness at its own point, on the ground's formula. The ground is drawn in cells of 2.1 to 2.3 m, so a tuft at a cliff's foot or on its lip passed (flat there by the formula) while the drawn face ran through its cell: it stood on the face. Worst in the Sands, whose canyon walls rise 9 to 19 m in a few metres.</p>
+<p><b>The fix.</b> One rule for all grass, <code>grassStands</code> in <code>src/tower/world/land.ts</code>: the ground round a tuft, out to 2.4 m (a drawn cell), may not rise faster than 0.6 (31 degrees). The Sea, the Wood, the Sands and the War keep to it (the Deep has no grass). It is a filter after the grass is placed, so the dice and everything placed after the grass are as they were.</p>
+<div class="f"><h3>All fifty floors: grass on drawn ground steeper than…</h3>
+<table><tr><th>chapter</th><th class="n">tufts</th><th class="n">over 31°</th><th class="n">over 45°</th><th class="n">most off the drawn ground</th></tr>
+<tr><td>The Sea (1-10), before</td><td class="n">40,210</td><td class="n">1</td><td class="n">0</td><td class="n">0.23 m</td></tr>
+<tr><td>after</td><td class="n">40,193</td><td class="n">1</td><td class="n">0</td><td class="n">0.12 m</td></tr>
+<tr><td>The Sands (21-30), before</td><td class="n">5,758</td><td class="n">53</td><td class="n">17</td><td class="n">1.20 m</td></tr>
+<tr><td>after</td><td class="n">5,518</td><td class="n">2</td><td class="n">0</td><td class="n">0.32 m</td></tr>
+<tr><td>The War (41-50), before</td><td class="n">39,014</td><td class="n">4</td><td class="n">0</td><td class="n">0.22 m</td></tr>
+<tr><td>after</td><td class="n">39,007</td><td class="n">3</td><td class="n">0</td><td class="n">0.22 m</td></tr></table>
+<p class="mut">The Wood's grass is merged into its ground scatter (not counted here) and all of it stands inside the walkable edge, where the ground is flat; it keeps to the same rule. The few left over 31 degrees are at 0.6 to 0.62, the limit.</p></div>
+<div class="f"><h3>Floor 21, the east canyon wall from the field (dry shrubs on its lip)</h3><div class="pair">
+<figure><img src="s21-face-east-before.jpg" alt="Before: two dry shrubs stick out of the canyon wall's lip against the sky"><figcaption>before</figcaption></figure>
+<figure><img src="s21-face-east-after.jpg" alt="After: the wall's lip is bare"><figcaption>after</figcaption></figure></div></div>
+<div class="f"><h3>Floor 21, the same lip from beside it</h3><div class="pair">
+<figure><img src="s21-wall-east-low-before.jpg" alt="Before: shrubs at the very edge of the cliff top"><figcaption>before</figcaption></figure>
+<figure><img src="s21-wall-east-low-after.jpg" alt="After: the shrubs at the edge are gone, those on the flat top stay"><figcaption>after: those on the flat top stay</figcaption></figure></div></div>
+<div class="f"><h3>Floor 21, the north wall (the steepest one: a shrub on a 73-degree face)</h3><div class="pair">
+<figure><img src="s21-face-north-before.jpg" alt="Before: a small shrub on the face below the pillar"><figcaption>before (the small green tuft below the pillar)</figcaption></figure>
+<figure><img src="s21-face-north-after.jpg" alt="After: the face is bare"><figcaption>after</figcaption></figure></div></div>
+
+<h2>2. The War's scenes past the edge, on their hills</h2>
+<p><b>What was wrong.</b> Each part of a scene past the edge (a field hospital, a burned farmhouse or mill, a graveyard, a fallen watchtower) stood on the ground under its own middle, level, so on a hill its downhill side stood 15 to 38 cm off the ground. Dropping each part to the lowest ground under it had been tried and undone: it sank a wall into its hill and left the beam it holds in the air.</p>
+<p><b>The fix</b> (<code>src/tower/world/scenes/war.ts</code>, <code>seat</code>): the whole scene is set on its slope as one piece, as the Sea's and the Wood's scenes already were (<code>slopeFrame</code>): turned to the plane that fits the ground under the parts that stand on it (8 degrees at most, so a post stays near upright) and let down until none of them is in the air (0.4 m at most). Small loose things (under 0.4 m high and 1 m across: a helmet, a stone) keep their own ground; a wide flat thing (a fallen tent's canvas) goes with the scene. Only the drawing moves: the plan, its checks and the dice are as before. The props probe on floors 41 to 50: pieces of these scenes with a gap under their base, before 2 to 8 a floor (up to 0.38 m, the fallen tent on floor 50), after none; no new floating or buried pieces.</p>
+<div class="f"><h3>Floor 42, the field hospital: the fallen tent's canvas</h3><div class="pair">
+<figure><img src="../war/w42-tents-before.jpg" alt="Before: the round canvas of the fallen tent lifts off the hill on its near side, a dark gap under it"><figcaption>before: light under its near, downhill edge</figcaption></figure>
+<figure><img src="../war/w42-tents-after.jpg" alt="After: the canvas lies on the hill"><figcaption>after</figcaption></figure></div></div>
+<div class="f"><h3>Floor 42, the burned mill</h3><div class="pair">
+<figure><img src="../war/w42-farmhouse-before.jpg" alt="Before: the millstone at the front stands off the ground"><figcaption>before: the millstone (front left) off the ground</figcaption></figure>
+<figure><img src="../war/w42-farmhouse-after.jpg" alt="After: the millstone sits on the ground; the walls lean a few degrees with the hill"><figcaption>after: on the ground; the walls lean a few degrees with the hill</figcaption></figure></div></div>
+<div class="f"><h3>Floor 48, the fallen watchtower, and floor 50, the field hospital</h3><div class="pair">
+<figure><img src="../war/w48-watchtower-before.jpg" alt="Watchtower before"><figcaption>48, before</figcaption></figure>
+<figure><img src="../war/w48-watchtower-after.jpg" alt="Watchtower after"><figcaption>48, after</figcaption></figure>
+<figure><img src="../war/w50-tents-before.jpg" alt="Tents before"><figcaption>50, before</figcaption></figure>
+<figure><img src="../war/w50-tents-after.jpg" alt="Tents after"><figcaption>50, after</figcaption></figure></div></div>
+
+<h2>3. The perf tool's raid print: the same every run</h2>
+<p><b>What was wrong.</b> <code>python pipeline/tools/perf.py</code> prints a hash of each fight; <code>raid-party</code> printed e83903c0, 34f75b29, b53a2f62 or 9c4a9c48 on the same code. Laid side by side, two runs rolled the same dice frame by frame until one of them rolled about 120 more in one frame: a raid partner's tree-planting spell built its trees then. Two things made that depend on the machine and not on the fight:</p>
+<ul><li>The tool's clock started at the real time the setup happened to end. The game reads the clock in its rules: a partner's trees grow at "planted + 1.2 s" and "+ 2.5 s" (<code>timberNow</code>, the clock when no trait writes one), and with a different start they grew a frame early or late. Anything the setup stamped (the setup takes a different time every run) was older or younger when the fight began.</li>
+<li>three.js rolls the fight's dice (the seeded <code>Math.random</code>) for the id of every object it makes, four rolls each. So one tree built a frame early moved every die after it. A model file that came in while the fight ran did the same, at whichever pause between frames real time let it land.</li></ul>
+<p><b>The fix</b> (the tool only, <code>pipeline/tools/perf-page.js</code>; no game code): the clock stands still from the start of the setup and starts at the same instant every run; and what comes in during the tool's pauses between frames rolls dice of its own, not the fight's.</p>
+<div class="f"><h3>raid-party, run after run on the same code</h3>
+<table><tr><th>runs</th><th>prints</th></tr>
+<tr><td>before: 13 runs, desktop (2026-11-15)</td><td>34f75b29 ×5, b53a2f62 ×4, 9c4a9c48 ×2, e83903c0 ×2; desktop-4x and phone printed others again</td></tr>
+<tr><td>after: 3 runs desktop, 1 desktop-4x beside another run, 1 with an unused function added to the raid's code</td><td>9c4a9c48 every time, the same number of dice in every one of the 1,500 frames</td></tr>
+<tr><td>after, on the code with the Climb's new rulers' and enemies' models: 2 runs desktop, 1 desktop-4x</td><td>9c4a9c48 every time, frame by frame</td></tr></table></div>
+<div class="f"><h3>The baseline: every scene's print, taken again (<code>docs/perf/data/prints.json</code>, desktop)</h3>
+<table><tr><th>scene</th><th>print</th><th>2026-11-13 baseline</th></tr>
+<tr><td>menu</td><td>e8106cc4</td><td>e8106cc4</td></tr>
+<tr><td>duel-temple</td><td>90b1abaa</td><td>90b1abaa</td></tr>
+<tr><td>duel-harbour</td><td>d8b98583 (desktop and desktop-4x)</td><td>99f6f529 or c2218455: it moved with the clock too; the old tool on today's code prints c2218455</td></tr>
+<tr><td>raid-solo</td><td>ff20c830</td><td>ff20c830</td></tr>
+<tr><td>raid-party</td><td>9c4a9c48</td><td>moved (above)</td></tr>
+<tr><td>tower-horde</td><td>6b769e22</td><td>6b769e22</td></tr>
+<tr><td>world-1 (floor 1)</td><td>d862aa08</td><td>ac87b176 before the rulers' and enemies' models</td></tr>
+<tr><td>world-2 (floor 11)</td><td>433b3ded</td><td>467f6a06 before the Climb's people</td></tr>
+<tr><td>gen-12 (floor 12)</td><td>72213473</td><td>cd7fa7c6 before the models</td></tr>
+<tr><td>world-3 (floor 21)</td><td>45b46573</td><td>45b46573</td></tr>
+<tr><td>world-4 (floor 31)</td><td>19e8c310</td><td>988f012d before the models</td></tr>
+<tr><td>world-5 (floor 41)</td><td>74cfad16</td><td>da05c457 before the models (the merged code without this branch's War edits prints 74cfad16 too)</td></tr></table>
+<p class="mut">Floors 1, 11, 12, 21 and 31 printed the same twice, and floors 1 and 31 also on desktop-4x, frame by frame. The Climb's prints change when its models change (new models are new objects, new dice); they are taken on the branch with the rulers' and enemies' models merged in.</p></div>
+</main></body></html>

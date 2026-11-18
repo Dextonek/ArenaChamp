@@ -1,0 +1,130 @@
+{
+ "floor": 8,
+ "part": "climb-review-shots",
+ "wallSeconds": 18.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 8,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "176,53.1 y4.46 depth out72s w4.59 h3.46 m1.19 p1 #304837",
+  "probe-float-1": "166.1,-84.4 y5.54 depth out71n w5.67 h7.64 m1.27 p3 #304837",
+  "probe-float-2": "7.4,188.4 y8.55 depth out72s w5.94 h6.3 m1.77 p2 #304837",
+  "probe-float-3": "136.5,-140.2 y11.61 depth out70n w5.47 h4.12 m0.64 p1 #304837",
+  "probe-gap-4": "86.5,-94.9 y11.26 depth out3n w5.76 h4.32 m10.06 sunk-0.74 #304837",
+  "probe-gap-5": "33.3,-126.7 y9.74 depth edge w4.57 h3.87 m9.44 sunk-0.81 #304837",
+  "probe-gap-6": "56.8,-118.9 y8.89 depth edge w4.65 h3.94 m8.37 sunk-0.63 #304837",
+  "frames": {
+   "at": [
+    40,
+    -79
+   ],
+   "units": 5,
+   "runs": [
+    {
+     "med": 4.2,
+     "p95": 8.7,
+     "worst": 45.3
+    },
+    {
+     "med": 3.9,
+     "p95": 9,
+     "worst": 16.9
+    },
+    {
+     "med": 3.5,
+     "p95": 8.2,
+     "worst": 12.2
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Lantern Leviathan",
+   "title": "A light that eats ships",
+   "model": "models/tower/sea_judge_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 3093,
+   "frames": 481,
+   "at": [
+    -0.2,
+    15.5
+   ],
+   "heroAt": [
+    -0.2,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

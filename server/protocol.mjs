@@ -4,7 +4,11 @@
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
 // 15 (2026-11-12): no rule change; raised once so the tabs from before `/build.json` (vite.config.ts) reload. Since then any
 // deploy shows open tabs a Reload bar on their own; raise this only for a rule or message change.
-export const PROTOCOL = 15;
+// 16 (2026-11-14): the Climb's open world, stage 1 (`world_join`, `world_move`, `world_cast`, `world_leave`).
+// 17 (2026-11-14): leaderboards (`leaderboards`, `climb_report`, the duel rating) and clans with a clan chat (`clan_*`).
+// 18 (2026-11-14): the Climb's open world, stage 2: shared packs (`pack_*`, `world_roster.packs`).
+// 19 (2026-11-16): the Climb's open world, stage 3: doors together (`door_*`; a ruler fought by a party on the Raid's `boss_*`).
+export const PROTOCOL = 19;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -202,6 +206,24 @@ export const SHOP = {
   newest: { hero: 'Anka', price: 1500, until: '2026-12-10' },
 };
 
+/**
+ * How soon the hub lets a hero's R through again (it keeps no kits, so it cannot know a cooldown). `gapMs`: the least time between
+ * two R casts; `recastMs`: one free second R (a recast that plays an effect, `Trait.recast` with `replay` on) may follow the first
+ * this soon after it, once. A hero not named here has `R_TIMING.default`. A row is needed where a kit's R does not fit the default:
+ * Pim and Pom's Tag Out comes back after 8 s, and Fenna's Uproot may be recast up to 9.2 s after World Tree (Hank's Timber 4 s
+ * after the row, the default's very edge). src/heroes/index.ts checks the cards' R cooldowns against `gapMs` in development.
+ */
+export const R_TIMING = {
+  default: { gapMs: 10000, recastMs: 4500 },
+  Fenna: { gapMs: 10000, recastMs: 9700 },
+  'Pim and Pom': { gapMs: 7500, recastMs: 4500 },
+};
+
+/** The R timing the hub applies to `hero`. @param {string | null | undefined} hero */
+export function rTiming(hero) {
+  return (hero && Object.hasOwn(R_TIMING, hero) ? R_TIMING[hero] : null) ?? R_TIMING.default;
+}
+
 /** The starter roster: free for everyone, with or without an account. */
 export const STARTERS = Object.keys(HERO_SHOP).filter((h) => HERO_SHOP[h].shelf === 0);
 
@@ -307,3 +329,88 @@ export const BOARD_SIZE = 20;
 
 /** The highest floor a Tower report may name: far past what anyone climbs. */
 export const TOWER_FLOOR_MAX = 500;
+
+/**
+ * The Climb's open world, stage 1 (pipeline/designs/climb-open-world.md): signed-in players on the same Climb floor share a shard
+ * and see each other. `shardMax`: players a shard holds (a full one opens another). `movesPerS`: the most `world_move`s the hub
+ * takes from one player in a second (the page sends 10). `reach`: how far from the floor's middle a place may be (m; the widest
+ * floor is far inside it). `casts` in `castsMs`: the most spells relayed from one player (the same spell again waits as a duel's
+ * slot does). `labelMax`: the longest spell name. `sendHz`: how often a page sends its hero's place (only when it changed).
+ */
+export const WORLD = { shardMax: 8, movesPerS: 12, reach: 500, casts: 8, castsMs: 2000, labelMax: 48, sendHz: 10 };
+
+/**
+ * The Climb's open world, stage 2: shared packs (pipeline/designs/climb-open-world.md; docs/architecture/multiplayer.md). One screen
+ * in a shard runs a pack (its owner), the others draw it and send it their hits.
+ * - `fightR` m, `hitS` s: a player is in a pack's fight while it stands this close to it, or hit it this recently. A kill counts for
+ *   every player who hit the unit within `hitS` s.
+ * - `hp`, `dmg`: what each player past the first adds to a pack's health and to its blows (`packScale`).
+ * - `respawnS`: how long a cleared pack stays down; it comes back only when nobody stands within `clearR` m of its home, and only
+ *   with two or more on the floor's shard (alone, the Climb is as it always was).
+ * - `handR`: an owner who leaves hands the pack to the oldest member this close to it; with none, nobody runs it and each screen
+ *   has it to itself again. `quietMs`: an owner that sent nothing for this long (a tab put away) is handed on the same way.
+ * - `seeR`: a pack's places go only to the members this close to it.
+ * - The most one screen may send: `statesPerS` batches of its packs, `hitsPerS` hits of at most `hitMax` each, `hurtsPerS` blows on
+ *   others. A batch carries at most `units` units and `zones` red zones a pack.
+ */
+export const WORLD_PACKS = {
+  fightR: 20, hitS: 10, hp: 0.6, dmg: 0.15, respawnS: 180, clearR: 30, handR: 40, quietMs: 4000, seeR: 60,
+  stateHz: 10, statesPerS: 12, hitsPerS: 40, hitMax: 600, hurtsPerS: 30, units: 12, zones: 8,
+};
+
+/** A pack fought by `n` players: its health and its blows, times. @param {number} n */
+export const packScale = (n) => {
+  const k = Math.max(1, Math.floor(n)) - 1;
+  return { hp: 1 + WORLD_PACKS.hp * k, dmg: 1 + WORLD_PACKS.dmg * k };
+};
+
+/**
+ * The Climb's open world, stage 3: doors together (pipeline/designs/climb-open-world.md; docs/architecture/multiplayer.md). A ruler's
+ * door (not a crown floor's: that Raid boss is fought alone for now) that a signed-in player walks into while another player of the
+ * shard stands within `nearR` m of it holds `gatherS` seconds:
+ * whoever else walks in by then fights the ruler with them, on the Raid's machinery (one screen runs its brain, revives, hand-over).
+ * - `enterR`: how far from the door (past its own ring) the hub still takes a player's word that it walked in (its last report).
+ * - `hp`, `dmg`: what each player past the first adds to the ruler's health (the design's gatekeepers' and rulers' 0.75) and to its
+ *   blows (as a pack's). The stagger gauge grows as the health does, so a party makes it kneel as often for its damage.
+ * - `max`: the most in one door's fight (a shard's eight). `entersPerS`: the most `door_enter`s taken from one player in a second.
+ * - `ring`: how far from the room's middle a hero or the ruler may be reported (m; the rulers' rooms are 12 m round).
+ */
+export const WORLD_DOORS = { gatherS: 6, nearR: 30, enterR: 8, hp: 0.75, dmg: 0.15, max: 8, entersPerS: 4, ring: 14 };
+
+/** A ruler fought by `n` players: its health (and gauge) and its blows, times. @param {number} n */
+export const doorScale = (n) => {
+  const k = Math.max(1, Math.floor(n)) - 1;
+  return { hp: 1 + WORLD_DOORS.hp * k, dmg: 1 + WORLD_DOORS.dmg * k };
+};
+
+// --- leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans") ------------------------------
+
+/**
+ * The duel rating: Elo from online duels, `start` for an account that has none, `k` the most one duel moves it. A duel counts only
+ * where it pays (`SHOP.minDuelS`): a duel shorter than that moves nobody, and whoever left a longer one loses it.
+ */
+export const ELO = { start: 1000, k: 32 };
+
+/** How many rows each of the Leaderboards screen's lists holds. */
+export const LEADER_SIZE = 50;
+
+/** The Climb's floors: a report names the highest cleared (1-50) and the stars of all of them (four a floor at most). */
+export const CLIMB_FLOORS = 50;
+
+/**
+ * Clans. `max`: members. `name`: 3-24 letters, digits and spaces, unique without regard to case. `tag`: 2-4 letters or digits, shown
+ * as [TAG]. `asks`: the most open requests to join a clan keeps. `chat`: the longest message, the lines a room keeps, and the rate per
+ * sender (one a `gapMs`, at most `max` in `windowMs`). `silenceH`: how long the leader's mute lasts in the room (hours).
+ */
+export const CLAN = {
+  max: 30, nameMin: 3, nameMax: 24, tagMin: 2, tagMax: 4, asks: 20,
+  chat: { max: 200, keep: 100, gapMs: 1000, windowMs: 20000, inWindow: 10 },
+  silenceH: 24,
+};
+
+/** A clan's name as typed is tidied this way first: spaces at the ends gone, runs of spaces one. @param {unknown} v */
+export const clanName = (v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : '');
+
+/** Whether a clan name (tidied) and a tag are well formed; the server also checks they are free and clean. */
+export const CLAN_NAME_RE = /^[A-Za-z0-9 ]{3,24}$/;
+export const CLAN_TAG_RE = /^[A-Za-z0-9]{2,4}$/;

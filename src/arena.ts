@@ -150,6 +150,16 @@ export class Arena {
   shieldScale: ((target: Enemy) => number) | null = null;
   /** Frees a figure from its cast's root or a trait's hold (the duel: a broken channel). */
   releaseFigure: ((who: Enemy) => void) | null = null;
+  /**
+   * The duel's engine pieces (src/mech) that hold a walk: `walkHold` keeps a figure's step inside its leashes (`prev` is where the
+   * step began), `dashHold` sees a dash start (a leash a dash breaks ends; one that holds keeps the landing in), `walkBlocks` is
+   * the one-sided ground `who` may not walk across. Null, or an empty list: nothing changes.
+   */
+  walkHold: ((who: Enemy, p: THREE.Vector3, prev: { x: number; z: number }) => void) | null = null;
+  dashHold: ((who: Enemy, to: THREE.Vector3) => void) | null = null;
+  walkBlocks: ((who: Enemy) => readonly Obstacle[]) | null = null;
+  /** What the AI walking now also plans round (a hero's `Trait.enemyAvoid`, its own one-sided ground); set by the duel per walker. */
+  aiExtra: readonly Obstacle[] = [];
   /** Rings nobody inside can leave (Cantor's Duet), with the seconds they have left. */
   private confines: { x: number; z: number; r: number; left: number }[] = [];
 
@@ -565,6 +575,7 @@ export class Arena {
       end.set(p.x + (end.x - p.x) * (1 - short), 0, p.z + (end.z - p.z) * (1 - short));
     }
     this.keepInside(end);
+    this.dashHold?.(target, end);
     const st = this.slotOf(target);
     if (!st) return end;
     st.dash = { from: target.group.position.clone().setY(0), to: end, t: 0, dur: Math.max(0.05, seconds) };
@@ -694,17 +705,18 @@ export class Arena {
    * whoever walks: its route is kept between frames.
    */
   route(key: object, from: THREE.Vector3, to: THREE.Vector3): NavStep {
-    return this.obstacles ? this.nav.step(key, from, to, this.obstacles, this.bounds) : { point: to, goal: to };
+    const extra = this.walkBlocks?.(this.caster);
+    return this.obstacles ? this.nav.step(key, from, to, extra?.length ? [...this.obstacles, ...extra] : this.obstacles, this.bounds) : { point: to, goal: to };
   }
 
   /** `route` for an AI hero: it also plans round the parts of the floor that hurt (`aiCover`, `aiBounds`). A person may walk through them. */
   aiRoute(key: object, from: THREE.Vector3, to: THREE.Vector3): NavStep {
-    return this.obstacles ? this.aiNav.step(key, from, to, [...this.obstacles, ...this.aiCover], this.aiBounds ?? this.bounds) : { point: to, goal: to };
+    return this.obstacles ? this.aiNav.step(key, from, to, this.aiExtra.length ? [...this.obstacles, ...this.aiCover, ...this.aiExtra] : [...this.obstacles, ...this.aiCover], this.aiBounds ?? this.bounds) : { point: to, goal: to };
   }
 
   /** `pathClear` for an AI hero. */
   aiPathClear(a: THREE.Vector3, b: THREE.Vector3) {
-    return !this.obstacles || this.aiNav.clear(a, b, [...this.obstacles, ...this.aiCover]);
+    return !this.obstacles || this.aiNav.clear(a, b, this.aiExtra.length ? [...this.obstacles, ...this.aiCover, ...this.aiExtra] : [...this.obstacles, ...this.aiCover]);
   }
 
   /** Whether a body can walk straight from `a` to `b`. */
@@ -718,15 +730,23 @@ export class Arena {
    */
   walk(move: THREE.Vector3, reach = Infinity, slide = true) {
     if (move.lengthSq() < 1e-8 || this.casterSt.dash) return;
-    if (this.obstacles && slide) {
+    // One-sided ground the hero may not cross (src/mech): cover for this walk only.
+    const blocks = this.walkBlocks?.(this.caster);
+    const cover = blocks?.length && this.obstacles ? [...this.obstacles, ...blocks] : this.obstacles;
+    if (cover && slide) {
       // Slide round a pillar or wall in the way instead of walking into it.
       const len = move.length();
-      move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles, 0.5, reach).multiplyScalar(len);
+      move = steer(this.caster.group.position, move.clone().divideScalar(len), cover, 0.5, reach).multiplyScalar(len);
     }
+    const prev = this.walkHold ? { x: this.caster.group.position.x, z: this.caster.group.position.z } : null;
     const p = this.caster.group.position.add(move);
-    p.x = THREE.MathUtils.clamp(p.x, -55, 55);
-    p.z = THREE.MathUtils.clamp(p.z, -55, 55);
+    // Within the play area's box (a Tower zone can be far wider than a duel's ring); the open floor of the tool page keeps +-55.
+    const b = this.bounds, lim = b ? null : 55;
+    p.x = lim ? THREE.MathUtils.clamp(p.x, -lim, lim) : THREE.MathUtils.clamp(p.x, b!.x - b!.r, b!.x + b!.r);
+    p.z = lim ? THREE.MathUtils.clamp(p.z, -lim, lim) : THREE.MathUtils.clamp(p.z, b!.z - b!.r, b!.z + b!.r);
     this.keepInside(p);
+    if (cover !== this.obstacles && cover) pushOut(p, blocks!);
+    if (prev) this.walkHold!(this.caster, p, prev);
     this.caster.group.rotation.y = Math.atan2(move.x, move.z);
   }
 
@@ -807,12 +827,19 @@ export class Arena {
   moveFoe(target: Enemy, move: THREE.Vector3, slide = false) {
     const f = this.foes.find((x) => x.figure === target);
     if (!f || f.dead >= 0) return;
-    if (slide && this.obstacles && move.lengthSq() > 1e-10) {
+    // The remote hero's moves are its own client's: nothing here holds them.
+    const own = target !== this.remoteFigure;
+    const blocks = own ? this.walkBlocks?.(target) : null;
+    const cover = blocks?.length && this.obstacles ? [...this.obstacles, ...blocks] : this.obstacles;
+    if (slide && cover && move.lengthSq() > 1e-10) {
       const len = move.length();
-      move = steer(f.home, move.clone().divideScalar(len), this.obstacles).multiplyScalar(len);
+      move = steer(f.home, move.clone().divideScalar(len), cover).multiplyScalar(len);
     }
+    const prev = own && this.walkHold ? { x: f.home.x, z: f.home.z } : null;
     f.home.add(move).setY(0);
     this.keepInside(f.home);
+    if (cover !== this.obstacles && cover) pushOut(f.home, blocks!);
+    if (prev) this.walkHold!(target, f.home, prev);
     f.figure.setHome(f.home);
     if (move.lengthSq() > 1e-8) f.figure.group.rotation.y = Math.atan2(move.x, move.z);
   }

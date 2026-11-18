@@ -1,0 +1,130 @@
+{
+ "floor": 6,
+ "part": "climb-review-shots",
+ "wallSeconds": 66.7,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 6,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "11.4,-109.5 y10.49 depth out5n w3.65 h6.14 m0.23 p4 #304837 #4b3525",
+  "probe-float-1": "-10.2,-107.6 y10.24 depth out4n w4.82 h8.11 m0.15 p4 #304837 #4b3525",
+  "probe-float-2": "71.4,164.9 y6.22 depth out72s w6.77 h5.49 m1.09 p4 #304837",
+  "probe-float-3": "200.7,-29.5 y7.22 depth out71n w5.79 h6.14 m1.4 p2 #304837",
+  "probe-gap-4": "91.2,-72.2 y9.17 depth out3n w4.2 h3.16 m7.49 sunk-1.22 #304837",
+  "probe-gap-5": "89.5,-73.8 y10.74 depth out3n w4.04 h3.03 m7.2 sunk-0.59 #304837",
+  "probe-gap-6": "50.3,-97.6 y9.48 depth edge w3.6 h2.71 m6.85 sunk-1.07 #304837",
+  "frames": {
+   "at": [
+    15,
+    -74
+   ],
+   "units": 5,
+   "runs": [
+    {
+     "med": 13.9,
+     "p95": 24.4,
+     "worst": 62
+    },
+    {
+     "med": 12.1,
+     "p95": 20.8,
+     "worst": 49.6
+    },
+    {
+     "med": 13.8,
+     "p95": 23,
+     "worst": 39.1
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Pearl Tyrant",
+   "title": "Hoarder of the shallows",
+   "model": "models/tower/sea_queen_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 5659,
+   "frames": 481,
+   "at": [
+    -0.4,
+    15.5
+   ],
+   "heroAt": [
+    -0.4,
+    22.5
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

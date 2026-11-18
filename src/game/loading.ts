@@ -11,6 +11,9 @@ export class LoadingScreen {
   private line = document.createElement('div');
   private note = document.createElement('div');
   private duel = document.createElement('div');
+  /** The lore's tie between the two heroes, when they have one ("Sworn enemies: ..."): docs/lore/LORE.md, src/game/lore.ts. */
+  private tie = document.createElement('div');
+  private shown = 0;
   /** Told when the page goes up and when it goes (the game stops drawing the scene behind it: src/game/main.ts). */
   onToggle?: (up: boolean) => void;
 
@@ -26,7 +29,9 @@ export class LoadingScreen {
     this.line.className = 'loading-line';
     this.note.className = 'loading-note';
     this.duel.className = 'loading-duel';
-    box.append(this.duel, this.arena, this.note, bar, this.line);
+    this.tie.className = 'loading-tie';
+    this.tie.style.display = 'none';
+    box.append(this.duel, this.tie, this.arena, this.note, bar, this.line);
     this.root.append(box);
     document.body.append(this.root);
   }
@@ -40,6 +45,18 @@ export class LoadingScreen {
     this.note.style.display = o.note ? '' : 'none';
     this.root.style.display = '';
     this.onToggle?.(true);
+    // The lore is loaded on first need; the page stays up for seconds, long enough for it to come.
+    const at = ++this.shown;
+    this.tie.style.display = 'none';
+    const a = o.mine?.name, b = o.theirs?.name;
+    if (a && b && a !== b) {
+      void import('./lore').then((m) => {
+        const t = m.tieBetween(a, b);
+        if (!t || at !== this.shown || this.root.style.display === 'none') return;
+        this.tie.textContent = `${t.strong ? '★ ' : ''}${t.pair[0].toUpperCase()}${t.pair.slice(1)}: ${t.what}`;
+        this.tie.style.display = '';
+      }).catch(() => {});
+    }
   }
 
   /** The arena's name, once it is picked. */

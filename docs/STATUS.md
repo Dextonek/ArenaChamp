@@ -1,8 +1,6 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds (second section) are **pushed to GitHub, not live**._
-
-## Showpieces: five short anime special moves, with 3D creatures (2026-11-18): committed; NOT pushed, NOT live
+## Showpieces: five short anime special moves, with 3D creatures (2026-11-18): merged with GitHub main and pushed; NOT live
 
 - **Asked:** the user sent a 15 s clip (a katana's draw tearing the world open onto a dragon's eye) and asked for "something
   like this" in the VFX tool, as a page in the tool (not in the game), in the clip's look; then "4 more, theme and effect
@@ -16,7 +14,577 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 - **Not done / for the user's eye:** the 3D creatures are a first pass (the user has seen the water dragon only as a still);
   the page loads its kanji from Google Fonts; it ships with the next deploy.
 
-## The game runs smoother (2026-11-13): done, committed and pushed; NOT live
+## Now (2026-11-16, evening): the user's decisions on the open list ("u decide for those"), and the agents working on them
+
+**PUSHED AND LIVE 2026-11-16 (evening; the user: "push and deploy"): `main` = f1467f49, Cloudflare version 09afdcab.** Everything
+below is live, PROTOCOL 19; the News release "The Climb alive and fought together, ..." set live.
+All 80 hero fight prints match their references, `SMOKE_SLOW=2 npm run test:server` passes, tsc and build pass. Waiting on the
+user: a look at the day's pages.
+Open small items: the Rust re-grade of Mr. Ledger and Barry Cloudsley; a quiet re-measure of the Climb life's frame cost (the command
+in the life entry); about 15 heroes still time some rules on the computer's clock; empty folders under `.t3/worktrees` the app holds.
+
+**Decided by the parent (the user: "you decide"):**
+1. The Climb's life: yes for chapters II-V the same way as the Sea; plain Coast-folk workers (and one plain worker per chapter) built
+   in Blender for the walkers; the amount as it is; phones keep the lighter set; no sound for now (a new system for the whole game).
+2. The other 39 heroes move into the hero framework, about 8 a batch, every batch with all 80 fight prints the same.
+3. The hero bugs (framework design section 8) are fixed AFTER the move (so the move's prints stay a clean proof), as the tooltips
+   say, each fixed hero then checked in the simulator.
+4. The gates: the lore changes, not the floors (Opaline and Oblivion hold their chapter's first gate; the others are champions the
+   Tower drew to its gates).
+5. The cream and white robes that bloom in the Sands' and War's light: about 15 % darker cloth.
+6. A won ruler: the hero stays in front of the door (as the code's comment meant, as the party fight does).
+7. Cantor's spell icons: the pink notes redrawn as engraved gold.
+8. The upright staffs in casts: kept.
+9. The lore follows the accepted models: the Pearl Tyrant a woman, the beast-rulers described as drawn; the named mothers (the Dune
+   Mother, Mother Kelp, Grandmother Thorn) "her" everywhere.
+10. Ruler looks fixed: fallen rulers no longer through the floor, Ash's legs above it in casts, the Heart's crown rays clear of it,
+   the Crow King's staff upright in his kneel.
+11. Arenas fixed: the Glade's tree crowns out of the corner at the widest zoom, Frost's low ice and the Temple's two lintels (if real).
+
+**Merged today, not live** (each with its entry below): stage 3 of the open world (PROTOCOL 19), spell icons for all 40, the sixteen
+hero touches and 20 portraits, the hero framework's design and fight prints, Anka moved (a fifth smaller start), the model reviews
+(Climb, bosses, arenas; the 40 heroes; round 2), the Climb review of all 50 floors and its follow-up, the Sea's life
+(`src/tower/world/life/`; `?life=0` off, `?life=lite` the phone set). Server tests pass on the merged code with the machine quiet.
+Stray folders to delete by hand: `C:\c` (261 MB of misplaced scratch copies), `C:\x`, `C:\x2` (empty).
+
+**Running (six agents, the limit; one Blender agent):**
+- Climb small fixes (floor 1's ruler named the Drowned Admiral, the phone badge box, floor 41's spots off the stone drums, enemy shots
+  leaving from the hand: visual only).
+- Climb life, chapters II-V (`src/tower/world/life/`, one chapter at a time, page `docs/tower/life/`).
+- Blender round (the one Blender agent): plain workers for the walkers (two Coast-folk, one per other chapter), the darker robes, the
+  arena fixes (Frost, Temple, Glade); page `docs/models/blender-round/`.
+- Hero framework step 4: the other 39 heroes moved in batches of about 8, each with all 80 prints the same; then step 5 (the
+  new-hero command, the workbench page) if time allows. The one writer of the four shared engine files.
+- Ruler and boss looks (fallen rulers, Ash's legs, the Heart's crown, the Crow King's staff; Ash and the lava); page
+  `docs/models/review/round3/`.
+- Lore and Climb words (the gates, the rulers as drawn, the mothers "her"), a won ruler stays at the door, Cantor's icons in gold; page
+  `docs/lore/changes-2026-11-16.html`.
+- **Done and merged (2026-11-16): the Blender round** (page `docs/models/blender-round/index.html`): six plain workers for the walkers
+  (sea_dockhand, sea_fishwife, wood_cutter, sands_water, deep_miner, war_gleaner; passed to the life agent to wire, and their names to
+  the lore agent); eight people's cream and white robes darker (no more glow in the Sands' and War's light); Frost's toppled ice shards
+  shortened (an edit of the exported file, `blender/arenas/frost_shard_fix.py`); the Temple's lintels a deliberate ruin (left); the
+  Glade's near crowns kept out of the lower corners (`src/arenas/glade.ts`, one line; the seeded dressing moves, the fight print
+  stays). Work clips (kneel, harvest, carry) not added: +366 KB (+30 %) on the animation file every player loads.
+**Done, not merged:** the hero bugs (design section 8), see today's entry.
+
+**Load and disk (2026-11-16; the user: "lets clean up some worktrees and make adjustments so there will be not that much load"):**
+58 worktrees of merged jobs removed (their `node_modules` links unlinked first; the main `node_modules` intact): C: free 16 -> 42 GB.
+Kept: the running agents' five and six with work never merged (`t3/tune-cantor-brannoc-vesper-1`, `t3/texturecraft-hero-sample`,
+`t3/twin-forge-party-fight`, `t3/twin-flames-party-boss-room` (changes not committed), a scratch `dry` copy, a `.claude/worktrees` one).
+New: `pipeline/tools/heavy.py` (one timing run at a time across worktrees), `SMOKE_SLOW=2` for the server tests under load (and the
+shop's late "left" fixed), the load rules in CLAUDE.md. Not changed (the user's own config): the `rea` MCP server in `~/.claude.json`
+starts with every agent session (about 90 MB each, and it often fails to connect here).
+
+**Running now (2026-11-16, late):** the Climb life II-V; the hero bugs (design section 8 and 11, one commit per item, each changed
+hero through the simulator; page `docs/pipeline/hero-framework/bugs.html`). Done since: the blocks trial and step 5 (the new-hero
+command, the workbench, the check command; entries below).
+
+- **Done and merged (2026-11-16): the spell blocks trial** (page `docs/pipeline/hero-framework/blocks-trial.html`, design section 12):
+  Sefu, Professor Puff, Big Yoko, 8 of 12 spells on the blocks (-21 % lines; drawing code unchanged, four fifths of a spell), 4 stay
+  code; all 80 prints, the roster and the looks (`pipeline/tools/spell-look-compare.py`) the same. **Decided (the parent, from its
+  recommendation):** new heroes on the blocks; an old hero's fitting spells move when it is opened for a fix or rebalance; no mass
+  conversion (about 12-15 h for a fifth fewer lines). **Running:** step 5 (the new-hero command, the workbench, the one-hero check
+  command, `new-hero.md` rewritten); its hook in `src/main.ts` waits until the hero bugs agent is merged.
+
+## Today's entries (2026-11-16)
+- **Done and merged (2026-11-16): the hero bugs** (page `docs/pipeline/hero-framework/bugs.html`): Cleaver's table no longer heals
+  the enemy; Late Fee, Foreclosure and Lightning Risk hit who is in the circle when it lands (Rust copy too); five kit flags set
+  (World Tree, Sinkhole roots; Shadow Double a summon; Stampede a strip; Shepherd's Crook not a stun); ten heroes' rules on the fight
+  clock; the server keeps a late Uproot and a quick Tag Out; the CPU's hold rule fires (Tempo, Anka, Zephyr, Marin untouchable); 93
+  files' old numbers in comments; the move's loose ends. Every changed hero inside the simulator's noise (±7). The merge with the
+  blocks trial was resolved by hand (Sefu's and Big Yoko's blocks kept, the fight clock and comments re-applied). **Decided by the
+  parent:** Ember Flight's dash flag and Chain Hammer's stun flag stay off (they broke Anka's and Brannoc's CPU; branch
+  `t3/hero-bugs-held-flags`); the hold rule kept for the four; Gus's Flood stays without a bonus (the tooltip dropped it on purpose
+  on 2026-11-04). **Not done:** the Rust re-grade of Mr. Ledger and Barry Cloudsley (`python pipeline/rustfull/grade.py`); Brannoc's
+  Rust port is older than his rework; about 15 more heroes time some rules on the computer's clock; perf prints and the rough Rust
+  model (`python pipeline/rustsim/refresh.py`) not rerun.
+
+- **Done and merged, not live (2026-11-16): the spell blocks trial** (page
+- **Done and merged, not live (2026-11-16): hero framework step 5: the new-hero command, the
+  workbench, the check command** (page `docs/pipeline/hero-framework/new-hero-tools.html`; design section 13; `new-hero.md` part 3
+  rewritten, its ten rules and six gates kept). `python pipeline/tools/new-hero.py <Name>` makes a hero's 14 files as a **draft**
+  (card with `draft: true`, `numbers.ts`, four spells on the blocks with a sketch look, passive, stand-in icons, icon and model
+  stubs, kit sheet, lore entry and codex stubs, the checklist `docs/heroes/new/<theme>.md`); a draft is off the roster, shop, CPU
+  picks and Codex, and shows on the workbench and with `?drafts=1` on the dev server. The workbench `/workbench.html` (its own
+  page; on the tool page with `/?bench` once the hook is in) plays any hero against the CPU or the dummies, draws each spell's
+  reach and last cast on the floor and its timing in a panel, edits numbers and blocks live and lists the changes to copy back,
+  and shows the balance commands and their last results. `python pipeline/tools/hero-check.py <Name>` runs prints, simulator,
+  online pair, icons at 32 px, model and lore, and writes a page. Tested with a throwaway hero (deleted, not committed): roster
+  identical, all 80 fight prints the same, game lore and Codex files unchanged, tsc, build. `hero-check.py Sefu`: six of six pass (53.1% in the simulator); the game's first download the same within 1 KB.
+  **Waiting on the parent:** the two-line hook in `src/tool/main.ts` (section 13), after the hero bugs agent is merged.
+  **Found:** the model rule "about 25,000 triangles at most" was below 25 of the 41 accepted models (median 26,654; Anka the
+  heaviest, 35,646); the check now compares with the other heroes instead.
+- **Done, on branch `t3/c4b07aea` (not merged, not live) (2026-11-16): the spell blocks trial** (page
+  `docs/pipeline/hero-framework/blocks-trial.html`; design section 12). Twelve spells of Sefu, Professor Puff and Big Yoko tried on
+  the blocks: eight moved (Cobra Spit, Shepherd's Crook, Sarcophagus, Helium Bomb, Hot Air, Stomp, Salt Throw, Palm Strike), four
+  stayed code (Scarab Stride, Air Hose, Pop!, Sumo Charge: each needs a block no other spell here uses). New blocks: a sure hit
+  (`target`), a zone judged once (`zone`: circle, cone, strip), sliders (`tune`), a fuller hit, facing aim, a move at the impact, a
+  rules hook per frame, the look's moments before the rules. The eight files -21% lines (the looks moved as they were); rules
+  19-47 lines a spell; about 5 minutes of writing a spell. All 80 prints the same, roster identical, self test identical, the looks
+  the same frame by frame (new: `pipeline/tools/spell-look-compare.py`, old code against new), tsc, build, guard the same.
+  **Waiting on the user: the recommendation** (some shapes only: new heroes on the blocks, a hero's fitting spells when it is
+  next opened anyway; no conversion project of the other ~120, about 12-15 hours, a third staying code).
+- **Done, not merged (2026-11-16): the hero bugs of the audit** (branch `t3/hero-bugs-audit-fixes`; page
+  `docs/pipeline/hero-framework/bugs.html`; design section 8). One commit per fix ("Hero bugs 1" to "9", items 4 and 5 one per flag
+  or hero): Madame Cleaver's table no longer heals the enemy; Late Fee, Foreclosure and Lightning Risk hit whoever is in the circle
+  when it lands (also the Rust port); World Tree and Sinkhole `cc`, Shadow Double `summon`, Stampede `aim: 'line'`, Shepherd's Crook
+  not `cc`; the rules of ten heroes on the fight's clock (`src/fightClock.ts`, `fightNow()`); the server keeps a late Uproot and a
+  quick Tag Out (`R_TIMING` in `server/protocol.mjs`, `node server/smoke-test.mjs --relay`); the CPU holds its spells while
+  `Trait.untouchable` (Tempo, Anka, Zephyr, Marin); 93 files' stale comments; the blood kit back in `src/effects/parts/`, `kits20.py`
+  and the Rust comments on the folders. Gus's Flood needed nothing (its tooltip dropped the bonus on 2026-11-04).
+  **Held for the user** (branch `t3/hero-bugs-held-flags`, two commits on top of the fixes): Ember Flight `dash` (silences it for the CPU: 5 flights to 0)
+  and Chain Hammer without `cc` (the CPU's Brannoc 48.8% -> 18.1%).
+  Simulator (32 fights a foe, through the lock): every changed hero inside +-7; Mabel (64.6 -> 67.0), Wick (39.3 -> 33.3) and
+  Grandma Ironknit (69.8 -> 64.9) were run twice a side after a single run landed just past 7 (the sim is not fully seeded). Prints: the changed ones taken again on purpose (Madame Cleaver, Nyx, Bo, Zephyr,
+  Marin, Anka, and the frame-edge moves of Gus, Big Yoko, Mabel, Wick, proven by the clock's origin), 80 of 80 the same on the
+  final tree. Server tests: 367 pass on the final code (SMOKE_SLOW=2, first run).
+  Rust: `guard.py` lists 38 lines (19 before; most are files whose comments item 8 corrected, plus the circles and Sirix's clock); `cargo test` 36 pass. **To do:** re-grade Mr. Ledger and Barry Cloudsley (`grade.py`, their circles), and
+  Brannoc's port is older than his rework (game.json re-export, port, grade); `python pipeline/rustsim/refresh.py` and the perf
+  prints were not run after these CPU and clock changes; fix 6 is proven at the hub (server checks), not on two screens; about 15 more
+  heroes still read the computer's clock.
+- **Done and merged (2026-11-16): floors 42-50's stands and both armies' homes** moved 2.4 m off the standards' stone feet, as floor
+  41 (81 points; same seeds; pack table rows 42-50); sheets in floors-31-50 "Fixed after"; new `pipeline/tools/climb-spots-probe.mjs`
+  (every spot against the cover).
+- **Done and merged, not live (2026-11-16): hero framework step 4a, the folder move: all 40 heroes
+  in folders, no spell of the 39 on the blocks yet** (page `docs/pipeline/hero-framework/progress.html`; design section 11). The other 39 moved in five batches (the last the
+  seven Rust-ported heroes, after `guard.py` learned the folders and `--moved`), every batch with all 80 fight prints the same, the
+  roster as the game sees it identical (kits, tooltips, icon pixels, bodies, passives, spells), the never-cast spells' self test
+  identical. Nothing names a hero by hand any more (`heroes.ts`, `traits/index.ts`, the game's spell list come from the folders);
+  Pim and Pom's card holds both halves and two icon stems; the cards' pointers sit beside them (out of the page's start).
+  After the last batch: sim Sefu 44.3/47.4, Mum 41.7/39.6, Kaia 33.1/33.1 (mine/main, ±7); online Sefu v Mum agrees as on main;
+  perf prints the same 12 fights as main; Rust guard the same 19 lines as main (the 19th is the merged shot heights); start +6 KB
+  (0.1 %); `SMOKE_SLOW=2 npm run test:server` 364 pass. **Not done: the spells onto the blocks** (only Anka's four are; next, a
+  spell at a time with its hero's prints; the ported heroes' spells wait for a Rust re-grade) and step 5 (the new-hero command, the
+  workbench, `new-hero.md`). New tools: `pipeline/tools/hero-roster.py` (the roster snapshot), `hero-gate5/online_pair.py` (any two
+  heroes online), `hero-move-page.py` (the page), `hero-checks.sh` (a batch's gate). Also checked: the built game (vite preview)
+  shows the 40 with no errors; the tools that find heroes by path see all 40; online was one run each. **For other branches:** a
+  kit edit made before these moves conflicts now (kits split into `hero.ts` and `icons.ts`): redo it in the hero's folder.
+
+- **Done and merged (2026-11-16): the lore and the Climb's words** (branch 8b7a6ecf; page `docs/lore/changes-2026-11-16.html`): the
+  gates (Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate; the others are champions the Tower drew), the rulers
+  described as drawn (the Pearl Tyrant a woman, the Bell Below's ringer, the Scarab Colossus a giantess in the shell, ...), the six
+  workers in the codex, the named women "her" on 19 floors, a won ruler stays at its door (solo; a loss still goes to the waystone),
+  Cantor's icons in engraved gold. Then merged too: the Admiral's key, one name in the codex, the War Drummer as drawn (a horned
+  giant; still the boy Cleaver adopts: the Tower keeps him in the war's shape), the named men "he" (a list in `gen/core.ts`).
+
+- **Done and merged, not live (2026-11-16): the Climb's life, chapters II to V** (branch `t3/tower-chapters-life`, one commit a
+  chapter; page `docs/tower/life/index.html`, a section a chapter). The Wood (`life/wood.ts`: wood pigeons in the crowns, hinds/foxes/
+  hares that bolt, smoke through the burners' thatch, airing lines, butterflies, dragonflies and rings at the spring); the Sands
+  (`sands.ts`: kites that leave when the storm comes, tethered camels, lizards, dyed cloths, pennants, smoke, oasis rings); the Deep
+  (`deep.ts`: moths at the lights, spores, drips that ring the pools, a pale fish, bats, stove smoke; no light of its own, nothing dark
+  standing still); the War (`war.ts`: crows, ash, the burned farm's smoke, tethered wagon horses, bandages drying, drum pennants). The
+  six Blender walkers wired (`WALKER_MODELS`, one line a chapter; routes now keep 6 m apart, which moved one route on Sea floors 1, 5
+  and 8); the Sea's land chimneys smoke (`landLife` in `land.ts`). Airing lines hang over the heads (feet 2.5 m up); tethered camels and
+  horses step aside when the hero walks into them. Fights the same life on/off, checked again on the final code: floors 1 `98b0044a`,
+  11 `433b3ded`, 15 `8e91ae97`, 25 `f3eab003`, 35 `963fdc00`, 41 `5267e5db`, 45 `18d15a15` (the life-off prints of the same code). **One change outside the life:** the War's rain (`warZone.ts` `Rain`)
+  rolled the fight's dice for its drops, so any change to a War floor's setup moved its fight; it has dice of its own now (looks the
+  same), and the War floors' fight prints changed with it (life off: floor 41 `5267e5db`, floor 45 `18d15a15`). Not measured well:
+  frame times (the computer was loaded all afternoon; the life's own update is 0.06 to 0.27 ms a frame, timed alone): the quiet
+  re-measure is `python pipeline/tools/heavy.py run -- python pipeline/tools/perf.py scenes --label life-quiet --scenes
+  world-2,gen-15,gen-25,gen-35,gen-45 --profiles desktop,phone-4x --port 5203` twice, once with `--set "{\"globals\":{\"__noLife\":true}}"`
+  and a second label, then `python pipeline/tools/perf-show.py <off> <on>`. Left out on purpose: blowing sand and dust devils (unreadable
+  from the game's camera), heat shimmer (a new full-screen pass), moving the land's sails (they are merged into its ground).
+- **Done and merged (2026-11-16): Climb small fixes** (branch 0aedd452): floor 1's ruler is the Drowned Admiral (four generator lines
+  and the pieces' name); the phone's passive box fits (82 px, clear of the floor panel, also for resource-bar heroes); floor 41's nine
+  spots 1.5 m off the stone drums (floors 42-50 are laid out the same way and likely have it too: next); enemy bolts leave from the
+  hand (net caster, slinger, bowman, thorn sprite) and glide to 1.1 m, the hit unchanged (prints the same). Rust guard lists 19 lines
+  (the new one `projectile.ts`, drawing only). Passed to the lore agent: "The Captain's Key" -> the Admiral's, and the codex's note
+  that the ruler has two names.
+
+- **Done and merged (2026-11-16): ruler and boss looks** (page `docs/models/review/round3/index.html`): fallen rulers lie on the floor
+  (0-3 cm, was up to 1.6 m under), Ash's feet on the floor in all his casts, the Heart's crown sways instead of turning (rays clear of
+  the floor), the five staff rulers kneel with the staff up (kept for all five, by the parent). Ash on the lava: his charge stops
+  1.4 m inside the floor; his wide body only looks out over the lava from the steep camera; left as it is (the parent: the charge's
+  reach stays). Prints the same (duel, raid solo, party, Ash, Heart, world 1 and 5); heroes unchanged.
+
+
+Running, each in its own thread and worktree (`git worktree list`), from its "Paused mid-work" commit, told to finish and check:
+- **Done, not merged, not live (2026-11-16): the lore follows the floors and the models, the mothers "her", a won ruler at its door,
+  Cantor's icons in gold** (branch `t3/climb-lore-rulers-gates`; decisions 4, 6, 7, 9). Page `docs/lore/changes-2026-11-16.html`.
+  The gates: Marin, Fenna, Sefu, Opaline, Oblivion hold their chapter's first gate, the gates above are champions the Tower drew to
+  them (LORE.md, canon 12, the Climb's pages, five heroes' pages). The rulers as drawn: the Pearl Tyrant a woman; the Bell Below, the
+  Lantern Leviathan, the Elder Root (Fenna's oak in an old man's shape), the Hollow Elder, the Lantern Root, the Grey Oak, the Mire
+  Heart, the Scarab Colossus (still the Scarab King's mother: her helm hides the face), the Dune Colossus, the Brass Sphinx, the
+  Glass Serpent, the Prism Mother, Mother of Echoes, the Drowned Lantern described as the people the models are; every event kept
+  (rulers.md, story ch. 6, 8, 9, 13, in-game.md). Floors: the named women "her" (21 lines on 19 floors), and in a commit of its own
+  the Wood keeper's him/her for the four Wood rulers now people and six "It ..." boss titles, then the ruler fights' hints ("Cut the roots that feed her...", "He goes under the
+  sand..."; floors 12-29 and 21): droppable. The six plain workers (the Dockhand, the Fishwife, the Woodcutter, the Water-Carrier,
+  the Ore-Carrier, the Gleaner) have their entries in the Climb's chapters and their peoples' pages. Floor 1's quest is "The
+  Admiral's Key" (it lies in the wreck of his flagship; the keeper: "a chain only his own key will lift"), and the codex settles
+  the ruler as the Drowned Admiral, one name (canon, names, rulers). `game.ts` `pieceDone`: a
+  won ruler leaves the hero in front of its door. Cantor's four icons: engraved gold notes on plum lacquer (before:
+  `docs/icons/batch-5/cantor-before/`). Checked: a no-op re-bake was clean before the change, and after it only the intended words
+  changed; lore-page, lore-codex and lore-game re-made with only the intended lines; the route bot clears floors 1, 21 and all 26 generated floors whose words changed (no errors, no stuck step);
+  the handmade floors' bakes (11, 21, 31, 41, the harbour) and a bake after merging the small fixes show no content change; the door rule in five cases; tsc, build; server tests: three of five runs 364 of 364; two failed on timing (one
+  "shop: timeout waiting for raid_gate", one not captured); the server imports none of this batch's files. Then (the parent's
+  decisions): the War Drummer is the drawn horned giant in the lore, still the azure's drummer boy under the helm (Cleaver's story
+  kept); the named men are "he" (gen/core.ts `MEN`, 25 lines on 20 floors; beasts, things and names that do not say stay "it");
+  floor 11's "cut the roots that feed it" stays (the Elder Root is still the oak). Checked: re-bake only those lines, lore scripts
+  only the drummer's lines, the route bot clears the 20 floors (3, 6, 9, 24-26, 28, 32, 35, 37, 40, 42-50; floor 6 cleared with
+  7 falls, 49 with 5: the bot's fights, the words change nothing there), tsc, build, `SMOKE_SLOW=2` server tests 364 of 364.
+- Open world stage 3: done and merged (the entry below).
+- **Done, on branch `t3/b9981adf` (not merged, not live) (2026-11-16): the model review, round 3: decision 10's four ruler and boss
+  looks** (page `docs/models/review/round3/index.html`, linked from round 2's). Fallen Climb rulers lie on the floor (all 15: 0.1-1.5 m
+  under -> 0.00-0.03 m; `RealHero.restOnFloor`, Climb figures only); Ash's legs stay on the floor in every cast, the kneel and the fall
+  (up to 2.4 m under -> 0.00; `BodyParts.keepAbove`); the Heart of Noon's crown sways in its last phase instead of turning its long rays
+  into the floor (lowest -1.09 -> +0.81 m); a kneeling staff ruler holds its staff up, planted in front (all five staff rulers alike:
+  worth the user's eye; `RealHero.plantHeld`). Ash on the lava: not a fight fault (the Charge stops 1.4 m inside the 16 m floor; his
+  body hangs 0.4 m over the stone lip); stopping it 1.8 m short is a rule change and waits for a yes. Proof: seven perf prints the
+  same before and after (duel-temple 90b1abaa, raid-solo ff20c830, raid-party 9c4a9c48, raid-ash e47e69ce, raid-heart d2d3cf3e, world-1
+  98b0044a, world-5 b2403b4c), hero prints Anka, Kaia, Sefu the same. One News item. No Blender rebuild needed.
+- **Done and merged, not live (2026-11-16): the sixteen hero touches, the underwear cover, 20 portraits** (branch 8c8d023c). Page
+  `docs/heroes/touch/index.html`. Each of the sixteen shows its people (skin, eyes, marks; LORE.md and the codex lines updated);
+  only Big Yoko showed the painted underwear, and the build now covers it on every hero; 20 portraits redrawn. Worth the user's eye:
+  marks show only close up; Anka a little lighter; Wick's braids read as beads close up.
+- **Done and merged, not live (2026-11-16): spell icons by VectorCraft for all 40 heroes** (163, version B; merge dd9ec68b).
+  Overview `docs/icons/index.html` (every hero's four at 64 and 32 px beside today's), `docs/icons/all-32.png`. Lazy loaded
+  (`src/icons/vc.ts`, two lines in `src/heroes.ts`; SVGs `public/icons/spells/`), the canvas icons stay as the fallback; the page's
+  start grows 489 bytes gzipped. 21 palette rows added to the art bible. Waiting on the user: a look; weakest at 32 px: Lyra's Q and
+  W (thin), the Illusionist's E and R (both hats), Sirix's swarms and Brannoc's Quench (busy); Cantor's pink notes are the nearest to
+  cartoon (redraw as engraved gold?). Not tried on Safari.
+- **Done and merged, not live (2026-11-16): the hero framework, steps 1 and 2** (the design `docs/pipeline/hero-framework.md`, its page
+  `docs/pipeline/hero-framework/index.html`, two fight prints per hero: `python pipeline/tools/hero-prints.py check` and
+  `check --foe Brannoc`, add `--port 5192` or another free port). Waiting on the user: the "found broken" list (section 8).
+- **Done and merged, not live (2026-11-16): step 3, Anka moved** (page
+  `docs/pipeline/hero-framework/anka.html`, design section 10). All of her in `src/heroes/phoenix/` (card, numbers, passive, spells,
+  look parts, old icons), found by `import.meta.glob` (`src/heroes/index.ts`); her four spells on the first spell blocks
+  (`src/heroes/framework/`: bolt, circles after a fuse, a swept lane, a move; the runner). The game now registers only the spells it
+  can play (`src/spells/targeted/game.ts`): its first download 7,576 KB -> 6,065 KB of script (a fifth less). Proven: 80 of 80 fight
+  prints the same, the roster identical, sim 52.1% (old code 49.5%), online two screens agree 98-99% as at gate 5, perf prints the
+  same fights, Rust guard unchanged (18 lines, none hers), tsc, build, 364 server checks. Shared engine files: only `src/game/main.ts`, two lines (the game's spell list); `duel.ts`,
+  `arena.ts`, `heroMode.ts`, `runtime.ts` untouched. For the next batches: a hero's, boss's or floor's spell goes in
+  `src/spells/targeted/game.ts` (one added only to `index.ts` is tool-only and plays nothing in the game); `guard.py` still finds
+  heroes in `src/kits` and must learn the folders before a ported hero moves. Waiting on
+  the user: a look at the page, then whether to move the other 39 (about 8 a batch, each with its prints).
+- The Climb review (the user: "go slowly through all tower floors, check everything that is done and correct it"): two agents,
+  floors 1-30 and floors 31-50, one floor at a time; small fixes committed per floor, anything bigger or a matter of taste listed
+  for the user; pages `docs/tower/review/floors-01-30/` and `floors-31-50/`. They keep off the stage 3 files.
+- **Done and merged, not live (2026-11-16): the model review of the Climb, the bosses and the arenas** (58 models; page
+  `docs/models/review/index.html`). Fixed in code: the War bowman levels his crossbow; the Pale One's and the rulers' gowns no longer
+  sink at a blow; the five staff rulers plant the staff instead of driving it 2 m into the floor (`climbFigure` in `src/heroFigure.ts`,
+  Climb models only); enemies backing off or circling step the way they go; 16 enemy looks' health bars above the crown (set from
+  measurements, not looked at). Blender list (`docs/models/review/blender-list.md`): Tide Judge glaive and Harbour cannons passed to
+  the heroes' review (the one Blender agent); the cream that blooms white on seven people in the Sands' and War's light waits on the
+  user (15 % darker, `#cdbf9c`?). The Turncloak's placement on floors 42-43 passed to the floors 31-50 review. For the engine: every
+  enemy's shot leaves at 1.1 m (`src/effects/projectile.ts`), the bowman's crossbow is at 1.7 m. Not checked: the Heart of Noon, the
+  rulers' flinch, kneel and fall, the older arenas' backdrops.
+- **Done, on branch `t3/1cbb14d0` (not merged, not live) (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`).
+  All 40 measured through every clip (`pipeline/tools/hero-review.js`), a sheet each, a CPU duel each over the nine arenas, three on a
+  Climb floor. Three faults across the roster, fixed in code (`src/motion/real.ts`, two lines in `HeroFigure.followReal`), no model
+  rebuilt: every hero stood 3-12 cm sunk into the floor and big boots rolled up to 13 cm under it in a stride (now raised at load and
+  planted in a stride); hands went into coats and robes (the older figures' push-out now on the fourth style, eased); 16 of the 18
+  left-hand holders laid their staff, scepter, lyre, lantern on its side in every cast (now upright; Anka's fan and Silvane's mirror left
+  as they were). Duel prints unchanged (temple 90b1abaa, harbour d8b98583; `docs/perf/data/heroreview.json`).
+  **Waiting on the user:** the list on the page (staffs upright: keep?; Professor Puff casts with his empty hand; Sefu's headdress in
+  his dash; Big Yoko's arms over the rope; Fenna's staff at her antlers). **Also done on the branch:** the model review's Blender
+  round (the Tide Judge's glaive shortened behind the hand, the harbour's cannons at 0.9: page `docs/heroes/review/blender.html`;
+  the cream bloom still waits on the user). The fixes reach the Climb's 55 figures too (same build): they stood 2-8 cm sunk and now
+  stand on the floor; prints of duel-temple, tower-horde, world-1 and world-3 are the same as on feat/particle-editor
+  (`docs/perf/data/heroreview-climb.json`, `heroreview-pe.json`).
+- **Done, on branch `t3/4027b1bb` (not merged, not live) (2026-11-16): the model review, round 2** (page
+  `docs/models/review/round2/index.html`, linked from the first round's page): what the two rounds left unchecked, looked at in the game.
+  Fixed: the Heart of Noon's rings sank 2.8 m under the floor in its fall (now lie on it, `src/raid/bodies/heart.ts`); the Hollow Oak's
+  and the Raider Chief's health bars raised clear of branches and glaive (`foeKinds.ts`). Fine: every hero's soles on all five chapters'
+  floors, the 40 heroes' and 25 people's sizes, the five older arenas from the duel camera, the rulers' flinch, kneel, knock-up, 14 bars.
+  Prints duel-temple, raid-party, world-1, world-4 the same before and after (`docs/perf/data/r2-before.json`, `r2-after.json`; world-1
+  is 98b0044a on this branch already before the change, not d862aa08 as in prints.json). **Waiting on the user:** the rulers lying through the floor
+  when they fall (Scarab 1.5 m), Ash's rigid legs a metre under the floor in every cast, the Heart's crown rays in its last phase, the
+  Crow King's staff head-down in his kneel, the Glade's tree crowns at the widest zoom, small arena notes. **For the floor reviewers
+  (31-50):** floor 41's places "east" and "north" and four pack homes sit on 0.9 m drums of cover. **For the engine:** where shots leave
+  (1.1 m for all; a proposal of about six lines in `projectile.ts` on the page). Not done: a hero casting spells on a Climb floor.
+- **Running (the user: "look at the map and fill it to be more lively"):** a livelier Climb, ambient life as a layer of its own
+  (birds, fish, smoke, wind, people at work, set dressing); chapter I (the Sea) first, page `docs/tower/life/`, then it stops for the
+  user's yes before the other four chapters.
+- **Server tests (2026-11-16):** failed three times under load (six agents running), each time on a different timing check; on the
+  merged code with the machine quiet they pass (`npm run test:server`).
+- Stray: `C:\c` (261 MB of misplaced scratch copies, an agent's wrong path) could not be removed (safety check); the user may delete it.
+- **Done and merged, not live (2026-11-16): the heroes' model review** (page `docs/heroes/review/index.html`): every hero stood 3-12 cm
+  sunk (now on the floor), hands went into long coats (arms now clear), staffs and lanterns lay crosswise in casts (now upright for 16
+  of 18; one line to undo: `uprightHeld` in `HeroFigure.followReal`); the Climb's 55 figures on the floor too; the Tide Judge's glaive
+  and the Harbour's cannons rebuilt in Blender. Prints unchanged. For the user: the upright staffs; Anka's fan and Silvane's mirror
+  left flat; Professor Puff casts with his empty hand; Sefu's headdress in Scarab Stride; Big Yoko's arms 25 degrees out; Fenna's
+  staff brushes her antlers.
+- **Done and merged, not live (2026-11-16): model review round 2** (page `docs/models/review/round2/index.html`): the Heart of Noon
+  in its room and the Warden, Ash and Ember filmed; the rulers' flinch, kneel and fall; the 16 health bars; the five older arenas; all
+  40 heroes on each chapter's first floor; a line-up of 40 heroes and the 25 people. Fixed: the Heart's three rings sank 2.8 m when it
+  fell (now on the floor); the Hollow Oak's and the Raider Chief's health bars clear. For the user: big rulers lie up to 1.5 m into
+  the floor when fallen; Ash's legs go a metre under the floor in casts; the Heart's crown rays turn into the floor in its last phase;
+  the Crow King's staff head-down when kneeling; the Glade's tree crowns fill a corner at the widest zoom; Frost's low ice and two
+  Temple lintels. For the Raid's owner: once Ash charged past the room's edge onto the lava. Passed to the small-fixes agent: floor
+  41's spots on stone drums, and the shots' start height (proposal in the page).
+- **Done and merged, not live (2026-11-16): the Climb's floors 1 to 30 checked one by one** (branch 9dd77508; page
+  `docs/tower/review/floors-01-30/index.html`, an entry per floor `fNN/README.md`, tools `pipeline/tools/climb-review*`). All 30 cleared
+  by the bot with no errors and no stuck spots; every place reachable; every ruler on its own model. Eight faults, all in the words,
+  fixed in the generators (floor 1's market and beacon names, the map's names (the 31-50 version kept), "is" -> "are" on 4, 5, 28, the
+  Wood's Lost Spade item, the Thorn Mother "it", floor 20's "has fallen", the Sands' lair door naming its own key). **Waiting on the
+  user:** floor 1's ruler is "the Drowned Captain" but the lore and the model say the Drowned Admiral (five strings); the Pearl Tyrant
+  (6) a man in the lore, drawn as a crowned woman; many rulers are beasts or things in the lore but drawn as people (accepted line-ups:
+  change the lore's words, or new models); named enemies all "it" (the Dune Mother "her" on 21 only); on a phone the hero's badge box
+  is taller than its contents (`src/tower/world/hud.ts`).
+- **Done and merged, not live (2026-11-16): the Sea's life** (branch `t3/climb-sea-chapter-life` a8d3d4c3; page
+  `docs/tower/life/index.html` in that worktree): gulls, smoke, cloth in the wind, boats, rings and fish, walkers, small things on the
+  ground, as a layer `src/tower/world/life/` (3 lines in `world.ts`; `?life=0` off, `?life=lite` the phone set). Fights the same with
+  it on or off; desktop +0.3-1 ms, phone about +2-5 ms (noisy). Asked: yes for the other four chapters? Coast workers built for the
+  walkers? more or less? phones lighter or off? sound (a new system)? `land.ts` would need one line (`landLife`) for chimneys and sails.
+Nothing pushed or deployed: everything merged on `feat/particle-editor` is still not live.
+
+**Done and merged, not live (2026-11-16): the Climb's floors 31 to 50 checked one by one** (the user: "go slowly through all tower
+floors and one by one check all things that are done and correct them"; floors 1 to 30 by another agent). Page with pictures:
+`docs/tower/review/floors-31-50/index.html` (remake: `python docs/tower/review/floors-31-50/make.py`). All 20 played through by the
+route bot with no page errors, every spot reachable, every model, line and name looked at. Eight faults fixed at their cause: the big
+map's names overlapping and running off its edge, the minimap under people's marks (`map.ts`, all floors), floor 31's giver's line,
+floor 32's jetty through a ridge, the Deep's wall crystals hanging in the air (all ten Deep floors), Brannoc not shown as floor 41's
+rival, "Ash and Ember waits" on floor 50, the Turncloak standing in the camp's bench and tent (42 to 50; from the model review). News item "The Deep and the War, floor by floor, set right" (`live: false`).
+Also checked: the War's two armies on 42-50 with a banner taken, the fights on a phone.
+**Done, not merged, not live (2026-11-16): the follow-up round** on branch `t3/tower-review-floors-31-50` (to merge into
+`feat/particle-editor`), eight items from the list made as faults: people's marks under the HUD (`hud.ts` layer 5), the set piece's
+title box under the hero's panel (`pieces/hud.ts`), the trial rooms show the Climb's floor (the fight's tuned height kept), a rival who is
+the player's own hero is the next on the roster (`rival.ts`; floor 32 as Lyra meets Vitriol), the War's words (the Iron Marshal's
+title, four last phases, the Camp-Mother on 43/45/47/49), "No life lost" after a lost trial. All chapters for the shared ones. Page
+section "The follow-up round"; News item "Clearer fights and your own rival on the Climb" (`live: false`).
+**Waiting on the user:** who holds the gates (the codex says Opaline and Oblivion; the generated floors have others), the white-robed
+people in the War's sun, a won ruler sends the hero to the last waystone. Two empty folders, `C:\x` and `C:\x2`, left by a mistyped
+picture folder, can be deleted by hand.
+
+## Paused (2026-11-14, late) and RESUMED (2026-11-15, the user: "continue")
+
+The three agents below were restarted in their own threads from their saved commits and are running again; the deep lore starts when one finishes (three at most).
+- **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
+  clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
+- **Running again from a "Paused mid-work" commit on each branch (not merged yet):**
+  Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
+- **Done and merged, not live (2026-11-15):** the Climb's open world stage 2, shared packs and scaling with players (PROTOCOL 18;
+  `pipeline/designs/climb-open-world.md`, pictures `docs/tower/openworld/stage2/`). Signed-in players on a floor fight the same packs;
+  the first to wake a pack runs it, it passes to the oldest player near if they leave; packs grow with the players in the fight
+  (health x(1+0.6 per extra), blows x(1+0.15)); a kill counts for all who hit it in its last 10 s; a cleared pack respawns after 3 min
+  when two or more are on the floor. Tested in two real tabs (screens agree within 0.1 m; hand-over in 0.3 s). 23 new server
+  checks. Known: the phone frame with others' packs is not measured cleanly (the floor alone is already over a frame on phone-4x);
+  the raid perf print moved (34f75b29, follows how the code loads, not the change); after any change to a floor's packs run
+  `node pipeline/tools/climb-packs.mjs`. Stage 3 (doors and bosses together) is described in the design; waits on the user's look.
+- **Done and merged, not live (2026-11-15):** the engine pieces for the twenty new heroes (`pipeline/designs/heroes20-engine.md`;
+  tests `python pipeline/tools/heroes20-engine/run.py all`): 17 pieces from the sheets plus 3 found (enemy HP, facing, footprint
+  trail, lines and strips, a second cast origin, what the CPU walks round, HP bar cuts, an engine channel over `stacks`, sleep,
+  spell-stopping wards, leash and swap, a sealed key, tokens, one-sided ground, breaking cover, a bolt-pulling lantern, placed things
+  with HP, a dash that fizzles, unseen, a cleanse), each tested, checked online with two bots. No hero or kit yet; nothing a player
+  sees changes. Seventeen of the twenty can be built with no more engine work; Corbel (perching), Hesk (the golem that turns) and
+  Thessa (the seam) only in a simpler form. Builders' notes are in the design file. The raid perf print varies run to run on the same
+  code: fixed since (the leftovers entry in this section).
+- **Fixed:** the server test "shop: timeout waiting for boards" failed on Sundays (the test moved its clock a day, into the next
+  week, before its Tower report). Now 329 server checks pass.
+- **Done and merged, not live (2026-11-15): the leftovers.** Grass kept off cliff faces on every Climb chapter (one rule, `grassStands`
+  in `src/tower/world/land.ts`: the ground within 2.4 m may not rise faster than 31 degrees; the Sands' shrubs on faces over 45 degrees
+  17 -> 0); the War's scenes past the edge seated on their hills as one piece (`seat` in `src/tower/world/scenes/war.ts`, at most 8
+  degrees and 0.4 m; floating pieces 2-8 a floor -> none; tall walls lean a little with the hill, e.g. the burned mill on floor 42).
+  Pictures and numbers `docs/tower/props/cliffs/index.html`. **The perf print is now the same every run** (the tool's clock starts at
+  the same moment, late arrivals use their own dice): raid-party 9c4a9c48 every run; duel-harbour moved to d8b98583 (a measurement
+  change). **The new baseline is `docs/perf/data/prints.json`** (menu, duels, raids, tower-horde, Climb floors 1, 11, 12, 21, 31, 41).
+  Not yet run under the new clock: `arena-*`, `gen-2-*` and most phone profiles.
+- **Decided (2026-11-15; the user: "you decide" on the open list):** textures: the painted underwear covered on every hero that
+  shows it, no contact shadow, no gold edges (done with TextureCraft in the touches round, after the revamps: one Blender agent at a
+  time); icons: VectorCraft for all 40, version B, Mum's "dusk / chalk" row into the art bible (agent running); the rulers' and
+  enemies' line-ups accepted as built; the twenty unreleased heroes stay out of the game's Codex (story book included) until each
+  ships; open world stage 2 accepted, **stage 3 next** when a slot frees; push and deploy once the revamps and the story land (ask
+  the user then: a deploy drops live connections).
+- **Stopped, saved on its branch (see the top) (2026-11-15): spell icons for all 40 heroes with VectorCraft**, in batches of 8 with a page each (`docs/icons/batch-<n>/`),
+  built on the sample branch; the temporary `?icons=vc` hook becomes real lazy loading, the canvas icons stay as the fallback.
+- **Next, the user said yes (2026-11-16): the hero framework.** One folder per hero (kit, spells, passive, weapon, look, icons, lore
+  entry; found by the game on its own), spell building blocks (bolt, dash, ground zone, shield, summon, status) so a spell is mostly a
+  description, a "new hero" command that makes the folder, lore entry, kit outline, model build file and checklist, a hero workbench
+  page (change numbers live, fight the CPU, see the balance), and automatic checks on a hero change (simulator, online sync, icon at
+  small size, model size, lore). Anka converted first as the sample, then the other 39 in batches, each checked in the simulator so
+  none plays differently; the twenty new heroes built the new way. Steps 1 and 2 running (the icons are merged). Brief: `docs/pipeline/hero-framework-brief.md`.
+- **Done and merged, not live (2026-11-16): the Climb's open world stage 3, doors together** (branch
+  `t3/climb-stage3-doors-together` 6226e5b3, PROTOCOL 19; `pipeline/designs/climb-open-world.md`, multiplayer.md "stage 3", pictures and numbers
+  `docs/tower/openworld/stage3/`). **Only a ruler's lair** (and a crown floor's Raid boss) is fought together; gates, trials and rivals
+  stay alone (the gate and rival are CPU duels, not on the boss path). Walking into a lair with another player of the shard within 30 m
+  holds the door 6 s (a line with "Go in now" for the first; the others near are invited to walk in); whoever walks in fights the ruler
+  on the Raid's machinery (one brain, `NetLink`, revives, hand-over), set for the party (health and gauge x(1+0.75 per extra), blows
+  x(1+0.15)); seats stay in the shard; all come out side by side in front of the door; the clear counts for whoever hit, nothing for one
+  who never did, all down is a life each. Nothing on the accounts. Checked: server tests 364 (35 new), type check, build, a two-tab run
+  (A Kaia, B Lyra, floor 1 then 2): both see the same ruler (its place within 0.05 m p95 after the 100 ms play-back delay, health within
+  0.1 % p95), B struck down and got up by A's autopilot in 4.3 s, A's tab frozen 5.5 s: B took the brain in 4.7 s; A's tab closed: B took
+  it in 0.37 s and won alone; the clear counted on both (lair won, 40 shards), both back side by side in shard 1.1; both connections
+  dropped mid-fight: both out with nothing counted, lives kept, back in the same shard. Route bot (not signed in) clears 1, 11, 21, 31,
+  41; perf prints the same (duel-temple 90b1abaa, raid-party 9c4a9c48). A crown floor's lair stays alone (not played on two screens). Known: the ruler's sentries,
+  guard and called keepers are each screen's own (each hero clears its own; only the brain's felled sentries earn stagger or a kneel);
+  the duel's boss health bar stays hidden in Climb ruler fights, alone or together, as before (the party list shows the heroes); a lost
+  party fight wakes everyone at the door (alone: at the last waystone); nobody joins a fight once it began; a guarded or still ruler
+  (floors 11, 41) and a party of three were not played in two tabs. After any change to a floor's doors or ruler: `node pipeline/tools/climb-packs.mjs`. Next (stage 4): invite a friend into
+  your shard, friends shown on the Climb screen, CPU heroes that fight more than one player (to share gates and rivals).
+- **Done and merged, not live (2026-11-16): the whole story, The Long Noon** (`docs/lore/codex/story/`, 14 chapters, about 34,800
+  words; codex 114,105 -> 157,491 words; its own Codex book, 64 KB gzipped). Canon: the Tower (the Aumbry), built on another world,
+  Senmere, by the vault-keeper Iselm (now the Sun Warden) to keep his dying daughter at her hour, collects worlds; it took the sun's
+  noon at the Fall. Chapters 1-6 are history up to year 100; the rest (the climb, the last verse, a new sun, the epilogue with
+  Frostfall, Aubade and the Gloaming still inside the Tower) is still to come. Six heroes are not simply Dial-born: Zambini and
+  Kohaku (Returned), Tempo (Half-kept), Anka and Nyx (Spilled), Oblivion (Followed). The game's Codex names none of the twenty
+  unreleased heroes (titles instead; a check enforces it). Ready texts to tell it in the Climb and the Raid: `story/in-game.md`
+  (not wired in). Its new names were confirmed by the user (2026-11-16).
+- **Done and merged, not live (2026-11-16): six heroes reworked to show their peoples** (page `docs/heroes/revamp/index.html`, one
+  commit each): Opaline (Gloaming folk: amethyst crystal in her skin, violet-black hair, amethyst gown; the dark sister beside
+  Silvane), Mr. Ledger (the Long Dead: vellum skin on bone, ember eyes), Kaia (Coast folk: sea-tanned, oilskin storm coat, tide lines,
+  silver knot with a sea-green lock), Brannoc (Kilnborn: ash skin, glowing seams, ash beard), Hank (Wood folk: antlers sawn flat),
+  Grandma Ironknit (Briarkin: pointed ears, silver eyes, long fingers). Sizes 449-584 KB. Kits unchanged. Hank's hit size kept (antlers
+  aren't body). Known: faces too small to read from the duel camera (Ledger reads by robes and quill there); four are over the
+  gate's ~25,000 triangles; the 2D portraits still show the old looks (remade in the next round). Pictures again:
+  `python pipeline/tools/revamp-shots.py after --port 5263`.
+- **Stopped, saved on its branch (see the top) (2026-11-16): the sixteen touches, the underwear cover and the portraits** (one Blender agent; page
+  `docs/heroes/touch/index.html`).
+- **Done, NOT merged (samples on their branches), waiting on the user (2026-11-15): the ArtCraft apps** (the user: "use the art
+  craft tools"; `docs/ART_BIBLE.md`, "Outside tools the user allows"). VectorCraft 0.24.1 and TextureCraft 0.6.1 portable, checksums
+  checked, in `C:/Users/erich/AppData/Local/Programs/ArtCraft/VectorCraft/` and `.../TextureCraft/` (delete the folder to remove).
+  - **Spell icons (VectorCraft)**, branch `t3/vectorcraft-spell-icon-sample` (e49f19c): Anka and Mum, four spells each, versions A
+    (inside the frame) and B (118%, over its edge; the agent's pick); page `docs/icons/sample/index.html` on that branch, 32 px sheet
+    `zoom32.png`, bar pictures `bar/`. All 8 about 18 KB gzipped. Remake: `python pipeline/icons/vectorcraft/make.py`. About 10-15 min a
+    hero, 7-10 h for the other 38, in batches of 8 with a page each. **Its `?icons=vc` hook (`src/heroes.ts`, `src/icons/vc.ts`) is
+    for the sample only and comes out before any merge.** Questions: this style for all 40? A or B? Mum's proposed "dusk / chalk"
+    palette row into the art bible? Keep every icon's lower-left corner clear (the key letter sits there).
+  - **Hero textures (TextureCraft)**, branch `t3/texturecraft-hero-sample` (abc2797), on Big Yoko (`docs/heroes/texturecraft-sample/`
+    on that branch): the pack's painted underwear covered by a skin layer (its mask works for every male-body hero), a light contact
+    shadow on the rope and crimson cloth (reads close up, hardly from the game camera); gold on edges tried and turned off (thin pieces
+    went all gold). 507 -> 554 KB, skeleton, clips and colours unchanged. Redo: `python pipeline/textures/texturecraft/sumo/run.py`.
+    Questions: yes to the look? Underwear cover only for every hero that shows it (under an hour, no size cost), or the shadow too
+    (heroes near 600 KB have no room)?
+- **Phone speed after the rulers' models (2026-11-15), the machine busy (Radeon Software high), so noisy:** floor 41 the same (105
+  vs 108 ms median, phone-4x); floor 21 slower, two runs each: with models 71 and 96 ms, before 50 and 67 ms (data
+  `docs/perf/data/phone-models-*.json`, `phone-f21-*.json`). Likely the Sands' figures cost on a phone; measure on a quiet machine
+  or a real phone before fixing.
+- **Done and merged, not live (2026-11-15): the Climb's own rulers (15) and enemies (15) as models** (page
+  `docs/tower/models/index.html`, 100 pictures; `public/models/tower/`, 11.5 MB for all 30, a floor loads about 1.5 MB). Three rulers a
+  chapter, each on three floors under its own name and tint; three enemies a chapter (melee, ranged or casting, the big one); beasts,
+  wraiths, escorts and guards stay drawn in code. Route bot clears floors 1, 11, 21, 31, 41, every ruler on the first try. Phone-4x
+  within noise on floors 1, 11, 31; **floors 21 and 41 on phone not settled** (machine too loaded; one pair on 21 read 49.9 vs 24.3 ms):
+  `python pipeline/tools/perf.py scenes --profiles phone-4x --scenes world-3,world-5` on a quiet machine. Climb prints moved (floor 1
+  d862aa08, 31 19e8c310, 12 72213473), partly from three.js's random ids when a model file is parsed. **Waiting on the user:** a look at
+  the line-ups; the names and which floors share a ruler, the Wood's and the Deep's enemy picks are the agent's calls. Left as is: the
+  bowman's crossbow and the lurker's claws are small at rest, the slinger's and net caster's hoods read as caps, a ruler's basic
+  attack is still its stand-in hero's.
+- **Done and merged, not live (2026-11-15): the deep lore.** Twelve peoples of the Dial (Aubade folk, Dune folk, Gloaming folk,
+  Northerners, Coast folk, Kilnborn, Wood folk, mole-folk, the Ninefold, Briarkin, the Long Dead, the Fallborn); the codex
+  `docs/lore/codex/` (106 files, LORE.md + codex about 129,500 words from 13,790: history, realms, the Climb's chapters, bestiary and
+  rulers, factions, all 60 heroes with biographies and voice lines); the in-game **Codex** screen (menu, and "More about ..." on a
+  hero's Lore panel; own chunks, the page's start +1.7 kB) and each hero's people on the Lore panel and Play card. Checks:
+  `python pipeline/tools/lore-page.py`, `python pipeline/tools/lore-codex.py`. Pictures `docs/lore/pictures/`.
+  **The revamp plan** (`docs/lore/codex/revamp.md`, table on `docs/lore/index.html`): 6 revamps (Opaline, Mr. Ledger, Kaia, Brannoc,
+  Hank, Grandma Ironknit), 16 touches, 18 unchanged; the twenty new heroes each have a people and a look brief.
+  **Waiting on the user:** a yes on the plan (then the Opaline sample in Blender, one at a time); why the sun fell (the Hymn broke /
+  the Tower took it / something came through the Tear); what the Tower is (a clock / a collector of worlds / the sun's own stalk);
+  the new names (`docs/lore/codex/names.md`); whether the twenty unreleased heroes' names may show in the game's Codex.
+- **Done and merged, not live (2026-11-15): the phone top bar and tabs.** At 600 px and less: four tabs (signed in Play, Raid, Tower,
+  Clan; a guest Play, Raid, Tower, Shop) and More (the other tabs, Graphics and Log out in a panel); labels 11 px (were 7.5); the
+  name ends in "..." and opens the Profile; coins open the Shop; every control at least 36 px; `--tabbar` 56 -> 60 px. Desktop the
+  same, but a 16-letter name no longer pushes Log out off the bar. Pictures `docs/game/topbar/` (README there).
+- **Built, merged into `feat/particle-editor`, not pushed, not live:** the Climb's minimap (top-left, follows the hero) and the whole
+  floor on M or a tap (`src/tower/world/map.ts`); Online match says how many wait in the duel queue (`queue_size`, no PROTOCOL change);
+  the tactics' second pass (above). News: the release "A map of the floor, and who waits to duel" (`live: false`).
+- **Merged, not live:** the Climb's own people: 25 figures, five a chapter, no hero reused (`src/tower/world/folk.ts`,
+  `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb prints were retaken (2026-11-15, `docs/perf/data/prints.json`). Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
+- **Twenty new heroes designed:** cards `docs/heroes/next10/`, `docs/heroes/next20/`, full kits on paper `docs/heroes/kits20/` and `pipeline/designs/kit-<theme>.md`; lore `docs/lore/` (rebuild: `python pipeline/tools/lore-page.py`, `python pipeline/tools/kits20.py`). Waiting on the user's pick and the lore's open calls.
+- **Merged, not live:** the Sea and the Wood's props set right: 37 faults fixed at their cause on floors 1-20 (`docs/tower/props/sea/`,
+  `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
+- **Merged, not live:** the Sands, the Deep and the War's props set right: 41 faults on floors 21-50 (`docs/tower/props/sands`, `deep`, `war`).
+  Left: grass tufts on cliff slopes (shared land code), War scenes past the edge sit off the hills on their downhill side.
+- **Merged, not live:** online leaderboards (duel rating, weekly duel wins, Raid, Tower, Climb, clans) and clans with a clan chat
+  (create, join by code or by asking, 30 members, word filter, personal mute, leader's 24 h mute, Report to the log, online dots,
+  unread count). **PROTOCOL 17:** open tabs reload at the next deploy. Docs: `docs/architecture/multiplayer.md`, *Leaderboards and
+  clans*; pictures `docs/game/social/`; checks `node server/smoke-test.mjs --social`.
+- **Running (worktree agents):** (1) the Climb's open world stage 2: shared packs, scaling with players, respawn (PROTOCOL 18);
+  (2) the Climb's rulers and enemies get their own models (15 + 15; Blender); (3) the engine mechanics the twenty new heroes need
+  (`pipeline/designs/heroes20-engine.md`), no hero yet.
+- **Built, not live: the lore in the game** (2026-11-14, the user: "put the lore into game, small hero lore, from where, how old"):
+  each hero's open row on the Heroes screen shows faction, home, age, line, legend and ties; the Play card shows faction and home;
+  the loading screen names the tie when two linked heroes meet. Source `docs/lore/LORE.md` (every roster hero now has `- home:` and
+  `- age:`), game data by `python pipeline/tools/lore-game.py` -> `src/game/lore.ts` (loaded on first need).
+- **Next agent when a place frees: the deep lore** (the user, 2026-11-14: "revamps of some heroes, they seem all the same, like human;
+  make the lore 10x deeper; match heroes to lore; from now on match all heroes to our lore"). The peoples of the Dial (not only
+  humans), about ten times the lore in a codex (`docs/lore/codex/`), a Codex screen in the game, each hero's people, and a revamp
+  plan (no / touch / revamp for all 40, the twenty new heroes' looks from their people) for the user's yes. The rule is in CLAUDE.md
+  and `docs/pipeline/new-hero.md` (rule 0). The twenty new heroes' looks wait for the peoples.
+- **Queued for the next Blender turn (after the rulers and enemies): the faction look check.** The user: "if we need to remake some
+  heroes to match their region, do it". First line-ups of each faction's members side by side, and a proposal of what to change
+  (a faction colour or sigil on a hero, or a remake) for the user's yes; then the changes.
+- **The twenty new heroes: the user said "all of them, matched to the lore" (2026-11-14).** Plan: the engine mechanics now (3 above);
+  the looks (gate 2) in batches of five in Blender once the rulers' and enemies' Blender work ends, each faction's colours and its legend in
+  the figure, line-ups for the user's yes; then spells, CPU and balance per hero in the build order of `docs/heroes/kits20/`.
+- **Merged (words only):** the heroes' lore: the world (the Dial), eight factions, a legend
+  and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
+  `docs/heroes/kits20/`).
+- **New project:** ArenaWorld, an original open-world RPG in Rust (`C:\Users\erich\ArenaWorld`, its own repo and session): stage 1, the
+  world generator, in progress there.
+
+## The Climb to 50 floors, the new scope (2026-11-14): all fifty floors done at five times the ground; scenes on every floor; **pushed and live 2026-11-14** (version e47791ff)
+
+- Branch `tower-50`. All fifty floors (the sea, the Wood, the Sands, the Deep, the War) are made at the new size and checked; every
+  chapter has its depth pass and its scenes (little stories in props, about 20 a floor, on all fifty floors: `src/tower/world/scenes/`,
+  pictures in `docs/tower/climb50/<chapter>/scenes/`, `?scenes=off` leaves them out); the packs fight together with a pattern per kind, every special telegraphed (`src/tower/world/tactics.ts`, pictures `docs/tower/tactics/`); the scenes' refining pass is merged for all five chapters (bigger main pieces, painted ground, many more along the roads: `docs/tower/climb50/<chapter>/scenes/refine/`); every floor builds 1.5 to 3 times faster (the ground's noise); the first enemy's freeze is mostly gone (`prewarm.ts`); **the open world, stage 1** (signed-in players on a floor see each other, shards of 8, PROTOCOL 16: `pipeline/designs/climb-open-world.md`) is merged, waiting on the user's look before stage 2; the navigator is fast on large floors (same routes, tested), so the 2 s freeze is gone; the new models wait on the user's yes. Everything, with numbers:
+  [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *Progress on the new scope*.
+- **Waiting on the user:** yes or changes to the sea's new models (docs/tower/models/sea-lineup-front.jpg on the branch
+  `t3/tower-sea-npc-models`).
+
+## The Climb to 50 floors (2026-11-14): chapter 1 (floors 1 to 10) made and checked, and the renumbering done; on branches, NOT merged, NOT live
+
+- The user: "we want to make 100 floors", then "okay lets make it up to 50 floors": five chapters of ten (Sea, Wood, Sands, Deep,
+  War); today's five floors are the chapters' handmade floors; eight floors a chapter made by a generator; every tenth a crown (a
+  Raid boss, alone). The plan and where it stands: [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md).
+- **Done:** the sea's generator and floors 2 to 10 baked and checked (route bot 24 of 24 on floors 2 to 9, floor 10's Sun Warden
+  beaten twice). Work is on the local branch `tower-50` (from `feat/particle-editor` at the floor 1 look); the renumbering (below,
+  on `t3/climb-50-renumbering`, from `tower-50`) puts them in the game's list of floors.
+- **The renumbering (stage 3), done 2026-11-14 on the branch `t3/climb-50-renumbering` (from `tower-50`); NOT merged, NOT live:**
+  the sea's floors 2 to 10 are in the Climb's list; the Wood, Canyon, Deep and Banners are floors 11, 21, 31 and 41 and play the same
+  fights (they keep their old number as `tunedAs` for their seeds and roaming enemies; the perf tool's `world-1` to `world-5` print
+  the same before and after); "next floor" is the next one that exists (after 11 comes 21 until 12 is made); the Climb screen shows 50
+  floors in five chapters (built, locked, "soon", a crown on every tenth); a browser's saves move once (version key
+  `tower.world.version`: old 2 to 5 -> 11, 21, 31, 41 for stars, times, a run in progress and the floor reached; old 6 -> 42); a News
+  item (`live: false`). Checked: type check, build, `npm run test:server`, the save test in a real browser
+  (`pipeline/tools/climb-saves/`, four runs, all ok), floors begun and continued from the menu, the route bot cleared floor 11.
+  Pictures: `docs/tower/climb50/`. Details: [tower-50.md](../pipeline/designs/tower-50.md), *The renumbering*.
+- **Not done:** chapters 2 to 5; the story, secrets and the Stewards (the user has not chosen yet). Known: floor 10's roaming packs are
+  about 1.95 times floor 1's health, the Wood's (11) 1.08 (the sea's made floors get the engine's growth by number on top of their own);
+  left as it was.
+- **New scope (2026-11-14):** all 50 floors, five times the ground in any shape (not a circle), the five handmade floors grown too,
+  new models for people, enemies and rulers (a sheet for the user's yes first), agents working together. The plan:
+  [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *The new scope*.
+
+## Floor 1 as a real place (2026-11-13, night): first look built and committed; NOT pushed, NOT live; waiting on the user's look
+
+- The user, of the Climb's floors: "make it more like real maps, not just like something inside somewhere; make those floors be
+  like real world". Every floor was a round paved disc (floor 1 a stone platform in a dark sea, its quay wall all round). Done for
+  **floor 1 only**, to be judged before floors 2 to 5 (the house rule: show one look first).
+- **What changed (look only):** `src/tower/world/land.ts` (new) and a few lines of `zone.ts` (`STAGE` is daylight; the land
+  replaces the paving, the quay wall, the brass ring and the rim's lantern posts; `TIDE_LOW` moved there from `floors/harbour.ts`,
+  the same seven). A coast: grass, dirt roads on the old paths, cobbles in the market, flagstones at the lighthouse, the tide's low
+  ground as tidal flats; past the rim a cliff along the north (grass on top, rock on its face), the town's houses and a dry-stone
+  wall west, woods north and south, a beach into the sea east with two jetties and four boats. Cover, places, paths, packs, the
+  door and the law are untouched. How it works: [architecture/tower-worlds.md](architecture/tower-worlds.md), *Limits*.
+- **Checked:** type check; `_worldCheck` floor 1 the same (6349 m2 reachable, 38 spots, none unreachable); the perf tool's
+  `world-1` plays the same fight (print `de2e692e`): desktop 8.2 -> 8.4 ms a frame, the phone profile 20.5 and 21.4 -> 22.5 and
+  22.1 ms (about +1.3 ms; draw calls 268 -> 280; triangles 236k -> 413k); Low, Medium, Auto and two phone sizes draw it, no errors.
+  Pictures: `docs/tower/worlds/land-before-*.jpg` and `land-after-*.jpg` (overview, a low view north, the camp, the east, the shore,
+  the tide in). Started from the real menus (Tower, Climb, Start floor 1) with no error; the tide in daylight reads (the flat floods
+  blue). The east shore runs 0 to 3 m past the rim, so a walk ends at the water, not on open sand; sand at the rim has dune bushes.
+  The floor's words no longer say quay (its blurb, the law's, Old Barnacle's, the tide's banner).
+- **Not done:** floors 2 to 5 (the Walking Wood, the Storm Canyon, the Lightless Deep, the Field of Banners); the zone is still
+  round and the same size (a different shape needs the engine's walk limit to change); the route bot not run again on floor 1 (the
+  ground it walks is the same).
+- **Waiting on the user:** yes or changes to floor 1's look; then floors 2 to 5 the same way (the Lightless Deep is underground by
+  design: what "real world" means there is the user's call).
+
+## Stable versions (2026-11-13)
+
+The user: "pull from github and push and lets make stable version", then chose "both": mark the version that was live as
+stable, then check the new work, release it and mark that too. A stable version is a git tag `stable-<date>` and the branch
+`stable` on GitHub, which always points at the last one. To go back to one: `git checkout stable-<date>`, then
+`npm run cf:deploy` (its own request; it drops every live connection).
+
+- `stable-2026-11-12` (commit c58a7fb, Cloudflare 98909059): quick cast, watching duels, the Reload bar, `PROTOCOL` 15, shop off.
+- `stable-2026-11-13`: that, plus the smoother game (the Graphics setting) and the Tower's five floors as worlds. Checked on
+  the second computer before the release: type check, build, `npm run test:server`; `_raidCheck` 234, `_raidAsh` 77,
+  `_raidHeart` 246, `_raidUpgrades` 40, `_raidTwin` 143, all ok; `_worldVerbs` all done and every law; `_worldCheck` floors 1
+  to 5 with nothing unreachable; quick cast and the controls 18 of 18; the four Graphics levels each running a CPU duel; Tower >
+  Climb > Start floor 1 through the menus (camp, walking, a quest giver); an online duel through the hub with a watcher (all
+  three screens the same HP, clock and spots for the whole fight); no page errors anywhere.
+  Deployed from commit fbbe5de (the tag points there). The phone recorder (`2a80629`) reached GitHub while it deployed: merged
+  after, pushed, NOT in this stable version and not live.
+## The game runs smoother (2026-11-13): done, pushed and LIVE (2026-11-13, marked stable: tag stable-2026-11-13)
 
 The user: "lets make new seison where we will optimalize this game so taht it can run smoothly", then "i just want you to make
 the tolls to cathc ever bottleneck or everything taht could make lag log it all and lets fix all". The page with every number and
@@ -59,11 +627,11 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Waiting on the user:**
   1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
      `QUALITY_DEFAULT`, and the News item's text).
-  2. Deploy, on its own request (everything here is pushed, GitHub `main` is at `2a80629` plus this note): `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
-     `live: false` until then.
+  2. Done for the work up to `48f7f60`: deployed on 2026-11-13 as `stable-2026-11-13` (News "A smoother game" live). The phone
+     recorder (`2a80629`) came after that deploy: it goes live with the next one, on its own request (`npm run cf:deploy`).
   3. After a deploy, on the phone: open `https://arena-of-kits.arenachamp.workers.dev/game?perf=1`, play a fight, and on the
      card that comes up in the menu press Copy and paste it into the chat.
-- **A follow-up after the push (2026-11-13, evening): pushed, NOT live.** A second look found four things, now done:
+- **A follow-up after the push (2026-11-13, evening): pushed and LIVE (in `stable-2026-11-13`).** A second look found four things, now done:
   the one-go drawing of see-through glows judges a material by every shape it is used on, not the first (and never an
   instanced one that does not just add light); Auto takes a cut in pixels back when it bought nothing (a raid on a phone, a
   phone held to 30 a second) and aims at 60, not 52; on a phone with an account the Graphics button pushed the bar past the
@@ -91,7 +659,7 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Next, if wanted:** the Hall of Noon's blocks drawn as batches and a hero's pieces joined (the raid on a phone); models
   compressed and the built files kept by the browser (loading on a slow line); a real phone under the tool.
 
-## The Tower's floors as worlds: five floors built (2026-11-13): merged into `feat/particle-editor` and pushed; NOT live
+## The Tower's floors as worlds: five floors built (2026-11-13): pushed and LIVE (2026-11-13, marked stable: tag stable-2026-11-13)
 
 - **The direction, decided by the user.** Asked what the game should be (four ways were put: boss fights first, competitive
   duels, a solo run game, a showcase), the user: "players and fun, lets go with boss fights first". Duels stay as a side

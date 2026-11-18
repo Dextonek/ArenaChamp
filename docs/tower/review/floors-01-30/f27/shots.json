@@ -1,0 +1,132 @@
+{
+ "floor": 27,
+ "part": "climb-review-shots",
+ "wallSeconds": 14.3,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 27,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-gap-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-cover-6",
+   "probe-cover-7",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-84.5,-168.7 y37.3 depth out92n w34.47 h8.54 m5.64 p1 #8a4c36",
+  "probe-float-1": "86.9,-69.8 y0.64 depth edge w0.55 h0.39 m0.06 p1 #8a7a4a",
+  "probe-float-2": "-126.7,35.7 y26.62 depth out39s w0.65 h0.46 m0.06 p1 #8a7a4a",
+  "probe-gap-3": "-22,-98.5 y3.8 depth edge w8.15 h0.1 m3.8 sunk-11.18 #c9a24a",
+  "probe-gap-4": "-56.9,-77.8 y4.24 depth edge w2.01 h0.3 m3.52 sunk-1.26 #248985",
+  "probe-gap-5": "-22,-98.5 y2.74 depth edge w8.04 h0.38 m2.74 sunk-11.98 #1f8a86",
+  "probe-cover-6": "33.1,45 y2.17 depth in w0.03 h0.3 m1.4 r1.4  #b7995a",
+  "probe-cover-7": "-69.1,-16.3 y2.17 depth in w0.03 h0.3 m1.2 r1.2  #b7995a",
+  "frames": {
+   "at": [
+    -57,
+    25
+   ],
+   "units": 6,
+   "runs": [
+    {
+     "med": 3.5,
+     "p95": 5.4,
+     "worst": 7.2
+    },
+    {
+     "med": 4.1,
+     "p95": 6.2,
+     "worst": 10.6
+    },
+    {
+     "med": 3.6,
+     "p95": 6,
+     "worst": 8.7
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Sand Tyrant",
+   "title": "Every grain obeys",
+   "model": "models/tower/sands_jackal_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 1644,
+   "frames": 301,
+   "at": [
+    0,
+    14.4
+   ],
+   "heroAt": [
+    0,
+    20
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 44.88,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 0,
+   "log": null,
+   "gameLog": [
+    "door lair at 45s"
+   ]
+  }
+ }
+}

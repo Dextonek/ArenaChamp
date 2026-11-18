@@ -69,8 +69,18 @@ MORE = {
     "raid-ash": {"scene": "raid", "hero": "Kaia", "boss": "ash"},
     "raid-heart": {"scene": "raid", "hero": "Kaia", "boss": "heart"},
     "raid-heart-party": {"scene": "raid", "hero": "Kaia", "boss": "heart", "party": 9, "band": 10},
-    # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another.
-    **{f"world-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (1, 2, 3, 4, 5)},
+    # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another. The names
+    # are the five handmade floors' first numbers; since the Climb became 50 floors they are floors 1, 11, 21, 31 and 41.
+    **{f"world-{i}": {"scene": "world", "floor": n, "hero": "Kaia"} for i, n in ((1, 1), (2, 11), (3, 21), (4, 31), (5, 41))},
+    # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/, by their own numbers.
+    **{f"gen-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (*range(2, 11), *range(12, 21), *range(22, 31), *range(32, 41), *range(42, 51))},
+    # The Climb's open world (pipeline/designs/climb-open-world.md): floor 2 with seven made-up others walking about the hero and
+    # casting (src/tower/world/others.ts `fake`), against gen-2 with none.
+    "gen-2-others": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 7},
+    # Stage 2, shared packs: three or seven made-up others in the hero's fight, each with three made-up packs (copies, as another
+    # screen's packs are drawn), and the hero's own packs fighting them all (src/tower/world/share.ts `fake`).
+    "gen-2-fight-3": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 3, "packs": 3},
+    "gen-2-fight-7": {"scene": "world", "floor": 2, "hero": "Kaia", "others": 7, "packs": 3},
 }
 ALL = {**SCENES, **MORE}
 

@@ -11,7 +11,7 @@ import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
 import { bankPath, contains, segDist, stopsAtCover, type Obstacle } from './obstacles';
-import { isOwnWall } from './traits/mime';
+import { isOwnWall } from './heroes/mime/trait';
 
 /**
  * How Q W E R cast, League's three (user, 2026-11-12): 'normal' shows the aim and a click fires it; 'quick' fires at the
@@ -192,6 +192,17 @@ export class HeroMode implements TouchTarget {
   traits: TraitRuntime | null = null;
   /** The duel turns a cast's charge and the trait's rules into the cooldown (and remembers the cast's mods). */
   castRules?: (slot: number, base: number, charge: number) => number;
+  /** The target of the cast whose rules run now (set just before `castRules`): the duel notes where it aimed (src/mech). */
+  castTarget: Target | null = null;
+  /**
+   * The duel's engine pieces (src/mech): seconds left on a sealed key (0: free), whether a one-target spell's way crosses a
+   * ward, and where a slot is cast from when it is not the hero (`Trait.castOrigin`). Null outside a duel.
+   */
+  keySealed: ((slot: number) => number) | null = null;
+  warded: ((from: THREE.Vector3, to: THREE.Vector3) => boolean) | null = null;
+  /** No one-target spell may pick this enemy now (src/mech: unseen). */
+  cantTarget: ((enemy: Enemy) => boolean) | null = null;
+  castOrigin: ((slot: number) => { x: number; z: number } | null) | null = null;
   /** When the current aim started (performance.now()), for hold-to-charge slots. */
   private aimStart = 0;
   /**
@@ -557,8 +568,9 @@ export class HeroMode implements TouchTarget {
     if (this.pending) {
       const spell = this.kit.spells[this.pending.slot];
       const at = this.targetPos(this.pending.target);
+      const from = this.originOf(this.pending.slot, hero);
       if (!at) this.pending = null;
-      else if (flatDist(hero, at) <= spell.range && arena.lineOfSight(hero, at)) {
+      else if (flatDist(from, at) <= spell.range && arena.lineOfSight(from, at)) {
         const p = this.pending;
         this.pending = null;
         this.castNow(p.slot, p.atSpot ? { point: at.clone().setY(0) } : p.target);
@@ -596,7 +608,8 @@ export class HeroMode implements TouchTarget {
       }
     }
 
-    this.updateIndicators(dt, hero);
+    // While aiming, everything drawn is the spell's, measured from where it is cast from.
+    this.updateIndicators(dt, this.aiming >= 0 ? this.originOf(this.aiming, hero) : hero);
     this.updateHud(dt);
     const caster = arena.caster.group;
     this.figure.follow(dt, hero, caster.rotation.y, { attack: this.attacker.motion, status: this.status, held: this.heldFor > 0 });
@@ -881,6 +894,7 @@ export class HeroMode implements TouchTarget {
     const spell = this.kit.spells[i];
     if (this.status.cannotCast) { this.say(this.status.stunned ? 'Stunned' : 'Silenced'); return; }
     if (this.castLock) { this.say('Your hands are full'); return; }
+    if (this.keySealed && this.keySealed(i) > 0) { this.say(`${spell.name} is sealed`); return; }
     const recast = !!this.traits?.canRecast(i);
     if (this.cooldowns[i] > 0 && !recast) { this.say(`${spell.name} is on cooldown`); return; }
     const why = recast ? null : this.traits?.blocked(i);
@@ -1024,7 +1038,7 @@ export class HeroMode implements TouchTarget {
     const i = this.aiming, tapped = this.autoAimed;
     const spell = this.kit.spells[i];
     const spec = this.host.targeting(spell.label)!;
-    const hero = this.host.arena.caster.group.position;
+    const hero = this.originOf(i, this.host.arena.caster.group.position);
     let target: Target;
     if (spec.mode === 'enemy' || spec.mode === 'enemies') {
       const enemy = this.enemyNearCursor();
@@ -1059,6 +1073,16 @@ export class HeroMode implements TouchTarget {
       const mode = this.host.targeting(spell.label)?.mode;
       const at = this.targetPos(target);
       if ((mode === 'enemy' || mode === 'enemies') && at && !arena.lineOfSight(arena.caster.group.position, at)) { this.say('No line of sight'); return; }
+      // Unseen (Kohaku's Glamour): nothing to aim at; the key is not spent.
+      if ((mode === 'enemy' || mode === 'enemies') && this.cantTarget?.(target.enemy)) { this.say('Unseen'); return; }
+      // A ward on the way (Morwen's salt): the cast fails and its cooldown is spent.
+      if ((mode === 'enemy' || mode === 'enemies') && at && this.warded?.(this.originOf(i, arena.caster.group.position), at)) {
+        this.say('Warded');
+        arena.say('WARDED', '#f2ead8', arena.caster.group.position.clone().setY(0.6), 1);
+        this.cooldowns[i] = spell.cooldown;
+        this.flashSlot(i);
+        return;
+      }
     }
     if (rt?.canRecast(i) && rt.recastOf(i)?.replay === false) {
       // A recast that only acts: the trait's `recastAct` runs in the rules and moves the hero; no effect plays and no
@@ -1088,7 +1112,9 @@ export class HeroMode implements TouchTarget {
     this.castBend = bend;
     arena.aimBend = bend;
     // The rules run before the effect plays: the cast's mods must be ready for hits that land at once.
+    this.castTarget = target;
     const cooldown = this.castRules ? this.castRules(i, spell.cooldown, charge) : spell.cooldown;
+    this.castTarget = null;
     this.rooted = Math.max(this.host.cast(spell.label), this.holdFloor);
     this.holdFloor = 0;
     arena.aimBend = 0;
@@ -1101,8 +1127,16 @@ export class HeroMode implements TouchTarget {
 
   /** Slot `i` can be cast now: off cooldown (or its recast window is open) and not held back by the hero's rules. */
   ready(i: number) {
+    // A sealed key (Kohaku's Borrowed Name) waits whatever its cooldown or recast.
+    if (this.keySealed && this.keySealed(i) > 0) return false;
     if (this.traits?.canRecast(i)) return true;
     return this.cooldowns[i] <= 0 && !this.traits?.blocked(i);
+  }
+
+  /** Where slot `i` is cast from: the hero (`hero` itself, the same object), or a spot its trait names (Lian's kite). */
+  private originOf(i: number, hero: THREE.Vector3): THREE.Vector3 {
+    const o = i >= 0 ? this.castOrigin?.(i) : null;
+    return o ? new THREE.Vector3(o.x, 0, o.z) : hero;
   }
 
   /** Autopilot (duel simulations): cooldown left on slot `i`, and whether the hero is rooted by a cast. */
@@ -1470,6 +1504,7 @@ export class HeroMode implements TouchTarget {
       `-webkit-touch-callout:none;font:600 12px ui-sans-serif,system-ui;color:${hudInk(kit)};`;
 
     const plate = document.createElement('div');
+    plate.className = 'hero-plate';
     plate.style.cssText =
       'position:absolute;left:calc(8px + env(safe-area-inset-left, 0px));top:calc(78px + env(safe-area-inset-top, 0px));' +
       `display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:12px;pointer-events:auto;` +
@@ -1623,6 +1658,12 @@ export class HeroMode implements TouchTarget {
         const c = t.charge(i, (performance.now() - this.aimStart) / 1000);
         secs.textContent = `${Math.round(c * 100)}%`;
         shade.style.background = `conic-gradient(rgba(255,226,140,0.5) ${c * 360}deg, rgba(6,2,3,0.15) 0deg)`;
+      }
+      // A sealed key (src/mech): a lock and the seconds it has left, over whatever else it shows.
+      const sealed = this.keySealed ? this.keySealed(i) : 0;
+      if (sealed > 0) {
+        secs.textContent = `🔒${Math.ceil(sealed)}`;
+        shade.style.background = 'repeating-linear-gradient(45deg, rgba(255,150,60,0.45) 0 5px, rgba(6,2,3,0.7) 5px 10px)';
       }
       box.style.outline = this.aiming === i ? `2px solid ${hudInk(this.kit)}` : '';
       box.style.outlineOffset = '2px';

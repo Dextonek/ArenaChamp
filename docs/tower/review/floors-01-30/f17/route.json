@@ -1,0 +1,1000 @@
+{
+ "floor": 17,
+ "part": "climb-review-route",
+ "wallSeconds": 120.1,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 17,
+  "route": {
+   "ok": true,
+   "floorCleared": true,
+   "seconds": 1538.82,
+   "hp": 0.85,
+   "lives": 3,
+   "shards": 974,
+   "falls": 1,
+   "restarts": 0,
+   "kills": 25,
+   "stars": [
+    1,
+    1,
+    0,
+    1
+   ],
+   "checkpoints": [
+    {
+     "step": "main: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "main.1: fell",
+     "status": "done",
+     "t": 213.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 343
+    },
+    {
+     "step": "main.2: lead",
+     "status": "done",
+     "t": 264.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 397
+    },
+    {
+     "step": "main.3: fell",
+     "status": "done",
+     "t": 350.17,
+     "hp": 0.61,
+     "lives": 3,
+     "shards": 497
+    },
+    {
+     "step": "main.4: lead",
+     "status": "done",
+     "t": 400.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 515
+    },
+    {
+     "step": "main.5: fell",
+     "status": "done",
+     "t": 400.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 515
+    },
+    {
+     "step": "main.6: open",
+     "status": "done",
+     "t": 402.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 515
+    },
+    {
+     "step": "main: handed in",
+     "status": "done",
+     "t": 468.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 659
+    },
+    {
+     "step": "bounty1: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "bounty1.1: fell-named",
+     "status": "done",
+     "t": 36.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 72
+    },
+    {
+     "step": "bounty1: handed in",
+     "status": "done",
+     "t": 49.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 144
+    },
+    {
+     "step": "bounty2: taken",
+     "status": "done",
+     "t": 2.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "bounty2.1: fell-named",
+     "status": "done",
+     "t": 105.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 207
+    },
+    {
+     "step": "bounty2: handed in",
+     "status": "done",
+     "t": 147.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 315
+    },
+    {
+     "step": "g1: taken",
+     "status": "done",
+     "t": 4.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "g1.1: light",
+     "status": "done",
+     "t": 526.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 659
+    },
+    {
+     "step": "g1: handed in",
+     "status": "done",
+     "t": 557.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 722
+    },
+    {
+     "step": "g2: taken",
+     "status": "done",
+     "t": 4.67,
+     "hp": 1,
+     "lives": 3,
+     "shards": 0
+    },
+    {
+     "step": "g2.1: carry",
+     "status": "done",
+     "t": 670.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 722
+    },
+    {
+     "step": "g2: handed in",
+     "status": "done",
+     "t": 672.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 803
+    },
+    {
+     "step": "g3: taken",
+     "status": "done",
+     "t": 189.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 315
+    },
+    {
+     "step": "g3.1: reach",
+     "status": "done",
+     "t": 758.17,
+     "hp": 0.63,
+     "lives": 3,
+     "shards": 835
+    },
+    {
+     "step": "g3.2: hold",
+     "status": "done",
+     "t": 790.17,
+     "hp": 0.64,
+     "lives": 3,
+     "shards": 877
+    },
+    {
+     "step": "g3: handed in",
+     "status": "done",
+     "t": 791.67,
+     "hp": 0.64,
+     "lives": 3,
+     "shards": 949
+    },
+    {
+     "step": "duel with the rival",
+     "status": "done",
+     "t": 1051.18,
+     "hp": 0.59,
+     "lives": 3,
+     "shards": 1175
+    },
+    {
+     "step": "waystone w1",
+     "status": "done",
+     "t": 206.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 315
+    },
+    {
+     "step": "waystone w2",
+     "status": "done",
+     "t": 191.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 315
+    },
+    {
+     "step": "waystone w3",
+     "status": "done",
+     "t": 245.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 343
+    },
+    {
+     "step": "waystone w4",
+     "status": "done",
+     "t": 294.17,
+     "hp": 0.74,
+     "lives": 3,
+     "shards": 415
+    },
+    {
+     "step": "waystone w5",
+     "status": "done",
+     "t": 71.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 144
+    },
+    {
+     "step": "waystone w6",
+     "status": "done",
+     "t": 644.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 722
+    },
+    {
+     "step": "cache c1",
+     "status": "done",
+     "t": 827.17,
+     "hp": 0.64,
+     "lives": 3,
+     "shards": 994
+    },
+    {
+     "step": "cache c2",
+     "status": "done",
+     "t": 859.17,
+     "hp": 0.64,
+     "lives": 3,
+     "shards": 1048
+    },
+    {
+     "step": "cache c3",
+     "status": "done",
+     "t": 262.17,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 397
+    },
+    {
+     "step": "cache c4",
+     "status": "done",
+     "t": 915.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 1134
+    },
+    {
+     "step": "cache c5",
+     "status": "done",
+     "t": 112.67,
+     "hp": 0.71,
+     "lives": 3,
+     "shards": 252
+    },
+    {
+     "step": "cache c6",
+     "status": "done",
+     "t": 964.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 1170
+    },
+    {
+     "step": "lore stone read",
+     "status": "done",
+     "t": 967.67,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 1175
+    },
+    {
+     "step": "door lair opened",
+     "status": "done",
+     "t": 402.17,
+     "hp": 0.62,
+     "lives": 3,
+     "shards": 515
+    },
+    {
+     "step": "piece ruler won",
+     "status": "done",
+     "t": 1427.15,
+     "hp": 0.99,
+     "lives": 3,
+     "shards": 1120
+    },
+    {
+     "step": "piece trial won",
+     "status": "done",
+     "t": 1250.17,
+     "hp": 1,
+     "lives": 3,
+     "shards": 1080
+    },
+    {
+     "step": "piece gate won",
+     "status": "done",
+     "t": 1538.82,
+     "hp": 0.85,
+     "lives": 3,
+     "shards": 974
+    },
+    {
+     "step": "piece rival won",
+     "status": "done",
+     "t": 1051.18,
+     "hp": 0.59,
+     "lives": 3,
+     "shards": 1175
+    },
+    {
+     "step": "floor cleared",
+     "status": "done",
+     "t": 1538.82,
+     "hp": 0.85,
+     "lives": 3,
+     "shards": 974
+    }
+   ],
+   "notDone": [],
+   "errors": [],
+   "gateTries": 2,
+   "rulerTries": 1,
+   "pieceFalls": [
+    "gate@1483s"
+   ],
+   "frames": 92323,
+   "whyLog": [
+    "0.67s take main",
+    "1.67s did take:main,take:bounty1,take:bounty2",
+    "2.17s take g1",
+    "4.17s did take:g1,take:g2",
+    "4.67s take g3",
+    "36.17s hand in bounty1",
+    "48.67s did hand-in:bounty1",
+    "49.17s take g3",
+    "105.67s hand in bounty2",
+    "147.17s did hand-in:bounty2",
+    "147.67s take g3",
+    "188.67s did take:g3",
+    "189.17s waystone w2",
+    "191.17s main.0: fell",
+    "202.17s waystone w1",
+    "206.17s main.0: fell",
+    "213.67s lead main: to The wisp",
+    "215.67s lead main: ahead",
+    "241.17s waystone w3",
+    "245.17s lead main: to The wisp",
+    "245.67s lead main: ahead",
+    "258.17s cache c3",
+    "262.17s lead main: to The wisp",
+    "263.17s lead main: ahead",
+    "264.17s main.2: fell",
+    "290.17s waystone w4",
+    "294.17s main.2: fell",
+    "350.17s lead main: ahead",
+    "400.17s open lair",
+    "402.17s hand in main",
+    "467.67s did hand-in:main",
+    "468.17s g1.0: light",
+    "526.67s hand in g1",
+    "557.17s did hand-in:g1",
+    "557.67s g2.0: carry",
+    "639.17s waystone w6",
+    "644.17s g2.0: carry",
+    "670.67s hand in g2",
+    "671.67s did hand-in:g2",
+    "672.17s g3.0: reach",
+    "758.17s g3.1: hold",
+    "790.17s hand in g3",
+    "791.17s did hand-in:g3",
+    "791.67s cache c1",
+    "827.17s cache c2",
+    "859.17s cache c4",
+    "915.67s cache c6",
+    "964.67s lore stone",
+    "967.67s door: rival",
+    "1051.18s heal",
+    "1158.18s did heal,boon",
+    "1158.68s door: trial",
+    "1250.17s door: ruler",
+    "1427.15s door: gate",
+    "1483.63s heal",
+    "1509.63s did heal,life",
+    "1510.13s door: gate"
+   ],
+   "whyAll": null,
+   "gameLog": [
+    "door rival at 1020s",
+    "piece rival won hp 0.44 31s",
+    "door trial at 1228s",
+    "piece trial won hp 1.00 22s",
+    "door lair at 1311s",
+    "piece ruler won hp 0.99 116s",
+    "door gate at 1455s",
+    "piece gate lost hp 0.99 29s",
+    "door gate at 1513s",
+    "piece gate won hp 0.85 26s"
+   ],
+   "last": {
+    "clock": 1538.82,
+    "hero": {
+     "x": 16.06,
+     "z": 101.81,
+     "hp": 442,
+     "max": 520
+    },
+    "lives": 3,
+    "shards": 974,
+    "falls": 1,
+    "kills": 25,
+    "quests": [
+     "main: handed in",
+     "bounty1: handed in",
+     "bounty2: handed in",
+     "g1: handed in",
+     "g2: handed in",
+     "g3: handed in"
+    ],
+    "rival": "won",
+    "won": [
+     "rival",
+     "trial",
+     "ruler",
+     "gate"
+    ],
+    "caches": [
+     "c5",
+     "c3",
+     "c1",
+     "c2",
+     "c4",
+     "c6"
+    ],
+    "waystones": [
+     "w5",
+     "w2",
+     "w1",
+     "w3",
+     "w4",
+     "w6"
+    ],
+    "opened": [
+     "lair"
+    ],
+    "boons": [
+     [
+      "tw-mirror",
+      1
+     ],
+     [
+      "tw-thirst",
+      1
+     ],
+     [
+      "tw-echo",
+      1
+     ],
+     [
+      "tw-sun",
+      1
+     ],
+     [
+      "tw-feather",
+      1
+     ],
+     [
+      "tw-wind",
+      1
+     ],
+     [
+      "tw-stair",
+      1
+     ],
+     [
+      "tw-glass",
+      1
+     ]
+    ],
+    "over": false,
+    "finished": true,
+    "piece": null,
+    "law": {
+     "text": "The paths change in 82 s",
+     "active": false,
+     "warn": false
+    },
+    "packs": [
+     {
+      "id": "a",
+      "state": "cleared",
+      "left": 0,
+      "total": 4
+     },
+     {
+      "id": "d",
+      "state": "cleared",
+      "left": 0,
+      "total": 3
+     },
+     {
+      "id": "b",
+      "state": "cleared",
+      "left": 0,
+      "total": 4
+     },
+     {
+      "id": "f",
+      "state": "cleared",
+      "left": 0,
+      "total": 3
+     },
+     {
+      "id": "named1",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     },
+     {
+      "id": "named2",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     },
+     {
+      "id": "root1",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     },
+     {
+      "id": "root2",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     },
+     {
+      "id": "root3",
+      "state": "cleared",
+      "left": 0,
+      "total": 1
+     }
+    ],
+    "liveUnits": 0,
+    "log": [],
+    "gameLog": [
+     "door rival at 1020s",
+     "piece rival won hp 0.44 31s",
+     "door trial at 1228s",
+     "piece trial won hp 1.00 22s",
+     "door lair at 1311s",
+     "piece ruler won hp 0.99 116s",
+     "door gate at 1455s",
+     "piece gate lost hp 0.99 29s",
+     "door gate at 1513s",
+     "piece gate won hp 0.85 26s"
+    ]
+   },
+   "wallSeconds": 114,
+   "boons": [
+    [
+     "tw-mirror",
+     1
+    ],
+    [
+     "tw-thirst",
+     1
+    ],
+    [
+     "tw-echo",
+     1
+    ],
+    [
+     "tw-sun",
+     1
+    ],
+    [
+     "tw-feather",
+     1
+    ],
+    [
+     "tw-wind",
+     1
+    ],
+    [
+     "tw-stair",
+     1
+    ],
+    [
+     "tw-glass",
+     1
+    ]
+   ]
+  },
+  "whyAll": [
+   "0.67s take main",
+   "1.67s did take:main,take:bounty1,take:bounty2",
+   "2.17s take g1",
+   "4.17s did take:g1,take:g2",
+   "4.67s take g3",
+   "36.17s hand in bounty1",
+   "48.67s did hand-in:bounty1",
+   "49.17s take g3",
+   "105.67s hand in bounty2",
+   "147.17s did hand-in:bounty2",
+   "147.67s take g3",
+   "188.67s did take:g3",
+   "189.17s waystone w2",
+   "191.17s main.0: fell",
+   "202.17s waystone w1",
+   "206.17s main.0: fell",
+   "213.67s lead main: to The wisp",
+   "215.67s lead main: ahead",
+   "241.17s waystone w3",
+   "245.17s lead main: to The wisp",
+   "245.67s lead main: ahead",
+   "258.17s cache c3",
+   "262.17s lead main: to The wisp",
+   "263.17s lead main: ahead",
+   "264.17s main.2: fell",
+   "290.17s waystone w4",
+   "294.17s main.2: fell",
+   "350.17s lead main: ahead",
+   "400.17s open lair",
+   "402.17s hand in main",
+   "467.67s did hand-in:main",
+   "468.17s g1.0: light",
+   "526.67s hand in g1",
+   "557.17s did hand-in:g1",
+   "557.67s g2.0: carry",
+   "639.17s waystone w6",
+   "644.17s g2.0: carry",
+   "670.67s hand in g2",
+   "671.67s did hand-in:g2",
+   "672.17s g3.0: reach",
+   "758.17s g3.1: hold",
+   "790.17s hand in g3",
+   "791.17s did hand-in:g3",
+   "791.67s cache c1",
+   "827.17s cache c2",
+   "859.17s cache c4",
+   "915.67s cache c6",
+   "964.67s lore stone",
+   "967.67s door: rival",
+   "1051.18s heal",
+   "1158.18s did heal,boon",
+   "1158.68s door: trial",
+   "1250.17s door: ruler",
+   "1427.15s door: gate",
+   "1483.63s heal",
+   "1509.63s did heal,life",
+   "1510.13s door: gate"
+  ],
+  "pieceNotes": [
+   {
+    "piece": "rival",
+    "at": 240,
+    "clock": 1020,
+    "opponent": "Echo of Vitriol",
+    "title": "warded",
+    "model": "models/heroes/alchemy_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 145
+     }
+    ]
+   },
+   {
+    "piece": "rival",
+    "at": 900,
+    "clock": 1020,
+    "opponent": "Echo of Vitriol",
+    "title": "warded",
+    "model": "models/heroes/alchemy_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "trial",
+    "at": 240,
+    "clock": 1228,
+    "opponent": "The seal",
+    "title": "",
+    "model": null,
+    "loaded": true,
+    "real": false,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 145
+     },
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 145
+     }
+    ]
+   },
+   {
+    "piece": "trial",
+    "at": 900,
+    "clock": 1228,
+    "opponent": "The seal",
+    "title": "",
+    "model": null,
+    "loaded": true,
+    "real": false,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 145
+     },
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 145
+     }
+    ]
+   },
+   {
+    "piece": "ruler",
+    "at": 240,
+    "clock": 1311,
+    "opponent": "The Lantern Root",
+    "title": "It drinks the light",
+    "model": "models/tower/wood_antler_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 17
+     },
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 120
+     },
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 49
+     }
+    ]
+   },
+   {
+    "piece": "ruler",
+    "at": 900,
+    "clock": 1311,
+    "opponent": "The Lantern Root",
+    "title": "It drinks the light",
+    "model": "models/tower/wood_antler_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": []
+   },
+   {
+    "piece": "gate",
+    "at": 240,
+    "clock": 1455,
+    "opponent": "Bram",
+    "title": "the Stonewright",
+    "model": "models/heroes/mason_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 220
+     }
+    ]
+   },
+   {
+    "piece": "gate",
+    "at": 900,
+    "clock": 1455,
+    "opponent": "Bram",
+    "title": "the Stonewright",
+    "model": "models/heroes/mason_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 185
+     }
+    ]
+   },
+   {
+    "piece": "gate",
+    "at": 240,
+    "clock": 1513,
+    "opponent": "Bram",
+    "title": "the Stonewright",
+    "model": "models/heroes/mason_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 220
+     }
+    ]
+   },
+   {
+    "piece": "gate",
+    "at": 900,
+    "clock": 1513,
+    "opponent": "Bram",
+    "title": "the Stonewright",
+    "model": "models/heroes/mason_v4.glb",
+    "loaded": false,
+    "real": true,
+    "scale": 1,
+    "units": [
+     {
+      "side": "foe",
+      "name": "turret",
+      "model": null,
+      "hp": 220
+     }
+    ]
+   }
+  ],
+  "packsEnd": [
+   {
+    "id": "a",
+    "state": "cleared",
+    "left": 0,
+    "total": 4
+   },
+   {
+    "id": "d",
+    "state": "cleared",
+    "left": 0,
+    "total": 3
+   },
+   {
+    "id": "b",
+    "state": "cleared",
+    "left": 0,
+    "total": 4
+   },
+   {
+    "id": "f",
+    "state": "cleared",
+    "left": 0,
+    "total": 3
+   },
+   {
+    "id": "named1",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   },
+   {
+    "id": "named2",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   },
+   {
+    "id": "root1",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   },
+   {
+    "id": "root2",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   },
+   {
+    "id": "root3",
+    "state": "cleared",
+    "left": 0,
+    "total": 1
+   }
+  ],
+  "grabs": [
+   "route-pack-named1",
+   "route-pack-named2",
+   "route-pack-a",
+   "route-pack-root1",
+   "route-pack-root3",
+   "route-pack-d",
+   "route-pack-root2",
+   "route-pack-f",
+   "route-pack-hold-g3-0",
+   "route-pack-hold-g3-1",
+   "route-pack-b",
+   "route-rival-0",
+   "route-rival-1",
+   "route-trial-0",
+   "route-trial-1",
+   "route-ruler-0",
+   "route-ruler-1",
+   "route-gate-0",
+   "route-gate-1",
+   "route-gate-2",
+   "route-gate-3"
+  ]
+ }
+}

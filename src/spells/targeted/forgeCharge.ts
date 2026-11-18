@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { FORGE, FORGE_CSS, HotStreak, PulseRing, QuenchSteam, SlagPool, Sparks } from '../../effects/parts/forge';
+import { FORGE, FORGE_CSS, HotStreak, PulseRing, QuenchSteam, SlagPool, Sparks } from '../../heroes/forge/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import { sweepHit, type Obstacle } from '../../obstacles';

@@ -1,8 +1,8 @@
 ---
 title: Rules for creating a hero
 tags: [pipeline, heroes, rules, checklist]
-updated: 2026-11-11
-status: used once; Anka the Firebird (hero 40) was built by them, and what she showed is at the end
+updated: 2026-11-16
+status: the rules and gates of 2026-11-11 (Anka, hero 40, was built by them); since 2026-11-16 a hero is made with the new-hero command, played on the workbench and checked with one command (part 3)
 ---
 
 # Rules for creating a hero
@@ -12,7 +12,8 @@ rules for hero creation". The first 39 heroes were made in waves, and most of th
 there so that the next one is made once.
 
 Part 1 is the rules. Part 2 is the six gates a hero passes, each ending in a picture and the user's yes. Part 3 is
-the checklist of every file and number, for whoever builds.
+how a hero is built since the hero framework (2026-11-16): one command makes every file as a stub, the hero workbench plays
+it while it is a draft, one command checks it, and the checklist the first command writes is filled in gate by gate.
 
 ## What changes from before
 
@@ -30,6 +31,10 @@ one model style ("real", v4); the line-up beside Sefu and Kaia; push and deploy 
 
 ## Part 1: the ten rules
 
+0. **The lore first (2026-11-14).** The user: "from now on we will match all heroes to our lore". Before the card, the hero has
+   its place on the Dial in `docs/lore/LORE.md`: its people (not every hero is human), its realm and home, its faction, its age,
+   and two to four ties to heroes already there. The sentence, shape, colours, look and spell names below must follow from it, and
+   a change to a hero changes its lore in the same commit (then `python pipeline/tools/lore-game.py`).
 1. **One sentence, one shape, two colours.** A hero is a mythic role you can say in one sentence ("a fire dancer who
    rises from her own ashes"), a signature shape you can draw as a 64-pixel icon (a feather, a door, a gear), and an
    accent with a pale foil. None of the three may be mistaken for an existing hero's: check the roster table in
@@ -72,89 +77,98 @@ except reading. One hero at a time goes through gates 2 to 5.
 | Gate | What is made | What the user is shown | Done when |
 |---|---|---|---|
 | **1. Card** | One page: sentence, shape, colours, role, the new thing, question, weakness, second decision, a line on how she looks | The card, and the nearest existing heroes beside it | The user says yes to the idea |
-| **2. Look** | The model (`blender/heroes/real/<theme>.py`), her held thing, her stance | Front, face, back, walking, her attack at its hit, the game camera; then **the line-up between Sefu and Kaia** | The user says yes to the figure. Only now are colours and shapes fixed for everything else |
+| **2. Look** | The model (`blender/heroes/real/<theme>.py`, a stub from the command), her held thing, her stance | Front, face, back, walking, her attack at its hit, the game camera; then **the line-up between Sefu and Kaia** | The user says yes to the figure. Only now are colours and shapes fixed for everything else |
 | **3. Kit on paper** | The kit sheet (`pipeline/designs/kit-<theme>.md`): four spells and the passive, every number, every answer checked (rule 4) | The sheet as a table, in plain words | The user says yes, or changes spells while they are still words |
-| **4. Spells** | Palette and parts, four spells, the trait, icons and portrait drawn from the agreed look, registration | One picture per spell from the game camera at its key moments, and the hero's page in the game | Each spell reads as hers without its name; type check and build pass |
-| **5. Plays** | The CPU's use of her, balance numbers, the Raid | A clip of a CPU duel in an arena; the simulator's page (win rate, who beats her, where her damage comes from) | 40-60% over at least 96 fights; no errors; the user has played her once |
-| **6. Release** | Part 3's last block: docs, News, counts, protocol, pictures | The list of what is not live yet | The user asks for the push, then for the deploy |
+| **4. Spells** | The four spells on the spell blocks with their looks, the trait, icons and portrait drawn from the agreed look (no registration: the game finds the folder) | One picture per spell from the game camera at its key moments, and the hero's page in the game | Each spell reads as hers without its name; type check and build pass |
+| **5. Plays** | The CPU's use of her, balance numbers (tuned on the workbench), the Raid | A clip of a CPU duel in an arena; the simulator's page (win rate, who beats her, where her damage comes from); `hero-check.py`'s page | 40-60% over at least 96 fights; no errors; the user has played her once |
+| **6. Release** | The draft flag off, the server's shop row, her fight prints taken; docs, News, counts, protocol, pictures | The list of what is not live yet | The user asks for the push, then for the deploy |
 
 If a gate's picture gets a no, go back one gate, not forward with a patch: a rejected look is rebuilt, a rejected
 spell is rewritten on the sheet first.
 
-## Part 3: the checklist
+## Part 3: how a hero is built (since 2026-11-16)
 
-`<theme>` is one lower-case word (`phoenix`); the hero's name is what players see.
+Three tools do the file work; the gates and the user's yeses stay as they are. The design behind them:
+[hero-framework.md](hero-framework.md), section 13; the page for the user:
+[hero-framework/new-hero-tools.html](hero-framework/new-hero-tools.html).
 
-### Gate 1: card
-- [ ] `pipeline/designs/kit-<theme>.md` started with the card (rules 1 to 3).
-- [ ] Name, title, spell names and theme word are new: search `src/kits/`, `src/spells/targeted/` (file names and
-      `label`s) and the roster table.
-- [ ] Accent and foil are not a neighbour of an existing hero's (`docs/ART_BIBLE.md`, the kit palette rows).
+### 1. The command: `python pipeline/tools/new-hero.py <Name>`
 
-### Gate 2: look
-- [ ] `blender/heroes/real/<theme>.py` with one `build()`; run
-      `blender --background --factory-startup --python blender/heroes/real_build.py -- <theme> --shots <folder>`
-      (Blender: one agent at a time). It writes `public/models/heroes/<theme>_v4.glb`: 300-600 KB, about 25,000
-      triangles at most, emissive at most 1.
-- [ ] `src/heroes.ts`: `MODELS` gets `'<Name>': 'models/heroes/<theme>_v4.glb'`, `HERO_BODIES` her hit size (radius
-      and height as measured on the model, at the heroes' 1.3x).
-- [ ] `src/motion/real.ts` `REAL_STYLE`: what she holds and how she strikes, when the default is wrong. A clip she
-      needs that is not used yet: `pipeline/tools/strip-anim.mjs`, then looked at with `pipeline/tools/v4-clips.js`
-      beside the pack's own figure.
-- [ ] Pictures: `_v4sheet` and `_v4lineup` (`pipeline/tools/v4-sheet.js`) with Sefu and Kaia. Saved under
-      `docs/heroes/`.
+Run it at the start of gate 1 (Windows PowerShell 5.1 too; a name of two words in quotes). It makes every file in one go,
+and never overwrites one:
 
-### Gate 3: kit on paper
-- [ ] The sheet's table: per spell its key, name, cooldown, rule, and the answer with its arithmetic. Role, HP, walk
-      speed and basic attack from the role budget in `pipeline/designs/kit-common.md`.
-- [ ] What each rule needs from the engine, and on which screen it is decided. Anything the engine does not have is
-      named here and built first, by one writer (`src/duel.ts`, `src/arena.ts`, `src/heroMode.ts` are shared).
-- [ ] What the CPU does with each spell, and against it.
+| File | What it is |
+|---|---|
+| `src/heroes/<theme>/hero.ts` | the card, **`draft: true`** |
+| `src/heroes/<theme>/numbers.ts` | its colours and every number of the kit; the card's tooltips are written from them |
+| `src/heroes/<theme>/spells/*.ts`, `fight.ts` | the four spells **on the spell blocks** (a bolt, a circle with a fuse, a zone round or before the hero, a sure hit, a dash down a lane), drawn with the sketch look |
+| `src/heroes/<theme>/trait.ts` | the passive's stub |
+| `src/heroes/<theme>/icons.ts` | canvas stand-in icons and portrait in its colours |
+| `pipeline/icons/vectorcraft/draw/<stem>.py` | the icon command-file stub (`make.py <stem>` exports the game's SVGs) |
+| `blender/heroes/real/<theme>.py` | the model's `build()` stub on the realistic kit |
+| `pipeline/designs/kit-<theme>.md` | the kit sheet's stub (gate 1's card, gate 3's table), if there is none |
+| `docs/lore/LORE.md` | its entry (status `draft`), its faction's member line, its origin line (rule 0: the lore first) |
+| `docs/lore/codex/heroes/<slug>.md` | its codex page's stub |
+| `docs/heroes/new/<theme>.md` | **the checklist**: these gates filled in for this hero, and the list of what the command made |
 
-### Gate 4: spells
-- [ ] `src/effects/parts/<theme>.ts`: the palette (numbers and a `_CSS` twin) and her pooled parts.
-- [ ] `src/spells/targeted/<camelName>.ts`, one per spell, `category: 'hero: <theme>'`; registered in
-      `src/spells/targeted/index.ts`.
-- [ ] `src/kits/<theme>.ts`: name, title, accent, foil, HP, the four spells with blurbs a player can act on, icons,
-      and **the portrait drawn from the agreed model** (same colours, same held thing, same hair). Added to
-      `HERO_KITS` in `src/heroes.ts`, at the end.
-- [ ] `src/traits/<theme>.ts`: passive, twist, speed, attack, the hooks; registered in `src/traits/index.ts`.
-- [ ] One contact sheet per spell (`pipeline/tools/contact-sheet.js`, `_review`), saved under `docs/spells/`.
-- [ ] `npx tsc --noEmit -p .` and `npm run build`.
+A hero already planned in LORE.md (status `next10` or `next20`) keeps its entry: its title, theme, faction and pronoun are
+read there, and from its kit sheet its spells, shapes, cooldowns, ranges, damage, HP and colours. A shape no block fits yet (a
+wall, a summon) gets a circle and a note in the file: gate 3 decides whether it becomes a new block or the spell's own code.
+Options: `--theme --title --faction --pronoun --people --role --accent --foil`; `--dry` says what it would write;
+`--remove --yes` takes a draft out again (its files, its lore stub, and what `make.py` wrote from its icon stub; only a draft).
 
-### Gate 5: plays
-- [ ] `aiHold` (and `aiGoal`, `enemyGoal` where she has things on the floor): written down in the sheet what the
-      CPU does.
-- [ ] `python pipeline/sim/sim.py hero <Name>` ([the fight simulator](simulator.md), 96 fights in 45 s): 40-60%, no
-      fight without a winner, no errors, and every spell showing in "where the damage comes from" (one that does not
-      is one the CPU cannot use). Numbers changed here go back into the sheet and the blurbs. Before release,
-      once with `--fights 32` and once with `--events`.
-- [ ] `_raid(['<Name>', '<two of her role>'], 30)` (`pipeline/tools/raid-tool.js`, through `page-shots.py`): clears the first
-      boss like her role; `_raid.errors()` empty. Four fights are noise: 30 a hero take a minute. A boss's hit is not a
-      hero's: if her passive answers a hit (a save, a block, a counter), try it with an ordinary boss hit and with a
-      `lethal` one, and write down what each does.
-- [ ] A CPU duel on the game page through its own menus: pick her in the hero grid (also at phone width), fight,
-      lose or win, rematch; then as the CPU's hero. No console errors.
-- [ ] Two screens online with bots (`pipeline/tools/online-bot.js`, two headless pages on one dev server). Equal HP on
-      both screens is not enough: read what each screen has of her things on the floor ten times a second and lay the
-      two records over each other. Throw her spells into each other's wind-ups, and let the enemy keep its distance
-      and step from side to side: those are the two places where the screens part. The scripts that did this for
-      hero 40, and the game-page duel and the raid cases beside them: `pipeline/tools/hero-gate5/`.
-- [ ] A clip (`pipeline/tools/clip-film.js`, headless through `page-shots.py`; one take a page load) for the user and
-      the News.
-- [ ] `npm run test:server`.
+**A draft is not in the game.** The card's `draft: true` keeps it off the roster, the shop, the CPU's picks and the Codex
+(`src/heroes/index.ts`; its lore has status `draft`, which `lore-game.py` and the Codex leave out; it draws its canvas icons).
+Its lore may be unfinished meanwhile: `lore-page.py` and `lore-codex.py` list what a draft still lacks as notes and still pass
+for everyone else. A draft's files are loaded with the game's (a few KB, never used), so they must make no three.js object at
+the top of a file: the sketch look and the stubs make theirs when a spell is built.
 
-### Gate 6: release
-- [ ] `docs/catalog/heroes/<theme>.md` and her row in `docs/catalog/heroes/README.md`; her spells in
-      `docs/catalog/effects.md`; her palette row in `docs/ART_BIBLE.md`.
-- [ ] The counts: "39 heroes" becomes "40" in `CLAUDE.md`, `docs/README.md`, `docs/catalog/heroes/README.md`,
-      `docs/SHOWCASE.md` and wherever a search for the old number finds it as a current fact (not in history).
-- [ ] `src/game/changelog.ts`: a News item with her picture or clip (`public/news/`).
-- [ ] `server/protocol.mjs`: `PROTOCOL` plus one. A tab left open from before does not know her, so it must reload.
-- [ ] Pictures that show the roster, taken new: the line-up (`_v4lineup`), `public/news/` if the News shows the
-      roster, the login picture only if she should stand in it.
-- [ ] `docs/STATUS.md`: done, not pushed, not live; then the user's push, and the deploy as its own request. Before
-      a deploy: `npx wrangler deployments list` shows the version STATUS names as live (two Cloudflare accounts).
+### 2. The workbench: `/workbench.html` (or the tool page with `/?bench`; never the game's page)
+
+On the dev server (`npm run dev`, then `http://localhost:5173/workbench.html`). Pick a hero, drafts included; fight the CPU,
+let the CPU play it, or try it on the training dummies. Its reach is drawn round it on the floor (a dashed ring a spell: Q
+blue, W green, E yellow, R pink), and each spell's last cast stays on the floor as the danger zones the hit was judged with.
+The timing panel shows each spell's moments on a time line: when its zone shows, the hit, how long it lasts, how long the
+effect plays. Every number is live: the card's (HP, ranges, cooldowns) and, for a spell on the blocks, its rules (damage,
+wind-up, delay, the shape's sizes, the move, its sliders). Nothing is saved: the panel lists each change
+(`numbers.ts: Q range 10 -> 12`) to copy into the files. The balance block shows the two commands to run and their last
+saved results.
+
+### 3. The checks: `python pipeline/tools/hero-check.py <Name>`
+
+One command, one page (`pipeline/sim/out/check/<Name>.html`; the workbench shows it too): the hero's two fight prints, the
+simulator through the heavy lock (`--drafts` for a draft), the online pair check, the icons at 32 and 64 px as a picture, the
+model's size, triangles and glow against the other heroes (rule 9), and the lore scripts' checks. `--only` and `--skip` pick
+checks (`--only icons,model,lore` takes seconds). A draft skips the prints (it has none until gate 6) and the online check (the
+server knows a hero only from its shop row).
+
+### The gates with the tools
+
+- **Gate 1:** `new-hero.py <Name>`; write the lore (LORE.md entry, ties, origin, codex page) and the card on the kit sheet.
+  `hero-check.py <Name> --only lore` lists what is missing. Name, title and spell names new (`kits20.py`).
+- **Gate 2:** the model in `blender/heroes/real/<theme>.py` (Blender: one agent at a time):
+  `blender --background --factory-startup --python blender/heroes/real_build.py -- <theme> --shots <folder>`. Then the card's
+  `model` becomes `models/heroes/<theme>_v4.glb` (a plain Coast-folk worker stands in until then) and its `body` is measured;
+  `REAL_STYLE` in `src/motion/real.ts` where the default hold or strike is wrong; pictures with `pipeline/tools/v4-sheet.js`
+  (`_v4sheet`, and `_v4lineup` between Sefu and Kaia). `hero-check.py <Name> --only model`: 300-600 KB, emissive at most 1,
+  no more triangles than the heaviest hero already in the game (2026-11-16: median 26,654, most 35,646, Anka's; the old
+  figure here, "about 25,000", was below 25 of the 41 accepted models).
+- **Gate 3:** the kit sheet's table; each spell named as a block or as new code (`src/heroes/framework/blocks.ts`); what the
+  CPU does with each spell, and against it.
+- **Gate 4:** the sheet's numbers into `numbers.ts`; each spell's look written (a class with the moments it needs, in place of
+  `sketch(...)`; `src/heroes/sumo/spells/stomp.ts` is a short example); the passive in `trait.ts`; the icons (`draw/<stem>.py`,
+  then `make.py <stem>`) and the portrait from the agreed model. On the workbench every spell's reach and timing match the
+  sheet. One picture a spell from the game camera (`pipeline/tools/contact-sheet.js`, `_review`). `npx tsc --noEmit -p .`
+  and `npm run build`.
+- **Gate 5:** `aiHold`, `aiGoal`, `enemyGoal` in `trait.ts`; numbers tuned on the workbench and copied back;
+  `hero-check.py <Name>` (the simulator 40-60% over at least 96 fights, no errors); the Raid's first boss
+  (`_raid(['<Name>', ...], 30)`, `pipeline/tools/raid-tool.js`); a CPU duel on the game page with `?drafts=1` (at phone width
+  too); a clip (`pipeline/tools/clip-film.js`).
+- **Gate 6:** delete `draft: true`; its row in `HERO_SHOP` and `PROTOCOL` plus one (`server/protocol.mjs`); its LORE.md status
+  `roster`, then `lore-game.py` and `lore-codex.py`; its fight prints taken (`hero-prints.py take <Name>` and
+  `take <Name> --foe Brannoc`); `hero-check.py <Name>` once more, now with the online check; the catalog page and row, the
+  palette row (`docs/ART_BIBLE.md`), the counts ("40 heroes"), `src/game/changelog.ts`, `docs/STATUS.md`; then the user's push,
+  and the deploy as its own request (before it, `npx wrangler deployments list` shows the version STATUS names as live).
 
 ## What hero 40 showed (2026-11-11)
 

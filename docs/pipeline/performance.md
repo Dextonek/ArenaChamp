@@ -1,7 +1,7 @@
 ---
 title: Performance tool
 tags: [pipeline, performance, tools]
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
 # Performance: measuring it, and keeping it
@@ -13,6 +13,10 @@ with it on 2026-11-13, and the rules that keep the game fast.
 
 Needs: `pip install playwright pillow`, Chrome or Edge (`--browser chrome|msedge`; the default is whichever is installed).
 
+
+**With other agents running:** a run that measures frame times goes through the machine's lock, so only one such run happens at a
+time across all worktrees: `python pipeline/tools/heavy.py run -- python pipeline/tools/perf.py ...` (`heavy.py status` shows who
+holds it). Fight prints need no lock: they are the same however busy the machine is.
 ## The commands
 
 | Command | What it answers | Time |
@@ -43,8 +47,10 @@ the player's camera and bars; the Sun Warden alone; the Sun Warden with nine scr
 in the Hall of Noon; a horde floor of the Tower of week 2026-W46, begun again when cleared. 1,500 frames of a 60th of a
 second each (25 s). More scenes by name only (`MORE` in perf.py): `arena-<id>` (a duel in each arena), `raid-ash`,
 `raid-heart`, `raid-heart-party`, and `world-1` to `world-5` (a floor of the Tower's worlds: the wide zone, the hero set
-down beside one pack after another). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
+down beside one pack after another; the five handmade floors, which since the Climb became 50 floors are floors 1, 11, 21, 31 and 41:
+the names stayed, and so did the fights' prints). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
 and a row in `SCENES`.
+A scene may also return `every` (frames between two samples of its print; 60 when left out).
 
 Five profiles: `desktop` (1920 x 1080), `phone` (844 x 390 points at 3 pixels a point, touch: drawn at 1688 x 780), and
 `desktop-4x`, `phone-4x`, `phone-6x` with Chrome's processor throttle. The graphics card is the computer's own; every
@@ -78,8 +84,45 @@ The game's warm-up builds both heroes' spell effects before the fight; building 
 fight is another one than before it existed. `--set "{\"noPrebuild\": true}"` builds them at the first cast, as the game
 of 2026-11-12 did: with it the game of today plays that game's very fights. Use it for the check, not for the timings.
 
+### When the print changes
+
+The tool's clock stands still from the start of a scene's setup and starts at the same instant every run (`CLOCK0` in
+perf-page.js). Before 2026-11-15 it started at the real time the setup happened to end, and the raid's print changed from
+run to run on the same code (e83903c0, 34f75b29, b53a2f62, 9c4a9c48), with the machine's load and even with an unrelated
+function added somewhere. The game reads the clock in its rules: a raid partner's trees (`timberNow` in
+`src/traits/timber.ts`, the clock when no trait writes one) grow at "planted + 1.2 s", and with a different start that
+came out on one frame or the next. And three.js rolls the same seeded dice for the id of every object it makes (four rolls
+each), so a tree built a frame early shifted every die after it. The same for a model file that finished loading during the
+fight: it lands at one of the tool's pauses between frames (every 20th frame), and which one is real time's choice. So what
+comes in during those pauses now rolls dice of its own, and the fight's dice are rolled by the frames alone. Two things
+follow for the game's code: anything that builds objects on a clock moves the fight's dice, and a print can only be
+trusted when nothing in a scene runs on real time.
+
+The prints of every scene on desktop, taken after this fix on the code with the Climb's own rulers' and enemies' models,
+are in `docs/perf/data/prints.json` (`perf-show.py prints <yours>` says "same fight" or "ANOTHER FIGHT"). The older
+result files (`after.json` and the rest, 2026-11-13) hold timings worth comparing, but their raid prints are not a
+reference: those were taken while the print still moved.
+
+To find where two runs part: `--set "{\"trace\": {\"from\": 0, \"to\": -1, \"states\": false}}"` writes the number of dice
+rolled each frame (`trace.rolls` in the result file) and the files that came in during the frames. Lay two runs' `rolls` side
+by side: the first frame that differs is where they part. Then `--set "{\"trace\": {\"windows\": [[a, b]], \"states\": false}}"`
+writes who rolled each die in frames a to b (`trace.who`, the top of each call's stack). Without `states: false` it also
+writes the scene's state each frame (`fine()` in the scene, else its print), which slows the run a little.
+
 `perf-diff.py` compares the pictures the runs end with. The same frame of the same fight differs by the film grain alone
 (about 1 of 255 on average, no pixel far apart). A change that claims to leave the picture alone must give that.
+
+### The heroes' fight prints
+
+`python pipeline/tools/hero-prints.py take|check|show [Name,...]` plays one fixed duel per hero (the scene `hero` in
+perf-page.js: the hero against Isolde in the Harbour, Isolde against Brannoc, both at the CPU's balance level, 3,600 frames,
+dice 7) and keeps its print in `docs/perf/data/hero-prints.json`; `--foe Brannoc` takes the second set, against a melee foe, in
+`hero-prints-brannoc.json`. Its print is finer than the duel's: every half second
+both heroes' health to a tenth, places to a hundredth of a metre, the four cooldowns of each, the units alive on each
+side, and the casts of each slot so far. The scene refuses to run when the foe is not the one asked for or when a spell of either side
+was not built before the fight. It is the proof that moving a hero into the hero framework changes nothing
+(docs/pipeline/hero-framework.md, "The fight prints"): `take` before, `check` after. About 25 s a hero, five browsers at
+once, its own dev server on port 5191.
 
 ## Before and after
 

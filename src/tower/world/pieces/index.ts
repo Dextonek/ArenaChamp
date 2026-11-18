@@ -1,9 +1,10 @@
 import type { GameApi } from '../../../runtime';
-import { PieceRun, bossFight } from './core';
+import { PieceRun, bossFight, crownFight, sharedFight } from './core';
 import { startGate, startRival, startTrial } from './duels';
 import { piecesOf } from './floors';
 import { buildRuler } from './ruler';
 import type { PieceHandle, PieceIn, PieceKind, PieceOut } from './types';
+import { rivalStandIn, renamed } from '../rival';
 
 export type { PieceHandle, PieceIn, PieceKind, PieceOut, PieceReport, PiecesDef, RulerDef } from './types';
 export { PIECES, piecesOf } from './floors';
@@ -18,14 +19,29 @@ export { PIECES, piecesOf } from './floors';
  * steps the simulation yields. `cancel()` ends the piece with no outcome.
  */
 export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: (out: PieceOut) => void): PieceHandle {
-  const floor = Math.max(1, Math.min(5, Math.round(input.floor)));
-  const def = piecesOf(floor);
-  const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: def.rival ? `Rival: ${def.rival.hero}` : 'Rival' };
+  // A floor without set pieces of its own (one not built) plays those of the highest floor below it that has them.
+  let floor = Math.max(1, Math.round(input.floor));
+  while (floor > 1 && !piecesOf(floor)) floor--;
+  const def = piecesOf(floor)!;
+  // The seeds follow the number the pieces were tuned at (a handmade floor that moved up keeps its old fights); the titles say the floor.
+  const seedN = def.tunedAs ?? floor;
+  // A rival who is the hero being played is the next hero on the roster, as the floor's zone has it (../rival.ts).
+  const stand = def.rival ? rivalStandIn(def.rival.hero, input.hero, api.kits.map((k) => k.name)) : '';
+  const rival = def.rival && stand !== def.rival.hero ? { ...def.rival, hero: stand, line: renamed(def.rival.line, def.rival.hero, stand) } : def.rival;
+  const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: rival ? `Rival: ${rival.hero}` : 'Rival' };
   const run = new PieceRun(api, { ...input, floor }, titles[kind], done);
   switch (kind) {
     case 'ruler': {
-      const ruler = buildRuler(api, def.ruler, { hard: def.hard, boons: input.boons, ally: input.ally, run });
-      bossFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${floor}`, tier: 1, boons: input.boons });
+      if (def.crown) {
+        crownFight(run, def.crown, `world-crown-${floor}`, def.crownTier ?? 1);
+        run.hud?.say(def.ruler.name, def.ruler.line, 3);
+        break;
+      }
+      // With others (the open world's stage 3): the hub's link, and the ruler's blows set for the party.
+      const sh = input.shared;
+      const ruler = buildRuler(api, def.ruler, { hard: def.hard * (sh?.dmg ?? 1), boons: input.boons, ally: input.ally, run, link: sh?.link });
+      if (sh) sharedFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${seedN}`, tier: 1, boons: input.boons, shared: sh });
+      else bossFight(run, { def: ruler.def, link: ruler.tower!, seed: `world-ruler-${seedN}`, tier: 1, boons: input.boons });
       ruler.begin();
       run.hud?.say(def.ruler.name, def.ruler.line, 3);
       void api.duel.whenReady().then(() => { if (!run.over) ruler.ready(); });
@@ -35,11 +51,11 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
       startGate(run, def.gate, floor);
       break;
     case 'trial':
-      startTrial(run, def.trial, floor);
+      startTrial(run, def.trial, floor, seedN);
       break;
     case 'rival':
-      if (!def.rival) throw new Error(`floor ${floor} has no rival duel: the zone runs its race`);
-      startRival(run, def.rival, floor);
+      if (!rival) throw new Error(`floor ${floor} has no rival duel: the zone runs its race`);
+      startRival(run, rival, floor, seedN);
       break;
   }
   return run;

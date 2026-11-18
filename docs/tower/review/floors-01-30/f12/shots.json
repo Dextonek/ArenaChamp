@@ -1,0 +1,141 @@
+{
+ "floor": 12,
+ "part": "climb-review-shots",
+ "wallSeconds": 16.2,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 12,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "4.9,46.4 y0.21 depth in w0.21 h0.11 m0.21 p1 #ffffff",
+  "probe-float-1": "96.9,4.5 y5.22 depth in w0.19 h0.1 m5.22 p1 #ffffff",
+  "probe-float-2": "87.8,-51.4 y5.05 depth in w0.16 h0.11 m5.05 p1 #ffffff",
+  "probe-float-3": "73.2,13.8 y5.25 depth in w0.17 h0.1 m5.25 p1 #ffffff",
+  "probe-gap-4": "-5.9,-149.9 y13.31 depth out23n w5.52 h4.31 m4.81 sunk-0.13 #2e4435",
+  "probe-gap-5": "-83.2,-117.2 y14.47 depth out25n w5.46 h4.28 m4.7 sunk-0.35 #2e4435",
+  "probe-gap-6": "-80.3,-117.4 y12.31 depth out23n w5.07 h3.99 m4.42 sunk-0.72 #2e4435",
+  "probe-cover-7": "81.2,-9 y0 depth in w0.69 h2.99 m4.36 r4.36  #4b3525",
+  "probe-cover-8": "-8.8,29.7 y0 depth in w0.84 h3.97 m4.32 r4.32  #4b3525",
+  "probe-cover-9": "-8.8,29.7 y3.11 depth in w4.77 h4.06 m4.32 r4.32  #405a35",
+  "probe-cover-10": "81.2,-8.9 y5.76 depth in w2.36 h2.76 m4.3 r4.36  #2e4435",
+  "frames": {
+   "at": [
+    -59,
+    5
+   ],
+   "units": 5,
+   "runs": [
+    {
+     "med": 4.2,
+     "p95": 5.5,
+     "worst": 11.2
+    },
+    {
+     "med": 4.6,
+     "p95": 5.7,
+     "worst": 8.2
+    },
+    {
+     "med": 4.4,
+     "p95": 5.1,
+     "worst": 8.4
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Moss Warden",
+   "title": "Green over everything",
+   "model": "models/tower/wood_elder_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 3436,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 55.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}

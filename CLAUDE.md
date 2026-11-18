@@ -23,9 +23,22 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   deploy" covers that one deploy only. After new work, list what is not live and ask.
 - **Credentials:** never type or repeat passwords in chat. Local test logins come from the git-ignored
   `server/data/test-accounts.local.json`; let the page fetch it in JS. No test accounts on the live server.
-- **Agents:** at most 3 subagents at once, counting ones that subagents start themselves. Blender (MCP): one agent at a
+- **Agents:** up to 6 subagents at once, counting ones that subagents start themselves (the user lifted the old limit of 3 on
+  2026-11-16: "you can make more agents, not just 3"). Blender (MCP): one agent at a
   time. One writer at a time on the shared engine files (`src/heroMode.ts`, `src/arena.ts`, `src/duel.ts`,
-  `src/main.ts`).
+  `src/game/main.ts`, `src/tool/main.ts`).
+- **Load on this computer (2026-11-16; the user: "make adjustments so there will be not that much load and agents can work well").**
+  The agents think in the cloud; their builds, dev servers, hidden browsers, Blender and measurements run here (Ryzen 7 5700X,
+  32 GB, RX 6700 XT). Six agents is fine for code, lore, models and checks. What does not mix:
+  - A job that MEASURES TIME (perf.py frame times, phone profiles, `--headed` loading runs, the simulator's whole roster) runs through
+    the lock: `python pipeline/tools/heavy.py run -- <command>` (one at a time across all worktrees; waits at most 9 min). Fight prints
+    (`hero-prints.py`, perf prints) are the same under load and need no lock. A measurement that matters for a decision (e.g. the phone
+    frame) is taken with no other agent running.
+  - Server tests under load: `SMOKE_SLOW=2 npm run test:server` (PowerShell: `$env:SMOKE_SLOW=2; npm run test:server`); a timing
+    failure under load is rerun once before it counts.
+  - Each agent keeps ONE dev server and one browser, and stops them (by PID) when its job ends; Blender one agent at a time.
+  - Disk: every agent works in its own copy (worktree). After merging a job, the parent removes the copies of merged jobs (link to
+    `node_modules` first, the link only); keep at least 30 GB free on C:.
 - **Loops:** every wait or poll ends by itself within 10 minutes. Never kill processes by name. "stop", "sstop" or
   "slowly finish" means stop all agents and loops at once, then summarise.
 - **Scope:** "brainstorm" or "just ideas" means no code. Use a named model, path or tool exactly; ask before choosing
@@ -65,6 +78,12 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   edges, lantern light as the only glow; a drawn floor, a drawn sea (`blender/arenas/real/STYLE.md`, `kit.py`,
   `src/arenas/real.ts`). When a look is in doubt, show one arena's look first and wait for the nod. The user also
   liked having three agents look at a rejected sample in parallel before deciding ("make it three").
+- **Every hero matches the lore (2026-11-14).** The user: "from now on we will match all heroes to our lore". The world is the
+  Dial (`docs/lore/LORE.md`, the page `docs/lore/index.html`). A hero, new or changed, starts from its place there: its people, its
+  realm, its faction and its ties to other heroes. Its look, colours, kit and names follow from that, and the same change updates
+  LORE.md (home, age, legend, ties) and the game's copy (`python pipeline/tools/lore-game.py` -> `src/game/lore.ts`). The user also
+  found the heroes "all the same, like human": the Dial has many peoples, and a hero's people shows in its figure (still the one
+  realistic style on the pack's skeleton, and never cartoon).
 - **A new hero is made by `docs/pipeline/new-hero.md` (2026-11-11).** The user, asked for a 40th hero: "don't follow
   the same path, let's just make new rules for hero creation". Ten rules, six gates that each end in a picture and
   the user's yes (the look is agreed before any spell is built), one checklist. The user said "continue" to them;

@@ -1,0 +1,141 @@
+{
+ "floor": 14,
+ "part": "climb-review-shots",
+ "wallSeconds": 29.6,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 14,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-32.2,90.9 y0.67 depth in w0.19 h0.12 m0.67 p1 #ffffff",
+  "probe-float-1": "84.7,42.3 y3.82 depth in w0.17 h0.12 m3.82 p1 #ffffff",
+  "probe-float-2": "-75.7,-69.1 y1.54 depth in w0.2 h0.09 m1.54 p1 #ffffff",
+  "probe-float-3": "-77.6,48.4 y2.19 depth in w0.17 h0.12 m2.19 p1 #ffffff",
+  "probe-gap-4": "-6.2,-135.4 y12.63 depth out21n w4.9 h3.83 m4.72 sunk-0.75 #2e4435",
+  "probe-gap-5": "61.2,-86.1 y12.65 depth out21n w4.8 h3.77 m4.66 sunk-0.85 #2e4435",
+  "probe-gap-6": "-61.1,-135.1 y12.11 depth out23n w5.35 h4.18 m4.3 sunk-0.36 #2e4435",
+  "probe-cover-7": "-32.1,-109.5 y-0.06 depth in w2.58 h1.12 m7.04 r9.65  #3d5537",
+  "probe-cover-8": "-31.3,-113.5 y4.78 depth in w0.22 h0.12 m6.94 r9.65  #ffffff",
+  "probe-cover-9": "-32.8,-111.7 y-0.05 depth in w2.4 h0.95 m6.82 r9.65  #3d5537",
+  "probe-cover-10": "-33.4,-110.3 y0 depth in w0.43 h4.93 m6.12 r9.65  #c7bfa7",
+  "frames": {
+   "at": [
+    -62,
+    -70
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 6.5,
+     "p95": 10.1,
+     "worst": 26.4
+    },
+    {
+     "med": 8.7,
+     "p95": 15,
+     "worst": 24.6
+    },
+    {
+     "med": 8.6,
+     "p95": 13.6,
+     "worst": 33.3
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Antler King",
+   "title": "Crowned in branches",
+   "model": "models/tower/wood_antler_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 4659,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 56.08,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}

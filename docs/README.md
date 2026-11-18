@@ -59,7 +59,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 ### Pipeline (how effects are made)
 | Page | What it answers |
 |---|---|
-| [Rules for creating a hero](pipeline/new-hero.md) | The ten rules, the six gates (each ends in a picture and the user's yes) and the checklist of every file, from the idea to the deploy |
+| [Rules for creating a hero](pipeline/new-hero.md) | The ten rules, the six gates (each ends in a picture and the user's yes), and the tools: `new-hero.py` makes a draft hero's files, the workbench (`/workbench.html`) plays it, `hero-check.py` checks it ([the page](pipeline/hero-framework/new-hero-tools.html)) |
 | [Performance tool](pipeline/performance.md) | `python pipeline/tools/perf.py`: fixed scenes of the real game timed frame by frame with the real graphics card, loading, where a frame's time goes; what was found, the rules that keep the game fast, the Graphics setting. The results: [perf/performance.html](perf/performance.html) |
 | [Fight simulator](pipeline/simulator.md) | `python pipeline/sim/sim.py`: CPU duels on the game's own code in many hidden browsers at once, the results as a page (win rates, who beats whom, where the damage comes from) |
 | [Rough Rust model](pipeline/rust-model.md) | `rustsim whatif "Anka" hp=480`: a quick estimate from sheets fitted to the real simulator's fights; how close it is, what it cannot see, how to refresh it |
@@ -74,6 +74,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 |---|---|
 | [Effects](catalog/effects.md) | Every registered effect by category, with links to source, design note and contact sheet |
 | [Heroes](catalog/heroes/README.md) | The 40 heroes and their kits. The original twenty: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vitriol (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork), Opaline (prism), Sirix (hive), Cantor (bard), Oblivion (void), Shiori (ink), Tempo (chrono); and 19 newer ones from Silvane (mirror) to Wick (door) and Pim and Pom (twins); and hero 40, Anka (phoenix), the first made by the rules for creating a hero |
+| [Lore](lore/index.html) | The world of the game, the Dial: the Tower and the Noonfall, why heroes fight in the Ring, eight factions and five loners, a map, and a legend, a line and ties for all 40 heroes and the 20 new ones (source to edit: [LORE.md](lore/LORE.md), page made by `python pipeline/tools/lore-page.py`). The 20 new heroes: cards [1-10](heroes/next10/index.html) and [11-20](heroes/next20/index.html), their kits on paper [as tables](heroes/kits20/index.html) with the build order, one sheet each in `pipeline/designs/kit-<theme>.md` (made and checked by `python pipeline/tools/kits20.py`) |
 
 ### Knowledge (what we learned)
 | Page | What it answers |

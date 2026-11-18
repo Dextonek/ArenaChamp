@@ -22,6 +22,7 @@ import type { CastContext, Effect, EffectModule } from './effects/types';
 import { DISTORT_LAYER } from './effects/parts/distortion';
 import type { ScreenFx } from './effects/parts/screen';
 import { AUTO_MIN_PIXELS, AUTO_MIN_SHARE, AUTO_REST_MS, FramePacer, QUALITY_SPEC, loadQuality, loadShare, saveQuality, saveShare, type QualityLevel } from './quality';
+import { advanceFightClock } from './fightClock';
 
 /**
  * The 3D runtime that the VFX tool (index.html, src/tool/) and the duel game (game.html, src/game/) are both built
@@ -955,6 +956,7 @@ export function createRuntime(opts: RuntimeOptions) {
   }
 
   function step(dt: number) {
+    advanceFightClock(dt);
     hooks.beforeStep?.(dt);
     updateEffect(active?.effect, dt);
     for (const slot of lingering) {
@@ -1065,6 +1067,9 @@ export function createRuntime(opts: RuntimeOptions) {
     const cine = active?.effect?.group.visible ? active.effect.cinematic : undefined;
     const cineOn = !!cine?.active;
     skyDome.visible = !cineOn;
+    // The sky stands round the camera, not round the world's middle: a Tower floor reaches 120 m out, where a dome round the middle
+    // showed its far side cut off by the camera's far plane (a pale dome on the horizon) and its gradient tilted.
+    skyDome.position.set(camera.position.x, 0, camera.position.z);
     scene.fog = cineOn ? null : fog;
     if (cineOn) {
       _camSave.pos.copy(camera.position);

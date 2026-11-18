@@ -1,0 +1,32 @@
+{
+ "floor": 25,
+ "verdict": "Clean: cleared with four stars and no fall, no console error, every spot reachable; the caravan, the rival (Sefu), the trial, the Glass Serpent (in the Red Jackal's figure: a serpent in the Codex, see floor 7's item) and the gate (Kaia) all played.",
+ "found": [
+  {
+   "kind": "ok",
+   "title": "Packs and props",
+   "text": "The kings' tombs' pack slept through the bot's route; the probe: four small shrubs on the high rim (a few cm), crates on the rim's slope, red rocks a little sunk."
+  }
+ ],
+ "pictures": [
+  [
+   "ruler-close.jpg",
+   "The Glass Serpent"
+  ],
+  [
+   "person-villager.jpg",
+   "The Beacon-Keeper"
+  ],
+  [
+   "map.jpg",
+   "The M map"
+  ],
+  [
+   "overview.jpg",
+   "From the south edge"
+  ]
+ ],
+ "notChecked": [
+  "the shared packs online"
+ ]
+}

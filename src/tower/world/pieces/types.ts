@@ -1,5 +1,7 @@
 import type { FloorKind } from '../../week';
 import type { TowerBoons } from '../../boons';
+import type { HeroKit } from '../../../heroes';
+import type { BossDef, RaidLink } from '../../../raid/types';
 
 /**
  * The set pieces behind a floor's doors (pipeline/designs/tower-worlds-pieces.md). The zone enters one through a door and gets
@@ -17,6 +19,25 @@ export interface PieceIn {
   ally?: string;
   /** 'run' is the autopilot's: no fades, no waits, nothing on the page. */
   mode: 'play' | 'run';
+  /** A ruler fought by a party of the floor's shard (the open world's stage 3): how this screen takes part. Alone: none. */
+  shared?: SharedPiece;
+}
+
+/**
+ * This screen's part in a ruler's fight with others (src/tower/world/together.ts makes it from the hub's `door_start`): the link to the
+ * hub for the ruler's def (a Raid `NetLink`), the other heroes by seat, this player's name, how many the ruler is set for and its blows'
+ * factor. `loaded` says the fight is drawn (the hub's countdown follows); `result` is how it ended for this player, once it has.
+ */
+export interface SharedPiece {
+  link(def: BossDef): RaidLink;
+  party: { side: number; kit: HeroKit; name: string }[];
+  name: string;
+  n: number;
+  dmg: number;
+  loaded(maxHp: number): void;
+  result(): { won: boolean; hit: boolean } | null;
+  /** The piece is over on this screen (ended, or the climb left it). */
+  stop(): void;
 }
 
 export interface PieceOut {
@@ -24,6 +45,13 @@ export interface PieceOut {
   /** Health left as a share 0..1. */
   hp: number;
   seconds: number;
+  /**
+   * Nothing counts either way (a party's ruler fell but this screen's hero never hit it; the connection went mid-fight): no win, no life
+   * lost, the door as it was.
+   */
+  none?: boolean;
+  /** It was a party's fight: everyone in it comes out in front of the door. */
+  shared?: boolean;
 }
 
 /** What `startPiece` hands back. The contract says `void`; a caller may ignore this. */
@@ -100,8 +128,14 @@ export interface RulerDef {
   title: string;
   /** The hero whose model and kit it is drawn from, for now (the guardian's way). */
   stand: string;
-  /** A colour laid over its model so the five rulers do not look alike. */
-  tint: string;
+  /** A colour laid over its model so rulers on the same model do not look alike (none: the model's own colours). */
+  tint?: string;
+  /** How much of `tint` (default 0.5, a hero stand-in's; a ruler's own model takes less, rulerModels.ts). */
+  tintAmount?: number;
+  /** Its own figure (`models/tower/<id>_v4.glb`, pieces/rulerModels.ts); without it, the stand-in hero's model. The kit stays `stand`'s. */
+  model?: string;
+  /** Its hit size at a hero's size, measured on its own model (default the stand-in hero's, `HERO_BODIES`). */
+  body?: { radius: number; height: number };
   /** How many times a hero's size. */
   scale: number;
   /** Its health. */
@@ -143,10 +177,17 @@ export interface RivalDef {
   hero: string;
   twist: 'giant' | 'swift' | 'warded';
   line: string;
+  /** The weekly Tower's height the duel is built at (default twice the floor's number: a made floor's own, so a number past 10 is not a rival of the 20s). */
+  height?: number;
 }
 
 export interface PiecesDef {
   floor: number;
+  /**
+   * The number the pieces were tuned at, when it differs from `floor` (the four handmade floors that moved up when the Climb became 50
+   * floors): the ruler's, the trial's and the rival's seeds are made from it, so their fights play as they did.
+   */
+  tunedAs?: number;
   /** How much more a hit costs here than on floor 1 (the ruler's moves, the called guard), and how strong an ally is. A ruler's health is its own number. */
   hard: number;
   ruler: RulerDef;
@@ -154,4 +195,11 @@ export interface PiecesDef {
   trial: TrialDef;
   /** Floors 1 and 4 are races the zone runs itself. */
   rival?: RivalDef;
+  /**
+   * A crown floor (every tenth, pipeline/designs/tower-50.md): behind the lair's door is this Raid boss (`raid/bosses.ts`), played alone
+   * at the first tier, instead of the ruler (whose name and line still say who it is).
+   */
+  crown?: 'sun' | 'ash' | 'heart';
+  /** The crown's tier (the Raid's: shorter windows, more health; default 1), for the later chapters' crowns. */
+  crownTier?: number;
 }

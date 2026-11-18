@@ -41,9 +41,15 @@ export default defineConfig(({ command }) => ({
   define: { __BUILD__: JSON.stringify(command === 'build' ? BUILD : 'dev') },
   build: {
     rollupOptions: {
-      // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/).
-      // A third page, the showpiece (src/showpiece/): an animated special move played and saved as a video.
-      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html'), showpiece: resolve(__dirname, 'showpiece.html') },
+      // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/); beside them the hero
+      // workbench (src/workbench/, docs/pipeline/hero-framework.md section 13) and the showpieces (src/showpiece/: short
+      // animated special moves played and saved as video).
+      input: {
+        tool: resolve(__dirname, 'index.html'),
+        game: resolve(__dirname, 'game.html'),
+        workbench: resolve(__dirname, 'workbench.html'),
+        showpiece: resolve(__dirname, 'showpiece.html'),
+      },
     },
   },
 }));

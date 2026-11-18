@@ -160,6 +160,11 @@ export class StatusSet {
     this.liftAge = this.liftTotal = 0;
   }
 
+  /** Ends `kind` now (a sleep that damage broke: src/mech). The lock's end gives its immunity as usual. */
+  end(kind: StatusKind) {
+    this.left[kind] = 0;
+  }
+
   /** Seconds left of `kind`. */
   remaining(kind: StatusKind) {
     return this.left[kind];

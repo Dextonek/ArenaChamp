@@ -5,7 +5,7 @@ import { defaultLook, type MinionLook } from '../../../effects/parts/minion';
 import { HERO_BODIES, type HeroKit } from '../../../heroes';
 import { HoldRing } from '../../../raid/fx';
 import { STAND_COLOR } from '../../../raid/script';
-import type { BossCast, BossDef, BossMove, PlayContext, PlayedMove, RaidAdd, RoomFloor, Threat } from '../../../raid/types';
+import type { BossCast, BossDef, BossMove, PlayContext, PlayedMove, RaidAdd, RaidLink, RoomFloor, Threat } from '../../../raid/types';
 import type { GameApi } from '../../../runtime';
 import { traitFor } from '../../../traits';
 import type { TowerBoons } from '../../boons';
@@ -40,10 +40,11 @@ const rim = (deg: number, r: number) => {
 };
 
 /** The hero's own kit under another name: so its passive does not run on the boss's side (as `echoKit` in `src/tower/floors.ts`). */
-function standKit(real: HeroKit, name: string, title: string, hp: number): HeroKit {
+function standKit(real: HeroKit, name: string, title: string, hp: number, model?: string): HeroKit {
   // TOWER-HOOK: `HeroKit` should carry `styleOf?: string` and `tint?: string` (see the notes file): a kit that is another body's under its
   // own name, and coloured. Until then the name decides the hero's motion style (`REAL_STYLE[kit.name]`) and the model keeps its colours.
-  return { ...real, name, title, maxHp: hp, alt: undefined, base: undefined, attack: real.attack ?? traitFor(real.name)?.attack };
+  // A ruler of its own (pieces/rulerModels.ts) is drawn from its model; everything else is the stand-in's.
+  return { ...real, name, title, maxHp: hp, alt: undefined, base: undefined, attack: real.attack ?? traitFor(real.name)?.attack, model: model ?? real.model };
 }
 
 /**
@@ -71,7 +72,10 @@ interface State {
 
 export interface Ruler {
   def: BossDef;
-  link: TowerLink;
+  /** The fight's link: the floor's own (`TowerLink`, alone), or the one a party's fight gave (`ctx.link`). */
+  link: RaidLink;
+  /** The link alone, or null in a party's fight. */
+  tower: TowerLink | null;
   /** Starts the floor's own cast: call right after `Duel.startBoss`. */
   begin(): void;
   /** What happens after the fight starts and its figures load: the tint, the ally. */
@@ -80,7 +84,11 @@ export interface Ruler {
   phase(): number;
 }
 
-export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons: TowerBoons; ally?: string; run: PieceRun }): Ruler {
+/**
+ * `ctx.link`: a party's fight (the open world's stage 3, src/tower/world/together.ts) brings its own link, a Raid `NetLink` on the hub,
+ * made for this ruler's def; the fight is then the same on every screen, its health, phases and kneels the hub's. Alone, the floor's own.
+ */
+export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons: TowerBoons; ally?: string; run: PieceRun; link?: (def: BossDef) => RaidLink }): Ruler {
   const { hard, boons, run } = ctx, arena = api.arena;
   const real = api.kits.find((k) => k.name === d.stand) ?? api.kits[0];
   // `hard` raises what a hit costs; the health is the ruler's own number (a longer fight is not a harder one).
@@ -91,10 +99,11 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
     if (!a) throw new Error(`no arena ${d.room}`);
     return { ...a, id: `ruler-${a.id}`, name: d.name };
   })();
-  const body = HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
+  const body = d.body ?? HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
   const still = d.speed === 0;
   const state: State = { t: 0, surge: null, raise: false };
-  let link!: TowerLink;
+  let link!: RaidLink;
+  let tower: TowerLink | null = null;
   let tinted: (() => void) | null = null;
   const rewards: Record<string, FloorReward> = {};
   if (d.sentries?.fall) rewards.sentry = { stagger: d.sentries.fall.stagger, kneel: d.sentries.fall.kneel };
@@ -219,18 +228,20 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
   const bossAt = still ? { x: RING.x, z: RING.z } : { x: RING.x, z: RING.z - 4.5 };
   const def: BossDef = {
     id: `ruler-${place.id}`, name: d.name, title: d.title, place, starts: { boss: bossAt, heroes: [{ x: RING.x, z: RING.z + 6 }, { x: RING.x, z: RING.z + 6 }, { x: RING.x, z: RING.z + 6 }] },
-    kit: (max) => standKit(real, d.name, d.title, max), hp: { solo: hp, duo: hp }, scale: k, body: { radius: body.radius * k, height: body.height * k },
+    kit: (max) => standKit(real, d.name, d.title, max, d.model), hp: { solo: hp, duo: hp }, scale: k, body: { radius: body.radius * k, height: body.height * k },
     speed: d.speed, keepAt: still ? 999 : d.keepAt ?? (real.melee ? 1.6 + 1.1 * k : 7.5), staggerMax: d.stagger.max, kneel: d.stagger.kneel, phasePause: 1.6,
     phases: d.phases.map((ph) => ({ name: ph.name, at: ph.at, moves: ph.moves, opener: ph.opener, timed: ph.timed, gap: ph.gap })),
     moves: { ...moves, floor: floorMove() },
     floor: () => floorNow(),
   };
-  link = new TowerLink(def, hp, rewards);
+  if (ctx.link) link = ctx.link(def);
+  else link = tower = new TowerLink(def, hp, rewards);
 
-  /** Which phase the fight is in, from the bar. */
+  /** Which phase the fight is in, from the bar (in a party's fight, as the hub has said it). */
   const phase = () => {
+    if (!tower) return api.duel.boss?.stats.phases ?? 0;
     let i = 0;
-    for (let n = 1; n < def.phases.length; n++) if (link.left <= def.phases[n].at) i = n;
+    for (let n = 1; n < def.phases.length; n++) if (tower.left <= def.phases[n].at) i = n;
     return i;
   };
 
@@ -417,11 +428,13 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
 
   const ready = () => {
     if (tinted) return;
-    tinted = tintFigure(api, d.tint);
+    // A ruler in its model's own colours (a chapter's first floor) has nothing to lay over it.
+    if (!d.tint) { tinted = () => undefined; return; }
+    tinted = tintFigure(api, d.tint, d.tintAmount ?? 0.5);
     if (tinted) run.onEnd(tinted);
   };
   return {
-    def, link, phase, ready,
+    def, link, tower, phase, ready,
     begin() {
       link.on.cast({ id: FLOOR_CAST, move: 'floor', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: 0 });
       if (ctx.ally) {

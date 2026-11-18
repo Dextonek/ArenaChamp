@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { HeroFigure } from '../../heroFigure';
 import type { ZoneCtx } from './ctx';
+import { TOWER_FOLK } from './folk';
 import type { PersonDef, Spot } from './def';
 import type { CardButton, Mark } from './hud';
 import type { Quests } from './quests';
 import { BOONS, boonsFor, type Boon } from '../boons';
 
 /**
- * The people of a floor, as the roster's own hero models standing where the floor's data puts them (the keeper, the one with the
- * side quests, the trader, and the rival), marks over their heads that say who has something for you, and the card that opens when
+ * The people of a floor standing where the floor's data puts them (the keeper, the ones with the side quests, the trader: the Climb's
+ * own people, folk.ts; and the rival, a hero), marks over their heads that say who has something for you, and the card that opens when
  * the hero walks up (or a mark is tapped and the hero walks there). The card has a few lines and buttons: take a quest, hand it in,
  * buy, race. Plain page elements, 44 px buttons, so it works with a thumb on a phone.
  */
@@ -28,11 +29,18 @@ export class People {
 
   constructor(private z: ZoneCtx, private q: Quests) {
     for (const p of z.def.people) {
-      const kit = z.api.kits.find((k) => k.name === p.hero);
       const fig = new HeroFigure();
       z.p.group.add(fig.group);
       const pos = new THREE.Vector3(p.at.x, 0, p.at.z);
-      if (kit) {
+      // The Climb's own person (folk.ts): its model, loaded with the floor, held as the hero it borrows the way of holding from
+      // stands (a staff upright in the left hand), at ease. A rival is the hero itself.
+      const folk = p.figure ? TOWER_FOLK.find((f) => f.id === p.figure) : undefined;
+      const kit = z.api.kits.find((k) => k.name === (folk ? folk.stand : p.hero));
+      if (folk && kit) {
+        fig.atEase = true;
+        fig.setModel(`models/tower/${folk.id}_v4.glb`, pos, kit);
+        fig.stand();
+      } else if (kit) {
         fig.setModel(kit.model, pos, kit);
         fig.stand();
       }

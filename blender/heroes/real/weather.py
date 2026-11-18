@@ -2,17 +2,21 @@
 panel with gold buttons and edges, a high standing collar with a gold rim, flared sleeves, a muted sun-gold sash, dark
 boots, windswept brown hair. A mantle of cloud heaped over his shoulders, and in the LEFT hand a staff taller than he
 is, topped by a gold weathervane: a ring with the sun, rain and wind glyphs round a glowing sky-blue orb, and an arrow
-across the top (hold: torch)."""
+across the top (hold: torch).
+Coast folk (docs/lore/codex/revamp.md, the touches, 2026-11-16): sea-tanned skin; the coat's flared sleeves end below the elbow, so
+the tide lines on his forearms show."""
 import math
 
 from mathutils import Vector
 
 from realkit import PI, Real
 from real import parts_c as P
+from real.parts_d import tide_lines
 
 
 def build():
-    R = Real("weather", sex="m", height=1.0, width=0.9, depth=0.88, skin="#d29a74")
+    R = Real("weather", sex="m", height=1.0, width=0.9, depth=0.88, skin="#b47c56")
+    tide_lines(R, t0=0.3, t1=0.86, count=7)
     z = R.z
     R.mat("coat", "#303c54", rough=0.72, double=True)
     R.mat("panel", "#4a8ac4", rough=0.7, double=True)
@@ -24,7 +28,9 @@ def build():
     R.hair("Hair_SimpleParted", "#4e2c14", rough=0.55)
 
     hem = z["ankle"] + 0.03
-    R.fitted("Coat", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "coat", offset=0.01)
+    cut = lambda n: R.bone(f"lowerarm_{n}").lerp(R.bone(f"hand_{n}"), 0.22).x
+    R.fitted("Coat", ["spine", "pelvis", "clavicle", "upperarm", "lowerarm"], "coat", offset=0.01,
+             where=lambda p: (p.x < cut("l")) if p.x > 0 else (p.x > cut("r")))
     R.fitted("Legs", ["thigh", "calf"], "dark", offset=0.004)
     R.boots("dark", top=z["ankle"] + 0.2)
     P.toes(R, "dark")
@@ -63,7 +69,7 @@ def build():
     f, gem, _ = P.collar(R, "coat", height=0.105, grow=1.12, flare=0.18, rim="gold", rim_r=0.007)
     f.ellipsoid("gold", gem + Vector((0, -0.008, 0.0)), (0.022, 0.012, 0.022), seg=(12, 8))
     for n in "lr":
-        P.sleeve(R, n, "coat", t0=0.25, t1=0.98, r0=0.012, r1=0.095, rim="gold", rim_r=0.008)
+        P.sleeve(R, n, "coat", t0=0.0, t1=0.24, r0=0.012, r1=0.075, rim="gold", rim_r=0.008, n=3)
 
     # the mantle of cloud heaped on his shoulders
     nk = z["neck"]

@@ -1,0 +1,141 @@
+{
+ "floor": 18,
+ "part": "climb-review-shots",
+ "wallSeconds": 33.5,
+ "errors": [],
+ "warnings": [
+  "THREE.UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().",
+  "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.WebGLProgram: Program Info Log: (210,91-147): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,41-69): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,92-120): warning X4122: sum of 1 ",
+  "THREE.WebGLProgram: Program Info Log: (198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined value\n(198,12-86): warning X3595: gradient instruction used in a loop with varying iteration; partial derivatives may have undefined va"
+ ],
+ "result": {
+  "floor": 18,
+  "shots": [
+   "start",
+   "camp",
+   "map",
+   "person-keeper",
+   "person-giver",
+   "person-villager",
+   "person-rival",
+   "person-trader",
+   "pack-a",
+   "pack-d",
+   "pack-b",
+   "pack-f",
+   "pack-named1",
+   "pack-named2",
+   "pack-root1",
+   "pack-root2",
+   "pack-root3",
+   "door-lair",
+   "door-trial",
+   "door-gate",
+   "door-rival",
+   "lore",
+   "overview",
+   "probe-float-0",
+   "probe-float-1",
+   "probe-float-2",
+   "probe-float-3",
+   "probe-gap-4",
+   "probe-gap-5",
+   "probe-gap-6",
+   "probe-cover-7",
+   "probe-cover-8",
+   "probe-cover-9",
+   "probe-cover-10",
+   "busy",
+   "ruler",
+   "ruler-close"
+  ],
+  "minimapShown": true,
+  "mapOpened": true,
+  "probe-float-0": "-8.3,43.7 y2.33 depth in w0.16 h0.09 m2.33 p1 #ffffff",
+  "probe-float-1": "-42,2.3 y4.2 depth in w0.15 h0.11 m4.2 p1 #ffffff",
+  "probe-float-2": "-35.1,94 y4.5 depth in w0.18 h0.1 m4.5 p1 #ffffff",
+  "probe-float-3": "21.6,-23.2 y1.3 depth in w0.2 h0.1 m1.3 p1 #ffffff",
+  "probe-gap-4": "12.1,-145.9 y15.98 depth out26n w5.24 h4.09 m4.67 sunk-0.38 #2e4435",
+  "probe-gap-5": "90.5,-100.6 y15.29 depth out26n w4.98 h3.89 m4.6 sunk-0.47 #2e4435",
+  "probe-gap-6": "94.7,-82.1 y10.4 depth out20n w5 h3.91 m4.53 sunk-0.71 #2e4435",
+  "probe-cover-7": "-58.8,69.9 y0 depth in w0.55 h2.58 m4.32 r4.32  #4b3525",
+  "probe-cover-8": "-58.8,69.9 y2.02 depth in w3.09 h2.63 m4.32 r4.32  #405a35",
+  "probe-cover-9": "69.3,-35.3 y0 depth in w0.55 h2.6 m4.27 r4.27  #4b3525",
+  "probe-cover-10": "69.3,-35.3 y2.04 depth in w3.12 h2.66 m4.27 r4.27  #405a35",
+  "frames": {
+   "at": [
+    -94,
+    42
+   ],
+   "units": 4,
+   "runs": [
+    {
+     "med": 10.2,
+     "p95": 13.8,
+     "worst": 58.5
+    },
+    {
+     "med": 8.9,
+     "p95": 11.6,
+     "worst": 15.5
+    },
+    {
+     "med": 8.1,
+     "p95": 10.3,
+     "worst": 15.9
+    }
+   ]
+  },
+  "ruler": {
+   "name": "The Grey Oak",
+   "title": "Bark like a shield",
+   "model": "models/tower/wood_antler_v4.glb",
+   "loaded": true,
+   "real": true,
+   "wallMs": 4448,
+   "frames": 481,
+   "at": [
+    -0.1,
+    8
+   ],
+   "heroAt": [
+    -0.1,
+    15
+   ],
+   "visible": true
+  },
+  "status": {
+   "clock": 55.98,
+   "hero": null,
+   "lives": 3,
+   "shards": 0,
+   "falls": 0,
+   "kills": 0,
+   "quests": [
+    "main: not taken",
+    "bounty1: not taken",
+    "bounty2: not taken",
+    "g1: not taken",
+    "g2: not taken",
+    "g3: not taken"
+   ],
+   "rival": "none",
+   "won": [],
+   "caches": [],
+   "waystones": [],
+   "opened": [],
+   "boons": [],
+   "over": false,
+   "finished": false,
+   "piece": "ruler",
+   "law": null,
+   "packs": [],
+   "liveUnits": 3,
+   "log": null,
+   "gameLog": [
+    "door lair at 56s"
+   ]
+  }
+ }
+}
