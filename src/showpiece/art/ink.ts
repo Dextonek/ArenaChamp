@@ -50,7 +50,11 @@ export function speedLines(ctx: Ctx, c: Pt, t: number, k: number) {
     const r = rng(i * 37 + slot * 1009);
     if (r.next() > 0.5) continue;
     const a = r.range(0, Math.PI * 2), r0 = r.range(260, 520), r1 = r0 + r.range(300, 900);
-    const pts = [{ x: c.x + Math.cos(a) * r0, y: c.y + Math.sin(a) * r0 }, { x: c.x + Math.cos(a) * r1, y: c.y + Math.sin(a) * r1 }];
+    // Several points along the line: a ribbon's width is taken at its points, and a two-point one would be zero at both.
+    const pts = Array.from({ length: 9 }, (_, j) => {
+      const d = r0 + ((r1 - r0) * j) / 8;
+      return { x: c.x + Math.cos(a) * d, y: c.y + Math.sin(a) * d };
+    });
     ctx.fillStyle = rgba('#ffffff', 0.85 * k);
     ribbon(ctx, pts, (u) => r.range(2, 6) * Math.sin(Math.PI * u));
   }
