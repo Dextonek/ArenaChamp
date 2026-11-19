@@ -1,0 +1,27 @@
+{
+  "_about": "Hand corrections for pipeline/tools/spell-rules.py, per spell label. Any field of the sheet (stops, cover, dodge, windup, answer) wins over the derived one. 'check' says why a zone is not judged by the walk-out rule: 'sure' (a sure hit or a mark: its answer is sight or nothing, not stepping out), 'placement' (the zone only places a wall, a unit or the caster: nothing is hit when it lands), 'spacing' (a quick melee swing: the answer is to stand out of reach before it, not to react), 'lingering' (it hurts while you stand in it: leaving is the answer, there is no landing). A spell with no 'check' is judged.",
+
+  "lancet": { "check": "sure", "dodge": "break sight" },
+  "hoarfrost": { "check": "sure", "dodge": "none" },
+  "sky strike": { "check": "sure", "dodge": "none" },
+  "polarity": { "check": "sure", "answer": "stay 4 m or more from her rods" },
+  "shepherd's crook": { "check": "sure", "dodge": "none" },
+  "oathbrand": { "check": "sure", "dodge": "break sight" },
+  "thunder rod": { "check": "lingering", "answer": "leave the 3.5 m slowing field round the rod" },
+  "smoke veil": { "check": "lingering" },
+  "raise dead": { "check": "placement" },
+  "crystal pillar": { "check": "placement" },
+  "vanity stand": { "check": "placement" },
+  "wick door": { "check": "placement" },
+  "wet floor sign": { "check": "placement" },
+  "mist form": { "check": "placement", "stops": "self", "dodge": "none", "answer": "" },
+  "crosswind": { "check": "spacing" },
+  "axe swing": { "check": "spacing" },
+  "scratch": { "check": "spacing" },
+  "big mop": { "check": "spacing" },
+
+  "issen": { "answer": "step off the line: it shows 0.45 s before he crosses it" },
+  "noto": { "answer": "step out of his 3.5 m ring while it shows (0.5 s); do not hit him just after the click" },
+  "senbon": { "answer": "walk out of the 3 m ring before the first wave (1 s)" },
+  "sekai giri": { "answer": "leave the line during the still second (1.3 s); carry few cut marks into it" }
+}

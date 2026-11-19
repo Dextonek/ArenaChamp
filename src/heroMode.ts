@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { rulesLine } from './heroes/rules';
 import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
 import type { TargetingSpec } from './effects/targeting';
@@ -1630,6 +1631,7 @@ export class HeroMode implements TouchTarget {
     const range = spell.range > 0 ? `range ${spell.range}` : 'self';
     this.tip.innerHTML = `<div style="font:700 13px ui-sans-serif,system-ui;margin-bottom:3px">${spell.name} ` +
       `<span style="opacity:0.6;font-weight:600">[${spell.key}]</span></div>${spell.blurb}` +
+      (rulesLine(spell.label) ? `<div style="margin-top:5px;opacity:0.8;font-style:italic">${rulesLine(spell.label)}</div>` : '') +
       `<div style="margin-top:5px;opacity:0.6">${range} · cooldown ${spell.cooldown} s</div>`;
     this.tip.style.display = 'block';
     this.tip.style.left = `${Math.max(8, r.left + r.width / 2 - 130)}px`;

@@ -13,6 +13,7 @@ import { HERO_KINDS, HERO_SHOP, RAID_RANKS, SHOP, STARTERS, heroPrice, isoWeek a
 import { HeroPreview } from './heroPreview';
 import { LoadingScreen } from './loading';
 import { traitFor } from '../traits';
+import { rulesLine } from '../heroes/rules';
 import { MatchController, type PickOffer } from './match';
 import { WatchController } from './watch';
 import { ARENAS } from '../arenas';
@@ -531,9 +532,9 @@ function heroShowcase(hero: HeroKit | undefined) {
   }
   const passive = traitFor(hero.name)?.passive;
   const slots = [
-    { key: 'P', name: passive?.name ?? 'Passive', blurb: passive?.blurb ?? '', meta: 'Passive', ult: false, icon: portrait(hero, 'icon') },
+    { key: 'P', name: passive?.name ?? 'Passive', blurb: passive?.blurb ?? '', rules: '', meta: 'Passive', ult: false, icon: portrait(hero, 'icon') },
     ...hero.spells.map((s) => ({
-      key: s.key, name: s.name, blurb: s.blurb, ult: s.key === 'R', icon: canvasOf(96, s.icon, 'icon'),
+      key: s.key, name: s.name, blurb: s.blurb, rules: rulesLine(s.label), ult: s.key === 'R', icon: canvasOf(96, s.icon, 'icon'),
       meta: `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`,
     })),
   ];
@@ -545,7 +546,8 @@ function heroShowcase(hero: HeroKit | undefined) {
       el('div', { class: 'hs-detail-head' },
         el('span', { class: 'hs-key' }, s.key), el('b', {}, s.name), s.ult ? el('span', { class: 'ult-tag' }, 'ULT') : null,
         el('span', { class: 'muted small' }, s.meta)),
-      el('div', { class: 'blurb' }, s.blurb));
+      el('div', { class: 'blurb' }, s.blurb),
+      ...(s.rules ? [el('div', { class: 'rules muted small' }, s.rules)] : []));
     buttons.forEach((b, j) => b.classList.toggle('on', j === i));
   };
   // A mouse shows a slot while it points at it; a click or a tap keeps it open.
@@ -1175,6 +1177,7 @@ function heroSpells(kit: HeroKit) {
         el('div', {},
           el('div', { class: 'spell-name' }, s.name, s.key === 'R' ? el('span', { class: 'ult-tag' }, 'ULT') : null),
           el('div', { class: 'blurb' }, s.blurb),
+          rulesLine(s.label) ? el('div', { class: 'rules muted small' }, rulesLine(s.label)) : null,
           el('div', { class: 'muted small' }, `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`),
         ),
       )));

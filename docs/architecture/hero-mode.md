@@ -91,7 +91,7 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 | Right click on an enemy or summoned unit (not aiming) | basic attack: walk into range and keep attacking it until another order ([attacks.md](attacks.md)); a red marker under it |
 | `A`, then left click | attack-move: on an enemy, attack it; on the ground, walk there and attack the first enemy in range |
 | `S` | stop: no walk, no attack, no pending cast |
-| Q W E R on a hold spell (traits: Kaia Q, Sefu W) | aim as usual; the longer you aim before the click, the stronger the cast (full after the hero's hold time) |
+| Q W E R on a hold spell (traits: Lyra Q, `src/heroes/astral/trait.ts`; corrected 2026-11-19, the older text named Kaia Q and Sefu W, which no longer hold) | aim as usual; the longer you aim before the click, the stronger the cast (full after the hero's hold time) |
 | Q W E R in a recast window (the slot shows RE) | the same spell once more, free, at 60% damage |
 | Mouse wheel | zoom (factor clamped 0.55-1.7, default 1.25) |
 

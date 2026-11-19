@@ -1,0 +1,3834 @@
+{
+ "spells": [
+  {
+   "hero": "Vesper",
+   "key": "Q",
+   "name": "Lancet",
+   "label": "lancet",
+   "range": 7,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.3,
+     "until": null,
+     "radius": 1.1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Vesper",
+   "key": "W",
+   "name": "Mist Waltz",
+   "label": "mist waltz",
+   "range": 11,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "escape"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Vesper",
+   "key": "E",
+   "name": "Hemocurse",
+   "label": "hemocurse",
+   "range": 7,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Vesper",
+   "key": "R",
+   "name": "Sanguine Feast",
+   "label": "sanguine feast",
+   "range": 8,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1.6,
+     "until": null,
+     "radius": 1.3,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Brannoc",
+   "key": "Q",
+   "name": "Chain Hammer",
+   "label": "chain hammer",
+   "range": 9,
+   "cooldown": 0.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.8,
+     "length": 9,
+     "width": 1.74
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Brannoc",
+   "key": "W",
+   "name": "Forge Roar",
+   "label": "forge roar",
+   "range": 0,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 4
+  },
+  {
+   "hero": "Brannoc",
+   "key": "E",
+   "name": "Red-Hot Rivet",
+   "label": "red-hot rivet",
+   "range": 6,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Brannoc",
+   "key": "R",
+   "name": "Quench",
+   "label": "molten core",
+   "range": 6,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "anytime"
+   ],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 6
+  },
+  {
+   "hero": "Isolde",
+   "key": "Q",
+   "name": "Icicle",
+   "label": "icicle",
+   "range": 11,
+   "cooldown": 4,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 8
+  },
+  {
+   "hero": "Isolde",
+   "key": "W",
+   "name": "Hoarfrost",
+   "label": "hoarfrost",
+   "range": 8,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.45,
+     "until": null,
+     "radius": 1.1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Isolde",
+   "key": "E",
+   "name": "Rime Armour",
+   "label": "rime armour",
+   "range": 0,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 8
+  },
+  {
+   "hero": "Isolde",
+   "key": "R",
+   "name": "Winter's Shatter",
+   "label": "winter's shatter",
+   "range": 9,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Lyra",
+   "key": "Q",
+   "name": "Starfall Arrow",
+   "label": "starfall arrow",
+   "range": 14,
+   "cooldown": 4,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.84,
+     "length": 14,
+     "width": 1.84
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Lyra",
+   "key": "W",
+   "name": "Twin Stars",
+   "label": "twin stars",
+   "range": 0,
+   "cooldown": 14,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 9
+  },
+  {
+   "hero": "Lyra",
+   "key": "E",
+   "name": "Pinning Arrow",
+   "label": "pinning arrow",
+   "range": 9,
+   "cooldown": 9,
+   "aim": "line",
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.68,
+     "length": 9,
+     "width": 1.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Lyra",
+   "key": "R",
+   "name": "Meteor Mark",
+   "label": "meteor mark",
+   "range": 14,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 1.5,
+     "impact": 2.4,
+     "until": null,
+     "radius": 1.8,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Vitriol",
+   "key": "Q",
+   "name": "Toxin Dart",
+   "label": "toxin dart",
+   "range": 9,
+   "cooldown": 3,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.08,
+     "impact": 0.25,
+     "until": 0.68,
+     "length": 9,
+     "width": 1.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.4
+  },
+  {
+   "hero": "Vitriol",
+   "key": "W",
+   "name": "Fire Vial",
+   "label": "fire vial",
+   "range": 7,
+   "cooldown": 6,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Vitriol",
+   "key": "E",
+   "name": "Acid Splash",
+   "label": "acid splash",
+   "range": 4,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.42,
+     "until": 0.62,
+     "radius": 4,
+     "angle": 100
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 4.5
+  },
+  {
+   "hero": "Vitriol",
+   "key": "R",
+   "name": "Homunculus",
+   "label": "homunculus",
+   "range": 10,
+   "cooldown": 25,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [],
+   "mode": "enemies",
+   "targetRadius": null
+  },
+  {
+   "hero": "Kaia",
+   "key": "Q",
+   "name": "Sky Strike",
+   "label": "sky strike",
+   "range": 7,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.35,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Kaia",
+   "key": "W",
+   "name": "Thunder Rod",
+   "label": "thunder rod",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.25,
+     "until": null,
+     "radius": 3.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 6
+  },
+  {
+   "hero": "Kaia",
+   "key": "E",
+   "name": "Polarity",
+   "label": "polarity",
+   "range": 8,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.25,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Kaia",
+   "key": "R",
+   "name": "Supercell",
+   "label": "supercell storm",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 14
+  },
+  {
+   "hero": "Sefu",
+   "key": "Q",
+   "name": "Cobra Spit",
+   "label": "cobra spit",
+   "range": 9,
+   "cooldown": 5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.02,
+     "impact": 0.25,
+     "until": 0.7,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "Sefu",
+   "key": "W",
+   "name": "Shepherd's Crook",
+   "label": "shepherd's crook",
+   "range": 6,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Sefu",
+   "key": "E",
+   "name": "Scarab Stride",
+   "label": "scarab stride",
+   "range": 11,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.02,
+     "until": 0.55,
+     "length": 6,
+     "width": 1.4
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Sefu",
+   "key": "R",
+   "name": "Sarcophagus",
+   "label": "sarcophagus",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.6,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Nyx",
+   "key": "Q",
+   "name": "Umbral Cut",
+   "label": "umbral cut",
+   "range": 2.5,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 1.9,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.35,
+     "until": null,
+     "radius": 1.1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Nyx",
+   "key": "W",
+   "name": "Smoke Veil",
+   "label": "smoke veil",
+   "range": 0,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 1.9,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.3,
+     "until": null,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Nyx",
+   "key": "E",
+   "name": "Shadow Double",
+   "label": "shadow double",
+   "range": 4,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "summon"
+   ],
+   "melee": true,
+   "reach": 1.9,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Nyx",
+   "key": "R",
+   "name": "Nightfall",
+   "label": "nightfall",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 1.9,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 9
+  },
+  {
+   "hero": "Fenna",
+   "key": "Q",
+   "name": "Seed Shot",
+   "label": "seed shot",
+   "range": 9,
+   "cooldown": 4,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.02,
+     "impact": 0.25,
+     "until": 0.7,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "Fenna",
+   "key": "W",
+   "name": "Strangle Vine",
+   "label": "strangle vine",
+   "range": 7,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Fenna",
+   "key": "E",
+   "name": "Pollen Glide",
+   "label": "pollen glide",
+   "range": 6,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "escape"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Fenna",
+   "key": "R",
+   "name": "World Tree",
+   "label": "world tree",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 3,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Auriel",
+   "key": "Q",
+   "name": "First Light",
+   "label": "first light",
+   "range": 6,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.45,
+     "until": 0.6,
+     "radius": 6,
+     "angle": 70
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 6.6
+  },
+  {
+   "hero": "Auriel",
+   "key": "W",
+   "name": "Dawnward",
+   "label": "dawnward",
+   "range": 0,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Auriel",
+   "key": "E",
+   "name": "Oathbrand",
+   "label": "oathbrand",
+   "range": 7,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Auriel",
+   "key": "R",
+   "name": "Sunrise",
+   "label": "sunrise",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Marin",
+   "key": "Q",
+   "name": "Wave Disc",
+   "label": "wave disc",
+   "range": 9,
+   "cooldown": 4,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.05,
+     "impact": 0.3,
+     "until": 0.75,
+     "length": 9,
+     "width": 2.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.8
+  },
+  {
+   "hero": "Marin",
+   "key": "W",
+   "name": "Coral Spire",
+   "label": "coral spire",
+   "range": 8,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.9,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Marin",
+   "key": "E",
+   "name": "Mist Form",
+   "label": "mist form",
+   "range": 6,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "parry"
+   ],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.1,
+     "impact": 0.25,
+     "until": null,
+     "radius": 3,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Marin",
+   "key": "R",
+   "name": "Moon's Pull",
+   "label": "moon's pull",
+   "range": 12,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 25
+  },
+  {
+   "hero": "Zephyr",
+   "key": "Q",
+   "name": "Crosswind",
+   "label": "crosswind",
+   "range": 3,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.13,
+     "until": null,
+     "length": 3,
+     "width": 1.8
+    }
+   ],
+   "mode": "enemies",
+   "targetRadius": null
+  },
+  {
+   "hero": "Zephyr",
+   "key": "W",
+   "name": "Skyward",
+   "label": "skyward",
+   "range": 5,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc",
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.14,
+     "impact": 0.6,
+     "until": null,
+     "radius": 1.4,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.4
+  },
+  {
+   "hero": "Zephyr",
+   "key": "E",
+   "name": "Feather Step",
+   "label": "feather step",
+   "range": 4,
+   "cooldown": 7,
+   "aim": "line",
+   "overCover": true,
+   "flags": [
+    "dash",
+    "parry"
+   ],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Zephyr",
+   "key": "R",
+   "name": "Sky Rend",
+   "label": "sky rend",
+   "range": 7,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Mortis",
+   "key": "Q",
+   "name": "Bone Fan",
+   "label": "bone fan",
+   "range": 8,
+   "cooldown": 5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.7,
+     "length": 8,
+     "width": 1.24
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.2
+  },
+  {
+   "hero": "Mortis",
+   "key": "W",
+   "name": "Raise Dead",
+   "label": "raise dead",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.7,
+     "until": null,
+     "radius": 2.4,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.4
+  },
+  {
+   "hero": "Mortis",
+   "key": "E",
+   "name": "Bone Armour",
+   "label": "bone armour",
+   "range": 0,
+   "cooldown": 14,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 8
+  },
+  {
+   "hero": "Mortis",
+   "key": "R",
+   "name": "Grave Grasp",
+   "label": "grave grasp",
+   "range": 9,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.6,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Ada",
+   "key": "Q",
+   "name": "Homing Drone",
+   "label": "homing drone",
+   "range": 8,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Ada",
+   "key": "W",
+   "name": "Deploy Turret",
+   "label": "deploy turret",
+   "range": 8,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Ada",
+   "key": "E",
+   "name": "Grapple",
+   "label": "grapple hook",
+   "range": 9,
+   "cooldown": 10,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.67,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Ada",
+   "key": "R",
+   "name": "Siege Mode",
+   "label": "siege mode",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 25
+  },
+  {
+   "hero": "Sirix",
+   "key": "Q",
+   "name": "Barbed Stinger",
+   "label": "barbed stinger",
+   "range": 8,
+   "cooldown": 6,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Sirix",
+   "key": "W",
+   "name": "Hive Shell",
+   "label": "hive shell",
+   "range": 0,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Sirix",
+   "key": "E",
+   "name": "Swarm Cloud",
+   "label": "swarm cloud",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1,
+     "until": 3,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Sirix",
+   "key": "R",
+   "name": "Swarm Surge",
+   "label": "swarm surge",
+   "range": 10,
+   "cooldown": 22,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.5,
+     "until": 1.33,
+     "length": 10,
+     "width": 4
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Cantor",
+   "key": "Q",
+   "name": "Resounding Chord",
+   "label": "resounding chord",
+   "range": 5,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.4,
+     "until": null,
+     "radius": 5,
+     "angle": 90
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 5.6
+  },
+  {
+   "hero": "Cantor",
+   "key": "W",
+   "name": "Siren Song",
+   "label": "siren song",
+   "range": 8,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Cantor",
+   "key": "E",
+   "name": "Rising Chorus",
+   "label": "rising chorus",
+   "range": 0,
+   "cooldown": 0.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 7
+  },
+  {
+   "hero": "Cantor",
+   "key": "R",
+   "name": "Duet",
+   "label": "duet",
+   "range": 0,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 6,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 9
+  },
+  {
+   "hero": "Opaline",
+   "key": "Q",
+   "name": "Ricochet Light",
+   "label": "ricochet light",
+   "range": 12,
+   "cooldown": 3,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.8,
+     "length": 12,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Opaline",
+   "key": "W",
+   "name": "Crystal",
+   "label": "crystal pillar",
+   "range": 8,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.5,
+     "until": null,
+     "radius": 0.95,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.95
+  },
+  {
+   "hero": "Opaline",
+   "key": "E",
+   "name": "Blinding Flare",
+   "label": "blinding flare",
+   "range": 0,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.25,
+     "until": null,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Opaline",
+   "key": "R",
+   "name": "Shatterlight",
+   "label": "shatterlight",
+   "range": 10,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 8.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 1.2,
+     "until": null,
+     "radius": 3.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Oblivion",
+   "key": "Q",
+   "name": "Gravity Slam",
+   "label": "gravity slam",
+   "range": 3,
+   "cooldown": 4,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.35,
+     "until": null,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Oblivion",
+   "key": "W",
+   "name": "Null Zone",
+   "label": "null zone",
+   "range": 0,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.2,
+     "until": 3,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3.5
+  },
+  {
+   "hero": "Oblivion",
+   "key": "E",
+   "name": "Phase Step",
+   "label": "phase step",
+   "range": 4,
+   "cooldown": 14,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.25,
+     "until": null,
+     "radius": 1,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Oblivion",
+   "key": "R",
+   "name": "Black Hole",
+   "label": "void black hole",
+   "range": 8,
+   "cooldown": 24,
+   "aim": "line",
+   "overCover": true,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.4,
+     "until": 4,
+     "length": 8,
+     "width": 2
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 5
+  },
+  {
+   "hero": "Shiori",
+   "key": "Q",
+   "name": "Ink Lash",
+   "label": "ink lash",
+   "range": 9,
+   "cooldown": 4,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.68,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Shiori",
+   "key": "W",
+   "name": "Seal of Binding",
+   "label": "seal of binding",
+   "range": 8,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Shiori",
+   "key": "E",
+   "name": "Flowing Script",
+   "label": "flowing script",
+   "range": 6,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "escape"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Shiori",
+   "key": "R",
+   "name": "The Last Character",
+   "label": "the last character",
+   "range": 9,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1,
+     "until": null,
+     "radius": 2,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2
+  },
+  {
+   "hero": "Tempo",
+   "key": "Q",
+   "name": "Tick",
+   "label": "tick bolt",
+   "range": 9,
+   "cooldown": 3,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.7,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "Tempo",
+   "key": "W",
+   "name": "Slow Time",
+   "label": "slow time",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1.2,
+     "until": 1.3,
+     "radius": 3.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 3.5
+  },
+  {
+   "hero": "Tempo",
+   "key": "E",
+   "name": "Time Skip",
+   "label": "time skip",
+   "range": 6,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": 0.7,
+     "radius": 1.4,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.4
+  },
+  {
+   "hero": "Tempo",
+   "key": "R",
+   "name": "Stolen Hour",
+   "label": "stolen hour",
+   "range": 8,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": true
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Silvane",
+   "key": "Q",
+   "name": "Hand Mirror",
+   "label": "hand mirror",
+   "range": 10,
+   "cooldown": 3,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 7.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.75,
+     "length": 10,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Silvane",
+   "key": "W",
+   "name": "Vanity Stand",
+   "label": "vanity stand",
+   "range": 8,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 7.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.5,
+     "until": null,
+     "radius": 0.9,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.9
+  },
+  {
+   "hero": "Silvane",
+   "key": "E",
+   "name": "Through the Glass",
+   "label": "through the glass",
+   "range": 9,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "escape"
+   ],
+   "melee": false,
+   "reach": 7.5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Silvane",
+   "key": "R",
+   "name": "Hall of Mirrors",
+   "label": "hall of mirrors",
+   "range": 0,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 7.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.6,
+     "until": 1.29,
+     "length": 12,
+     "width": 1.44
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Bram",
+   "key": "Q",
+   "name": "Raise Gerald",
+   "label": "raise gerald",
+   "range": 9,
+   "cooldown": 6,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Bram",
+   "key": "W",
+   "name": "The Shove",
+   "label": "the shove",
+   "range": 8,
+   "cooldown": 7,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.89,
+     "length": 4.7,
+     "width": 2.84
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Bram",
+   "key": "E",
+   "name": "A Good Lean",
+   "label": "a good lean",
+   "range": 8,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Bram",
+   "key": "R",
+   "name": "Gerald, No!",
+   "label": "gerald no",
+   "range": 10,
+   "cooldown": 24,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 1,
+     "until": null,
+     "length": 10,
+     "width": 1.6
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Hank",
+   "key": "Q",
+   "name": "Axe Swing",
+   "label": "axe swing",
+   "range": 3,
+   "cooldown": 3,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.15,
+     "until": null,
+     "radius": 3,
+     "angle": 110
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Hank",
+   "key": "W",
+   "name": "Fast Growth",
+   "label": "fast growth",
+   "range": 6,
+   "cooldown": 7,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Hank",
+   "key": "E",
+   "name": "Caber Toss",
+   "label": "caber toss",
+   "range": 9,
+   "cooldown": 9,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.86,
+     "length": 9,
+     "width": 2.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Hank",
+   "key": "R",
+   "name": "TIMBER!",
+   "label": "timber call",
+   "range": 10,
+   "cooldown": 24,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": true,
+   "reach": 2.5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Professor Puff",
+   "key": "Q",
+   "name": "Air Hose",
+   "label": "air hose",
+   "range": 8,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.63,
+     "length": 8,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "Professor Puff",
+   "key": "W",
+   "name": "Helium Bomb",
+   "label": "helium bomb",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Professor Puff",
+   "key": "E",
+   "name": "Hot Air",
+   "label": "hot air",
+   "range": 9,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.4,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": true
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Professor Puff",
+   "key": "R",
+   "name": "Pop!",
+   "label": "pop!",
+   "range": 9,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Sir Whiskers",
+   "key": "Q",
+   "name": "Scratch",
+   "label": "scratch",
+   "range": 2.5,
+   "cooldown": 3,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.15,
+     "until": null,
+     "radius": 2.5,
+     "angle": 90
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Sir Whiskers",
+   "key": "W",
+   "name": "Knock It Over",
+   "label": "knock it over",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Sir Whiskers",
+   "key": "E",
+   "name": "Cat Leap",
+   "label": "pounce",
+   "range": 7,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.65,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Sir Whiskers",
+   "key": "R",
+   "name": "Land on My Feet",
+   "label": "land on my feet",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "save"
+   ],
+   "melee": true,
+   "reach": 2,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Mr. Ledger",
+   "key": "Q",
+   "name": "Invoice",
+   "label": "invoice",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.66,
+     "length": 9,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "Mr. Ledger",
+   "key": "W",
+   "name": "Late Fee",
+   "label": "late fee",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Mr. Ledger",
+   "key": "E",
+   "name": "Call It In",
+   "label": "call it in",
+   "range": 0,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Mr. Ledger",
+   "key": "R",
+   "name": "Foreclosure",
+   "label": "foreclosure",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 2.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.2
+  },
+  {
+   "hero": "Big Yoko",
+   "key": "Q",
+   "name": "Palm Strike",
+   "label": "palm strike",
+   "range": 2.8,
+   "cooldown": 3,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.4,
+     "until": 0.5,
+     "length": 2.8,
+     "width": 2
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3.4
+  },
+  {
+   "hero": "Big Yoko",
+   "key": "W",
+   "name": "Stomp",
+   "label": "stomp",
+   "range": 0,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 3,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3.6
+  },
+  {
+   "hero": "Big Yoko",
+   "key": "E",
+   "name": "Charge",
+   "label": "sumo charge",
+   "range": 6,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.05,
+     "impact": 0.4,
+     "until": 0.9,
+     "length": 7.8,
+     "width": 2
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 8
+  },
+  {
+   "hero": "Big Yoko",
+   "key": "R",
+   "name": "Salt Throw",
+   "label": "salt throw",
+   "range": 0,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.4,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 6,
+     "angle": 70
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 6.6
+  },
+  {
+   "hero": "Mum",
+   "key": "Q",
+   "name": "Invisible Ball",
+   "label": "invisible ball",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.67,
+     "length": 9,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Mum",
+   "key": "W",
+   "name": "Wall",
+   "label": "mime wall",
+   "range": 9,
+   "cooldown": 0.6,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.5,
+     "until": null,
+     "length": 4,
+     "width": 0.5
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Mum",
+   "key": "E",
+   "name": "Rope Trick",
+   "label": "rope trick",
+   "range": 7,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Mum",
+   "key": "R",
+   "name": "Boxed In",
+   "label": "the box",
+   "range": 9,
+   "cooldown": 22,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.8,
+     "until": null,
+     "length": 3,
+     "width": 0.5
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Referee Whistler",
+   "key": "Q",
+   "name": "Whistle Blast",
+   "label": "whistle blast",
+   "range": 8,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.63,
+     "length": 8,
+     "width": 1.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.4
+  },
+  {
+   "hero": "Referee Whistler",
+   "key": "W",
+   "name": "No Running",
+   "label": "no running",
+   "range": 7,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 7,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 7
+  },
+  {
+   "hero": "Referee Whistler",
+   "key": "E",
+   "name": "No Casting",
+   "label": "no casting",
+   "range": 7,
+   "cooldown": 13,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 7,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 7
+  },
+  {
+   "hero": "Referee Whistler",
+   "key": "R",
+   "name": "Show the Card",
+   "label": "show the card",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "radius": 1.2,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.2
+  },
+  {
+   "hero": "Madame Cleaver",
+   "key": "Q",
+   "name": "Thrown Cleaver",
+   "label": "thrown cleaver",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.66,
+     "length": 9,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Madame Cleaver",
+   "key": "W",
+   "name": "Hot Soup",
+   "label": "hot soup",
+   "range": 8,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 1,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Madame Cleaver",
+   "key": "E",
+   "name": "Burnt Offering",
+   "label": "burnt offering",
+   "range": 8,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.55,
+     "until": null,
+     "radius": 0.9,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.9
+  },
+  {
+   "hero": "Madame Cleaver",
+   "key": "R",
+   "name": "Dinner Is Served",
+   "label": "dinner is served",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.6,
+     "until": null,
+     "length": 8,
+     "width": 1.2
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 8.1
+  },
+  {
+   "hero": "Pip",
+   "key": "Q",
+   "name": "Express Letter",
+   "label": "express letter",
+   "range": 8,
+   "cooldown": 3,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.55,
+     "length": 8,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Pip",
+   "key": "W",
+   "name": "Fragile",
+   "label": "fragile",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 1,
+     "until": null,
+     "radius": 2.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Pip",
+   "key": "E",
+   "name": "Shortcut",
+   "label": "shortcut",
+   "range": 6,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash",
+    "escape"
+   ],
+   "melee": false,
+   "reach": 5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Pip",
+   "key": "R",
+   "name": "Final Delivery",
+   "label": "final delivery",
+   "range": 6,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5,
+   "zones": [],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Gus",
+   "key": "Q",
+   "name": "Big Mop",
+   "label": "big mop",
+   "range": 3.5,
+   "cooldown": 3.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.8,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.3,
+     "until": null,
+     "radius": 3.5,
+     "angle": 140
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3.5
+  },
+  {
+   "hero": "Gus",
+   "key": "W",
+   "name": "Wet Floor Sign",
+   "label": "wet floor sign",
+   "range": 8,
+   "cooldown": 0.8,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": true,
+   "reach": 2.8,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.4,
+     "until": null,
+     "radius": 0.8,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.8
+  },
+  {
+   "hero": "Gus",
+   "key": "E",
+   "name": "Mop Bucket",
+   "label": "mop bucket",
+   "range": 8,
+   "cooldown": 10,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.8,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": null,
+     "length": 8,
+     "width": 1.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.4
+  },
+  {
+   "hero": "Gus",
+   "key": "R",
+   "name": "Flood",
+   "label": "flood",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.8,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 1,
+     "until": null,
+     "radius": 7,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 7
+  },
+  {
+   "hero": "Mabel",
+   "key": "Q",
+   "name": "Claw",
+   "label": "mole claw",
+   "range": 2.5,
+   "cooldown": 3,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.4,
+     "until": null,
+     "radius": 2.5,
+     "angle": 120
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 2.5
+  },
+  {
+   "hero": "Mabel",
+   "key": "W",
+   "name": "Dig",
+   "label": "mole dig",
+   "range": 6,
+   "cooldown": 7,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Mabel",
+   "key": "E",
+   "name": "Mole Run",
+   "label": "mole tunnel",
+   "range": 7.2,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.3,
+     "impact": 1.5,
+     "until": 1.65,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 8.724
+  },
+  {
+   "hero": "Mabel",
+   "key": "R",
+   "name": "Sinkhole",
+   "label": "sinkhole",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1.3,
+     "until": null,
+     "radius": 4,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Grandma Ironknit",
+   "key": "Q",
+   "name": "Knitting Needle",
+   "label": "knitting needle",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.71,
+     "length": 9,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Grandma Ironknit",
+   "key": "W",
+   "name": "Cast On",
+   "label": "cast on",
+   "range": 9,
+   "cooldown": 0.6,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.4,
+     "until": null,
+     "length": 8.4,
+     "width": 0.5
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Grandma Ironknit",
+   "key": "E",
+   "name": "Sweater",
+   "label": "sweater",
+   "range": 7,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.5,
+     "until": null,
+     "radius": 1,
+     "onCaster": false
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Grandma Ironknit",
+   "key": "R",
+   "name": "Mr. Biscuit",
+   "label": "mr biscuit",
+   "range": 0,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 5.5,
+   "zones": [],
+   "mode": "enemies",
+   "targetRadius": null
+  },
+  {
+   "hero": "Barry Cloudsley",
+   "key": "Q",
+   "name": "Cold Front",
+   "label": "cold front",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.66,
+     "length": 9,
+     "width": 1.64
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.4
+  },
+  {
+   "hero": "Barry Cloudsley",
+   "key": "W",
+   "name": "Lightning Risk",
+   "label": "lightning risk",
+   "range": 9,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 0.8,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Barry Cloudsley",
+   "key": "E",
+   "name": "Forecast Update",
+   "label": "forecast update",
+   "range": 0,
+   "cooldown": 12,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Barry Cloudsley",
+   "key": "R",
+   "name": "Severe Warning",
+   "label": "severe warning",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0,
+     "impact": 1,
+     "until": null,
+     "radius": 2,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2
+  },
+  {
+   "hero": "Bo",
+   "key": "Q",
+   "name": "Crook Whack",
+   "label": "crook whack",
+   "range": 4,
+   "cooldown": 3.5,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.55,
+     "until": null,
+     "radius": 4,
+     "angle": 100
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 4
+  },
+  {
+   "hero": "Bo",
+   "key": "W",
+   "name": "Spare Sheep",
+   "label": "spare sheep",
+   "range": 8,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "summon"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Bo",
+   "key": "E",
+   "name": "Shear",
+   "label": "shear",
+   "range": 8,
+   "cooldown": 11,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.25,
+     "until": 0.65,
+     "length": 8,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Bo",
+   "key": "R",
+   "name": "Stampede",
+   "label": "stampede",
+   "range": 12,
+   "cooldown": 22,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.8,
+     "until": 2.5,
+     "length": 12,
+     "width": 4
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 2
+  },
+  {
+   "hero": "The Great Zambini",
+   "key": "Q",
+   "name": "Card Spray",
+   "label": "card spray",
+   "range": 8,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.66,
+     "length": 8,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "The Great Zambini",
+   "key": "W",
+   "name": "Sawn in Half",
+   "label": "sawn in half",
+   "range": 8,
+   "cooldown": 10,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.74,
+     "length": 8,
+     "width": 1.54
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.35
+  },
+  {
+   "hero": "The Great Zambini",
+   "key": "E",
+   "name": "The Hat Trick",
+   "label": "hat trick",
+   "range": 0,
+   "cooldown": 13,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 2
+  },
+  {
+   "hero": "The Great Zambini",
+   "key": "R",
+   "name": "The Grand Finale",
+   "label": "grand finale",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 1.2,
+     "until": 1.43,
+     "length": 3.6,
+     "width": 1.44
+    }
+   ],
+   "mode": "enemy",
+   "targetRadius": null
+  },
+  {
+   "hero": "Wick",
+   "key": "Q",
+   "name": "Key Toss",
+   "label": "key toss",
+   "range": 9,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.3,
+     "until": 0.67,
+     "length": 9,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Wick",
+   "key": "W",
+   "name": "Door",
+   "label": "wick door",
+   "range": 9,
+   "cooldown": 0.6,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.5,
+     "until": null,
+     "radius": 0.9,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.9
+  },
+  {
+   "hero": "Wick",
+   "key": "E",
+   "name": "Slam",
+   "label": "door slam",
+   "range": 0,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "cc"
+   ],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.7,
+     "until": null,
+     "radius": 1.5,
+     "onCaster": false
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Wick",
+   "key": "R",
+   "name": "Grand Lobby",
+   "label": "grand lobby",
+   "range": 9,
+   "cooldown": 24,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.8,
+     "until": null,
+     "radius": 3,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Pim and Pom",
+   "key": "Q",
+   "name": "Bonk",
+   "label": "bonk",
+   "range": 3,
+   "cooldown": 3,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "cone",
+     "start": 0,
+     "impact": 0.45,
+     "until": null,
+     "radius": 3,
+     "angle": 100
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Pim and Pom",
+   "key": "W",
+   "name": "Charge",
+   "label": "pim charge",
+   "range": 5,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "dash"
+   ],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0,
+     "impact": 0.6,
+     "until": null,
+     "length": 3,
+     "width": 1.6
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1
+  },
+  {
+   "hero": "Pim and Pom",
+   "key": "E",
+   "name": "Shield Up",
+   "label": "shield up",
+   "range": 0,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 4
+  },
+  {
+   "hero": "Pim and Pom",
+   "key": "R",
+   "name": "Tag Out",
+   "label": "tag out",
+   "range": 0,
+   "cooldown": 8,
+   "aim": null,
+   "overCover": false,
+   "flags": [
+    "anytime"
+   ],
+   "melee": true,
+   "reach": 2.2,
+   "zones": [],
+   "mode": "self",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Anka",
+   "key": "Q",
+   "name": "Ember Quill",
+   "label": "ember quill",
+   "range": 10,
+   "cooldown": 3.5,
+   "aim": "line",
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.02,
+     "impact": 0.3,
+     "until": 0.75,
+     "length": 10,
+     "width": 1.44
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.3
+  },
+  {
+   "hero": "Anka",
+   "key": "W",
+   "name": "Fan the Flames",
+   "label": "fan the flames",
+   "range": 0,
+   "cooldown": 9,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.8,
+     "until": null,
+     "radius": 2.2,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 30
+  },
+  {
+   "hero": "Anka",
+   "key": "E",
+   "name": "Ember Flight",
+   "label": "ember flight",
+   "range": 12,
+   "cooldown": 10,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [],
+   "mode": "ground",
+   "targetRadius": 1.8
+  },
+  {
+   "hero": "Anka",
+   "key": "R",
+   "name": "Firebird",
+   "label": "firebird",
+   "range": 12,
+   "cooldown": 24,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": false,
+   "reach": 6.5,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 1,
+     "until": 1.5,
+     "length": 12,
+     "width": 3
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.5
+  },
+  {
+   "hero": "Kagen",
+   "key": "Q",
+   "name": "Issen",
+   "label": "issen",
+   "range": 6,
+   "cooldown": 6,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 0.45,
+     "until": 0.6,
+     "length": 6,
+     "width": 1.2
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 0.6
+  },
+  {
+   "hero": "Kagen",
+   "key": "W",
+   "name": "Noto",
+   "label": "noto",
+   "range": 0,
+   "cooldown": 7,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 0.5,
+     "until": null,
+     "radius": 3.5,
+     "onCaster": true
+    }
+   ],
+   "mode": "self",
+   "targetRadius": 3.5
+  },
+  {
+   "hero": "Kagen",
+   "key": "E",
+   "name": "Senbon",
+   "label": "senbon",
+   "range": 8,
+   "cooldown": 11,
+   "aim": null,
+   "overCover": false,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "circle",
+     "start": 0.04,
+     "impact": 1,
+     "until": 1.85,
+     "radius": 3,
+     "onCaster": false
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 3
+  },
+  {
+   "hero": "Kagen",
+   "key": "R",
+   "name": "Sekai-giri",
+   "label": "sekai giri",
+   "range": 12,
+   "cooldown": 26,
+   "aim": "line",
+   "overCover": true,
+   "flags": [],
+   "melee": true,
+   "reach": 2.6,
+   "zones": [
+    {
+     "kind": "line",
+     "start": 0.04,
+     "impact": 1.3,
+     "until": 1.3,
+     "length": 12,
+     "width": 2.4
+    }
+   ],
+   "mode": "ground",
+   "targetRadius": 1.2
+  }
+ ],
+ "errors": [],
+ "count": 164
+}
