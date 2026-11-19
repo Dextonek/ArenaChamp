@@ -137,6 +137,7 @@ import { cleaveTestModule } from './cleaveTest';
 import { boltTestModule, splitBoltTestModule, bounceBoltTestModule, pierceBoltTestModule, summonerBoltTestModule } from './boltTests';
 import { summonMeleeTestModule, summonRangedTestModule, turretTestModule } from './summonTests';
 import { gameModules } from './game';
+import { galleryModules } from './gallery';
 import { SHOW_DRAFTS } from '../../heroes/index';
 import { spells as scarletSheathSpells } from '../../heroes/sheath/fight';
 
@@ -213,6 +214,8 @@ export const targetedModules: EffectModule[] = [
   // 2026-11-19: "all i wanted was to do some spells ... try it there dont add it to arena"). Where the draft is shown
   // (?drafts=1, the workbench) the game's list below has them already.
   ...(SHOW_DRAFTS ? [] : scarletSheathSpells.map((m) => ({ ...m, category: 'targeted' }))),
+  // the gallery of twenty (pipeline/designs/gallery-20.md)
+  ...galleryModules,
   lunarTideModule,
   abyssalAnglerModule,
   supercellModule,
