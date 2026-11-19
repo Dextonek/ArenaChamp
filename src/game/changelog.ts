@@ -104,6 +104,11 @@ export const CHANGELOG: Release[] = [
         title: 'Cleaner roads on every Climb floor',
         text: 'The Climb’s roads bend in smooth curves instead of sharp zig-zags, the paving of the Sands and the War is laid along the curve, and the place where two roads ran side by side is now one road. The roads also belong to the land now, each chapter in its own look: kerb stones where a road comes into a place, a fence along the outside of every bend, grass or scrub on the verges, and on the Sea lanterns, signposts and milestones too. The Wood’s trail lanterns, which never stood, now light the trails.',
       },
+      {
+        tag: 'Tower',
+        title: 'Hunting plains on every Climb floor',
+        text: 'Every floor of the Climb has a hunting plain: open ground with its own name on the map, its edge marked by hunters’ stakes, where ten of the floor’s wild ones wander. They wake when you come near and fight like any pack, and each one that falls comes back half a minute later on the far side. They pay no shards; instead a quest giver on each floor asks you to fell twelve of them, and pays like the floor’s best side quest.',
+      },
     ],
   },
   {

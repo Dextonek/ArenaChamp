@@ -50,14 +50,31 @@ scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `doc
   track beside it cut, two ends side by side), and drops a piece under 12 m joined to a road at both ends. Every place still has a road
   (checked on all 46 made floors); picture `docs/tower/roads/junctions-fixed.jpg` (left before, right after: floors 34, 1, 24).
 
-## Hunting plains (the user: "make some zone where to fight mobs like plains where mobs spawn"): a plan, nothing built
+## Hunting plains on all 50 floors (2026-11-19): built, committed, NOT pushed, NOT live
 
-Page `docs/tower/hunting/plan.html` (maps of floors 4, 14, 24, 34, 44 from their data with the open ground where a plain fits:
-`python -I pipeline/tools/hunting-map.py <file>`). A floor of 250-280 m holds only 6-12 packs. The plan: one or two named plains a
-floor, 6-10 of the floor's weaker enemies wandering, each back 20-30 s after it falls, built as small packs with a short comeback,
-shared online as the packs are. **Waiting on the user:** why go there (hunt quest / a rare strong mob / both / just the fight), how
-busy (6 or 10), and where to start (one Sea floor alone first, or all floors).
-
+The user, shown the plan (`docs/tower/hunting/plan.html`): "make the hunting plains, hunt quest and 10 mobs".
+- **Where:** one plain a floor, `src/tower/world/plains-table.ts`, made by `node --experimental-strip-types --no-warnings
+  pipeline/tools/plains.mts` from the floors' own data: the widest open ground clear of roads (3 m), places (+6), packs and named
+  patrols (16 m), every spot of the floor (people, caches, waystones, quest steps: 5 m), cover, pools, and 14 m from every door; a looser
+  second try (floor 17). 9 to 16 m round. Names by chapter (the Gull Flats, the Fern Glade, the Glass Pan, the Black Shelf, the Burnt
+  Field...). Floors' data unchanged (no re-bake, no pack table, no PROTOCOL change).
+- **The wild ones** (`src/tower/world/plains.ts`): ten at a time, one a pack, of the floor's own plain kinds (its packs' kinds, no named
+  or elite), each walking a small loop slowly (`PackDef.roam`, the named patrol without a name); a pack like any other (asleep, wakes at
+  9 m, gives up 20 m off) but `wild`: this screen's alone (never shared online: other players do not see them), never kept as cleared,
+  no shards. One that falls comes back 20-30 s later on a loop at least 14 m from the hero. While the hero is near a plain the summon
+  cap is 12 a side (6 alone otherwise), after the share sets it each frame.
+- **The hunt quest** (`src/tower/world/plainQuest.ts`, `withPlain` in floors/index.ts): a new verb `hunt` ("Fell 12 on the Gull
+  Flats"), given by the floor's giver with the fewest quests, paying as the floor's best side quest; its marker points at the nearest
+  wild one still standing. Counted by the plain (`Plains.fell`).
+- **Seen:** the edge marked on the ground (a faint trodden band, ten stakes with red cloth: three draws) and on the map (a dashed orange
+  ring and its name); a banner as the hero walks in.
+- **Checks:** tsc, build. `pipeline/tools/plains-check.js` (page-shots -> `docs/tower/hunting/sheet.jpg`, `plains-check.json`): floors 4,
+  14, 24, 34, 44, the autopilot hunted twelve in 30-46 s, no falls, 8-9 wild ones drawn at once, 3-6 came back, no shards from them. The
+  route bot through floors 4 and 24: both cleared camp to gate, every checkpoint, the hunt taken, done and handed in, no errors, no
+  falls. Map picture `docs/tower/hunting/map-floor4.jpg`. Fight prints (`perf.py scenes --label plains`): world-2..5 the same; world-1
+  (floor 1) another fight, as expected (its scene sets the hero beside packs near floor 1's plain: wild ones join); retake its reference.
+- **Not done:** the wild ones are not shared online (a plain on the hub needs a new message: PROTOCOL, a deploy); nobody has played a
+  plain by hand; no tuning of how hard ten at a time is past the autopilot's runs.
 ## The arenas' landmarks (2026-11-19): nine built, in the arenas, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models for the arenas too and make them special", then, shown the harbour's serpent: "Yes, do the rest".

@@ -86,6 +86,7 @@ export class Quests {
         for (const id of step.packs) { const pk = z.packs.get(id); if (pk) { n += pk.total; left += z.run.packsCleared.includes(id) ? 0 : pk.left; } }
         return { k: n - left, n };
       }
+      case 'hunt': return { k: Math.floor(st.progress), n: step.n };
       case 'light': return { k: step.things.filter((t) => z.run.lit.includes(t.id)).length, n: step.things.length };
       case 'hold': return { k: Math.floor(st.progress), n: step.seconds };
       case 'lead': return { k: st.progress, n: step.path.length };
@@ -136,6 +137,16 @@ export class Quests {
     if (!s) return null;
     switch (s.verb) {
       case 'reach': case 'hold': return s.at;
+      case 'hunt': {
+        // the nearest wild one still standing on the plain (plains.ts), else the plain's middle
+        let best: Spot | null = null, bd = Infinity;
+        for (const p of z.packs.values()) {
+          if (!p.wild || p.state === 'cleared') continue;
+          const h = p.home, d = Math.hypot(h.x - z.hero.x, h.z - z.hero.z);
+          if (d < bd) { bd = d; best = { x: h.x, z: h.z }; }
+        }
+        return best ?? s.at;
+      }
       case 'fell': {
         const open = s.packs.map((id) => z.packs.get(id)).filter((p) => p && p.state !== 'cleared');
         return open[0]?.home ?? null;
@@ -246,6 +257,9 @@ export class Quests {
       }
       case 'fell-named':
         if (z.packs.has(step.pack) && z.run.packsCleared.includes(step.pack)) this.finishStep(q);
+        break;
+      case 'hunt': // counted by the plain (plains.ts `fell`) as its wild ones fall
+        if (st.progress >= step.n) this.finishStep(q);
         break;
       case 'light': {
         for (const th of step.things) {

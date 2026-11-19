@@ -1,5 +1,6 @@
 import type { FloorDef } from '../def';
 import { withFolk } from '../folk';
+import { withPlain } from '../plainQuest';
 import { banners } from './banners';
 import { deep } from './deep';
 import { canyon } from './canyon';
@@ -40,7 +41,7 @@ const MADE: Record<number, FloorDef> = {
   41: banners,
 };
 /** Every floor's people are the Climb's own, each floor's picked by its number (`withFolk`, ../folk.ts), not the heroes they were made as. */
-export const FLOORS: Record<number, FloorDef> = Object.fromEntries(Object.entries(MADE).map(([n, d]) => [Number(n), withFolk(Number(n), d)]));
+export const FLOORS: Record<number, FloorDef> = Object.fromEntries(Object.entries(MADE).map(([n, d]) => [Number(n), withPlain(Number(n), withFolk(Number(n), d))]));
 export const floorDef = (n: number) => FLOORS[n];
 
 /** The numbers of the floors that exist, lowest first. */

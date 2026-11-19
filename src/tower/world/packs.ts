@@ -140,6 +140,9 @@ export class Pack {
   leashAt: number = PACK.leash;
   /** A pack the zone makes when it needs one (a wave): awake at birth, never gives up. */
   hunter = false;
+  /** A hunting plain's wild one (plains.ts): as any pack (asleep, wakes, gives up), but this screen's alone (never shared), never kept as
+   *  cleared, and it pays no shards (it comes back: the plain's hunt quest pays). */
+  wild = false;
   /** The route of a patrol, for the named. */
   private patrol: { len: number; cum: number[]; pts: Spot[]; speed: number } | null = null;
   /** The patrol's own clock stops while it fights and walks home (else its home walks on mid-fight, and past the leash it gives up and
@@ -190,13 +193,14 @@ export class Pack {
     if (def.leash) this.leashAt = def.leash;
     const link = env.link;
     this.mind = new PackMind(env.api, () => this.state === 'awake', link ? (f) => link.isHero(f) : undefined);
-    if (def.named) {
-      const pts = def.named.patrol, cum = [0];
+    const walk = def.named ?? def.roam;
+    if (walk) {
+      const pts = walk.patrol, cum = [0];
       for (let i = 0; i < pts.length; i++) {
         const b = pts[(i + 1) % pts.length];
         cum.push(cum[i] + Math.hypot(b.x - pts[i].x, b.z - pts[i].z));
       }
-      this.patrol = { len: cum[pts.length], cum, pts, speed: def.named.speed };
+      this.patrol = { len: cum[pts.length], cum, pts, speed: walk.speed };
       this.leashAt = 24;
     }
   }
@@ -369,7 +373,7 @@ export class Pack {
     }
     this.env.log(`${this.id}: wakes (${why})`);
     const link = this.env.link;
-    if (this.mode === 'local' && !this.hunter && link) {
+    if (this.mode === 'local' && !this.hunter && !this.wild && link) {
       if (link.fakeOwned) this.mode = 'owned';
       else if (link.on && link.knows(this.id) && performance.now() - this.claimedAt > 3000) {
         this.claimedAt = performance.now();
@@ -424,7 +428,7 @@ export class Pack {
 
   /** Who runs it now (the hub's word): `me`, nobody (0), or another screen (its id). */
   setOwner(owner: 'me' | number, n: number) {
-    if (this.hunter) return;
+    if (this.hunter || this.wild) return;
     this.scale(n);
     if (owner === 'me') {
       if (this.mode === 'owned') return;

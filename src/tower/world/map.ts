@@ -6,6 +6,7 @@ import type { FloorDef, Spot } from './def';
 import { PLATE_TOP } from './hud';
 import type { WorldOthers } from './others';
 import type { Zone } from './world';
+import { PLAINS } from './plains-table';
 
 /**
  * The floor's map (the user, 2026-11-14: "let's make a small minimap at top left", "also M for map"): a round minimap in the top-left
@@ -342,6 +343,20 @@ export class WorldMap {
     }
     // People.
     for (const pe of floor.people) { const p = at(pe.at); if (inside(p, 8)) dot(p, 3.6 * k, COL.person, '#3a2a10'); }
+    // The hunting plain (plains.ts): a dashed ring in the hunt's own orange, its name on the big map (below, with the places').
+    const plain = PLAINS[floor.n];
+    if (plain) {
+      const c = at(plain), e = at({ x: plain.x + plain.r, z: plain.z }), rr = Math.hypot(e.x - c.x, e.y - c.y);
+      if (inside(c, rr + 4)) {
+        g.save();
+        g.setLineDash([4 * k, 3 * k]);
+        g.lineWidth = Math.max(1, 1.4 * k);
+        g.fillStyle = 'rgba(214,120,60,0.14)';
+        g.strokeStyle = 'rgba(224,130,70,0.95)';
+        g.beginPath(); g.arc(c.x, c.y, rr, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.restore();
+      }
+    }
     // Packs still standing: their units when awake, else where they are.
     const pulse = 0.5 + 0.5 * Math.sin(this.time * 6);
     for (const pk of zone.packs.values()) {
@@ -364,6 +379,7 @@ export class WorldMap {
     // The names last but the hero, so no mark covers them: the places' a little under their middle, the doors' over theirs.
     if (whole) {
       for (const pl of Object.values(floor.places)) label(at(pl), pl.name, '#f2e6c8', 15 * dpr);
+      if (plain) label(at(plain), plain.name, '#f0a878', 4 * dpr);
       for (const d of floor.doors) label(at(d.at), d.name, COL.door, -8 * dpr);
     }
     // The hero: an arrow its way (the figure faces +z turned by its yaw).

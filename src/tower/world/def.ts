@@ -41,6 +41,8 @@ export interface PackDef {
   mix: { kind: string; n: number }[];
   /** A name and a patrol: it is a pack of one that walks the route (waypoints, looped) at `speed` m/s while it is not hunting. */
   named?: { name: string; patrol: Spot[]; speed: number; bounty: { shards: number; relic: boolean } };
+  /** A route it walks (waypoints, looped) at `speed` m/s while it is not hunting, without a name: a hunting plain's wild ones (plains.ts). */
+  roam?: { patrol: Spot[]; speed: number };
   /** An elite among them: the pack's first unit is this kind and is bigger. */
   elite?: string;
   /**
@@ -55,6 +57,8 @@ export interface PackDef {
 export type Step =
   | { verb: 'reach'; text: string; at: Spot; r: number }
   | { verb: 'fell'; text: string; packs: string[] }
+  /** Fell `n` of the wild ones on a hunting plain (plains.ts): any of them, as many times as they come back. `at`, `r`: the plain. */
+  | { verb: 'hunt'; text: string; at: Spot; r: number; n: number }
   | { verb: 'fell-named'; text: string; pack: string }
   | { verb: 'light'; text: string; things: { id: string; at: Spot }[]; seconds: number }
   | { verb: 'hold'; text: string; at: Spot; r: number; seconds: number; waves: { kinds: string[]; every: number } }

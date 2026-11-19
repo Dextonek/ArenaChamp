@@ -1,0 +1,158 @@
+{
+ "floors": {
+  "4": {
+   "plain": {
+    "x": -31,
+    "z": 114,
+    "r": 12.7,
+    "name": "The Driftfield"
+   },
+   "quest": {
+    "name": "The Hunt on Driftfield",
+    "giver": "The Lamp-Bearer",
+    "step": "Fell 12 on the Driftfield",
+    "reward": 52
+   },
+   "wildMade": 10,
+   "kinds": [
+    "docker",
+    "netter",
+    "crab"
+   ],
+   "done": true,
+   "progress": 0,
+   "seconds": 40,
+   "kills": 12,
+   "shardsFromKills": 0,
+   "falls": 0,
+   "maxUnitsAtOnce": 8,
+   "maxAwake": 3,
+   "wildIdsSeen": 13,
+   "cameBack": 3,
+   "cap": 12
+  },
+  "14": {
+   "plain": {
+    "x": -29.7,
+    "z": 35.3,
+    "r": 10.3,
+    "name": "The Hollow Green"
+   },
+   "quest": {
+    "name": "The Hunt on Hollow Green",
+    "giver": "The Kiln-Mother",
+    "step": "Fell 12 on the Hollow Green",
+    "reward": 74
+   },
+   "wildMade": 10,
+   "kinds": [
+    "sprite",
+    "hound",
+    "root"
+   ],
+   "done": true,
+   "progress": 0,
+   "seconds": 38,
+   "kills": 13,
+   "shardsFromKills": 0,
+   "falls": 0,
+   "maxUnitsAtOnce": 9,
+   "maxAwake": 5,
+   "wildIdsSeen": 14,
+   "cameBack": 4,
+   "cap": 12
+  },
+  "24": {
+   "plain": {
+    "x": 36,
+    "z": 79,
+    "r": 12.6,
+    "name": "The Scorpion Pan"
+   },
+   "quest": {
+    "name": "The Hunt on Scorpion Pan",
+    "giver": "The Beacon-Keeper",
+    "step": "Fell 12 on the Scorpion Pan",
+    "reward": 52
+   },
+   "wildMade": 10,
+   "kinds": [
+    "raider",
+    "slinger"
+   ],
+   "done": true,
+   "progress": 0,
+   "seconds": 36,
+   "kills": 12,
+   "shardsFromKills": 0,
+   "falls": 0,
+   "maxUnitsAtOnce": 9,
+   "maxAwake": 2,
+   "wildIdsSeen": 14,
+   "cameBack": 4,
+   "cap": 12
+  },
+  "34": {
+   "plain": {
+    "x": -17,
+    "z": 54,
+    "r": 12.5,
+    "name": "The Lightless Lea"
+   },
+   "quest": {
+    "name": "The Hunt on Lightless Lea",
+    "giver": "The Ferryman",
+    "step": "Fell 12 on the Lightless Lea",
+    "reward": 50
+   },
+   "wildMade": 10,
+   "kinds": [
+    "mite",
+    "lurker",
+    "golem"
+   ],
+   "done": true,
+   "progress": 0,
+   "seconds": 45.5,
+   "kills": 12,
+   "shardsFromKills": 0,
+   "falls": 0,
+   "maxUnitsAtOnce": 8,
+   "maxAwake": 4,
+   "wildIdsSeen": 16,
+   "cameBack": 6,
+   "cap": 12
+  },
+  "44": {
+   "plain": {
+    "x": -56.8,
+    "z": -1.8,
+    "r": 15.3,
+    "name": "The Ash Lea"
+   },
+   "quest": {
+    "name": "The Hunt on Ash Lea",
+    "giver": "The White Sister",
+    "step": "Fell 12 on the Ash Lea",
+    "reward": 52
+   },
+   "wildMade": 10,
+   "kinds": [
+    "footman-r",
+    "footman-b",
+    "ashen"
+   ],
+   "done": true,
+   "progress": 0,
+   "seconds": 30.5,
+   "kills": 12,
+   "shardsFromKills": 0,
+   "falls": 0,
+   "maxUnitsAtOnce": 8,
+   "maxAwake": 3,
+   "wildIdsSeen": 13,
+   "cameBack": 3,
+   "cap": 12
+  }
+ }
+}

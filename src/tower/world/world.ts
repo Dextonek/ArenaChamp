@@ -21,6 +21,8 @@ import { PackShare } from './share';
 import type { WorldOthers } from './others';
 import type { WorldPresence } from '../../net/world';
 import type { WorldRun } from './state';
+import { Plains } from './plains';
+import { PLAINS } from './plains-table';
 
 /**
  * A floor as a world: one walking fight on the duel's boss path for the whole zone, as a Tower horde floor is (an unseen boss that
@@ -93,6 +95,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
   const say = (text: string) => log.push({ t: +run.clock.toFixed(2), text });
   const packs = new Map<string, Pack>();
   let ctx: ZoneCtx | null = null;
+  /** The floor's hunting plain (plains.ts), made with the packs. */
+  let plains: Plains | null = null;
   let law: Law | null = null;
   const zone = { falls: 0 };
 
@@ -105,6 +109,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     api, boons: run.boons, enemies: floor.enemies, hp: num.hp, now: () => run.clock,
     fell: (pack, spec, at) => {
       run.kills++;
+      // A hunting plain's wild one (plains.ts): no shards (it comes back), it counts for the plain's hunt.
+      if (pack.wild) { plains?.fell(pack, at); hooks.save(); return; }
       // The last of a pack is down: it stays cleared in the run (a wave of a hold is not a place and is not kept).
       if (pack.left === 0 && !pack.hunter && !run.packsCleared.includes(pack.id)) run.packsCleared.push(pack.id);
       ctx?.pay(spec.shards, at);
@@ -113,7 +119,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     },
     // The last of a pack fell on any screen: it counts in the run when this hero had a kill of it that counted (the open world).
     cleared: (pack) => {
-      if (!pack.tookPart || pack.hunter || run.packsCleared.includes(pack.id)) return;
+      if (!pack.tookPart || pack.hunter || pack.wild || run.packsCleared.includes(pack.id)) return;
       run.packsCleared.push(pack.id);
       hooks.save();
     },
@@ -124,6 +130,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
   for (const p of floor.packs) packs.set(p.id, new Pack(p, penv, run.packsCleared.includes(p.id)));
   if (share) for (const p of packs.values()) share.add(p);
   const total = [...packs.values()].reduce((n, p) => n + p.total, 0);
+  if (PLAINS[floor.n]) plains = new Plains(floor, run, api, penv, packs, (text, color, at) => ctx?.say(text, color, at), (title, sub) => hud.say(title, sub, 3));
 
   let lie = -1;
   const fall = () => {
@@ -210,6 +217,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     const scenery = (zoneRef.scenery = new Scenery(c));
     // The floor's life (life/): birds, smoke, cloth, boats, the shallows. In no fight, under dice of its own.
     const life = buildLife(c, law);
+    plains?.dress(p.group);
     // Every enemy kind of the floor compiled with the fight (prewarm.ts): the first pack no longer freezes the game.
     const warm = prewarmFoes(api, floor.enemies);
     scenery.enter = (d) => hooks.door(d);
@@ -262,6 +270,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           const down = api.duel.heroHp <= 0;
           for (const k of packs.values()) k.update(dt, hero);
           share?.update(dt, hero);
+          plains?.update(dt, hero);
           law!.update(dt);
           quests.update(dt);
           // A door walked into ends this zone from inside the frame: nothing after it may touch what was put away.
@@ -308,6 +317,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
         },
         dispose() {
           gone = true;
+          plains?.dispose();
           for (const k of packs.values()) k.dispose();
           share?.dispose();
           warm.dispose();
