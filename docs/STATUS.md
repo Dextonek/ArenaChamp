@@ -58,6 +58,18 @@ floor, 6-10 of the floor's weaker enemies wandering, each back 20-30 s after it 
 shared online as the packs are. **Waiting on the user:** why go there (hunt quest / a rare strong mob / both / just the fight), how
 busy (6 or 10), and where to start (one Sea floor alone first, or all floors).
 
+## The arenas' landmarks (2026-11-19): nine built, in the arenas, committed; NOT pushed, NOT live; waiting on the user's look at all nine
+
+The user: "lets make more models for the arenas too and make them special", then, shown the harbour's serpent: "Yes, do the rest".
+Each duel arena has one great living thing of its own past the ring, tied to its realm, only for the eye (no cover, nothing the fight
+reads): the Harbour's sea serpent, the Canyon's stone colossus, the Cavern's geode, the Battlefield's trebuchet, the Night Temple's
+bell, Frostfall's orrery, the Caldera's forge automaton, the Glade's walking tree-giant, the Sky Ruins' sky whale. How:
+`docs/arenas/landmarks/README.md` (builders `blender/arenas/landmarks/`, poses `src/arenas/landmarks/`, placed in each arena's file).
+Line-up `docs/arenas/landmarks/lineup.jpg`; each in its arena `<key>_<arena>.jpg` (`pipeline/tools/landmark-shot.js`). The bosses'
+toolkit gained `Boss.smooth` (smooth shading for the arenas' style). Built by four helpers; the sky whale was reworked once (it read as
+an aeroplane). Not done: most show only at the edge of the duel's own camera, when the fight comes to their side (by design: nothing tall
+on the line between the two players' cameras); not measured on a phone; frost's backdrop ridges shifted a little round the orrery.
+
 ## The Raid's fight models (2026-11-19): seven built, in the fights, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models for the raid too". The stages' adds and the fights' objects were the last things of the Raid drawn in

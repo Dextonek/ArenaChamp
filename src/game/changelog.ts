@@ -43,6 +43,13 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Arenas',
+        title: 'Every arena has a great living landmark',
+        text: 'Look past the ring: a sea serpent coils in the Drowned Harbour’s bay and rises to watch, a stone king of the Dune Throne turns his head over the Sandstone Canyon, a great geode pulses in the Crystal Cavern, a trebuchet hurls stones over the Fallen Battlefield, the Night Temple’s bell swings, the Hourkeepers’ orrery turns by Frostfall Lake, a bronze smith hammers at the Ember Caldera, a tree-giant strides past the Verdant Glade and a sky whale circles the Sky Ruins.',
+        image: 'news/arena-landmarks.jpg',
+        alt: 'The nine landmarks in a line-up: a sea serpent, a seated stone colossus, a geode, a trebuchet, a bell tower, an orrery, a bronze smith at an anvil, a tree-giant and a sky whale.',
+      },
+      {
         tag: 'Raid',
         title: 'The Raid’s stage creatures and fight objects, made real',
         text: 'The Sun Warden’s Hour Stones, Ash and Ember’s Coal Hearts and the Eclipse Wyrm’s Cast shades are real models now, and so are the things you fight around: the broken column drums of Pillar Fall, the sun shards you carry to the altar, Ash’s cinder rocks and the Heart’s crust plates.',
