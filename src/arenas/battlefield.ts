@@ -5,6 +5,8 @@ import { ArrowsFall } from './hazards/battlefield';
 import { battlefieldShift } from './shifts/battlefield';
 import layout from './real/battlefield.json';
 import { Glows, realProps, type RealLayout } from './real';
+import { landmark } from './landmarks';
+import { trebuchetPose } from './landmarks/trebuchet';
 import type { ArenaDef } from './types';
 
 /**
@@ -290,6 +292,14 @@ export const battlefieldArena: ArenaDef = {
     g.add(glows.group);
     own.push(glows);
 
+    // The landmark: a great trebuchet of the old war on the far ridge to the north-east, off the line between the two players' cameras
+    // (nothing tall on it), in the open between the camp's tents and banners; its broadside to the ring, so the arm's swing is seen, and
+    // it throws away from the field (toward the north-west), the stone arcing out of sight (src/arenas/landmarks/trebuchet.ts).
+    const TX = RING.x + 11, TZ = RING.z - 22;
+    const trebuchet = landmark('trebuchet', { x: TX, y: 0, z: TZ, face: Math.atan2(RING.x - TX, RING.z - TZ) - 0.15, scale: 1.2 }, trebuchetPose);
+    g.add(trebuchet.group);
+    own.push(trebuchet);
+
     let disposed = false;
     // the heroes' materials, a shade duller than on a hero: the arena must not outshine them
     void realProps('battlefield', BATTLEFIELD_OBSTACLES.length, {
@@ -310,6 +320,7 @@ export const battlefieldArena: ArenaDef = {
       update(dt, time) {
         rain.update(dt);
         glows.update(time);
+        trebuchet.update(time);
       },
       dispose() {
         disposed = true;

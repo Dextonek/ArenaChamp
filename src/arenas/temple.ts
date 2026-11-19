@@ -5,6 +5,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { TempleRays } from './hazards/temple';
 import { templeShift } from './shifts/tables';
+import { landmark } from './landmarks';
+import { bellPose } from './landmarks/bell';
 import { DEFAULT_STAGE, RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef, WallState } from './types';
 
@@ -849,6 +851,13 @@ export const templeArena: ArenaDef = {
     };
     placeBanners(0);
 
+    // The landmark: the great bell of Gloaming in an open tower to the north-east, between the colonnade and the gate's obelisks, off the z axis
+    // (nothing tall on the line between the two players' cameras) and outside the 26 m camera-rule reach; its open front faces the court
+    // (src/arenas/landmarks/bell.ts).
+    const BX = RING.x + 18, BZ = RING.z - 15;
+    const bell = landmark('bell', { x: BX, y: 0, z: BZ, face: Math.atan2(RING.x - BX, RING.z - BZ), scale: 0.9 }, bellPose);
+    g.add(bell.group);
+
     // pale low moon far away (a sprite, ignores fog)
     const moon = new THREE.Sprite(
       new THREE.SpriteMaterial({ map: moonTexture(), transparent: true, depthWrite: false, fog: false, color: 0xdfe6ff }),
@@ -889,6 +898,7 @@ export const templeArena: ArenaDef = {
       moteGeo.attributes.position.needsUpdate = true;
       // banners
       placeBanners(time);
+      bell.update(time);
       cover.update(dt);
     };
 
@@ -901,6 +911,7 @@ export const templeArena: ArenaDef = {
       dispose() {
         disposed = true;
         cover.dispose();
+        bell.dispose();
         (moon.material.map as THREE.Texture | null)?.dispose();
         moon.material.dispose();
         disposeTree(g);
