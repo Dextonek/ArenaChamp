@@ -5,6 +5,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { StormStrikes } from './hazards/skyruins';
 import { SKY_RADII, skyruinsShift } from './shifts/tables';
+import { landmark } from './landmarks';
+import { skywhalePose, whaleAt } from './landmarks/skywhale';
 import { RING, canvasTexture, disposeTree, flatRing, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
@@ -859,7 +861,19 @@ export const skyruinsArena: ArenaDef = {
     };
     placeBirds(0);
 
-    g.add(sea, wisps, skirt, top, rimLine, floaters, birds);
+    // The landmark: a sky whale circling the ruins in the cloud below and beyond the platform (src/arenas/landmarks/skywhale.ts), far out
+    // from the z line the cameras look along, never between a camera and the ring.
+    const WHALE_SCALE = 0.8, WHALE_Y = -2.8; // the model's body middle is 4 m above its origin: its middle flies at y = -2.8, in the wisps
+    const whale = landmark('skywhale', { x: 0, y: 0, z: 0, face: 0, scale: WHALE_SCALE }, skywhalePose);
+    const placeWhale = (time: number) => {
+      const at = whaleAt(time);
+      whale.group.position.set(at.x, WHALE_Y - 4 * WHALE_SCALE + at.bob, at.z);
+      whale.group.rotation.set(0, at.yaw, at.bank);
+      whale.update(time);
+    };
+    placeWhale(0);
+
+    g.add(sea, wisps, skirt, top, rimLine, floaters, birds, whale.group);
 
     return {
       group: g,
@@ -872,9 +886,11 @@ export const skyruinsArena: ArenaDef = {
         for (const d of drifts) { d.ang += d.speed * dt; place(d); }
         floaters.position.y = Math.sin(time * 0.35) * 0.35;
         placeBirds(time);
+        placeWhale(time);
       },
       dispose() {
         disposed = true;
+        whale.dispose();
         // Sprites are not meshes, so disposeTree skips them.
         for (const m of mats) m.dispose();
         for (const t of textures) t.dispose();
