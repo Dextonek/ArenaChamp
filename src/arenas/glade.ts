@@ -5,6 +5,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { SporeBurst } from './hazards/glade';
 import { gladeShift } from './shifts/tables';
+import { landmark } from './landmarks';
+import { giantAt, giantNear, treegiantPose } from './landmarks/treegiant';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
@@ -560,6 +562,21 @@ export const gladeArena: ArenaDef = {
     };
     placeLeaves(0);
 
+    // The landmark: a tree-giant of the Walking Wood that strides past behind the glade on an arc to the east and back (src/arenas/landmarks/
+    // treegiant.ts): well off the z line the two cameras look along, beyond the floor, the trees on its arc cleared.
+    for (const k of ['TreeA', 'TreeB', 'TreeC']) {
+      place[k] = (place[k] ?? []).filter((m) => !giantNear(m.elements[12], m.elements[14], 7));
+    }
+    const giant = landmark('treegiant', { x: 0, y: 0, z: 0, face: 0, scale: 1 }, treegiantPose);
+    g.add(giant.group);
+    const placeGiant = (time: number) => {
+      const at = giantAt(time);
+      giant.group.position.set(at.x, 0, at.z);
+      giant.group.rotation.y = at.yaw;
+      giant.update(time);
+    };
+    placeGiant(0);
+
     g.add(apron, floor, rimLine, shroomMesh, grassMesh, stemMesh, headMesh, farTrunkMesh, farCrownMesh, canopyMesh, shaftMesh, flies, leaves);
 
     return {
@@ -574,9 +591,11 @@ export const gladeArena: ArenaDef = {
         flyGeo.attributes.position.needsUpdate = true;
         flyMat.opacity = 0.75 + 0.2 * Math.sin(time * 2.3);
         placeLeaves(time);
+        placeGiant(time);
       },
       dispose() {
         disposed = true;
+        giant.dispose();
         disposeTree(g);
       },
     };
