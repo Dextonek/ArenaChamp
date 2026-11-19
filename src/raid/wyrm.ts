@@ -7,9 +7,12 @@ import { ROOST_R, wyrmRoostArena } from '../arenas/wyrmRoost';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import { WYRM_LIVE, resetWyrmLive, wyrmLook } from './bodies/wyrm';
 import { castShadeLook } from './bodies/wyrmShade';
+import { CAST_SHADE } from './adds/castShade';
+import { beastLook } from '../tower/world/beasts';
 import { HoldRing, LightPillar } from './fx';
 import { STAND_COLOR } from './script';
 import { stageMove } from './stage';
+import type { MinionLook } from '../effects/parts/minion';
 import type { AimContext, BossDef, BossMove, BossPhase, Objective, Threat } from './types';
 
 /**
@@ -273,11 +276,15 @@ const shade: BossMove = {
  * stand up out of its shadow round the roof and shoot. Cut them down before its bar fills and it comes down hard and kneels; if not,
  * Tearfall burns the whole roof.
  */
+/** The Cast shade's look: its model, with the code look standing in while the file loads. Made once, the first time it is asked for. */
+let castLook: MinionLook | null = null;
+const castShade = () => castLook ??= beastLook(CAST_SHADE, castShadeLook, { speed: 0 });
+
 const stage = stageMove({
   id: 'stand', name: 'Shadows Stand', pose: 'channel',
   hold: { x: C.x, z: C.z }, shell: { radius: 3.4, y: 4.2, color: VIOLET },
   center: C, ring: 8.5, turns: [[0, 120, 240], [60, 180, 300]],
-  look: castShadeLook, color: '#2a2440', shot: 'beam', shotColor: PINK,
+  look: (kind, p) => castShade()(kind, p), color: '#2a2440', shot: 'beam', shotColor: PINK,
   fail: { share: 0.5, cover: false, radius: ROOST_R + 1, text: 'TEARFALL', blast: 'flare' },
   win: 'THE WYRM FALLS', hint: 'Cut down its three shadows before its bar fills',
 });
@@ -478,6 +485,7 @@ export const ECLIPSE_WYRM: BossDef = {
   kit: (hp) => {
     // A new fight: its disc on its brow, on the ground.
     resetWyrmLive();
+    castShade(); // so its file starts loading before the stage
     return {
       name: 'The Eclipse Wyrm', title: 'Shadow of the Fallen Sun', accent: '#6a49c8', foil: '#ffc870', portrait, model: MODEL, look: wyrmLook, maxHp: hp,
       spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
