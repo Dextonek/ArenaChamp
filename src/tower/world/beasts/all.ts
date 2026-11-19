@@ -1,7 +1,15 @@
 import type { MinionLook } from '../../../effects/parts/minion';
 import { escortLook } from '../looksWild';
 import { beastLook, type BeastDef } from '.';
+import { CART } from './cart';
+import { CRAB } from './crab';
+import { GOLEM } from './golem';
 import { HOUND } from './hound';
+import { MITE } from './mite';
+import { ROOT } from './root';
+import { STAG } from './stag';
+import { WRAITH } from './wraith';
+import { WISP } from './wisp';
 
 /**
  * The beasts and spirits drawn from a model, by the enemy spec's `look` (or an escort's look id). A look not here stays drawn in code.
@@ -9,6 +17,14 @@ import { HOUND } from './hound';
  */
 export const BEASTS: Record<string, BeastDef> = {
   hound: HOUND,
+  crab: CRAB,
+  mite: MITE,
+  golem: GOLEM,
+  root: ROOT,
+  stag: STAG,
+  wraith: WRAITH,
+  wisp: WISP,
+  cart: CART,
 };
 
 /** The look of one who is led in a quest (the wisp, the caravan cart): its model where it has one, else its code look. */
