@@ -1,6 +1,6 @@
 # Status
 
-## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look agreed; gate 3 (the kit on paper) shown, waiting on the user's yes; a draft, NOT live
+## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look and kit agreed; gate 4 (the spells) in progress; a draft, NOT live
 
 The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
 to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts leave marks that only open when he sheathes.
@@ -18,8 +18,12 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
   12 m line that opens every mark at 36). The page: `docs/heroes/new/sheath-gate3.html`. **A correction to gate 1:** the card said no
   hero stores damage on the enemy; Mr. Ledger's tab does. The sheet keeps the marks with rules that differ (they never land by
   themselves, a count of 4, the click can be stepped out of) and offers one alternative (cuts on the floor).
-- **Waiting on the user:** yes to the kit (gate 3), or the alternative. **Next:** gate 4, the spells (`numbers.ts`, the blocks, the
-  looks from the World Sever and Thousand Swords tool spells, the passive, icons, portrait).
+- **Gate 3 agreed** ("Yes, build the kit", 2026-11-19).
+- **Gate 4 in progress:** the rules are built and proven (commit 2fe6b45e: `src/heroes/sheath/` numbers, the four spells on the blocks,
+  the passive with marks, the click's opening, the parry and World Sever's opening, the CPU's `aiHold` / `enemyGoal`); pictures with
+  `python pipeline/tools/page-shots.py pipeline/tools/kagen-shots.js docs/spells/kagen --page "/?drafts=1" --browser msedge`.
+  Three helpers in worktrees draw the looks (Issen, Noto and the marks on the body; Senbon and Sekai-giri from the tool spells;
+  the icons and the portrait); their branches are merged here when done. **Next:** merge, one picture a spell, the user's yes.
 
 ## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
 

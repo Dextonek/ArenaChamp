@@ -2,7 +2,7 @@
 title: Kit sheet, Kagen
 tags: [kit, design, draft, sheath]
 updated: 2026-11-18
-status: gate 1 and gate 2 agreed (2026-11-18); gate 3 written, waiting on the user's yes; nothing of the kit is built
+status: gates 1 to 3 agreed (gate 3: "Yes, build the kit", 2026-11-19); gate 4 in progress: the rules are built and proven, the looks are being drawn
 ---
 
 # Kagen, the Scarlet Sheath
@@ -128,3 +128,16 @@ in the 5 s before and stands on the line. The simulator sets the real numbers at
 Labels `issen`, `noto`, `senbon`, `sekai giri`; files `src/heroes/sheath/spells/issen.ts`, `noto.ts`, `senbon.ts`,
 `sekaiGiri.ts`. Not his: the tool page's `thousand swords` (`src/spells/targeted/thousandSwords.ts`) and `world sever`
 (`worldSever.ts`); his E and R borrow their looks, sized for a duel, under his own labels.
+
+## Gate 4: the spells (2026-11-19)
+
+The rules are on the blocks as the sheet says (`src/heroes/sheath/`), proven in real duels on the tool page: Issen 32 and a
+mark, the click with three marks 72, Senbon's three waves 30, Sekai-giri off the line with four marks 144. What changed from
+the sheet while building:
+
+- **The slow is the engine's** (`SLOW_FACTOR`, 40%), not 30%: the game has one slow.
+- **Issen is not flagged a dash** for the CPU: the duel's rule keeps a dash spell for when the enemy is beyond Q's range, and
+  Issen IS his Q, so it was never cast. It is still a dash (`move` at the release); the CPU uses it from 2 to 6.5 m.
+- First quick fights (12, the CPU on both sides, before any tuning): 8 won. Gate 5 measures and tunes.
+- Pictures: `python pipeline/tools/page-shots.py pipeline/tools/kagen-shots.js docs/spells/kagen --page "/?drafts=1" --browser msedge`
+  (Git Bash: `MSYS_NO_PATHCONV=1` first). Kagen is moved to the middle; the foe is held and silenced.
