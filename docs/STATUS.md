@@ -3,8 +3,45 @@
 
 
 
-## Pushed 2026-11-19: GitHub main is d7d3f9c8 (57 commits: the wyrm, Wick, the spell rules line, the gallery, the research, the
-## showpieces' rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload.
+## Pushed 2026-11-19: GitHub main is 00e024ef (the wyrm, Wick, the spell rules line, the gallery, the research, the showpieces'
+## rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. A deploy started in the
+## fork session was stopped by the user: nothing was deployed, the live game is the 2026-11-16 version.
+
+## The Climb's roads made clean (2026-11-19): done, committed, NOT pushed, NOT live; waiting on the user's look for the other chapters' roadsides
+
+The user: "push and continue to make more improvement to maps in tower", then "lets make road more cleanly and like put them into
+scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `docs/tower/survey/`), then the roads close up
+(`pipeline/tools/climb-roads.js` -> `docs/tower/roads/before/`, `after/`; the sheet `docs/tower/roads/roads-before-after.jpg`).
+- **What was wrong:** every road a few straight legs with a hard kink at each joint; the Sands' and the War's paving laid leg by leg
+  (stair-steps at every bend); on most Sea floors and some Sands floors the camp's road to the middle ran 15-26 m right beside a spoke
+  road (two roads side by side); pebbles sprinkled all over the Sea's roads.
+- **The fix, looks only:** `src/tower/world/roads.ts` makes a clean network from the floor's road data as drawn (round bends, a road
+  that runs along an earlier one cut and joined to it, joins rounded). All five chapters' painters use it (`land.ts`, `woodZone.ts`,
+  `sandsZone.ts`, `deepZone.ts`, `warZone.ts`); flags and slabs are laid along the curve. The floors' data, cover, packs, quests and
+  everything that keeps off a road (it measures against the old legs; the bends leave them by at most about 1.5 m) are unchanged.
+- **Into the scene, the Sea only (the sample):** `depth.ts` draws the roadside along the clean curve on its own random stream: kerb
+  stones for the last 9 m into a place, lanterns every 15-19 m from side to side, a fence on the outer side of every bend, grass on the
+  verges, signposts at the places, a milestone where roads meet. The old roadside loop still runs DRY (draws nothing) so the floor's
+  other props keep their draw; the small scenes moved a little (they keep off the new props).
+- **The Wood's trail lanterns** (props/wood: never placed, 2.8 m out against a 3 m check): now 3.1 m out, six a floor (11-20 checked).
+- **Checks:** tsc and build; pictures of floors 1, 4, 14, 24, 34, 44 before and after. **Fights the same:** old and new code back to
+  back, `perf.py scenes --label roads-base` / `roads-new` (world-1, world-2, world-4): the same three prints (a4c535c1, 65783258,
+  b081ed7b). Against `docs/perf/data/prints.json` they are ANOTHER FIGHT on both: the other session's beast models (shot height scales
+  with the model) changed them, not the roads; the reference wants retaking. **Props probe** (floors 1-10): float 168 -> 171, gap
+  654 -> 643, in cover 2 -> 2; the small scenes moved a little (they keep off the new props), a net scene now on the edge's slope on 5
+  (up to 1 m), the same kind of fault as before in other places. **Cost:** opening a floor as before (Sea 1.0-1.2 s, was 1.1-1.5 s
+  in one noisy run; the road network takes 4-9 ms, its distance checks a grid of 8 m cells); draw calls at the camp +6 on the Sea,
+  +16-27 from high over a Sea floor, the other chapters the same; triangles +2-4 % on the Sea.
+- **Waiting on the user:** the Sea's roadside as the look for the other four chapters' roads (then the same in woodDepth, sandsDepth,
+  deepDepth, warDepth).
+
+## Hunting plains (the user: "make some zone where to fight mobs like plains where mobs spawn"): a plan, nothing built
+
+Page `docs/tower/hunting/plan.html` (maps of floors 4, 14, 24, 34, 44 from their data with the open ground where a plain fits:
+`python -I pipeline/tools/hunting-map.py <file>`). A floor of 250-280 m holds only 6-12 packs. The plan: one or two named plains a
+floor, 6-10 of the floor's weaker enemies wandering, each back 20-30 s after it falls, built as small packs with a short comeback,
+shared online as the packs are. **Waiting on the user:** why go there (hunt quest / a rare strong mob / both / just the fight), how
+busy (6 or 10), and where to start (one Sea floor alone first, or all floors).
 
 ## The Climb's beasts as models (2026-11-19): nine built, in the game, committed, approved by the user ("They look right"); NOT pushed, NOT live
 

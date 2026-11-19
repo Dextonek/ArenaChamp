@@ -235,7 +235,8 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
           }
         }
         if (sinceLamp > 34 + rnd() * 16 && lamps < 6) {
-          const side = rnd() < 0.5 ? 1 : -1, x = cx + nx * side * 2.8, z = cz + nz * side * 2.8;
+          // 3.1 m out (2.8 until 2026-11-19: the check below asks for 3 m of room, so no trail lantern ever stood: props/wood, item "lanterns")
+          const side = rnd() < 0.5 ? 1 : -1, x = cx + nx * side * 3.1, z = cz + nz * side * 3.1;
           if (free(x, z, 0.5, { road: 2.5, place: 3 }) && !nearBrook(x, z, 1)) { lantern(x, z, Math.atan2(-nx * side, -nz * side)); sinceLamp = 0; lamps++; }
         }
       }

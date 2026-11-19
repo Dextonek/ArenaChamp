@@ -85,6 +85,11 @@ export const CHANGELOG: Release[] = [
         title: 'The CPU’s Wick stops shooting into his own doors, and his key hits harder',
         text: 'Played by the CPU, Wick put his first door right in front of himself, so his own keys and darts flew into it and came out of the other door, away from you. Now that door goes to his side, and he holds a shot his own door would swallow: his key hits about 7 times in 10 (was 6). Wick’s Key Toss also deals 88 damage (was 78).',
       },
+      {
+        tag: 'Tower',
+        title: 'Cleaner roads on every Climb floor',
+        text: 'The Climb’s roads bend in smooth curves instead of sharp zig-zags, the paving of the Sands and the War is laid along the curve, and the place where two roads ran side by side is now one road. On the Sea’s floors the roads also belong to the land: fences on the bends, kerb stones where a road comes into a place, lanterns, grass on the verges and a milestone where roads meet. The Wood’s trail lanterns, which never stood, now light the trails.',
+      },
     ],
   },
   {

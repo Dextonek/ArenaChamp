@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
@@ -222,7 +223,8 @@ function paint(look: DeepLook, cave: Cave, L: number) {
     }
     // the mine's track along each path: a dark bed, timber sleepers across, two iron rails
     g.lineCap = g.lineJoin = 'round';
-    for (const path of look.paths) {
+    // (2026-11-19, "make road more cleanly": the clean network of roads.ts: the tracks bend round, and no track runs doubled beside another.)
+    for (const path of roadNet(look.paths)) {
       const trace = () => {
         g.beginPath();
         path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz))));

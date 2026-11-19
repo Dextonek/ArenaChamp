@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Sea } from '../../arenas/real';
 import { buildDepth } from './depth';
+import { along, roadNet } from './roads';
 import type { Kit } from './zone';
 
 /**
@@ -208,30 +209,27 @@ function paint(spec: LandSpec, geo: Geo, L: number) {
       }
       g.restore();
     }
-    // The paths: dirt roads with a soft edge and a lighter middle where feet go.
+    // The roads (2026-11-19, "make road more cleanly"): the clean network (roads.ts: round bends, no road doubled beside another), each a
+    // dirt road with a darker trodden verge, one clear edge and a lighter middle where feet go; a few pebbles only at its edges (they
+    // were sprinkled all over it, 2 a metre, and read as noise). Its own random stream: the plazas drawn after keep their stones.
     g.lineCap = g.lineJoin = 'round';
     const rgba = (c3: RGB, a: number) => `rgba(${c3[0]},${c3[1]},${c3[2]},${a})`;
-    for (const path of spec.paths) {
-      const trace = () => {
+    const net = roadNet(spec.paths), prnd = seeded(57 + (spec.seed ?? 0));
+    for (const [w, col, a] of [[5.6, [52, 70, 40] as RGB, 0.22], [4.3, DIRT_EDGE, 0.85], [3.7, DIRT, 1], [1.6, DIRT_MID, 0.42]] as [number, RGB, number][]) {
+      g.strokeStyle = rgba(col, a);
+      g.lineWidth = w * ppm;
+      for (const path of net) {
         g.beginPath();
         path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz))));
-      };
-      for (const [w, col, a] of [[4.8, DIRT_EDGE, 0.35], [4.1, DIRT_EDGE, 0.7], [3.5, DIRT, 1], [1.7, DIRT_MID, 0.55]] as [number, RGB, number][]) {
-        g.strokeStyle = rgba(col, a);
-        g.lineWidth = w * ppm;
-        trace();
         g.stroke();
       }
-      // pebbles along it
-      for (let i = 1; i < path.length; i++) {
-        const [ax, az] = path[i - 1], [bx, bz] = path[i], len = Math.hypot(bx - ax, bz - az);
-        for (let s = 0; s < len * 2; s++) {
-          const t = rnd(), side = (rnd() - 0.5) * 3.4, nx = -(bz - az) / len, nz = (bx - ax) / len;
-          g.fillStyle = rnd() < 0.5 ? 'rgba(150,128,96,0.8)' : 'rgba(84,66,48,0.7)';
-          g.beginPath(); g.arc(X(ax + (bx - ax) * t + nx * side), Z(az + (bz - az) * t + nz * side), (0.06 + rnd() * 0.08) * ppm, 0, Math.PI * 2); g.fill();
-        }
-      }
     }
+    for (const path of net) along(path, 0.9, (dx, dz, ux, uz) => {
+      if (prnd() < 0.45) return;
+      const side = (prnd() < 0.5 ? -1 : 1) * (1.45 + prnd() * 0.45);
+      g.fillStyle = prnd() < 0.5 ? 'rgba(150,128,96,0.75)' : 'rgba(84,66,48,0.65)';
+      g.beginPath(); g.arc(X(dx - uz * side), Z(dz + ux * side), (0.06 + prnd() * 0.07) * ppm, 0, Math.PI * 2); g.fill();
+    });
     // The plazas, each as the place it is.
     const disc = (dx: number, dz: number, r: number, inner: string, edge = 1.5) => {
       const grad = g.createRadialGradient(X(dx), Z(dz), 0, X(dx), Z(dz), (r + edge) * ppm);

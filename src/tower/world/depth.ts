@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RING } from '../../arenas/common';
+import { RING, seeded } from '../../arenas/common';
 import { grassStands, type Dress, type Geo, type Key, type LandSpec } from './land';
 import { buildSeaScenes } from './scenes/sea';
+import { along, distanceTo, roadNet, type Pt } from './roads';
 
 /**
  * The world's depth on a sea floor (the user, 2026-11-14: "add depth into the worlds, make all the background fit there, all the roads
@@ -44,7 +45,7 @@ export function buildDepth(o: DepthIn) {
   const { spec, geo, rnd } = o;
   // Where the depth puts its props, for the scenes to keep off (scenes/sea.ts); the dressing itself is unchanged.
   const marks: { x: number; z: number; r: number }[] = [];
-  interface Rec { add(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): Rec; mute: boolean }
+  interface Rec { add(key: Key, g: THREE.BufferGeometry, x: number, y: number, z: number, yaw?: number, sx?: number, sy?: number, sz?: number, tilt?: number): Rec; mute: boolean; /** No mark for the scenes (the roads' kerbs and rails: on the road's edge, which the scenes keep off anyway). */ nomark?: boolean }
   const dress: Rec = {
     /** A prop planned where it must not be drawn (on a floor's spot, inside a harbour-file prop): planned as before, not drawn. */
     mute: false,
@@ -52,7 +53,7 @@ export function buildDepth(o: DepthIn) {
       if (!g.boundingBox) g.computeBoundingBox();
       const b = g.boundingBox!, ox = (b.min.x + b.max.x) / 2, oz = (b.min.z + b.max.z) / 2;
       // a muted prop keeps its mark: the scenes keep off the same ground as before, so none of them moves
-      marks.push({ x, z, r: Math.min(Math.hypot(b.max.x - b.min.x, b.max.z - b.min.z) / 2 * Math.max(sx, sz) + Math.hypot(ox, oz) * Math.max(sx, sz), 30) });
+      if (!dress.nomark) marks.push({ x, z, r: Math.min(Math.hypot(b.max.x - b.min.x, b.max.z - b.min.z) / 2 * Math.max(sx, sz) + Math.hypot(ox, oz) * Math.max(sx, sz), 30) });
       if (!dress.mute) o.dress.add(key, g, x, y, z, yaw, sx, sy, sz, tilt);
       return dress;
     },
@@ -70,7 +71,11 @@ export function buildDepth(o: DepthIn) {
   // the roads as world segments
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
   for (const p of spec.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1] });
-  const nearRoad = (x: number, z: number) => roads.reduce((m, s) => Math.min(m, segDist(x, z, { ...s, r: 0 })), 1e9);
+  // the clean network as drawn (roads.ts): its bends leave the legs above by up to about a metre and a half, so a look keeps off both
+  const net = roadNet(spec.paths).map((p) => p.map(([dx, dz]) => [RING.x + dx, RING.z + dz] as Pt));
+  const nearNet = distanceTo(net);
+  // (the curve is never more than about 1.5 m from the legs, and no check here asks for more than 3.5 m: past 5 m the legs decide)
+  const nearRoad = (x: number, z: number) => { const d = roads.reduce((m, s) => Math.min(m, segDist(x, z, { ...s, r: 0 })), 1e9); return d > 5 ? d : Math.min(d, nearNet(x, z)); };
   const inFlat = (x: number, z: number, pad = 0) => spec.flats.some((f) => Math.hypot((x - f.x) / (f.rx + pad), (z - f.z) / (f.rz + pad)) < 1.1);
   const onCover = (x: number, z: number, pad: number) => o.cover.some((c) => segDist(x, z, c) < c.r + pad);
   const inPlace = (x: number, z: number, pad: number) => spec.places.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + pad);
@@ -84,7 +89,11 @@ export function buildDepth(o: DepthIn) {
     return true;
   };
 
-  // --- the roads: lanterns, kerb stones, fences on the verge, signposts -----------------------------------------------------------
+  // --- the roads, as they were drawn until 2026-11-19: now a DRY pass that draws nothing ----------------------------------------------
+  // It still makes every draw from the floor's random stream that it made, so the places' props, the meadows, the islands and the scenes
+  // after it stay exactly where they were. The roads' props are drawn by `roadside` below, along the clean network (roads.ts).
+  const DRY: Rec = { mute: false, add: () => DRY };
+  { const dress = DRY, glows: { x: number; y: number; z: number; size?: number }[] = [];
   for (const p of spec.paths) {
     let fence = rnd() < 0.35, fenceLeft = 0, side = rnd() < 0.5 ? 1 : -1, sinceLamp = rnd() * 6;
     for (let i = 1; i < p.length; i++) {
@@ -135,6 +144,7 @@ export function buildDepth(o: DepthIn) {
       dress.mute = false;
     }
   }
+  void glows; }
 
   // --- the places, dressed as what they are -------------------------------------------------------------------------------------------
   const ring = (p: { x: number; z: number; r: number }, n: number, from: number, to: number, make: (x: number, z: number, a: number) => void, pad = 0.8, reach = 0.5) => {
@@ -236,6 +246,118 @@ export function buildDepth(o: DepthIn) {
     const dx = (rnd() - 0.5) * 2 * rmax, dz = (rnd() - 0.5) * 2 * rmax, x = RING.x + dx, z = RING.z + dz;
     if (!free(x, z, 0.2, { road: 1.4, inside: 0.5 })) continue;
     put(pebble, x, 0.03, z, 0.12 + rnd() * 0.18, 0.08 + rnd() * 0.1);
+  }
+  // --- the roads' sides (2026-11-19, the user: "lets make road more cleanly and like put them into scenario") ---------------------------
+  // Along the clean network (roads.ts), on a random stream of its own (everything above keeps its draw):
+  // - where a road comes into a place: kerb stones lining both edges for its last 9 m, and a signpost at the mouth;
+  // - where a road ends on another road: a milestone in the corner;
+  // - lantern posts every 15 to 19 m, from side to side;
+  // - a fence on the outer side of every bend (and now and then on a straight), posts every 2 m and rails that follow the curve;
+  // - grass tufts on both verges.
+  // Nothing on a floor's spot (muted, as the props above), on cover, in the tide's flats, past the outline or on another road.
+  {
+    const rr = seeded(4242 + (spec.seed ?? 0));
+    const ok = (x: number, z: number, pad: number, road: number, place?: number) =>
+      geo.beyond(x - RING.x, z - RING.z) <= -1 && !onCover(x, z, pad) && !inFlat(x, z, 1) && nearNet(x, z) >= road && !(place !== undefined && inPlace(x, z, place));
+    const lantern = (x: number, z: number, nx: number, nz: number, side: number, yaw: number) => {
+      dress.mute = blocked(x, z, 0.7);
+      dress.add('wood', cyl(0.09, 0.12, 2.5, 6), x, 0, z).add('wood', box(0.08, 0.08, 0.7).translate(0, 0, 0.3), x, 2.4, z, yaw + (side > 0 ? Math.PI / 2 : -Math.PI / 2));
+      dress.add('lacquer', box(0.26, 0.34, 0.26), x - nx * side * 0.6, 2.05, z - nz * side * 0.6).add('gold', box(0.3, 0.05, 0.3), x - nx * side * 0.6, 2.38, z - nz * side * 0.6);
+      if (!dress.mute) glows.push({ x: x - nx * side * 0.6, y: 2.2, z: z - nz * side * 0.6, size: 1.1 });
+      dress.mute = false;
+    };
+    const tq = new THREE.Quaternion(), kerb = box(0.42, 0.14, 0.3), rail = box(0.06, 0.08, 1), post = box(0.12, 1.0, 0.12);
+    o.own.push(kerb, rail, post);
+    for (const p of net) {
+      const pts: { x: number; z: number; ux: number; uz: number; s: number }[] = [];
+      const total = along(p, 1, (x, z, ux, uz, s) => pts.push({ x, z, ux, uz, s }));
+      if (total < 4) continue;
+      const placeAt = (q: Pt) => spec.places.find((pl) => Math.hypot(pl.x - q[0], pl.z - q[1]) < pl.r + 2.5);
+      const startPlace = placeAt(p[0]), endPlace = placeAt(p[p.length - 1]);
+      // how much the road turns round each point (over 3 m either side), and to which side
+      const bendAt = (i: number) => {
+        const a = pts[Math.max(0, i - 3)], b = pts[Math.min(pts.length - 1, i + 3)];
+        const cross = a.ux * b.uz - a.uz * b.ux;
+        return { turn: Math.acos(Math.max(-1, Math.min(1, a.ux * b.ux + a.uz * b.uz))), outer: cross > 0 ? -1 : 1 };
+      };
+      let side = rr() < 0.5 ? 1 : -1, nextLamp = 4 + rr() * 8, fenceRun = 0, fenceSide = 1;
+      const posts: { x: number; z: number; side: number }[] = [];
+      const flushFence = () => {
+        for (let i = 1; i < posts.length; i++) {
+          const a = posts[i - 1], b = posts[i], L = Math.hypot(b.x - a.x, b.z - a.z);
+          if (L > 2.6 || a.side !== b.side) continue;
+          const yaw = Math.atan2(b.x - a.x, b.z - a.z), mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+          dress.nomark = true;
+          dress.add('plank', rail, mx, 0.5, mz, yaw, 1, 1, L + 0.1).add('plank', rail, mx, 0.82, mz, yaw, 1, 1, L + 0.1);
+          dress.nomark = false;
+        }
+        posts.length = 0;
+      };
+      pts.forEach((q, i) => {
+        const nx = -q.uz, nz = q.ux, yaw = Math.atan2(q.ux, q.uz);
+        const toStart = q.s, toEnd = total - q.s;
+        // kerbs where the road comes into a place
+        if ((startPlace && toStart < 9) || (endPlace && toEnd < 9)) {
+          for (const s of [-1, 1]) for (const f of [0, 0.5]) {
+            const x = q.x + nx * s * 2.15 + q.ux * f, z = q.z + nz * s * 2.15 + q.uz * f;
+            if (!ok(x, z, 0.2, 1.9)) continue;
+            dress.mute = blocked(x, z, 0.3);
+            dress.nomark = true;
+            dress.add(rr() < 0.5 ? 'capstone' : 'stone', kerb, x, 0, z, yaw + (rr() - 0.5) * 0.15, 1, 1 + rr() * 0.35, 1);
+            dress.mute = false;
+            dress.nomark = false;
+          }
+        }
+        // a lantern now and then, from side to side
+        if (q.s >= nextLamp && toEnd > 3) {
+          const x = q.x + nx * side * 3.0, z = q.z + nz * side * 3.0;
+          if (ok(x, z, 0.5, 2.6, 1)) { lantern(x, z, nx, nz, side, yaw); nextLamp = q.s + 15 + rr() * 4; side = -side; }
+          else nextLamp = q.s + 2;
+        }
+        // a fence on the outer side of a bend; now and then a run on a straight
+        const bend = bendAt(i);
+        if (bend.turn > 0.3 && fenceRun <= 0) { if (posts.length) flushFence(); fenceRun = 8; fenceSide = bend.outer; }
+        else if (fenceRun <= 0 && rr() < 0.012) { if (posts.length) flushFence(); fenceRun = 8 + rr() * 10; fenceSide = rr() < 0.5 ? 1 : -1; }
+        if (fenceRun > 0) {
+          fenceRun -= 1;
+          if (i % 2 === 0) {
+            const x = q.x + nx * fenceSide * 3.3, z = q.z + nz * fenceSide * 3.3;
+            if (ok(x, z, 0.3, 2.9, 1) && !blocked(x, z, 0.3)) {
+              dress.add('wood', post, x, 0, z, yaw);
+              posts.push({ x, z, side: fenceSide });
+            } else flushFence();
+          }
+          if (fenceRun <= 0) flushFence();
+        }
+        // grass on the verges
+        for (const s of [-1, 1]) {
+          if (rr() < 0.45) continue;
+          const d = 2.25 + rr() * 0.6, x = q.x + nx * s * d + q.ux * (rr() - 0.5), z = q.z + nz * s * d + q.uz * (rr() - 0.5);
+          if (geo.beach(x - RING.x, z - RING.z) > 0.25 || !ok(x, z, 0.2, 2.1, 0.5)) continue;
+          const sc = 0.7 + rr() * 0.6;
+          tuft.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), tq.setFromAxisAngle(up, rr() * 6.28).clone(), new THREE.Vector3(sc, 0.6 + rr() * 0.7, sc)));
+        }
+      });
+      flushFence();
+      // a signpost at each mouth into a place, a milestone where a road ends on another road
+      for (const [q, pl, u] of [[p[0], startPlace, pts[0]], [p[p.length - 1], endPlace, pts[pts.length - 1]]] as const) {
+        const nx = -u.uz, nz = u.ux, s = rr() < 0.5 ? 1 : -1;
+        if (pl) {
+          const x = q[0] + nx * s * 2.8, z = q[1] + nz * s * 2.8, a = Math.atan2(q[0] - pl.x, q[1] - pl.z);
+          if (pl.kind === 'camp' || !ok(x, z, 0.4, 2.3)) continue;
+          dress.mute = blocked(x, z, 0.5);
+          dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
+          dress.add('gold', box(0.18, 0.05, 0.18), x, 2.3, z);
+          dress.mute = false;
+        } else {
+          const x = q[0] + nx * s * 2.7 - u.ux * 1.5, z = q[1] + nz * s * 2.7 - u.uz * 1.5;
+          if (!ok(x, z, 0.4, 2.3)) continue;
+          dress.mute = blocked(x, z, 0.4);
+          dress.add('capstone', box(0.4, 0.75, 0.3), x, 0, z, Math.atan2(u.ux, u.uz)).add('stone', box(0.5, 0.12, 0.4), x, 0, z, Math.atan2(u.ux, u.uz));
+          dress.mute = false;
+        }
+      }
+    }
   }
   const tint = (g: THREE.BufferGeometry, hex: string) => {
     const nn = g.index ? g.toNonIndexed() : g, col = new THREE.Color(hex), c = new Float32Array(nn.attributes.position.count * 3);

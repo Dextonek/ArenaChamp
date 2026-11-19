@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { along, roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
@@ -138,20 +139,19 @@ function paint(look: WoodLook, land: Land, L: number, extra?: (g: CanvasRenderin
     // the trails: earth with a soft edge and a lighter middle where feet go
     g.lineCap = g.lineJoin = 'round';
     const rgba = (c3: RGB, a: number) => `rgba(${c3[0]},${c3[1]},${c3[2]},${a})`;
-    for (const path of look.paths) {
-      const trace = () => { g.beginPath(); path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz)))); };
-      for (const [w, col, a] of [[4.4, DIRT_EDGE, 0.3], [3.6, DIRT_EDGE, 0.6], [3, DIRT, 0.9], [1.4, DIRT_MID, 0.5]] as [number, RGB, number][]) {
-        g.strokeStyle = rgba(col, a); g.lineWidth = w * ppm; trace(); g.stroke();
-      }
-      for (let i = 1; i < path.length; i++) {
-        const [ax, az] = path[i - 1], [bx, bz] = path[i], len = Math.hypot(bx - ax, bz - az) || 1;
-        for (let s = 0; s < len * 1.5; s++) {
-          const t = rnd(), side = (rnd() - 0.5) * 3, nx = -(bz - az) / len, nz = (bx - ax) / len;
-          g.fillStyle = rnd() < 0.5 ? 'rgba(150,126,92,0.7)' : 'rgba(70,56,40,0.6)';
-          g.beginPath(); g.arc(X(ax + (bx - ax) * t + nx * side), Z(az + (bz - az) * t + nz * side), (0.06 + rnd() * 0.08) * ppm, 0, Math.PI * 2); g.fill();
-        }
-      }
+    // (2026-11-19, "make road more cleanly": the clean network of roads.ts, round bends and no trail doubled beside another; each layer
+    // over all trails at once, so a junction is one piece of ground; the pebbles only at the edges, on a stream of their own.)
+    const net = roadNet(look.paths), prnd = seeded(58 + (look.seed ?? 0));
+    for (const [w, col, a] of [[4.4, DIRT_EDGE, 0.3], [3.6, DIRT_EDGE, 0.6], [3, DIRT, 0.9], [1.4, DIRT_MID, 0.5]] as [number, RGB, number][]) {
+      g.strokeStyle = rgba(col, a); g.lineWidth = w * ppm;
+      for (const path of net) { g.beginPath(); path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz)))); g.stroke(); }
     }
+    for (const path of net) along(path, 1, (dx, dz, ux, uz) => {
+      if (prnd() < 0.5) return;
+      const side = (prnd() < 0.5 ? -1 : 1) * (1.2 + prnd() * 0.4);
+      g.fillStyle = prnd() < 0.5 ? 'rgba(150,126,92,0.65)' : 'rgba(70,56,40,0.55)';
+      g.beginPath(); g.arc(X(dx - uz * side), Z(dz + ux * side), (0.06 + prnd() * 0.07) * ppm, 0, Math.PI * 2); g.fill();
+    });
     // the depth's own (woodDepth.ts): fallen leaves, flower specks, the brooks
     extra?.(g, X, Z, ppm);
     // each place's ground

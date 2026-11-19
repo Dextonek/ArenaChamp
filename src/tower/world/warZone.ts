@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { along, offsetLine, roadNet } from './roads';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
@@ -178,26 +179,29 @@ function paint(look: WarLook, geo: Battlefield, L: number) {
     g.filter = 'none';
     // The roads: a band of trodden earth, wheel ruts, the old paving in two rows of slabs, a few gone.
     g.lineCap = g.lineJoin = 'round';
-    for (const path of look.paths) {
-      const trace = () => { g.beginPath(); path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz)))); };
-      g.strokeStyle = rgb(EARTH, 0.82, 0.8); g.lineWidth = 4.6 * ppm; trace(); g.stroke();
-      for (let i = 1; i < path.length; i++) {
-        const [ax, az] = path[i - 1], [bx, bz] = path[i], len = Math.hypot(bx - ax, bz - az);
-        if (len < 0.5) continue;
-        g.save();
-        g.translate(X(ax), Z(az));
-        g.rotate(Math.atan2(bz - az, bx - ax));
-        for (let s = 0, row = 0; s < len; s += 1.25, row++) for (let k = 0; k < 2; k++) {
-          if (rnd() < 0.14) continue;
-          g.fillStyle = rgb(SLAB, 0.84 + 0.24 * rnd());
-          const off = row & 1 ? 0.3 : 0;
-          g.fillRect((s + 0.06 + off) * ppm, (-1.32 + k * 1.34) * ppm, 1.14 * ppm, 1.22 * ppm);
+    // (2026-11-19, "make road more cleanly": the clean network of roads.ts. The slabs are laid ALONG the curve, each turned to the road,
+    // and the ruts follow it as two lines; leg by leg they broke into stair-steps at every joint. A slab gone now and then (14 % -> 7 %),
+    // on a stream of their own.)
+    const net = roadNet(look.paths), srnd = seeded(91 + (look.seed ?? 0));
+    const trace = (pts: [number, number][]) => { g.beginPath(); pts.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz)))); };
+    g.strokeStyle = rgb(EARTH, 0.82, 0.8); g.lineWidth = 4.6 * ppm;
+    for (const path of net) { trace(path); g.stroke(); }
+    g.strokeStyle = 'rgba(46,40,36,0.45)'; g.lineWidth = 0.16 * ppm;
+    for (const path of net) for (const off of [-1.67, 1.67]) { trace(offsetLine(path, off)); g.stroke(); }
+    for (const path of net) {
+      let row = 0;
+      along(path, 1.28, (dx, dz, ux, uz) => {
+        const stag = row++ & 1 ? 0.3 : 0;
+        for (const k of [-0.68, 0.68]) {
+          if (srnd() < 0.07) continue;
+          g.save();
+          g.translate(X(dx - uz * k + ux * stag), Z(dz + ux * k + uz * stag));
+          g.rotate(Math.atan2(uz, ux));
+          g.fillStyle = rgb(SLAB, 0.86 + 0.2 * srnd());
+          g.fillRect(-0.57 * ppm, -0.61 * ppm, 1.14 * ppm, 1.22 * ppm);
+          g.restore();
         }
-        // the ruts: two dark lines either side of the paving
-        g.fillStyle = 'rgba(46,40,36,0.45)';
-        g.fillRect(0, -1.75 * ppm, len * ppm, 0.16 * ppm); g.fillRect(0, 1.6 * ppm, len * ppm, 0.16 * ppm);
-        g.restore();
-      }
+      }, 0.65);
     }
     // The places: paved rounds with a brass ring at the ridges, works, hill, siege and keep; trodden earth at the camp; ash at the farm.
     for (const p of look.places) {

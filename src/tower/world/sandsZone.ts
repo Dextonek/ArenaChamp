@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { along, roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
@@ -155,27 +156,30 @@ function paint(look: SandsLook, geo: Desert, L: number, extra?: (g: CanvasRender
       }
     }
     // The roads: a band of trodden sand, worn flagstones in running rows along it.
-    for (const path of look.paths) {
-      g.strokeStyle = 'rgba(150,118,86,0.55)';
-      g.lineWidth = 4.4 * ppm;
-      g.lineJoin = 'round';
-      g.beginPath();
-      path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz))));
-      g.stroke();
-      for (let i = 1; i < path.length; i++) {
-        const [ax, az] = path[i - 1], [bx, bz] = path[i], len = Math.hypot(bx - ax, bz - az);
-        if (len < 0.5) continue;
-        g.save();
-        g.translate(X(ax), Z(az));
-        g.rotate(Math.atan2(bz - az, bx - ax));
-        for (let s = 0, row = 0; s < len; s += 1.4, row++) for (let k = 0; k < 2; k++) {
-          if (rnd() < 0.12) continue; // a flag gone: sand shows through
-          g.fillStyle = rgb(ROAD, 0.86 + 0.26 * rnd());
-          const off = row & 1 ? 0.6 : 0;
-          g.fillRect((s + 0.06) * ppm, (-1.5 + k * 1.5 + off * 0.5 - 0.25) * ppm, 1.28 * ppm, 1.32 * ppm);
+    // (2026-11-19, "make road more cleanly": the clean network of roads.ts. The flags are laid ALONG the curve, each turned to the road,
+    // two to a row on a bed of darker sand with a clean edge; they were laid leg by leg and broke into stair-steps at every joint. Fewer
+    // gone (12 % -> 5 %), on a stream of their own.)
+    const net = roadNet(look.paths), frnd = seeded(78 + look.seed);
+    g.lineJoin = 'round';
+    g.lineCap = 'round';
+    for (const [w, col] of [[4.6, 'rgba(150,118,86,0.45)'], [3.5, 'rgba(110,86,64,0.85)']] as const) {
+      g.strokeStyle = col; g.lineWidth = w * ppm;
+      for (const path of net) { g.beginPath(); path.forEach(([dx, dz], i) => (i ? g.lineTo(X(dx), Z(dz)) : g.moveTo(X(dx), Z(dz)))); g.stroke(); }
+    }
+    for (const path of net) {
+      let row = 0;
+      along(path, 1.45, (dx, dz, ux, uz) => {
+        const stag = row++ & 1 ? 0.35 : -0.35;
+        for (const k of [-0.76, 0.76]) {
+          if (frnd() < 0.05) continue; // a flag gone: sand shows through
+          g.save();
+          g.translate(X(dx - uz * k + ux * stag * 0.3), Z(dz + ux * k + uz * stag * 0.3));
+          g.rotate(Math.atan2(uz, ux));
+          g.fillStyle = rgb(ROAD, 0.88 + 0.22 * frnd());
+          g.fillRect(-0.64 * ppm, -0.66 * ppm, 1.28 * ppm, 1.32 * ppm);
+          g.restore();
         }
-        g.restore();
-      }
+      }, 0.7);
     }
     // the depth's own (sandsDepth.ts): drifts in the rocks' lee, pebbles, the oasis pools, the dig's grid
     extra?.(g, X, Z, ppm);
