@@ -12,7 +12,7 @@ import { KEY_DAMAGE, KEY_RADIUS, KEY_RANGE, KEY_SPEED, KEY_WIND, doorPath, type 
 
 /**
  * Key Toss (door kit v5, Q: a skillshot that goes through doors). He draws a brass key out at his white-gloved hand over the 0.3 s
- * wind-up, turning faster, and throws it as a real bolt (`ctx.projectile`: 9 m from him, 22 m/s, radius 0.3): 78 damage and a small
+ * wind-up, turning faster, and throws it as a real bolt (`ctx.projectile`: 9 m from him, 22 m/s, radius 0.3): 88 damage and a small
  * knock. The key flies lengthways and turns about its length, so its teeth flash; a brass gleam trails it. It reaches 6 m at 0.57 s.
  *
  * Doors: a bolt that flies into a door comes out of its pair, going the same way (the projectile system's `ctx.doors()`), his own

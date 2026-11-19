@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wick's doors fixed</title>
+<title>Wick balance fix</title>
 <style>
 :root { --bg:#f7f4ee; --card:#fff; --ink:#22201c; --dim:#6d675d; --line:#e2dccf; --brass:#b8862b; --red:#b33a2e; --blue:#2f6db3; --band:#e8f1e4; --bar:#b8862b; --bad:#c9c2b4; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#16140f; --card:#211e18; --ink:#eee8dc; --dim:#a39b8c; --line:#3a352c; --band:#1f2c1d; --bad:#4a4438; } }
@@ -31,8 +31,8 @@ th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right;
 </head>
 <body>
 <main>
-<h1>Wick: the CPU stops shooting into his own doors</h1>
-<p class="sub">Fight simulator, Wick against the six benchmark heroes, 2026-11-19. Target: 40–60% wins (shaded).</p>
+<h1>Wick: from 30% to 53%</h1>
+<p class="sub">Fight simulator, Wick against the six benchmark heroes, 2026-11-19. Target: 40–60% wins (shaded). Two fixes: the CPU stops shooting into his own doors (about 30% → about 40%), then Key Toss 78 → 88 damage (→ 53%).</p>
 
 <h2>What was wrong</h2>
 <div class="diagrams">
@@ -47,7 +47,7 @@ th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right;
       <text x="160" y="160" font-size="12" text-anchor="middle" fill="var(--dim)">the key enters door 1, leaves door 2: a miss</text>
       <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--red)"/></marker></defs>
     </svg>
-    <figcaption><b>Before.</b> His first door went 2.2 m in front of him, straight on his line of fire. About a third of his keys and darts flew into it and came out of the other door.</figcaption>
+    <figcaption><b>Before.</b> His first door went 2.2 m in front of him, straight on his line of fire. His key hit 62% of the time; in a test where he placed no doors at all, 73%. The doors were costing him hits.</figcaption>
   </figure>
   <figure class="card">
     <svg viewBox="0 0 320 180" role="img" aria-label="After: the first door stands beside Wick, the line to the enemy is clear">
@@ -58,13 +58,19 @@ th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right;
       <rect x="250" y="122" width="12" height="40" rx="2" fill="var(--red)"/><text x="230" y="150" font-size="12" text-anchor="end" fill="var(--ink)">door 2</text>
       <defs><marker id="b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--brass)"/></marker></defs>
     </svg>
-    <figcaption><b>After.</b> The first door goes to his side. If a door would still swallow a shot, he waits and steps until the line is clear.</figcaption>
+    <figcaption><b>After.</b> The first door goes to his side. If a door (even one still rising) would swallow a shot, he waits and steps until the line is clear. His key now hits 72–73%, as if the doors were not in his way.</figcaption>
   </figure>
 </div>
 
+<h2>In the game</h2>
+<figure class="card" style="margin:12px 0">
+<img src="wick-doors-2026-11-19.jpg" alt="Three CPU duels, Wick against Brannoc: his first door rises beside him, off the line to Brannoc; then the second door at Brannoc makes the pair." style="width:100%;height:auto;border-radius:8px;display:block">
+<figcaption>Three real CPU duels against Brannoc (Night Temple, Battlefield, Frost). Left: his first door rises beside him, off the line to Brannoc (the red strip is Brannoc's charge). Right: the second door goes at Brannoc and makes the pair. In 22 first doors over every arena, all 22 stood to his side and none in a wall. A rare shot still slips through a door (one throw in these pictures did).</figcaption>
+</figure>
+
 <h2>Win rate, step by step</h2>
 <div class="card" id="bars"></div>
-<p class="sub">The dark line on each bar is how far chance alone can move it (more fights, shorter line). His numbers (HP, damage, cooldowns) are unchanged: only how the CPU plays him.</p>
+<p class="sub">The dark line on each bar is how far chance alone can move it (more fights, shorter line). The CPU fixes alone settle him at about 40%, the very edge of the band; the one number change puts him near the middle.</p>
 
 <h2>How often his key hits</h2>
 <div class="card">
@@ -73,22 +79,23 @@ th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right;
 <tr><td>Before</td><td>6.3</td><td>62%</td></tr>
 <tr><td>Test: never places a door</td><td>6.9</td><td>73%</td></tr>
 <tr><td>Holds a shot his door would swallow</td><td>6.1</td><td>71%</td></tr>
-<tr><td><b>And the first door to his side (now)</b></td><td>6.3</td><td><b>72%</b></td></tr>
+<tr><td>And the first door to his side</td><td>6.3</td><td>72%</td></tr>
+<tr><td><b>Now (also rising doors counted, key 88)</b></td><td>6.0</td><td><b>73%</b></td></tr>
 </table>
 </div>
 
 <h2>Against each benchmark hero, now</h2>
 <div class="card">
 <table>
-<tr><th>Foe</th><th>Before (16 fights)</th><th>Now (32 fights)</th></tr>
-<tr><td>Brannoc</td><td>56%</td><td>69%</td></tr>
+<tr><th>Foe</th><th>Before (16 fights)</th><th>Now (64 fights)</th></tr>
+<tr><td>Brannoc</td><td>56%</td><td>77%</td></tr>
+<tr><td>Kaia</td><td>19%</td><td>55%</td></tr>
+<tr><td>Sirix</td><td>19%</td><td>55%</td></tr>
+<tr><td>Isolde</td><td>31%</td><td>50%</td></tr>
 <tr><td>Cantor</td><td>44%</td><td>44%</td></tr>
-<tr><td>Sirix</td><td>19%</td><td>44%</td></tr>
-<tr><td>Kaia</td><td>19%</td><td>41%</td></tr>
-<tr><td>Isolde</td><td>31%</td><td>38%</td></tr>
-<tr><td>Oblivion</td><td>19%</td><td>31%</td></tr>
+<tr><td>Oblivion</td><td>19%</td><td>38%</td></tr>
 </table>
-<p class="sub" style="margin:8px 0 0">One foe at 16 or 32 fights swings by ±15–25 points; only the total is firm.</p>
+<p class="sub" style="margin:8px 0 0">One foe at 16 or 64 fights swings by ±12–25 points; only the total is firm.</p>
 </div>
 </main>
 <script>
@@ -96,7 +103,9 @@ const runs = [
   ['Before', 'three runs pooled, 288 fights', 29.5, 5.3, false],
   ['Test: no doors at all', '192 fights', 37.5, 6.8, false],
   ['Holds swallowed shots', '192 fights', 39.6, 6.9, false],
-  ['And first door to his side', 'now, 192 fights', 44.3, 7.0, true],
+  ['And first door to his side', 'three runs pooled, 576 fights', 40.8, 4.0, true],
+  ['Rising doors counted too', '192 fights', 39.1, 6.9, false],
+  ['Key Toss 78 → 88 (now)', 'two runs pooled, 384 fights', 52.9, 5.0, true],
 ];
 const box = document.getElementById('bars');
 for (const [lab, sub, pct, ci, ok] of runs) {

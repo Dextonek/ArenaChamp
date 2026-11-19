@@ -10,6 +10,7 @@ import {
   DOOR_APART, DOOR_LIFE, DOOR_MIN, DOOR_RANGE, DOOR_RISE, bindList, bookOf, newDoor, placedDoors, raiseDoor, syncBolts, type DoorRec,
 } from '../trait';
 import { fightNow } from '../../../fightClock';
+import { contains } from '../../../obstacles';
 
 /**
  * Door (door kit v5, W: a door at a spot, two charges). A brass ring and a column of warm light mark a spot (9 m, at least 1.2 m from
@@ -41,6 +42,8 @@ const FOOT_R = 0.9;
 /** How near him the CPU's first door goes. */
 const CPU_NEAR = 2.2;
 const CPU_FRESH = 250;
+/** The duel ring's middle (`RING` in src/duel.ts): the CPU's first door goes to the side nearer it. */
+const RING_MID = { x: 0, z: 7 };
 
 export class WickDoorFx implements Effect {
   readonly group = new THREE.Group();
@@ -107,11 +110,27 @@ export class WickDoorFx implements Effect {
     if (len < 0.5) { dx = Math.sin(ctx.aim); dz = Math.cos(ctx.aim); len = DOOR_MIN; } else { dx /= len; dz /= len; }
     len = THREE.MathUtils.clamp(len, DOOR_MIN, DOOR_RANGE);
     const b = bookOf(ctx.caster), live = placedDoors(b);
-    // The CPU's first door goes close to him (the trait's aiHold marked this cast).
-    // Beside him, a quarter turn off the enemy's line, so the door does not stand in his own line of fire.
+    // The CPU's first door goes close to him (the trait's aiHold marked this cast), beside him, a quarter turn off the enemy's line,
+    // so the door does not stand in his own line of fire: of the two sides, the one whose middle is clear of walls (a hero walks into a
+    // door from any side, so only its middle counts) and nearer the ring's middle; with both in a wall, the same half-turns back
+    // (135 degrees off the enemy's line); with all four in walls, straight at the enemy, as before.
     if (live.length === 0 && fightNow() - b.cpuAt < CPU_FRESH) {
       len = Math.min(len, CPU_NEAR);
-      [dx, dz] = [dz, -dx];
+      const walls = ctx.obstacles?.() ?? [];
+      const pick = (turn: number) => {
+        const c = Math.cos(turn), sn = Math.sin(turn);
+        let best: [number, number] | null = null, bd = Infinity;
+        for (const sign of [1, -1]) {
+          const ux = dx * c + dz * sn * sign, uz = dz * c - dx * sn * sign;
+          const px = s.x + ux * len, pz = s.z + uz * len;
+          if (walls.some((o) => contains(o, px, pz) || contains(o, px + ux * 0.4, pz + uz * 0.4))) continue;
+          const dm = Math.hypot(px - RING_MID.x, pz - RING_MID.z);
+          if (dm < bd) { bd = dm; best = [ux, uz]; }
+        }
+        return best;
+      };
+      const side = pick(Math.PI / 2) ?? pick((Math.PI * 3) / 4);
+      if (side) [dx, dz] = side;
     }
     let x = s.x + dx * len, z = s.z + dz * len;
     // The second door keeps its distance from the first, or the pair is a doorway to the same spot.

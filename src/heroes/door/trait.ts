@@ -9,7 +9,7 @@ import { fightNow } from '../../fightClock';
 import { bankPath, type Obstacle } from '../../obstacles';
 
 /** Key Toss (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
-export const KEY_DAMAGE = 78;
+export const KEY_DAMAGE = 88; // 78 until 2026-11-19 (with the CPU's door habits fixed he still won only about 40%)
 export const KEY_RANGE = 9;
 export const KEY_SPEED = 22;
 export const KEY_WIND = 0.3;
@@ -397,8 +397,14 @@ export function doorPath(start: { x: number; z: number }, dir: { x: number; z: n
  */
 function shotWasted(b: DoorBook, t: TraitView, range: number) {
   const en = t.enemy();
-  const doors = b.list;
-  if (!en || !doors || doors.length === 0) return false;
+  if (!en || !b.list) return false;
+  // The doors that stand, and a pair whose second door is still rising: it stands before a shot thrown now gets there.
+  const doors: BoltDoor[] = [...b.list];
+  const placedNow = placedDoors(b);
+  if (placedNow.length === 2 && standingDoors(b).length < 2) {
+    doors.push({ ax: placedNow[0].x, az: placedNow[0].z, bx: placedNow[1].x, bz: placedNow[1].z, r: DOOR_R });
+  }
+  if (doors.length === 0) return false;
   const me = t.self().group.position, ep = en.group.position;
   const dx = ep.x - me.x, dz = ep.z - me.z, dist = Math.hypot(dx, dz);
   if (dist < 1e-3) return false;
@@ -456,8 +462,9 @@ export const doorTrait: Trait = {
    * The CPU casts Door only with fewer than two doors standing. `cpuAt` tells the spell the CPU is casting (this runs just before its
    * cast), so the first door goes near him, to his side, and the second where it aims, at the enemy. Slam only with a door of his within
    * 1.5 m of the enemy. The Grand Lobby only with the enemy within 9 m. Key Toss (and the dart, `aiHoldAttack`) not while one of his own
-   * doors would swallow the shot (`shotWasted`): until 2026-11-19 his first door stood on his line of fire and took a third of his keys
-   * away, and he won about 30% in the simulator; with these two habits 44%.
+   * doors would swallow the shot (`shotWasted`, a pair still rising counted). Until 2026-11-19 his first door stood on his line of
+   * fire: his keys hit 62% of the time (73% with no doors at all) and he won about 30% in the simulator; with these habits his keys hit
+   * 72% and he won about 40%, and Key Toss 78 -> 88 took him to 53%.
    */
   aiHold(t, slot, dist) {
     const b = booksOf(t);

@@ -16,7 +16,7 @@ const kit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'key toss', name: 'Key Toss', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'A brass key (9 m): 78 damage. It flies into a door and out of its pair, going the same way, and through all four doors of the Grand Lobby.',
+      blurb: 'A brass key (9 m): 88 damage. It flies into a door and out of its pair, going the same way, and through all four doors of the Grand Lobby.',
       icon: icons.Q,
     },
     {

@@ -21,7 +21,7 @@ brass, polished dark wood, the red of his livery, white gloves, warm light from 
   there would be hit by every bolt the door passes (an enemy's 50 would break it at once). Aim at the bell, or use a spell, to break a door. Its death is
   told to his client with `noteOwner('broke', id)`; a broken door leaves planks for 0.7 s.
 - Q **Key Toss** (`keyToss.ts`, 'key toss'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up (a key drawn out at a white glove, turning faster), 9 m, 22 m/s,
-  radius 0.3: 78, knock 1.5. A key flying lengthways, rolling about its length, with a brass gleam. Reaches 6 m at 0.57 s. Telegraph: a line per leg for the first
+  radius 0.3: 88 (78 until 2026-11-19), knock 1.5. A key flying lengthways, rolling about its length, with a brass gleam. Reaches 6 m at 0.57 s. Telegraph: a line per leg for the first
   three legs, `boltWidth(0.3)` wide; `doorPath` (a pure function of `sentFrom`, the aim, `ctx.doors()` and the obstacles, the same test as the projectile system)
   gives the legs, so the line goes to the door and on from the far door. Where no bolt flies (his screen online) the key is drawn along the same legs. A flash on
   the door it goes in and the one it comes out of when the real bolt's `doorLock` turns up (it does not tell an enemy's bolt: see below).
