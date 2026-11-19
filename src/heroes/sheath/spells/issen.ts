@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../../effects/parts';
+import { StarBurst, clearScreenFx, createScreenFx } from '../../../effects/parts';
 import type { Look } from '../../framework/blocks';
 import { spell, type Cast } from '../../framework/spell';
 import { C, Q } from '../numbers';
@@ -106,9 +106,9 @@ class IssenLook implements Look<null> {
     this.glint.set(from, 0, 0);
     this.crouch.mesh.visible = a < 0.1;
     this.crouch.material.opacity = 0.8 * Math.max(0, 1 - a / 0.1);
-    const tail = reach * clamp01((t - GO_T - 0.04) / 0.2) ** 1.5;
-    this.streak.set(from, dir, tail, Math.min(front, reach), 0.42 * (1 - 0.6 * clamp01(a / 0.3)), 0.85, a < 0.3 ? 1 - clamp01((a - 0.12) / 0.18) : 0);
-    this.burn.set(from, dir, 0, Math.min(front, reach), 0.7, LINE_Y, 0.55 * (1 - clamp01(a / 0.3)));
+    const tail = reach * clamp01((t - GO_T - 0.08) / 0.24) ** 1.5;
+    this.streak.set(from, dir, tail, Math.min(front, reach), 0.55 * (1 - 0.5 * clamp01(a / 0.3)), 0.85, a < 0.32 ? 1 - clamp01((a - 0.14) / 0.18) : 0);
+    this.burn.set(from, dir, 0, Math.min(front, reach), 0.9, LINE_Y, 0.6 * (1 - clamp01(a / 0.32)));
     // the line fades into the cut
     const gl = 1 - clamp01(a / 0.12);
     this.guide.set(from, dir, 0.3, reach, 0.08, LINE_Y + 0.02, 0.9 * gl);
@@ -145,8 +145,7 @@ class IssenLook implements Look<null> {
   }
 
   after(c: Cast<null>, t: number) {
-    // One short impact frame at the flash, small: a single frame, black with the figures in steel.
-    this.screen.impact = impactFrameAt(t, GO_T, [1], 0.03);
+    // No full-screen frame (the ultimate's only): a pulse at the screen's edges.
     this.screen.chroma = t >= GO_T ? 0.5 * Math.exp(-(t - GO_T) * 14) : 0;
     c.shake *= 0.85;
     if (t >= DONE_T) {

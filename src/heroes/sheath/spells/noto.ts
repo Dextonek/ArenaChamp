@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../../effects/parts';
+import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../../effects/parts';
 import type { Enemy } from '../../../effects/common';
 import type { Look } from '../../framework/blocks';
 import { spell, type Cast } from '../../framework/spell';
 import { C, W } from '../numbers';
-import { Flecks, GOLD, INK, PAPER, STEEL, Slit, clamp01, easeOut, flatRing } from '../parts';
+import { CINNABAR, Flecks, GOLD, INK, PAPER, STEEL, Slit, clamp01, easeOut, flatRing } from '../parts';
 
 /**
  * Noto, The Click (Kagen's W). No aim: he slides the blade home. A ring of 3.5 m shows round where he stands for 0.5 s, then
@@ -39,6 +39,7 @@ class NotoLook implements Look<null> {
   private ring = flatRing(PAPER, 0.018, false, 4);
   private under = flatRing(INK, 0.05, false, 3);
   private pulse = flatRing(PAPER, 0.03, true, 5);
+  private pulse2 = flatRing(CINNABAR, 0.05, false, 5);
   private guard = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.17, 40, 1, -1.15, 2.3).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: PAPER.clone(), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
   private tickMat = new THREE.MeshBasicMaterial({ color: PAPER.clone(), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
   private ticks = new THREE.Group();
@@ -72,7 +73,7 @@ class NotoLook implements Look<null> {
       this.ticks.add(m);
     }
     this.ticks.visible = false;
-    group.add(this.under.mesh, this.ring.mesh, this.ticks, this.guard, this.pulse.mesh, this.hip.mesh, this.clickStar.mesh, this.shock.mesh, this.flecks.group);
+    group.add(this.under.mesh, this.ring.mesh, this.ticks, this.guard, this.pulse.mesh, this.pulse2.mesh, this.hip.mesh, this.clickStar.mesh, this.shock.mesh, this.flecks.group);
     for (let f = 0; f < MAX_FOES; f++) {
       const holder = new THREE.Group();
       holder.visible = false;
@@ -91,7 +92,7 @@ class NotoLook implements Look<null> {
   reset(c: Cast<null>) {
     clearScreenFx(this.screen);
     this.clicked = false;
-    for (const m of [this.ring, this.under, this.pulse]) m.mesh.visible = false;
+    for (const m of [this.ring, this.under, this.pulse, this.pulse2]) m.mesh.visible = false;
     this.ticks.visible = false;
     this.guard.visible = false;
     this.hip.set(c.from, 0, 0);
@@ -162,6 +163,11 @@ class NotoLook implements Look<null> {
     this.pulse.mesh.position.set(from.x, 0.06, from.z);
     this.pulse.mesh.scale.setScalar(R_OUT + 0.15 + 0.7 * q);
     this.pulse.material.opacity = 0.85 * (1 - q) * (1 - q);
+    const q2 = easeOut((a - 0.03) / 0.3);
+    this.pulse2.mesh.visible = a > 0.03 && a < 0.33;
+    this.pulse2.mesh.position.set(from.x, 0.058, from.z);
+    this.pulse2.mesh.scale.setScalar(R_OUT + 0.05 + 0.5 * q2);
+    this.pulse2.material.opacity = 0.9 * (1 - q2) * (1 - q2);
     this.shock.set(this.v1.set(from.x, 0, from.z), 0.8 + (W.radius + 0.4) * q, 0.05 * (1 - q) * (1 - q));
     // the ring settles back and goes out
     const go = 1 - clamp01(a / 0.25);
@@ -203,8 +209,7 @@ class NotoLook implements Look<null> {
   }
 
   after(c: Cast<null>, t: number) {
-    // One frame of ink at the click: black, he and the cut ones in cinnabar.
-    this.screen.impact = impactFrameAt(t, CLICK_T, [1], 0.035);
+    // No full-screen frame (the ultimate's only): a pulse at the screen's edges.
     this.screen.chroma = t >= CLICK_T ? 0.45 * Math.exp(-(t - CLICK_T) * 12) : 0;
     c.shake *= 0.85;
     if (t >= DONE_T) {
