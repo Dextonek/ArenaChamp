@@ -35,14 +35,14 @@ Theme `sheath`, icon stem `kagen`, faction `loners`, assassin, melee, 700 HP, ac
 - [x] The sheet's table: per spell its key, name, cooldown, rule, and the answer with its arithmetic (rule 4).
 - [x] Which block each spell is (`src/heroes/framework/blocks.ts`): bolt, circle, lane, sure hit, zone; and what is new code.
 - [x] What the CPU does with each spell, and against it.
-- [ ] **The user's yes to the kit.**
+- [x] **The user's yes to the kit.** (2026-11-19: "Yes, build the kit")
 
 ## Gate 4: spells
-- [ ] `numbers.ts` from the sheet; the spells on the blocks (`spells/`); the look of each (a class in place of the sketch).
-- [ ] The passive (`trait.ts`); the icons (`pipeline/icons/vectorcraft/draw/kagen.py`, `make.py kagen`); the portrait
+- [x] `numbers.ts` from the sheet; the spells on the blocks (`spells/`); the look of each (a class in place of the sketch).
+- [x] The passive (`trait.ts`); the icons (`pipeline/icons/vectorcraft/draw/kagen.py`, `make.py kagen`); the portrait
       (`icons.ts`) drawn from the agreed model.
-- [ ] On the workbench: every spell's reach and timing drawn on the floor match the sheet.
-- [ ] `npx tsc --noEmit -p .` and `npm run build`.
+- [x] Every spell's reach, timing and damage match the sheet, checked in real duels (`pipeline/tools/kagen-shots.js` prints the foe's HP: Q 32, W 72 with three marks, E 30, R 144 off the line).
+- [x] `npx tsc --noEmit -p .` and `npm run build`.
 - [ ] **One picture a spell from the game camera; the user's yes.**
 
 ## Gate 5: plays

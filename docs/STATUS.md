@@ -1,6 +1,6 @@
 # Status
 
-## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look and kit agreed; gate 4 (the spells) in progress; a draft, NOT live
+## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look and kit agreed; gate 4 (the spells) built and shown, waiting on the user's yes; a draft, NOT live
 
 The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
 to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts leave marks that only open when he sheathes.
@@ -22,8 +22,13 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
 - **Gate 4 in progress:** the rules are built and proven (commit 2fe6b45e: `src/heroes/sheath/` numbers, the four spells on the blocks,
   the passive with marks, the click's opening, the parry and World Sever's opening, the CPU's `aiHold` / `enemyGoal`); pictures with
   `python pipeline/tools/page-shots.py pipeline/tools/kagen-shots.js docs/spells/kagen --page "/?drafts=1" --browser msedge`.
-  Three helpers in worktrees draw the looks (Issen, Noto and the marks on the body; Senbon and Sekai-giri from the tool spells;
-  the icons and the portrait); their branches are merged here when done. **Next:** merge, one picture a spell, the user's yes.
+  The looks are drawn and merged (Issen, Noto and the cut marks on the body; Senbon and Sekai-giri cut down from the tool spells;
+  the icons and the portrait). Pictures `docs/spells/kagen/*.jpg` (Frost arena), page `docs/heroes/new/sheath-gate4.html`. Self-test of
+  the four spells clean; 15 CPU fights, no errors (9 won, before any tuning). Only Sekai-giri has a full-screen impact frame.
+- **The icons are a stand-in export:** VectorCraft is not on this computer; on the one that has it, run
+  `python pipeline/icons/vectorcraft/make.py kagen` to export `public/icons/spells/kagen-*.svg` properly (the command files are committed).
+- **Waiting on the user:** yes to the spells (gate 4). **Next:** gate 5, balance with `python pipeline/sim/sim.py hero Kagen --drafts --browser msedge`
+  (40-60% over at least 96 fights), the Raid's first boss, a clip of a CPU duel.
 
 ## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
 
