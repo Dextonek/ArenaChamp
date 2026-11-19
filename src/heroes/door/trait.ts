@@ -6,6 +6,7 @@ import type { BoltDoor } from '../../effects/projectile';
 import type { SummonUnit } from '../../effects/summon';
 import type { CastContext } from '../../effects/targeting';
 import { fightNow } from '../../fightClock';
+import { bankPath, type Obstacle } from '../../obstacles';
 
 /** Key Toss (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
 export const KEY_DAMAGE = 78;
@@ -342,6 +343,75 @@ function booksOf(t: TraitView) {
   return doorBooks.get(t.self());
 }
 
+/** One straight stretch of a key's way. */
+export interface KeyLeg { x1: number; z1: number; x2: number; z2: number; len: number }
+
+/**
+ * The way a bolt flies from `start` along `dir` for `range` m with these doors and walls: straight to a wall (it stops there) or into the
+ * first door whose reach (`r`) it touches, then on from the far door's middle, the same way, with what range it has left (the jump costs
+ * none, as in the projectile system). A door it has been through is not entered again.
+ */
+export function doorPath(start: { x: number; z: number }, dir: { x: number; z: number }, range: number, doors: readonly BoltDoor[], obstacles: readonly Obstacle[]): KeyLeg[] {
+  const l = Math.hypot(dir.x, dir.z) || 1, ux = dir.x / l, uz = dir.z / l;
+  const legs: KeyLeg[] = [];
+  const used = new Set<BoltDoor>();
+  let x = start.x, z = start.z, left = range;
+  for (let guard = 0; guard < 6 && left > 1e-3; guard++) {
+    // Where a wall stops it on this stretch.
+    const wall = bankPath({ x, z }, { x: ux, z: uz }, left, 0, obstacles);
+    const end = wall[wall.length - 1];
+    const reach = Math.hypot(end.x - x, end.z - z);
+    // The first door whose reach it enters before that.
+    let best: { t: number; d: BoltDoor; inA: boolean } | null = null;
+    for (const d of doors) {
+      if (used.has(d)) continue;
+      for (const inA of [true, false]) {
+        // It enters this end's reach and comes out of the other end.
+        const wx = (inA ? d.ax : d.bx) - x, wz = (inA ? d.az : d.bz) - z;
+        const proj = wx * ux + wz * uz, perp2 = wx * wx + wz * wz - proj * proj;
+        if (perp2 > d.r * d.r) continue;
+        const half = Math.sqrt(d.r * d.r - perp2);
+        const t0 = Math.max(0, proj - half);
+        if (proj + half < 0 || t0 > reach) continue;
+        if (!best || t0 < best.t) best = { t: t0, d, inA };
+      }
+    }
+    if (!best) {
+      legs.push({ x1: x, z1: z, x2: end.x, z2: end.z, len: reach });
+      break;
+    }
+    const ex = x + ux * best.t, ez = z + uz * best.t;
+    legs.push({ x1: x, z1: z, x2: ex, z2: ez, len: best.t });
+    left -= best.t;
+    used.add(best.d);
+    // Out of the other door's middle.
+    x = best.inA ? best.d.bx : best.d.ax;
+    z = best.inA ? best.d.bz : best.d.az;
+  }
+  return legs;
+}
+
+/**
+ * The CPU: a bolt of his, shot straight at the enemy now, flies into one of his doors before it reaches the enemy and comes out
+ * somewhere it passes nowhere near him (his own door beside him swallows the shot). A shot that a door carries ONTO the enemy is fine.
+ */
+function shotWasted(b: DoorBook, t: TraitView, range: number) {
+  const en = t.enemy();
+  const doors = b.list;
+  if (!en || !doors || doors.length === 0) return false;
+  const me = t.self().group.position, ep = en.group.position;
+  const dx = ep.x - me.x, dz = ep.z - me.z, dist = Math.hypot(dx, dz);
+  if (dist < 1e-3) return false;
+  const legs = doorPath(me, { x: dx, z: dz }, range, doors, []);
+  if (legs.length < 2 || legs[0].len >= dist - 0.6) return false;
+  for (let i = 1; i < legs.length; i++) {
+    const L = legs[i], lx = L.x2 - L.x1, lz = L.z2 - L.z1, l2 = lx * lx + lz * lz || 1;
+    const k = Math.max(0, Math.min(1, ((ep.x - L.x1) * lx + (ep.z - L.z1) * lz) / l2));
+    if (Math.hypot(L.x1 + lx * k - ep.x, L.z1 + lz * k - ep.z) < 0.9) return false;
+  }
+  return true;
+}
+
 /**
  * Wick, the Doorman (controller, ranged). Passive This Way, Please: two doors at a time, placed with Door. Anyone who walks into one
  * leaves by the other, and a bolt of either side that flies into one comes out of the other, going the same way. A door has 40 HP.
@@ -384,8 +454,10 @@ export const doorTrait: Trait = {
   },
   /**
    * The CPU casts Door only with fewer than two doors standing. `cpuAt` tells the spell the CPU is casting (this runs just before its
-   * cast), so the first door goes near him and the second where it aims, at the enemy. Slam only with a door of his within 1.5 m of the
-   * enemy. The Grand Lobby only with the enemy within 9 m.
+   * cast), so the first door goes near him, to his side, and the second where it aims, at the enemy. Slam only with a door of his within
+   * 1.5 m of the enemy. The Grand Lobby only with the enemy within 9 m. Key Toss (and the dart, `aiHoldAttack`) not while one of his own
+   * doors would swallow the shot (`shotWasted`): until 2026-11-19 his first door stood on his line of fire and took a third of his keys
+   * away, and he won about 30% in the simulator; with these two habits 44%.
    */
   aiHold(t, slot, dist) {
     const b = booksOf(t);
@@ -402,7 +474,13 @@ export const doorTrait: Trait = {
       return !standingDoors(b, now).some((d) => Math.hypot(d.x - p.x, d.z - p.z) <= SLAM_RADIUS);
     }
     if (slot === 3) return dist > LOBBY_RANGE;
+    if (slot === 0) return !!b && shotWasted(b, t, KEY_RANGE);
     return false;
+  },
+  /** The CPU holds a dart its own door would swallow (as Key Toss above). */
+  aiHoldAttack(t) {
+    const b = booksOf(t);
+    return !!b && shotWasted(b, t, 6);
   },
   /** The CPU's way out: an enemy within 3 m (the traits cannot see a kit's `melee`, so this stands for a melee enemy) and a door within 4 m of him that leads far from it: walk into it. */
   aiGoal(t) {

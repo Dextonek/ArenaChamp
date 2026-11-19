@@ -3,6 +3,20 @@
 
 
 
+## Wick's CPU fixed: 30% -> 44% (2026-11-19), done, not pushed, not live
+
+The user: "Yes, fix Wick". The simulator showed Wick short on damage (22.7 a second dealt against 25-28 for Pip, Fenna, Nyx; damage taken
+the same). A test with the CPU never placing doors won MORE (37.5% against about 29.5% pooled over 288 fights): the CPU's first door went
+2.2 m in front of him, on his own line of fire, and his keys and darts flew into it and out of the far door (key hits 62%, 73% without
+doors). Two CPU habits, no number changed (`src/heroes/door/trait.ts`, `spells/wickDoor.ts`):
+- the first door goes 2.2 m to his side (a quarter turn off the way to the enemy);
+- Key Toss (`aiHold`) and the dart (`aiHoldAttack`) are held while a shot straight at the enemy would be swallowed by his own door
+  (`shotWasted`, using `doorPath`, which moved from `spells/keyToss.ts` into `trait.ts`).
+Simulator, 192 fights each: holds only 39.6%, both 44.3% (Brannoc 69, Cantor 44, Sirix 44, Kaia 41, Isolde 38, Oblivion 31). Page
+`docs/balance/wick-2026-11-19.html`; runs `pipeline/sim/out/wick-base|wick-nodoor|wick-hold|wick-side.json`. News item in the 2026-11-19
+release. `pipeline/designs/kit-door.md` updated (also the Grand Lobby wind-up, 1.05 s). Not done: the Rust model refresh
+(`python pipeline/rustsim/refresh.py`, about 15 min).
+
 ## Spell rules sheet and answer check (2026-11-19): built; walk reading agreed; every spell passes it
 
 The user: "Start with 1 and 2" (changes 1 and 2 of `docs/knowledge/moba-spell-mechanics.md`).
@@ -19,7 +33,7 @@ The user: "Start with 1 and 2" (changes 1 and 2 of `docs/knowledge/moba-spell-me
   and Senbon show their zone from the cast (no timing change). Marked not judged with reasons: Null Zone, Flood (lingering), Phase Step
   (placement); Mop Bucket judged as the 16 m/s bolt it is; Umbral Cut by its real 0.7 m walk.
 - **Simulator after the change (96 fights each, `sim.py hero Nyx Fenna Pip Wick`):** Pip 51%, Fenna 49%, Nyx 44% (inside 40-60);
-  **Wick 28%, but 29% with his old timing too: he was already weak, a separate balance job.** The Rust model was not refreshed
+  Wick 28%, 29% with his old timing too (fixed since: see the Wick section above, now 44%). The Rust model was not refreshed
   (`python pipeline/rustsim/refresh.py` after hero changes); the fight prints of these four heroes will differ.
 - **Not done from change 1:** the CPU does not read the sheet yet; the aim does not draw the stop rule beyond what it drew before.
 

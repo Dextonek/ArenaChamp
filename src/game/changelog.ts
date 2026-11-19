@@ -54,6 +54,11 @@ export const CHANGELOG: Release[] = [
         title: 'Every warning long enough to walk out of',
         text: 'Every spell was checked: a warning now always gives you time to react and walk out. Nyx’s Umbral Cut winds up 0.43 s (was 0.35), Fenna’s Uproot bursts after 1 s (was 0.6), Pip’s letter leaves his hand after 0.29 s (was 0.25) and Wick’s Grand Lobby doors rise after 1.05 s (was 0.8). Zephyr’s Skyward and Marin’s Coral Spire now show their circle from the moment they are cast.',
       },
+      {
+        tag: 'CPU',
+        title: 'The CPU’s Wick stops shooting into his own doors',
+        text: 'Played by the CPU, Wick put his first door right in front of himself, so his own keys and darts flew into it and came out of the other door, away from you. Now that door goes to his side, and he holds a shot his own door would swallow. He hits with his key far more often: a much tougher opponent.',
+      },
     ],
   },
   {

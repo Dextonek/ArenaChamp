@@ -31,15 +31,17 @@ brass, polished dark wood, the red of his livery, white gloves, warm light from 
 - E **Slam** (`doorSlam.ts`, 'door slam'): SELF (`radius: 30`), cd 9, `cc: true`. After 0.7 s every door of his that stands slams: 70 and a 0.5 s stun on an enemy within
   1.5 m of it, on the LIVE position (`ctx.enemies`). Telegraph: a 1.5 m circle at each door, the real shape (he is rooted until it lands). `canCast`: "No door
   stands". A lone door slams too. A door that broke meanwhile does not.
-- R **Grand Lobby** (`grandLobby.ts`, 'grand lobby'): GROUND, 9 m, cd 24. 0.8 s wind-up (hands up, a key over each glove, the ring fills, four keys circle), then
+- R **Grand Lobby** (`grandLobby.ts`, 'grand lobby'): GROUND, 9 m, cd 24. 1.05 s wind-up (0.8 until 2026-11-19, the walk rule) (hands up, a key over each glove, the ring fills, four keys circle), then
   four tall red double doors rise on a 3 m ring round the aim point, turned so a gap (not a door) faces him, and stand 4 s. Walking into one (within 1.1 m) sets a hero down
   1.8 m inside the ring at the far side (the opposite door); two `BoltDoor`s (opposite doors, `r` 1.1) so a bolt that flies into one comes out of the opposite one (one in, one out: not four in a row), his Q included; a straight Q crosses a gap and hits what stands in the middle. They do not count against the two-door limit and have no HP. The gap between two doors is 4.24 - 2.2 = 2.04 m: anyone can walk out. Needs
   sight of the spot at the rise and 9.5 m or less, else it fizzles. One short impact frame and a warm flash.
 
 ### The CPU (aiHold, aiGoal)
-- Q: as every skillshot, at the enemy within 9 m in sight.
-- W: held while two doors are placed. `aiHold` marks the cast (`cpuAt`), so with no door standing the first door goes 2.2 m from him toward the enemy, and the second goes
-  where the CPU aims, at the enemy (the effect keeps it 3 m from the first).
+- W: held while two doors are placed. `aiHold` marks the cast (`cpuAt`), so with no door standing the first door goes 2.2 m from him, a quarter turn off the way to the
+  enemy, and the second goes where the CPU aims, at the enemy (the effect keeps it 3 m from the first). Until 2026-11-19 the first door went straight toward the enemy,
+  on his own line of fire, and swallowed his keys and darts.
+- Q and the dart: held while a shot straight at the enemy would fly into one of his own doors first and come out passing nowhere near the enemy (`shotWasted`;
+  a door that carries the shot onto the enemy is fine).
 - E: held unless one of his standing doors is within 1.5 m of the enemy.
 - R: held when the enemy is more than 9 m away (and by the CPU's usual rule for an ultimate).
 - `aiGoal`: with the enemy within 3 m (the traits cannot see a kit's `melee`) and a door he has been clear of standing within 4 m that leads somewhere at least 4 m

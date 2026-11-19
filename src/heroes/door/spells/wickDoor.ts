@@ -23,7 +23,8 @@ import { fightNow } from '../../../fightClock';
  * when the second door makes a pair a brass gleam along the floor and a flash on each door.
  *
  * The second door of a pair is put at least 3 m from the first (pushed along the line away from it). The CPU's cast: with no door
- * standing, the first goes 2.2 m from him toward the enemy (the trait's `aiHold` flags it); the second goes where the CPU aims, at the enemy.
+ * standing, the first goes 2.2 m from him, a quarter turn off the way to the enemy, out of his own line of fire (the trait's `aiHold` flags
+ * it); the second goes where the CPU aims, at the enemy.
  * The telegraph is the footprint (a 0.9 m circle, impact at the rise): it roots him until then. Clean by 1.8 s.
  * See pipeline/designs/kit-door.md.
  */
@@ -107,7 +108,11 @@ export class WickDoorFx implements Effect {
     len = THREE.MathUtils.clamp(len, DOOR_MIN, DOOR_RANGE);
     const b = bookOf(ctx.caster), live = placedDoors(b);
     // The CPU's first door goes close to him (the trait's aiHold marked this cast).
-    if (live.length === 0 && fightNow() - b.cpuAt < CPU_FRESH) len = Math.min(len, CPU_NEAR);
+    // Beside him, a quarter turn off the enemy's line, so the door does not stand in his own line of fire.
+    if (live.length === 0 && fightNow() - b.cpuAt < CPU_FRESH) {
+      len = Math.min(len, CPU_NEAR);
+      [dx, dz] = [dz, -dx];
+    }
     let x = s.x + dx * len, z = s.z + dz * len;
     // The second door keeps its distance from the first, or the pair is a doorway to the same spot.
     const lone = live[0];

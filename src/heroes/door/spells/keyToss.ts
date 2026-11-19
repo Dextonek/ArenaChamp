@@ -7,8 +7,8 @@ import { boltWidth, type BoltDoor, type Projectile } from '../../../effects/proj
 import type { TelegraphSpec } from '../../../effects/telegraph';
 import { frameCast, type CastContext } from '../../../effects/targeting';
 import type { Effect, EffectModule } from '../../../effects/types';
-import { bankPath, type Obstacle } from '../../../obstacles';
-import { KEY_DAMAGE, KEY_RADIUS, KEY_RANGE, KEY_SPEED, KEY_WIND } from '../trait';
+import { KEY_DAMAGE, KEY_RADIUS, KEY_RANGE, KEY_SPEED, KEY_WIND, doorPath, type KeyLeg } from '../trait';
+
 
 /**
  * Key Toss (door kit v5, Q: a skillshot that goes through doors). He draws a brass key out at his white-gloved hand over the 0.3 s
@@ -44,54 +44,6 @@ const LEGS_SHOWN = 3;
 
 const easeOut = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const MIN = 1e-3;
-
-/** One straight stretch of a key's way. */
-export interface KeyLeg { x1: number; z1: number; x2: number; z2: number; len: number }
-
-/**
- * The way a bolt flies from `start` along `dir` for `range` m with these doors and walls: straight to a wall (it stops there) or into the
- * first door whose reach (`r`) it touches, then on from the far door's middle, the same way, with what range it has left (the jump costs
- * none, as in the projectile system). A door it has been through is not entered again.
- */
-export function doorPath(start: { x: number; z: number }, dir: { x: number; z: number }, range: number, doors: readonly BoltDoor[], obstacles: readonly Obstacle[]): KeyLeg[] {
-  const l = Math.hypot(dir.x, dir.z) || 1, ux = dir.x / l, uz = dir.z / l;
-  const legs: KeyLeg[] = [];
-  const used = new Set<BoltDoor>();
-  let x = start.x, z = start.z, left = range;
-  for (let guard = 0; guard < 6 && left > 1e-3; guard++) {
-    // Where a wall stops it on this stretch.
-    const wall = bankPath({ x, z }, { x: ux, z: uz }, left, 0, obstacles);
-    const end = wall[wall.length - 1];
-    const reach = Math.hypot(end.x - x, end.z - z);
-    // The first door whose reach it enters before that.
-    let best: { t: number; d: BoltDoor; inA: boolean } | null = null;
-    for (const d of doors) {
-      if (used.has(d)) continue;
-      for (const inA of [true, false]) {
-        // It enters this end's reach and comes out of the other end.
-        const wx = (inA ? d.ax : d.bx) - x, wz = (inA ? d.az : d.bz) - z;
-        const proj = wx * ux + wz * uz, perp2 = wx * wx + wz * wz - proj * proj;
-        if (perp2 > d.r * d.r) continue;
-        const half = Math.sqrt(d.r * d.r - perp2);
-        const t0 = Math.max(0, proj - half);
-        if (proj + half < 0 || t0 > reach) continue;
-        if (!best || t0 < best.t) best = { t: t0, d, inA };
-      }
-    }
-    if (!best) {
-      legs.push({ x1: x, z1: z, x2: end.x, z2: end.z, len: reach });
-      break;
-    }
-    const ex = x + ux * best.t, ez = z + uz * best.t;
-    legs.push({ x1: x, z1: z, x2: ex, z2: ez, len: best.t });
-    left -= best.t;
-    used.add(best.d);
-    // Out of the other door's middle.
-    x = best.inA ? best.d.bx : best.d.ax;
-    z = best.inA ? best.d.bz : best.d.az;
-  }
-  return legs;
-}
 
 export class KeyToss implements Effect {
   readonly group = new THREE.Group();
