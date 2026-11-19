@@ -6,6 +6,22 @@
 ## Pushed 2026-11-19: GitHub main is d7d3f9c8 (57 commits: the wyrm, Wick, the spell rules line, the gallery, the research, the
 ## showpieces' rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload.
 
+## The Climb's beasts as models (2026-11-19): nine built, in the game, committed; NOT pushed, NOT live
+
+The user: "lets make more models even for the tower", then, shown the bark hound: "Yes, do them all". The Climb's beasts, spirits
+and led ones were the last figures still drawn in code: now each is a model of rigid parts built by script with the Raid bosses'
+toolkit (`blender/tower/beasts/<key>.py`, `run.py`) and posed in code (`src/tower/world/beasts/`; how: `docs/tower/beasts/README.md`).
+- The nine: bark hound, the Stag-Crowned, feeding root (the Wood), brine crab (the Sea), dust wraith (the Sands), shard mite and
+  crystal golem (the Deep), and the led wisp and caravan cart. Line-up `docs/tower/beasts/lineup.jpg`; each one's sheet beside Sefu
+  `<key>_sheet.jpg`; floors `floor-*.jpg`. Built with four helpers; the crab, stag, wraith and root each took a revision round.
+- In the game: `beastLook` (a MinionLook; the code look stands in until the file lands; `__codeFoes` still draws code), picked by
+  `lookOf` and, for the led ones, `escortModelLook` in quests.ts; preloaded by prewarm.ts. Each part's plain pieces are merged into one
+  mesh coloured by vertex as a file lands (a hound 39 draw calls to 13, a golem 33 to 19); no shadows, as the people models.
+- Checked: every beast in the game's code beside Sefu (`pipeline/tools/beast-sheet.js`), none under the floor; floors 2, 11, 21, 31
+  woken pack by pack with no errors (`foe-world-probe.js`). tsc passes.
+- Not done: phone frame time with packs of beasts (`python pipeline/tools/perf.py` on floors 11 and 31, quiet machine); the escorts
+  seen in a real quest; a person's look at them moving.
+
 ## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built, committed and PUSHED (2026-11-19, GitHub main d7d3f9c8); NOT live; the Roost and the hall gate approved by the user ("Looks right")
 
 The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/designs/raid-wyrm.md`; how it works: `docs/architecture/raid.md`

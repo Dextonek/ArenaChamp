@@ -31,6 +31,9 @@ quest leads were still drawn in code from a few cones and cylinders. Now each is
   flash follows the arena's palette. `all.ts` lists them by look (`BEASTS`), `lookOf` (looks.ts) and `escortModelLook` (quests.ts)
   pick them, `prewarm.ts` loads a floor's files when its fight begins. `globalThis.__codeFoes = true` before a floor draws them in
   code again (the A/B).
+- **Draw calls**: a model of rigid parts comes with one draw call for every material of every part (a hound 39, where a person of the
+  Climb is 5). As a file lands, each part's plain pieces are merged into one mesh coloured by vertex; a piece that glows or is metal
+  keeps its own (`fewerDraws` in `index.ts`): a hound 13, a golem 19. Like the people models, they cast no shadow.
 - **The pose**: one file a beast, through the bosses' `BodyParts` (`src/raid/bodies/look.ts`): every part starts each frame at rest;
   the pose turns and moves parts from the unit's walk (`gait`, `stride`: the legs keep pace with how fast it goes), its blow
   (`pose.swing`, through `blow`) and its shot (`pose.shot`, `sinceShot`).

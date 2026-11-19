@@ -43,6 +43,13 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Tower',
+        title: 'The Climb’s beasts and spirits, made real',
+        text: 'The last figures of the Climb that were still a few cones and cylinders are real models now: the bark hounds and the Stag-Crowned of the Walking Wood and its feeding roots, the brine crab of the Sea, the dust wraith of the Sands, the shard mites and crystal golems of the Deep, and the wisp and the caravan cart you lead. Each runs, bites, slams or throws with its own body.',
+        image: 'news/climb-beasts.jpg',
+        alt: 'The nine new models in a line-up beside Sefu: a bark hound, a great stag, a feeding root, a brine crab, a dust wraith, a caravan cart, a shard mite, a crystal golem and a wisp.',
+      },
+      {
         tag: 'Raid',
         title: 'A fourth boss: the Eclipse Wyrm',
         text: 'After the Heart of Noon, a gate on the Court’s side of the hall leads up to the Roost, the Tower’s broken crown under the Tear, where the shadow of the fallen sun waits as a dragon. It rakes with its claws, sweeps its tail at whoever stands behind it and breathes a fan of fire across its front. When the Tear flares, the whole roof burns except under its wings: run in to it. After a tail sweep, stand on the tail’s gold tip to pin it.',
