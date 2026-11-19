@@ -3,7 +3,10 @@
 
 
 
-## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built and committed; NOT pushed, NOT live; the Roost and the hall gate approved by the user ("Looks right")
+## Pushed 2026-11-19: GitHub main is d7d3f9c8 (57 commits: the wyrm, Wick, the spell rules line, the gallery, the research, the
+## showpieces' rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload.
+
+## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built, committed and PUSHED (2026-11-19, GitHub main d7d3f9c8); NOT live; the Roost and the hall gate approved by the user ("Looks right")
 
 The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/designs/raid-wyrm.md`; how it works: `docs/architecture/raid.md`
 ("The Eclipse Wyrm"); lore: `docs/lore/LORE.md` (`## The Noonfall`, the Tower's place line).
@@ -21,7 +24,7 @@ The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/des
 - Not done: a person playing it; a party room and party mechanics (a party fights it in the Roost, untuned); the Rust tools know nothing of
   bosses. Next: a person playing it, then a push and a deploy when asked (a deploy also raises the tabs' version).
 
-## Wick balanced: 30% -> 53% (2026-11-19), done, not pushed, not live
+## Wick balanced: 30% -> 53% (2026-11-19), done, pushed (2026-11-19), not live
 
 The user: "Yes, fix Wick". The simulator showed Wick short on damage (22.7 a second dealt against 25-28 for Pip, Fenna, Nyx; damage taken
 the same). A test with the CPU never placing doors won MORE (37.5% against about 29.5% pooled over 288 fights): the CPU's first door went
@@ -120,7 +123,7 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
   `python pipeline/tools/page-shots.py pipeline/tools/sheath-tool-shots.js docs/spells/kagen/tool --browser msedge` -> `docs/spells/kagen/tool/`.
   On the tool page there is no passive, so no cut marks are laid and Noto's click opens none (its look still plays).
 
-## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
+## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); all pushed (the rest on 2026-11-19); NOT live
 
 - **Later the same day:** the user asked for "more of those movie vfx", six, themes my pick: Phoenix Rebirth, Black Sun Eclipse,
   Sakura Requiem, Celestial Clockwork, Sun Scarab, Spirit Lanterns (all 2D). And two spells in the same style in the tool's
