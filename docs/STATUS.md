@@ -12,16 +12,16 @@ Notes go to `docs/knowledge/moba-research/`, the report to `docs/knowledge/moba-
 - **Queued (started as the gallery helpers finish; at most 6 agents at once):** Dota 2 heroes N-Z; Smite gods (all); the cast and targeting
   systems of the three games; our game's 40 heroes and the tool's spells listed by mechanics; then the report writer.
 
-## The gallery: twenty tool spells (2026-11-19), in progress; tool page only, NOT in the game
+## The gallery: twenty tool spells (2026-11-19), done; tool page only, NOT in the game
 
 The user, shown World Sever on the tool page: "lets make more like this effects do like 20 more spells in like different action and
 different style but this quality". Design: `pipeline/designs/gallery-20.md` (twenty actions, twenty styles, the quality bar).
 Files `src/spells/targeted/gallery/` (each group's spells listed in `g<N>.ts`, wired through `gallery/index.ts`).
-- **In progress:** wave 1, six helpers in worktrees, two spells each (g1-g6: kintsugi shatter, carnival masquerade, quetzal descent,
-  runestone fall, mosaic nova, mandala unbinding, celtic knot snare, watercolour vortex, geode heart, whalebone harpoon, molten glass
-  bloom, charcoal tempest). Each branch is merged here when done and its worktree removed (link to node_modules first).
-- **Next:** wave 2, four helpers (g7-g10: art deco arc, solar orrery, coral bastion, gargoyle swoop, arabesque fan, crescent return,
-  whiplash fissure, venom orchid); then one page of all twenty.
+- **Done:** all twenty built by ten helpers (two each, in worktrees) and merged; `vfx.selfTest` of all twenty ok (no errors, all hit),
+  type check and build pass. Sheets `docs/spells/gallery/<slug>.jpg`, one page `docs/spells/gallery/gallery.html`.
+- **Weak spots the helpers named:** quetzal's serpent body reads as shards; the gargoyle is small from the tool camera (its last
+  rubble change not re-filmed); the arabesque fan draws a danger zone only for its centre star; the engine's red danger zone tints
+  floors before the hit (orrery, charcoal, coral). Not changed unless the user asks.
 - **Disk:** 20.6 GB free on C: before the wave (under the 30 GB the user asked for); 1.24 GB of old `tmp_pack_*` files in
   `.git/objects/pack` (failed transfers of 2026-11-16/18) could be deleted, waiting on the user.
 
