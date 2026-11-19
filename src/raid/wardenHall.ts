@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RAID_PARTY_MAX } from '../../server/protocol.mjs';
 import { RING, canvasTexture, seeded } from '../arenas/common';
 import { HALL_ARMS, HALL_COURT, HALL_FALLS, HALL_HALF, HALL_OBSTACLES, HALL_OPENS, HALL_R, hallBreak, inHall, quarterOf } from '../arenas/sunhall';
-import { hourStoneLook } from './bodies/adds';
+import { HOUR_STONE_LOOK } from './adds/hourStone';
 import { FollowMark, LightPillar, SunOrb } from './fx';
 import { LEAVE_COLOR, STAND_COLOR } from './script';
 import type { BossCast, BossMove, Objective, PlayContext, PlayedMove, RaidAdd, RaidSide, Threat } from './types';
@@ -763,7 +763,7 @@ export const four: BossMove = {
       const o: Objective = { part, x: f.x, z: f.z, radius: 0, kill: true, until: settle };
       kills.push(o);
       adds.push(p.spawnAdd({
-        x: f.x, z: f.z, hp, look: hourStoneLook, color: '#c8b088',
+        x: f.x, z: f.z, hp, look: HOUR_STONE_LOOK, color: '#c8b088',
         hurt: (amount) => p.addHit(c.id, part, amount),
         died: () => {
           if (o.done || o.reported) return;

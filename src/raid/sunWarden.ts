@@ -9,9 +9,10 @@ import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
 import { TelegraphLayer, type TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
-import { hourStoneLook } from './bodies/adds';
+import { HOUR_STONE_LOOK } from './adds/hourStone';
 import { wardenLook } from './bodies/warden';
 import { AimLane, FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
+import { preloadProps, propClone } from './models';
 import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR } from './script';
 import { stageMove } from './stage';
 import type { AimContext, BossDef, BossMove, BossPhase, Objective, PlayContext, RaidSide, Threat } from './types';
@@ -198,6 +199,20 @@ const fists: BossMove = {
   },
 };
 
+/** A holder for a sun shard's model (blender/raid/sunshard.py): empty until the file has landed, then filled once (`fillShard`). */
+function shardHolder() {
+  const g = new THREE.Group();
+  g.scale.setScalar(1.25);
+  g.visible = false;
+  return g;
+}
+
+function fillShard(g: THREE.Group) {
+  if (g.children.length) return;
+  const m = propClone('sunshard');
+  if (m) g.add(m);
+}
+
 // --- phase 2, High Noon: cover becomes the puzzle -------------------------------------------------------------------
 
 /**
@@ -226,9 +241,9 @@ const noon: BossMove = {
     const shards = Array.from({ length: need }, (_, i) => {
       const far = { x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out };
       const { x, z } = fire ? freeSpot(far.x, far.z) : far;
-      const light = new LightPillar(x, z, 1.3, 6, STAND_COLOR), orb = new SunOrb(x, 1.1, z);
-      p.group.add(light.mesh, orb.sprite);
-      return { part: i, x, z, light, orb };
+      const light = new LightPillar(x, z, 1.3, 6, STAND_COLOR), orb = new SunOrb(x, 1.1, z), model = shardHolder();
+      p.group.add(light.mesh, orb.sprite, model);
+      return { part: i, x, z, light, orb, model };
     });
     const altar = new LightPillar(C.x, C.z, home, 7, STAND_COLOR);
     p.group.add(altar.mesh);
@@ -237,7 +252,7 @@ const noon: BossMove = {
       // In a party whoever picked a shard up brings it in: one way in for each seat.
       ...Array.from({ length: party ? RAID_PARTY_MAX : 2 }, (_, side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: home, until: at, beats: true, can: () => side === me && carrying.has(side) })),
     ];
-    const held = new Map<RaidSide, SunOrb>();
+    const held = new Map<RaidSide, { orb: SunOrb; model: THREE.Group }>();
     let turned = -1, time = 0;
     return {
       threats: [th], objectives, duration: at + 1,
@@ -249,12 +264,22 @@ const noon: BossMove = {
             const gone = objectives[s.part].done || t >= at || turned >= 0;
             s.light.opacity = gone ? 0 : pulse;
             s.orb.set(1.6, gone ? 0 : 0.95);
+            // The shard itself, lying on the floor turning slowly (drawn in code as the spot alone until its file lands).
+            fillShard(s.model);
+            s.model.visible = !gone && s.model.children.length > 0;
+            s.model.position.set(s.x, 0.18 + 0.06 * Math.sin(t * 2 + s.part * 2), s.z);
+            s.model.rotation.y = t * 0.7 + s.part * 2;
           }
           altar.opacity = carrying.size && turned < 0 && t < at ? pulse : 0;
-          for (const [side, orb] of held) {
+          for (const [side, { orb, model }] of held) {
             const h = p.heroAt(side);
-            if (h) orb.sprite.position.set(h.x, 3.1, h.z);
+            if (h) {
+              orb.sprite.position.set(h.x, 3.1, h.z);
+              model.position.set(h.x, 3.1, h.z);
+            }
             orb.set(1.5, 0.95);
+            fillShard(model);
+            model.rotation.y = t * 1.6;
           }
           void dt;
           if (turned >= 0) {
@@ -271,15 +296,18 @@ const noon: BossMove = {
         done(o, side) {
           if (o.part < DELIVER) {
             carrying.add(side);
-            const orb = new SunOrb(C.x, 3.1, C.z);
-            p.group.add(orb.sprite);
-            held.set(side, orb);
+            const orb = new SunOrb(C.x, 3.1, C.z), model = shardHolder();
+            model.position.set(C.x, 3.1, C.z);
+            p.group.add(orb.sprite, model);
+            held.set(side, { orb, model });
             if (side === me) p.heavy(true);
             return;
           }
           carrying.delete(side);
           delivered.add(side);
-          held.get(side)?.dispose();
+          const was = held.get(side);
+          was?.orb.dispose();
+          was?.model.removeFromParent();
           held.delete(side);
           if (side === me) p.heavy(false);
           p.sparks.emit(C.x, 1, C.z, 24, 4, 4, 0.7, STAND_COLOR);
@@ -306,8 +334,12 @@ const noon: BossMove = {
           for (const s of shards) {
             s.light.dispose();
             s.orb.dispose();
+            s.model.removeFromParent();
           }
-          for (const orb of held.values()) orb.dispose();
+          for (const { orb, model } of held.values()) {
+            orb.dispose();
+            model.removeFromParent();
+          }
           if (carrying.has(me)) p.heavy(false);
         },
       },
@@ -389,7 +421,7 @@ const longHour = stageMove({
   id: 'hour', name: 'The Long Hour', pose: 'channel',
   hold: { x: C.x, z: C.z - 2.4 }, shell: { radius: 3.1, y: 2.8, color: 0xffc070 },
   center: C, ring: 9, turns: [[0, 120, 240], [60, 180, 300]],
-  look: hourStoneLook, color: '#c8b088', shot: 'beam', shotColor: SPARK,
+  look: HOUR_STONE_LOOK, color: '#c8b088', shot: 'beam', shotColor: SPARK,
   fail: { share: 0.55, cover: true, get radius() { return COURT_R + 1; }, text: 'THE DIAL STRIKES', blast: 'flare' },
   win: 'THE HOUR BREAKS', hint: 'Break the three Hour Stones before his bar fills',
 });
@@ -782,10 +814,14 @@ export const SUN_WARDEN: BossDef = {
     HALL_PHASES = hallPhases(band);
   },
   get band() { return size; },
-  kit: (hp) => ({
+  kit: (hp) => {
+    // The fight's objects as models (the stone that falls, the shard that is carried); the Hour Stone's file starts loading with its look.
+    preloadProps(['sunstone', 'sunshard']);
+    return {
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
-  } as HeroKit),
+    } as HeroKit;
+  },
   hp: NUMBERS.hp,
   scale: 1,
   body: { radius: 1.2, height: 5.4 },
