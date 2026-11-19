@@ -88,7 +88,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'Cleaner roads on every Climb floor',
-        text: 'The Climb’s roads bend in smooth curves instead of sharp zig-zags, the paving of the Sands and the War is laid along the curve, and the place where two roads ran side by side is now one road. On the Sea’s floors the roads also belong to the land: fences on the bends, kerb stones where a road comes into a place, lanterns, grass on the verges and a milestone where roads meet. The Wood’s trail lanterns, which never stood, now light the trails.',
+        text: 'The Climb’s roads bend in smooth curves instead of sharp zig-zags, the paving of the Sands and the War is laid along the curve, and the place where two roads ran side by side is now one road. The roads also belong to the land now, each chapter in its own look: kerb stones where a road comes into a place, a fence along the outside of every bend, grass or scrub on the verges, and on the Sea lanterns, signposts and milestones too. The Wood’s trail lanterns, which never stood, now light the trails.',
       },
     ],
   },

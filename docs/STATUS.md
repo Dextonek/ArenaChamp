@@ -7,7 +7,7 @@
 ## rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. A deploy started in the
 ## fork session was stopped by the user: nothing was deployed, the live game is the 2026-11-16 version.
 
-## The Climb's roads made clean (2026-11-19): done, committed, NOT pushed, NOT live; waiting on the user's look for the other chapters' roadsides
+## The Climb's roads made clean (2026-11-19), all five chapters' roadsides too: done, committed, NOT pushed, NOT live
 
 The user: "push and continue to make more improvement to maps in tower", then "lets make road more cleanly and like put them into
 scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `docs/tower/survey/`), then the roads close up
@@ -32,8 +32,19 @@ scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `doc
   (up to 1 m), the same kind of fault as before in other places. **Cost:** opening a floor as before (Sea 1.0-1.2 s, was 1.1-1.5 s
   in one noisy run; the road network takes 4-9 ms, its distance checks a grid of 8 m cells); draw calls at the camp +6 on the Sea,
   +16-27 from high over a Sea floor, the other chapters the same; triangles +2-4 % on the Sea.
-- **Waiting on the user:** the Sea's roadside as the look for the other four chapters' roads (then the same in woodDepth, sandsDepth,
-  deepDepth, warDepth).
+- **All chapters (the user: "Yes, all chapters"), done, committed, not pushed, not live:** the roadside is planned once,
+  `roadside()` in roads.ts (the Sea's logic moved there unchanged: floors 1, 4 and 7 probe exactly as before), and each chapter draws it
+  in its own look: the Wood mossy kerbs into the glades, split-rail fences of bark on the bends, ferns (it keeps its own six lanterns and
+  signposts); the Sands sandstone kerbs, a rope on posts on the bends, scrub on one verge spot in three, a waymark at each court's road,
+  milestones where roads meet (no lights: the Sands adds none); the War stone kerbs, post-and-rail fences, grass, signposts, milestones
+  (no glow: the War draws none); the Deep kerb stones into the yards and halls and timber guard rails on the bends (no new lamps, no
+  grass). Every chapter's own roadside props now keep off the curves too (`legsOrCurve`), and the Deep's frames across a track stand
+  only where it runs straight (the curve in its road grid, tag -3; the points' levers still read the legs). Sheet
+  `docs/tower/roads/roadside-all-chapters.jpg` (pictures `docs/tower/roads/after2/`). Checks: tsc, build; fights the same in all five
+  (world-1..5, old and new: a4c535c1, 65783258, 45b46573, b081ed7b, 5267e5db); props probe on 15 floors: the Sea the same, the Wood,
+  Sands and Deep within a few, the War's and the Deep's far background (army camps, rock ledges past the edge) reshuffled because their
+  props' draw changed (War gaps 113 -> 42 on 41, 42 -> 60 on 44, 108 -> 46 on 48), none of the new pieces flagged; open time within
+  the noise, draw calls +-2, triangles +1.5-4 %.
 
 ## Hunting plains (the user: "make some zone where to fight mobs like plains where mobs spawn"): a plan, nothing built
 

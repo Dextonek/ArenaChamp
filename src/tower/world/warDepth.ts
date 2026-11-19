@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { legsOrCurve, roadside, worldNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RING } from '../../arenas/common';
+import { RING, seeded } from '../../arenas/common';
 import { grassStands } from './land';
 import type { Battlefield, WarLook, WarMats } from './warZone';
 import { buildWarScenes, planWarScenes, warScenesOn, type Taken } from './scenes/war';
@@ -115,7 +116,9 @@ export function buildWarDepth(o: WarDepthIn) {
   const cover: Seg[] = look.pieces.map((p) => ({ ax: p.o.ax, az: p.o.az, bx: p.o.bx, bz: p.o.bz, r: p.o.r }));
   const roads: Seg[] = [];
   for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1], r: 0 });
-  const nearRoad = (x: number, z: number) => roads.reduce((m, s) => Math.min(m, segDist(x, z, s)), 1e9);
+  // the roads as drawn (roads.ts, 2026-11-19): round bends, up to about 1.5 m off the legs; the props keep off both
+  const net = worldNet(look.paths, RING);
+  const nearRoad = legsOrCurve((x, z) => roads.reduce((m, s) => Math.min(m, segDist(x, z, s)), 1e9), net);
   const onCover = (x: number, z: number, pad: number) => cover.some((c) => segDist(x, z, c) < c.r + pad);
   const inPlace = (x: number, z: number, pad: number) => look.places.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + pad);
   const behindLine = (x: number, z: number) => z < look.line.z + 1.5 && x > look.line.w - 2 && x < look.line.e + 2;
@@ -179,6 +182,34 @@ export function buildWarDepth(o: WarDepthIn) {
         }
       }
     }
+  }
+
+  // --- the roads' sides (2026-11-19, the user: "put them into scenario", then "Yes, all chapters") ---
+  // Planned by roads.ts `roadside` on a stream of their own: stone kerbs where a road comes into a place, a post-and-rail fence on the
+  // outer side of every bend, grass on the verges, a signpost at each place's road and a milestone where roads meet. No lanterns: the
+  // War draws no glow (the far flames and the lit windows are its lights).
+  {
+    const kerbG = box(0.42, 0.14, 0.3), postG = box(0.12, 1.1, 0.12), railG = box(0.06, 0.08, 1);
+    const kept = (x: number, z: number, r: number) => (o.keep ?? []).some((k) => Math.hypot(k.x - x, k.z - z) < 2 + r);
+    roadside(net, {
+      rnd: seeded(4545 + ((look as { seed?: number }).seed ?? 0)), places: look.places,
+      ok: (x, z, pad, road, place) => free(x, z, pad, { road, place }),
+      blocked: kept,
+      kerb: (x, z, yaw, u, sy, muted) => { if (!muted) near.add(u < 0.5 ? 'stone' : 'rubble', kerbG, x, 0, z, yaw, 1, sy, 1); },
+      post: (x, z, yaw) => { near.add('wood', postG, x, 0, z, yaw); taken.push({ x, z, r: 0.3 }); },
+      rail: (mx, mz, yaw, len) => { near.add('plank', railG, mx, 0.55, mz, yaw, 1, 1, len).add('plank', railG, mx, 0.9, mz, yaw, 1, 1, len); },
+      verge: (x, z, sc, turn, sy) => { put(lists.tuft, x, 0, z, sc, sy, turn); },
+      signpost: (x, z, a, muted) => {
+        if (muted) return;
+        near.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
+        taken.push({ x, z, r: 0.5 });
+      },
+      milestone: (x, z, yaw, muted) => {
+        if (muted) return;
+        near.add('mile', new THREE.CylinderGeometry(0.22, 0.3, 1.0, 6).translate(0, 0.5, 0), x, 0, z, yaw).add('stone', box(0.62, 0.14, 0.62), x, 0, z, yaw);
+        taken.push({ x, z, r: 0.6 });
+      },
+    });
   }
 
   // --- the places, dressed as what they are ----------------------------------------------------------------------------------------

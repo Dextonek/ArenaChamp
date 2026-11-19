@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, seeded } from '../../arenas/common';
+import { legsOrCurve, roadside, worldNet } from './roads';
 import type { WoodLook } from './gen/wood';
 import { grassStands, rimAt } from './land';
 
@@ -63,11 +64,14 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
   for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1] });
   const cover: Seg[] = look.pieces.map((p) => p.o);
-  const nearRoad = (x: number, z: number) => {
+  const nearLegs = (x: number, z: number) => {
     let m = 1e9;
     for (const s of roads) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz));
     return m;
   };
+  // the trails as drawn (roads.ts, 2026-11-19): round bends, up to about 1.5 m off the legs; the props keep off both
+  const net = worldNet(look.paths, RING);
+  const nearRoad = legsOrCurve(nearLegs, net);
   const coverDist = (x: number, z: number) => {
     let m = 1e9;
     for (const c of cover) m = Math.min(m, segDist(x, z, c.ax, c.az, c.bx, c.bz) - c.r);
@@ -240,6 +244,21 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
           if (free(x, z, 0.5, { road: 2.5, place: 3 }) && !nearBrook(x, z, 1)) { lantern(x, z, Math.atan2(-nx * side, -nz * side)); sinceLamp = 0; lamps++; }
         }
       }
+    }
+    // the trails' sides (2026-11-19, the user: "put them into scenario", then "Yes, all chapters"), planned by roads.ts `roadside` on a stream of their own: mossy kerb stones where a trail comes into
+    // a glade, a split-rail fence of bark on the outer side of every bend, ferns on the verges. (The Wood keeps its own six lanterns
+    // and its signposts at the glades and the forks, above and below.)
+    {
+      const kerbG = box(0.42, 0.14, 0.3), postG = cyl(0.07, 0.09, 1.1, 6), railG = box(0.06, 0.07, 1);
+      roadside(net, {
+        rnd: seeded(4343 + look.seed), places: look.places,
+        ok: (x, z, pad, road, place) => free(x, z, pad, { road, place }) && !nearBrook(x, z, 0.5),
+        blocked: () => false,
+        kerb: (x, z, yaw, u, sy) => { put(u < 0.5 ? C.stone : C.stoneDark, kerbG, x, 0, z, yaw, 1, sy, 1); },
+        post: (x, z, yaw) => { put(C.bark, postG, x, 0, z, yaw); solid(x, z, 0.2, 'fence'); },
+        rail: (mx, mz, yaw, len) => { put(C.barkLight, railG, mx, 0.55, mz, yaw, 1, 1, len).put(C.barkLight, railG, mx, 0.92, mz, yaw, 1, 1, len); },
+        verge: (x, z, sc) => { fernAt.push([x, z, sc * 0.85]); },
+      });
     }
     // a signpost where a trail meets a glade, and where two trails meet
     const ends: { x: number; z: number; ux: number; uz: number }[] = [];

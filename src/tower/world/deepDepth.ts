@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { roadside, worldNet } from './roads';
 import { RING, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { DeepLook } from './deepZone';
@@ -236,6 +237,12 @@ export function buildDeepDepth(o: DeepDepthIn) {
   const roads = new SegGrid(8, 6);
   const tracks = look.paths.map((p) => p.map(([dx, dz]) => ({ x: RING.x + dx, z: RING.z + dz })));
   tracks.forEach((p, k) => { for (let i = 1; i < p.length; i++) roads.add({ ax: p[i - 1].x, az: p[i - 1].z, bx: p[i].x, bz: p[i].z, r: 0, tag: k }); });
+  // the tracks as drawn (roads.ts, 2026-11-19): round bends, up to about 1.5 m off the legs. The props keep off both (tag -3: no track's
+  // own, so a frame across a track stands only where its track runs straight); `legs` alone says where a track ends on another one.
+  const net = worldNet(look.paths, RING);
+  const legs = new SegGrid(8, 6);
+  tracks.forEach((p, k) => { for (let i = 1; i < p.length; i++) legs.add({ ax: p[i - 1].x, az: p[i - 1].z, bx: p[i].x, bz: p[i].z, r: 0, tag: k }); });
+  for (const p of net) for (let i = 1; i < p.length; i++) roads.add({ ax: p[i - 1][0], az: p[i - 1][1], bx: p[i][0], bz: p[i][1], r: 0, tag: -3 });
   const BACK: Record<string, number> = { hall: 5.5, shore: 3, pools: 4, yard: 4, rest: 0, shaft: 0, well: 0, camp: 0 };
   const stands = look.places.map((p) => {
     const dx = RING.x - p.x, dz = RING.z - p.z, l = Math.hypot(dx, dz) || 1, b = BACK[p.kind ?? ''] ?? 0;
@@ -429,7 +436,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
   };
   tracks.forEach((path, k) => {
     for (const [e, f] of [[path[0], path[1]], [path[path.length - 1], path[path.length - 2]]]) {
-      if (!f || nearPlace(e.x, e.z, 1) || roads.clear(e.x, e.z, k) > 1.5) continue;
+      if (!f || nearPlace(e.x, e.z, 1) || legs.clear(e.x, e.z, k) > 1.5) continue;
       const L = Math.hypot(f.x - e.x, f.z - e.z) || 1, ux = (f.x - e.x) / L, uz = (f.z - e.z) / L;
       for (const sd of [1, -1]) {
         const x = e.x + ux * 3 - uz * 2.7 * sd, z = e.z + uz * 3 + ux * 2.7 * sd;
@@ -456,6 +463,18 @@ export function buildDeepDepth(o: DeepDepthIn) {
       tall(x, z, 0.9, 0.95);
     }
   }
+
+  // the tracks' sides (2026-11-19, the user: "put them into scenario", then "Yes, all chapters"), planned by roads.ts `roadside` on a stream of their own: kerb stones where a track
+  // comes into a place, a timber guard rail on the outer side of every bend. No new lamps (the Deep's dark is its law: the frames'
+  // lamps are enough), no verge grass (a cave floor).
+  roadside(net, {
+    rnd: seeded(4646 + look.seed), places: look.places,
+    ok: (x, z, pad, road, place) => free(x, z, pad, { road, place }),
+    blocked: () => false,
+    kerb: (x, z, yaw, _u, sy) => { batch.put('low', S.unitRock, x, 0.08 * sy, z, yaw, 0.42, 0.16 * sy, 0.3); },
+    post: (x, z, yaw) => { batch.put('low', S.post, x, 0, z, yaw, 0.7, 1.05, 0.7); tall(x, z, 0.15, 1.05); },
+    rail: (mx, mz, yaw, len) => { batch.put('low', S.unitWood, mx, 0.85, mz, yaw, 0.1, 0.12, len); },
+  });
 
   mark('tracks');
   // --- the places, dressed as what they are ---------------------------------------------------------------------------------------

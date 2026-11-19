@@ -161,6 +161,131 @@ export function distanceTo(net: Pt[][], every = 4, reach = 6): (x: number, z: nu
 }
 
 /**
+ * The roads' sides, planned once for every chapter (2026-11-19, the user: "put them into scenario", then "Yes, all chapters"); each
+ * chapter draws the pieces in its own look through the callbacks it gives (the ones it leaves out are not planned). Along the clean
+ * network (world coordinates), on the caller's own random stream:
+ * - `kerb`: where a road comes into a place, stones lining both edges for its last 9 m (2.15 m out, every half metre);
+ * - `lantern`: every 15 to 19 m, from side to side, 3 m out;
+ * - `post` and `rail`: a fence on the outer side of every bend (and now and then on a straight), posts every 2 m, 3.3 m out, rails
+ *   between neighbouring posts so they follow the curve;
+ * - `verge`: grass (or the chapter's like) on both verges, 2.25 to 2.85 m out;
+ * - `signpost` at each mouth into a place (not the camp), `milestone` where a road ends on another road.
+ * `ok(x, z, pad, road, place?)` says whether a piece may stand there (the chapter's own ground, cover, water...; `road`: how far from
+ * the clean roads at least); `blocked(x, z, r)` whether it would stand on one of the floor's spots (then it is drawn muted: the caller
+ * decides what muted means). The draws from `rnd` are the same whatever the callbacks draw.
+ */
+export interface Roadside {
+  rnd: () => number;
+  places: { x: number; z: number; r: number; kind?: string }[];
+  ok(x: number, z: number, pad: number, road: number, place?: number): boolean;
+  blocked(x: number, z: number, r: number): boolean;
+  kerb?(x: number, z: number, yaw: number, u: number, sy: number, muted: boolean): void;
+  lantern?(x: number, z: number, nx: number, nz: number, side: number, yaw: number, muted: boolean): void;
+  post?(x: number, z: number, yaw: number): void;
+  rail?(mx: number, mz: number, yaw: number, len: number): void;
+  vergeOk?(x: number, z: number): boolean;
+  verge?(x: number, z: number, scale: number, turn: number, sy: number): void;
+  signpost?(x: number, z: number, a: number, muted: boolean): void;
+  milestone?(x: number, z: number, yaw: number, muted: boolean): void;
+}
+export function roadside(net: Pt[][], o: Roadside) {
+  const rr = o.rnd;
+  for (const p of net) {
+    const pts: { x: number; z: number; ux: number; uz: number; s: number }[] = [];
+    const total = along(p, 1, (x, z, ux, uz, s) => pts.push({ x, z, ux, uz, s }));
+    if (total < 4) continue;
+    const placeAt = (q: Pt) => o.places.find((pl) => Math.hypot(pl.x - q[0], pl.z - q[1]) < pl.r + 2.5);
+    const startPlace = placeAt(p[0]), endPlace = placeAt(p[p.length - 1]);
+    // how much the road turns round each point (over 3 m either side), and to which side
+    const bendAt = (i: number) => {
+      const a = pts[Math.max(0, i - 3)], b = pts[Math.min(pts.length - 1, i + 3)];
+      const cross = a.ux * b.uz - a.uz * b.ux;
+      return { turn: Math.acos(Math.max(-1, Math.min(1, a.ux * b.ux + a.uz * b.uz))), outer: cross > 0 ? -1 : 1 };
+    };
+    let side = rr() < 0.5 ? 1 : -1, nextLamp = 4 + rr() * 8, fenceRun = 0, fenceSide = 1;
+    const posts: { x: number; z: number; side: number }[] = [];
+    const flushFence = () => {
+      for (let i = 1; i < posts.length; i++) {
+        const a = posts[i - 1], b = posts[i], L = Math.hypot(b.x - a.x, b.z - a.z);
+        if (L > 2.6 || a.side !== b.side) continue;
+        o.rail?.((a.x + b.x) / 2, (a.z + b.z) / 2, Math.atan2(b.x - a.x, b.z - a.z), L + 0.1);
+      }
+      posts.length = 0;
+    };
+    pts.forEach((q, i) => {
+      const nx = -q.uz, nz = q.ux, yaw = Math.atan2(q.ux, q.uz);
+      const toStart = q.s, toEnd = total - q.s;
+      // kerbs where the road comes into a place
+      if (o.kerb && ((startPlace && toStart < 9) || (endPlace && toEnd < 9))) {
+        for (const s of [-1, 1]) for (const f of [0, 0.5]) {
+          const x = q.x + nx * s * 2.15 + q.ux * f, z = q.z + nz * s * 2.15 + q.uz * f;
+          if (!o.ok(x, z, 0.2, 1.9)) continue;
+          const muted = o.blocked(x, z, 0.3), u = rr(), yj = (rr() - 0.5) * 0.15, sy = 1 + rr() * 0.35;
+          o.kerb(x, z, yaw + yj, u, sy, muted);
+        }
+      }
+      // a lantern now and then, from side to side
+      if (o.lantern && q.s >= nextLamp && toEnd > 3) {
+        const x = q.x + nx * side * 3.0, z = q.z + nz * side * 3.0;
+        if (o.ok(x, z, 0.5, 2.6, 1)) { o.lantern(x, z, nx, nz, side, yaw, o.blocked(x, z, 0.7)); nextLamp = q.s + 15 + rr() * 4; side = -side; }
+        else nextLamp = q.s + 2;
+      }
+      // a fence on the outer side of a bend; now and then a run on a straight
+      if (o.post) {
+        const bend = bendAt(i);
+        if (bend.turn > 0.3 && fenceRun <= 0) { if (posts.length) flushFence(); fenceRun = 8; fenceSide = bend.outer; }
+        else if (fenceRun <= 0 && rr() < 0.012) { if (posts.length) flushFence(); fenceRun = 8 + rr() * 10; fenceSide = rr() < 0.5 ? 1 : -1; }
+        if (fenceRun > 0) {
+          fenceRun -= 1;
+          if (i % 2 === 0) {
+            const x = q.x + nx * fenceSide * 3.3, z = q.z + nz * fenceSide * 3.3;
+            if (o.ok(x, z, 0.3, 2.9, 1) && !o.blocked(x, z, 0.3)) { o.post(x, z, yaw); posts.push({ x, z, side: fenceSide }); }
+            else flushFence();
+          }
+          if (fenceRun <= 0) flushFence();
+        }
+      }
+      // grass on the verges
+      if (o.verge) for (const s of [-1, 1]) {
+        if (rr() < 0.45) continue;
+        const d = 2.25 + rr() * 0.6, x = q.x + nx * s * d + q.ux * (rr() - 0.5), z = q.z + nz * s * d + q.uz * (rr() - 0.5);
+        if ((o.vergeOk && !o.vergeOk(x, z)) || !o.ok(x, z, 0.2, 2.1, 0.5)) continue;
+        const sc = 0.7 + rr() * 0.6, turn = rr() * 6.28, sy = 0.6 + rr() * 0.7;
+        o.verge(x, z, sc, turn, sy);
+      }
+    });
+    flushFence();
+    // a signpost at each mouth into a place, a milestone where a road ends on another road
+    for (const [q, pl, u] of [[p[0], startPlace, pts[0]], [p[p.length - 1], endPlace, pts[pts.length - 1]]] as const) {
+      const nx = -u.uz, nz = u.ux, s = rr() < 0.5 ? 1 : -1;
+      if (pl) {
+        if (!o.signpost) continue;
+        const x = q[0] + nx * s * 2.8, z = q[1] + nz * s * 2.8, a = Math.atan2(q[0] - pl.x, q[1] - pl.z);
+        if (pl.kind === 'camp' || !o.ok(x, z, 0.4, 2.3)) continue;
+        o.signpost(x, z, a, o.blocked(x, z, 0.5));
+      } else {
+        if (!o.milestone) continue;
+        const x = q[0] + nx * s * 2.7 - u.ux * 1.5, z = q[1] + nz * s * 2.7 - u.uz * 1.5;
+        if (!o.ok(x, z, 0.4, 2.3)) continue;
+        o.milestone(x, z, Math.atan2(u.ux, u.uz), o.blocked(x, z, 0.4));
+      }
+    }
+  }
+}
+
+/** A floor's roads as world points (offsets from the ring's middle plus `RING`), the clean network. */
+export const worldNet = (paths: Pt[][], ring: { x: number; z: number }) => roadNet(paths).map((p) => p.map(([dx, dz]) => [ring.x + dx, ring.z + dz] as Pt));
+
+/**
+ * The distance to the nearest road, the old legs or the clean curve, whichever is nearer (a chapter's props measured against the legs
+ * alone; on the inside of a bend the curve came up to about 1.5 m nearer). Past 5 m from the legs no check asks, so the legs decide.
+ */
+export function legsOrCurve(legs: (x: number, z: number) => number, net: Pt[][]): (x: number, z: number) => number {
+  const curve = distanceTo(net);
+  return (x, z) => { const d = legs(x, z); return d > 5 ? d : Math.min(d, curve(x, z)); };
+}
+
+/**
  * Walks a line every `step` m from `start` (arc length, across its joints): `fn(x, z, ux, uz, s)` with the way it runs (a unit vector)
  * and how far along it is. Stops `end` m before its end.
  */

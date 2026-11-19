@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { legsOrCurve, roadside, worldNet } from './roads';
 import { RING, seeded } from '../../arenas/common';
 import type { SandsLook } from './sandsZone';
 import { rimAt } from './land';
@@ -143,7 +144,10 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
   for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1] });
   const cover: Seg[] = look.pieces.map((p) => p.o);
-  const nearRoad = (x: number, z: number) => { let m = 1e9; for (const s of roads) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); return m; };
+  const nearLegs = (x: number, z: number) => { let m = 1e9; for (const s of roads) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); return m; };
+  // the roads as drawn (roads.ts, 2026-11-19): round bends, up to about 1.5 m off the legs; the props keep off both
+  const net = worldNet(look.paths, RING);
+  const nearRoad = legsOrCurve(nearLegs, net);
   const coverDist = (x: number, z: number) => { let m = 1e9; for (const c of cover) m = Math.min(m, segDist(x, z, c.ax, c.az, c.bx, c.bz) - c.r); return m; };
   const onCover = (x: number, z: number, pad: number) => cover.some((c) => segDist(x, z, c.ax, c.az, c.bx, c.bz) < c.r + pad);
   const kept = (x: number, z: number, pad: number) => keep.some((k) => Math.hypot(x - k.x, z - k.z) < 2.5 + pad);
@@ -289,6 +293,22 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
         if (wells < 1 && d > 8 && rnd() < 0.015 && free(x + nx * side * 2, z + nz * side * 2, 2.6, { place: 5 })) { roadWell(x + nx * side * 2, z + nz * side * 2); wells++; continue; }
       }
     }
+
+    // the roads' sides (2026-11-19, the user: "put them into scenario", then "Yes, all chapters"), planned by roads.ts `roadside` on a stream of their own: sandstone kerbs where a road comes into a
+    // court, a rope on posts along the outer side of every bend, dry scrub here and there on the verges, a waymark at each court's road
+    // and a milestone where roads meet. No lanterns: the Sands adds no lights (the places' lanterns are enough).
+    roadside(net, {
+      rnd: seeded(4444 + look.seed), places: look.places,
+      ok: (x, z, pad, road, place) => free(x, z, pad, { road, place }) && !inPool(x, z, 0.5),
+      blocked: () => false,
+      kerb: (x, z, yaw, u, sy) => { put(u < 0.5 ? C.sandstone : C.rockB, G.box, x, 0, z, yaw, 0.42, 0.16 * sy, 0.3); },
+      post: (x, z) => { put(C.wood, G.cyl6, x, 0, z, 0, 0.07, 1.05, 0.07); solid(x, z, 0.2, 'fence'); },
+      rail: (mx, mz, yaw, len) => { put(C.rope, G.box, mx, 0.84, mz, yaw, 0.04, 0.04, len); },
+      vergeOk: (x, z) => (((x * 7.31 + z * 3.17) % 1) + 1) % 1 < 0.3, // a desert verge: a tuft in three
+      verge: (x, z, sc, turn, sy) => { low(sc < 1 ? C.scrub : C.scrubDark, G.blade, x, 0, z, turn, sc, sy); },
+      signpost: (x, z, a) => { put(C.wood, G.cyl6, x, 0, z, 0, 0.06, 2.0, 0.06); put(C.turquoise, G.cloth, x + Math.sin(a) * 0.25, 1.6, z + Math.cos(a) * 0.25, a + Math.PI / 2, 0.55, 0.36, 1, 1.0); solid(x, z, 0.3, 'waymark'); },
+      milestone: (x, z, yaw) => { milestone(x, z, yaw); },
+    });
 
     // --- the places ----------------------------------------------------------------------------------------------------------------
     const ring = (p: { x: number; z: number; r: number }, n: number, from: number, to: number, make: (x: number, z: number, a: number) => void, pad = 0.8, o2: { tall?: boolean } = {}) => {
