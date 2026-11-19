@@ -107,7 +107,7 @@ for (const n of floors) {
         const m = list.length;
         const col = C ? hex(cr / m, cg / m, cb / m) : '#' + (mat.color?.getHexString?.() ?? '??????');
         if (Number.isFinite(beyond(ax, az)) && Math.min(beyond(ax, az), beyond(bx, bz), beyond((ax + bx) / 2, (az + bz) / 2)) > 70) continue; // far scenery
-        pieces.push({ x0: ax, y0: ay, z0: az, x1: bx, y1: by, z1: bz, P, col, vc: !!C, deep, mesh: o.name || '' });
+        pieces.push({ x0: ax, y0: ay, z0: az, x1: bx, y1: by, z1: bz, P, col, vc: !!C && o.name !== 'zone-cover', deep, mesh: o.name || '' }); // (the Sea's cover is vertex-coloured since 2026-11-19: named, not dressing)
       }
     }
   });

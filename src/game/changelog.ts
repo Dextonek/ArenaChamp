@@ -109,6 +109,11 @@ export const CHANGELOG: Release[] = [
         title: 'Hunting plains on every Climb floor',
         text: 'Every floor of the Climb has a hunting plain: open ground with its own name on the map, its edge marked by hunters’ stakes, where ten of the floor’s wild ones wander. They wake when you come near and fight like any pack, and each one that falls comes back half a minute later on the far side. They pay no shards; instead a quest giver on each floor asks you to fell twelve of them, and pays like the floor’s best side quest.',
       },
+      {
+        tag: 'Tower',
+        title: 'The Climb’s doors face their roads, and the Sea’s camps and markets in more detail',
+        text: 'The arches of the Climb’s doors now open towards the road that leads to them (many stood side-on to it), the lore stones show their glyph and the caches their lock. On the Sea’s floors the camp fires have a ring of stones, logs and a kettle on a tripod, the tents a doorway towards the fire, guy ropes and a coloured skirt, the crates battens and braces, the barrels bulging staves, the market stalls trestles, goods and striped awnings, and the lairs’ walls buttresses and coping stones.',
+      },
     ],
   },
   {

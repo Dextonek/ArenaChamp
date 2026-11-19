@@ -136,7 +136,26 @@ const CELL = 24;
 export class Kit {
   private cells = new Map<string, Map<THREE.Material, THREE.BufferGeometry[]>>();
   private m = new THREE.Matrix4();
+  /**
+   * The plain matte materials given to `matte` are drawn as one: their parts carry their colour in their vertices and go into one mesh
+   * a square whatever their colours (as land.ts's `Dress`). (2026-11-19: the props' detail put more colours in more squares, a draw
+   * each.) One material for them all, matte and flat.
+   */
+  private vc = new Map<THREE.Material, THREE.Color>();
+  private shared: THREE.MeshStandardMaterial | null = null;
+  matte(...mats: THREE.MeshStandardMaterial[]) {
+    for (const m of mats) this.vc.set(m, m.color.clone());
+    this.shared ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true });
+    return this;
+  }
   private put(mat: THREE.Material, g: THREE.BufferGeometry) {
+    const col = this.vc.get(mat);
+    if (col) {
+      const n = g.attributes.position.count, c = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b; }
+      g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+      mat = this.shared!;
+    }
     g.computeBoundingBox();
     const c = g.boundingBox!.getCenter(new THREE.Vector3()), key = `${Math.floor(c.x / CELL)}:${Math.floor(c.z / CELL)}`;
     let cell = this.cells.get(key);
@@ -166,6 +185,7 @@ export class Kit {
     this.put(mesh.material as THREE.Material, g);
   }
   build(into: THREE.Group, own: { dispose(): void }[]) {
+    if (this.shared) own.push(this.shared);
     for (const cell of this.cells.values()) {
       for (const [mat, geos] of cell) {
         const merged = mergeGeometries(geos, false);
@@ -173,6 +193,7 @@ export class Kit {
         if (!merged) continue;
         const mesh = new THREE.Mesh(merged, mat);
         mesh.castShadow = mesh.receiveShadow = true;
+        if (mat === this.shared) mesh.name = 'zone-cover'; // the cover's own parts (the props probe tells them from the dressing by this)
         into.add(mesh);
         own.push(merged);
       }
@@ -229,45 +250,120 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
   const stone = mat(0x4a4e5a), rock = mat(0x383c46, 0.95), wood = mat(0x4a3626), darkWood = mat(0x2a1f1a), cream = mat(0xb6ae9a, 0.7), wine = mat(0x6a2535), teal = mat(0x2b5560), sail = mat(0x6f6652, 0.95, { side: THREE.DoubleSide });
   const gold = mat(0xc9a24a, 0.4, { metalness: 0.8, emissive: 0xffb050, emissiveIntensity: 0.22 });
   const iron = mat(0x23252c, 0.55, { metalness: 0.5 });
+  // (2026-11-19, more detail in the props: the user, "make it more details") the new parts in the zone's own materials, no new one: the
+  // props are merged per material per square, so a new colour is a draw more wherever it stands (five new ones cost 50 to 60 draws a
+  // floor). Rope in cream, planks in wood, the catch in the blue-grey stone (a dull silver: white read as a light in the sun), jars in wine.
+  const rope = cream, plank = wood, fish = stone, salt = stone, clay = wine;
   const crystal = new THREE.MeshBasicMaterial({ color: 0x7ad8ff });
   own.push(crystal);
 
-  const kit = new Kit();
+  const kit = new Kit().matte(stone, rock, wood, darkWood, cream, wine, teal);
   // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
   const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o), sceneCover: L.pieces.filter((p) => p.look !== 'edge').map((p) => p.o), sceneTaken: (L.props ?? []).map((p) => { const o = HARBOUR_OBSTACLES[p.i]; return { x: RING.x + p.dx, z: RING.z + p.dz, r: (o ? Math.hypot(o.bx - o.ax, o.bz - o.az) / 2 + o.r : 1.5) + 0.6 }; }), keep }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
   const glowSpots: { x: number; y: number; z: number; size?: number }[] = [];
+  /** A number in [0, 1) from a place: the props' own variety, so the zone's random stream (and every other prop) is as it was. */
+  const hv = (x: number, z: number, k = 0) => { const v = Math.sin(x * 12.9898 + z * 78.233 + k * 37.719) * 43758.5453; return v - Math.floor(v); };
+  /** Parts built round (0, 0) and put at (x, z) turned `yaw`, as one prop. */
+  const at = (x: number, z: number, yaw: number) => {
+    const put = { add: (m: THREE.Material, geo: THREE.BufferGeometry) => { kit.add(m, geo, x, 0, z, yaw); return put; } };
+    return put;
+  };
+  const ico = (sx: number, sy: number, sz: number) => new THREE.IcosahedronGeometry(1, 0).scale(sx, sy, sz);
+  /** The fires, for the tents' doors (a tent opens towards the camp's fire). */
+  const fires = L.pieces.filter((pc) => pc.look === 'fire').map((pc) => pc.o);
+  /** A crate's parts, `w` across and `hh` high: planks, dark battens on its corners and rims, braces across its sides, a brass band. */
+  const crateParts = (P: ReturnType<typeof at>, w: number, hh: number, y0 = 0) => {
+    const e = w / 2 - 0.05;
+    P.add(wood, box(w - 0.06, hh - 0.06, w - 0.06).translate(0, y0 + 0.03, 0));
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) P.add(darkWood, box(0.1, hh, 0.1).translate(sx * e, y0, sz * e));
+    for (const y of [y0, y0 + hh - 0.08]) {
+      for (const sz of [-1, 1]) P.add(darkWood, box(w, 0.08, 0.1).translate(0, y, sz * e));
+      for (const sx of [-1, 1]) P.add(darkWood, box(0.1, 0.08, w).translate(sx * e, y, 0));
+    }
+    const diag = Math.atan2(w - 0.2, hh - 0.2), dl = Math.hypot(w - 0.2, hh - 0.2);
+    for (const sz of [-1, 1]) P.add(plank, new THREE.BoxGeometry(0.08, dl, 0.04).rotateZ(diag * sz).translate(0, y0 + hh / 2, sz * (w / 2 + 0.01)));
+    for (const sx of [-1, 1]) P.add(plank, new THREE.BoxGeometry(0.04, dl, 0.08).rotateX(diag * sx).translate(sx * (w / 2 + 0.01), y0 + hh / 2, 0));
+    P.add(gold, box(w + 0.03, 0.05, w + 0.03).translate(0, y0 + hh * 0.5, 0));
+  };
 
   for (const { look, o } of L.pieces) {
     const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az), len = Math.hypot(o.bx - o.ax, o.bz - o.az), mx = (o.ax + o.bx) / 2, mz = (o.az + o.bz) / 2, r = o.r, h = o.height;
     switch (look) {
       case 'crate': {
         const cy = rnd() * 3; // its band turned with it (it was square to the world: its corners stood out of the crate's sides)
-        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, cy).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, cy);
+        // (2026-11-19) planks, battens, braces and a band; now and then a smaller crate or a sack on it
+        const P = at(o.ax, o.az, cy), v = hv(o.ax, o.az);
+        crateParts(P, r * 2, h);
+        if (v < 0.35) { const P2 = at(o.ax + 0.1, o.az - 0.05, cy + 0.5); crateParts(P2, r * 1.25, h * 0.55, h); }
+        else if (v < 0.6) P.add(sail, ico(0.42, 0.26, 0.34).translate(0.05, h + 0.2, 0)).add(rope, new THREE.TorusGeometry(0.1, 0.03, 4, 8).rotateX(Math.PI / 2).translate(0.05, h + 0.42, 0));
         break;
       }
-      case 'barrel':
-        kit.add(wood, cyl(r * 0.9, r, h, 9), o.ax, 0, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.3, o.az).add(iron, cyl(r * 1.02, r * 1.02, 0.07, 9), o.ax, h * 0.75, o.az);
+      case 'barrel': {
+        // (2026-11-19) staves that bulge, three hoops, a lid; one in three open, with the catch in it
+        const prof = [[0.01, 0], [r * 0.84, 0], [r * 0.95, h * 0.22], [r, h * 0.5], [r * 0.95, h * 0.78], [r * 0.84, h], [0.01, h]].map(([a, b]) => new THREE.Vector2(a, b));
+        const P = at(o.ax, o.az, hv(o.ax, o.az, 1) * 6);
+        P.add(wood, new THREE.LatheGeometry(prof, 12));
+        for (const [y, rr] of [[0.1, 0.87], [0.5, 1.0], [0.9, 0.87]]) P.add(iron, cyl(r * rr + 0.025, r * rr + 0.025, 0.06, 12).translate(0, h * y - 0.03, 0));
+        if (hv(o.ax, o.az, 2) < 0.34) P.add(fish, cyl(r * 0.8, r * 0.8, 0.02, 12).translate(0, h - 0.06, 0)).add(fish, ico(0.22, 0.06, 0.07).translate(0.05, h - 0.02, 0.03));
+        else P.add(darkWood, cyl(r * 0.82, r * 0.82, 0.03, 12).translate(0, h - 0.01, 0));
         break;
+      }
       case 'rock': {
         const k = new THREE.IcosahedronGeometry(1, 0);
         kit.add(rock, k, o.ax, h * 0.3, o.az, rnd() * 6, r * 1.1, h * 0.7, r * 1.1).add(rock, k, o.ax + r * 0.5, h * 0.12, o.az - r * 0.3, rnd() * 6, r * 0.6, h * 0.38, r * 0.6);
         break;
       }
       case 'stall': {
-        kit.add(wood, box(r * 2, h * 0.55, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h * 0.55, mz, yaw);
+        // (2026-11-19) a counter on trestles: its planked top with a brass edge, a cloth hung on its front, its goods along it (baskets
+        // of the catch, a crate of fish, jars); under an awning in stripes when it has one
+        const P = at(mx, mz, yaw), L2 = len + r * 2, top = h * 0.55, cloth = hv(mx, mz) < 0.5 ? wine : teal;
+        for (const s of [-1, 1]) for (const t of [-0.42, 0.42]) P.add(darkWood, box(0.09, top - 0.06, 0.09).translate(t * r * 2, 0, s * (L2 / 2 - 0.15)));
+        P.add(wood, box(r * 2 - 0.1, 0.07, L2 - 0.2).translate(0, top * 0.35, 0));
+        P.add(plank, box(r * 2.3, 0.08, L2).translate(0, top - 0.08, 0)).add(gold, box(r * 2.34, 0.03, L2 + 0.04).translate(0, top - 0.03, 0));
+        P.add(cloth, box(0.03, top * 0.55, L2 - 0.3).translate(r * 1.15 + 0.02, top * 0.4, 0));
+        for (let k = 0, n = Math.max(1, Math.floor(L2 / 0.75)); k < n; k++) {
+          const z = -L2 / 2 + (k + 0.5) * (L2 / n), v = hv(mx + k, mz, 3);
+          if (v < 0.4) P.add(wood, cyl(0.22, 0.17, 0.2, 9).translate(0, top, z)).add(salt, cyl(0.19, 0.19, 0.03, 9).translate(0, top + 0.18, z));
+          else if (v < 0.7) { P.add(plank, box(0.42, 0.12, 0.34).translate(0, top, z)); for (const f of [-0.1, 0, 0.1]) P.add(fish, ico(0.16, 0.04, 0.05).rotateY(0.3).translate(0, top + 0.13, z + f)); }
+          else P.add(clay, new THREE.SphereGeometry(0.13, 8, 6).scale(1, 1.25, 1).translate(0, top + 0.16, z)).add(clay, cyl(0.05, 0.06, 0.08, 8).translate(0, top + 0.3, z));
+        }
         if (h > 2) {
           // a pole at each end of the counter, under the awning's ends (one stood in its middle, the other half its length past its end)
           for (const s of [-1, 1]) kit.add(darkWood, cyl(0.07, 0.07, h, 5), mx + Math.sin(yaw) * (len / 2) * s, 0, mz + Math.cos(yaw) * (len / 2) * s);
-          kit.add(rnd() < 0.5 ? wine : teal, new THREE.BoxGeometry(1.6, 0.06, len + 0.6).translate(0, h, 0), mx, 0, mz, yaw, 1, 1, 1, 0);
+          const stripe = rnd() < 0.5 ? wine : teal;
+          for (let k = 0; k < 4; k++) P.add(k % 2 ? cream : stripe, new THREE.BoxGeometry(0.4, 0.06, len + 0.6).translate(-0.6 + k * 0.4, h, 0));
+          P.add(stripe, new THREE.BoxGeometry(1.62, 0.22, 0.03).translate(0, h - 0.12, (len + 0.6) / 2)).add(stripe, new THREE.BoxGeometry(1.62, 0.22, 0.03).translate(0, h - 0.12, -(len + 0.6) / 2));
         }
         break;
       }
-      case 'tent':
-        kit.add(sail, new THREE.ConeGeometry(r * 1.25, h * 1.4, 7).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(gold, cyl(0.05, 0.05, h * 1.9, 4), o.ax, 0, o.az);
+      case 'tent': {
+        const spin = rnd() * 3; // (the stream's draw, as before)
+        void spin;
+        // (2026-11-19) its door towards the camp's fire (else towards the camera), the flap tied back, guy ropes to pegs, a coloured skirt,
+        // the pole through its top with a gilt finial
+        const R = r * 1.25, Hc = h * 1.4, f = fires.reduce<Obstacle | null>((b, c) => (!b || Math.hypot(c.ax - o.ax, c.az - o.az) < Math.hypot(b.ax - o.ax, b.az - o.az) ? c : b), null);
+        const door = f && Math.hypot(f.ax - o.ax, f.az - o.az) < 18 ? Math.atan2(f.ax - o.ax, f.az - o.az) : 0;
+        const P = at(o.ax, o.az, door), skirt = hv(o.ax, o.az) < 0.5 ? wine : teal;
+        P.add(sail, new THREE.ConeGeometry(R, Hc, 10).translate(0, Hc / 2, 0));
+        P.add(skirt, new THREE.CylinderGeometry(R * 0.93, R * 1.005, 0.3, 10, 1, true).translate(0, 0.15, 0));
+        // the doorway: a dark triangle on the cone's face, towards +z (the fire)
+        const dh = Math.min(1.5, Hc * 0.45), rb = R + 0.02, rt = R * (1 - dh / Hc) + 0.02, dw = 0.55;
+        const dg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-dw, 0, rb), new THREE.Vector3(dw, 0, rb), new THREE.Vector3(0, dh, rt)]);
+        dg.computeVertexNormals();
+        const flap = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(dw, 0, rb), new THREE.Vector3(dw + 0.5, 0.05, rb - 0.25), new THREE.Vector3(0, dh, rt)]);
+        flap.computeVertexNormals();
+        P.add(darkWood, dg).add(sail, flap);
+        P.add(darkWood, cyl(0.05, 0.05, Hc + 0.5, 5)).add(gold, new THREE.ConeGeometry(0.09, 0.22, 6).translate(0, Hc + 0.6, 0));
+        for (const a of [Math.PI * 0.33, Math.PI, -Math.PI * 0.33]) {
+          const ux = Math.sin(a), uz = Math.cos(a), ax = ux * R * 0.4, az = uz * R * 0.4, ay = Hc * 0.6, bx = ux * (R + 1.0), bz = uz * (R + 1.0), l = Math.hypot(bx - ax, ay, bz - az);
+          P.add(rope, new THREE.CylinderGeometry(0.015, 0.015, l, 3).translate(0, l / 2, 0).rotateX(Math.acos(ay / l)).rotateY(a + Math.PI).translate(bx, 0, bz));
+          P.add(darkWood, box(0.06, 0.2, 0.06).translate(bx, 0, bz));
+        }
         break;
+      }
       case 'house': {
         if (r >= 1.2) {
           // A cottage (a village's row): walls, gables and a pitched roof along its length, a chimney, a door and windows on both long
@@ -290,11 +386,28 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
         kit.add(cream, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h, mz, yaw);
         // fallen blocks at its foot
         kit.add(stone, box(0.7, 0.5, 0.9), mx + 0.9, 0, mz + 0.6, rnd() * 3).add(stone, box(0.9, 0.4, 0.6), mx - 1.1, 0, mz - 0.7, rnd() * 3);
+        {
+          // (2026-11-19) a stone footing, buttresses every 4 m on both faces, a coping of stones along its top under the gilt edge, the
+          // courses of its blocks drawn as shallow grooves
+          const P = at(mx, mz, yaw), Lw = len + r * 2;
+          P.add(stone, box(r * 2 + 0.24, 0.45, Lw + 0.1));
+          P.add(stone, box(r * 2 + 0.14, 0.16, Lw + 0.06).translate(0, h - 0.17, 0));
+          for (let z = -Lw / 2 + 2; z < Lw / 2 - 1; z += 4) for (const s of [-1, 1]) P.add(cream, box(0.4, h * 0.82, 0.7).translate(s * (r + 0.18), 0, z)).add(stone, box(0.46, 0.14, 0.76).translate(s * (r + 0.18), h * 0.82, z));
+          for (let y = 0.95; y < h - 0.4; y += 0.6) for (const s of [-1, 1]) P.add(darkWood, box(0.02, 0.03, Lw - 0.1).translate(s * (r + 0.005), y, 0));
+        }
         break;
       }
       case 'hull': {
         // a ship on its side: a long wooden body, ribs standing up along it, a broken mast
-        kit.add(darkWood, box(r * 2, h * 0.7, len + r * 2), mx, 0, mz, yaw, 1, 1, 1, 0).add(wood, box(r * 1.2, h, len * 0.7), mx, 0.3, mz, yaw);
+        // (2026-11-19: a boat's shape, its planked hull rolled on its side with a pale strake and a keel; it was two boxes)
+        {
+          const P = at(mx, mz, yaw), half = len / 2 + r, roll = 0.95;
+          const hullG = new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(r * 1.15, h * 0.95, half).rotateZ(-roll).translate(0, h * 0.62, 0);
+          P.add(darkWood, hullG);
+          P.add(wood, new THREE.TorusGeometry(1, 0.06, 4, 24, Math.PI).scale(r * 1.15, 1, half).rotateX(Math.PI / 2).rotateZ(-roll).translate(0, h * 0.62, 0));
+          P.add(wood, new THREE.TorusGeometry(1, 0.05, 4, 24, Math.PI).scale(r * 1.0, 1, half * 0.95).rotateX(Math.PI / 2).translate(0, -h * 0.35, 0).rotateZ(-roll).translate(0, h * 0.62, 0));
+          P.add(darkWood, box(0.18, 0.2, half * 1.9).translate(0, 0, 0).rotateZ(-roll).translate(Math.sin(roll) * h * 0.92, h * 0.62 - Math.cos(roll) * h * 0.92, 0));
+        }
         for (let k = 0; k <= 6; k++) {
           const t = k / 6, x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t;
           // the ribs lean in across the hull, each side towards the other (they leaned along the world's z, whatever the hull's heading)
@@ -303,11 +416,18 @@ export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []):
         kit.add(darkWood, cyl(0.2, 0.3, 6, 6), mx, 1.5, mz, yaw, 1, 1, 1, 1.15);
         break;
       }
-      case 'fire':
-        kit.add(rock, cyl(r, r * 1.1, 0.35, 8), o.ax, 0, o.az).add(darkWood, cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 0.3, 1, 1, 1, 0.8).add(darkWood, cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 2.4, 1, 1, 1, 0.8);
-        kit.add(gold, new THREE.ConeGeometry(0.35, 0.9, 6).translate(0, 0.85, 0), o.ax, 0, o.az);
+      case 'fire': {
+        // (2026-11-19) a ring of stones round the ash, a tepee of logs, the flame, and a tripod with the kettle over it (it was a slab)
+        const P = at(o.ax, o.az, hv(o.ax, o.az) * 6);
+        P.add(iron, cyl(r * 0.78, r * 0.82, 0.06, 12));
+        for (let k = 0; k < 11; k++) { const a = (k / 11) * Math.PI * 2, rr = r * 0.88; P.add(rock, ico(0.2 + hv(o.ax, o.az, k) * 0.08, 0.15, 0.18).rotateY(a).translate(Math.sin(a) * rr, 0.1, Math.cos(a) * rr)); }
+        for (const a of [0.3, 2.4, 4.5]) P.add(darkWood, new THREE.CylinderGeometry(0.07, 0.09, 1.0, 5).translate(0, 0.5, 0).rotateX(0.62).rotateY(a).translate(Math.sin(a) * 0.32, 0.02, Math.cos(a) * 0.32));
+        P.add(gold, new THREE.ConeGeometry(0.3, 0.8, 6).translate(0, 0.5, 0)).add(gold, new THREE.ConeGeometry(0.16, 0.5, 5).translate(0.14, 0.36, -0.08));
+        for (const a of [0, 2.1, 4.2]) P.add(iron, new THREE.CylinderGeometry(0.025, 0.025, 1.75, 4).translate(0, 0.87, 0).rotateX(-0.36).rotateY(a).translate(Math.sin(a) * 0.62, 0, Math.cos(a) * 0.62));
+        P.add(iron, cyl(0.012, 0.012, 0.42, 3).translate(0, 1.22, 0)).add(iron, new THREE.SphereGeometry(0.2, 8, 6, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.65).translate(0, 1.05, 0)).add(iron, new THREE.TorusGeometry(0.17, 0.012, 3, 10, Math.PI).translate(0, 1.18, 0));
         glowSpots.push({ x: o.ax, y: 1.2, z: o.az, size: 7 });
         break;
+      }
       case 'post':
         kit.add(darkWood, cyl(r * 0.8, r, h, 7), o.ax, 0, o.az).add(gold, cyl(r * 1.05, r * 1.05, 0.12, 7), o.ax, h * 0.7, o.az);
         glowSpots.push({ x: o.ax, y: h + 0.2, z: o.az, size: 1.4 });

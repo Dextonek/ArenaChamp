@@ -20,7 +20,19 @@ every floor (its glyph faced north, away): now towards the road within 1 rad of 
 place (its lock often away): now towards the road within 0.8 rad. The Sea's and the War's roadside signposts: the arms point at the
 place and back along the road (they were 1.2 and -0.9 rad off). Seen, not changed: the War's red side's soldiers (footman-r,
 bowman-r) are still the old drawn figures while the blue side has models.
-- **Next (the user's pick):** more detail in the floors' props, the Sea first (the camp's crates: a plain box with one band).
+- **More detail in the Sea's props (floors 1-10), done as the sample, waiting on the user's look before the other chapters:** in
+  `zone.ts`: the camp fire (a ring of stones, the ash, a tepee of logs, the flame, a tripod with its kettle on a chain; it was a slab and
+  a cone), the tent (a doorway towards the camp's fire, the flap tied back, guy ropes to pegs, a skirt in wine or teal, the pole and a
+  gilt finial), the crate (battens, rims, braces, the band; now and then a smaller crate or a sack on it), the barrel (bulging staves,
+  three hoops, a lid; one in three open with the catch), the stall (trestles, a planked top with a brass edge, a cloth on its front,
+  goods along it: baskets of the catch, fish crates, jars; striped awnings), the lair wall (a footing, buttresses every 4 m, coping,
+  courses), the wreck's hull (a boat's shape on its side). Variety from each prop's place, not the zone's random stream. The market's
+  catch is a dull silver now (white read as a light: the props review's taste call). **Draws:** the plain matte parts of the zone's kit
+  are now one vertex-coloured mesh a square (`Kit.matte`, named `zone-cover`; the props probe skips it as dressing): draws at the camp
+  the same, over a whole floor 20-34 fewer than before the detail; triangles +1.5-3.6 %; a floor opens about 0.05 s later. Fights the
+  same (world-1 ee9fa694, gen-2 6b4d7c97 with and without). Probe: no new fault from the props (the wall's new parts run into the
+  hill where the wall already did: open item 9). Sheets `docs/tower/props/detail/sea-props-before-after.jpg`, `sea-props-close.jpg`
+  (`pipeline/tools/climb-props-close.js`).
 
 ## The Climb's roads made clean (2026-11-19), all five chapters' roadsides too: done, pushed (ceef026a), NOT live
 
