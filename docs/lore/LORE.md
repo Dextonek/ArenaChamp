@@ -34,6 +34,13 @@ at the Tower's foot and still burns beneath it in the Hall of Noon: **the Heart 
 into the Cinder Pit, where they burn as **Ash and Ember**. Its keeper, **the Sun Warden**, stayed at his post in the Sun Court at the
 Tower's top, and his great dial still strikes.
 
+The sun's shadow did not fall with it. The shadow it threw as it fell took wing before it reached the ground and flew up, not down:
+**the Eclipse Wyrm**, eldest and largest of the Cast. It coils on the Roost, the Tower's broken crown above the Sun Court, under the
+Tear, and wears on its brow the one thing it caught as the sun went by, a black disc rimmed with the last corona of noon. Its scales
+are the blue of the sky the moment the light went, its plates the sun's gold it swallowed, its wings the colour of the Tear's edge.
+Its disc hangs over the Court, which is why the Court stands under an eclipse; the Warden has never been able to reach it. It wants
+no Dial unmade, only the light that is left, and it eats it: part of why the morning grows paler every year.
+
 Its heat lifted the sea over the Drowned Harbour. Its light ran down into the crystals of the Deep. The Sands say it fell into their
 dunes, and the sand is still warm. Where it had hung, the sky is torn: **the Tear**, black with a burning pink edge, and through it
 came the Unmaker.
@@ -88,7 +95,7 @@ gates' are and set wherever the Tower wants a keeper, as a collector fills a she
 
 ## Places
 
-- tower | The Tower | 0 | truce | The Gnomon, on the crater of Noonfall: the Ring at its foot, the Hall of Noon and the Cinder Pit beneath, the Sun Court at its top, the Tear above
+- tower | The Tower | 0 | truce | The Gnomon, on the crater of Noonfall: the Ring at its foot, the Hall of Noon and the Cinder Pit beneath, the Sun Court at its top, the Roost of the Eclipse Wyrm on its broken crown, the Tear above
 - frostfall | Frostfall | 12 | hourkeepers | The observatory and the frozen library on Frostfall Lake, under the pole star
 - aubade | Aubade | 1.6 | noonsworn | The white city on the morning cliffs, where the light comes first
 - sands | The Sands | 3.6 | dune | Tamerit, the city of the Throne, between the Glass Flats and the Storm Canyon

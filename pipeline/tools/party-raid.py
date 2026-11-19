@@ -5,7 +5,7 @@ one public raid room, the host starts, every screen's autopilot plays. To find w
     python pipeline/tools/party-raid.py <out folder> [--players 6] [--seconds 150] [--port 5196] [--boss sun]
                                         [--boost 0] [--twin] [--phone] [--hall] [--burst]
 
---boss   the boss the run starts at (sun, ash, heart): the lobby's `raid`. A party at `ash` fights Twin Flames.
+--boss   the boss the run starts at (sun, ash, heart, wyrm): the lobby's `raid`. A party at `ash` fights Twin Flames.
 --boost  every bot also takes this much HP a second off the boss it fights, through the hub (under its caps), so a fight
          ends in the time given: six bots at the HP for ten are slow.
 --twin   Twin Flames' own test (with --boss ash): the boost is steered so that the west half gets far ahead (Ember grows
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     ap.add_argument("--players", type=int, default=6)
     ap.add_argument("--seconds", type=int, default=150)
     ap.add_argument("--port", type=int, default=5196)
-    ap.add_argument("--boss", default="sun", choices=["sun", "ash", "heart"])
+    ap.add_argument("--boss", default="sun", choices=["sun", "ash", "heart", "wyrm"])
     ap.add_argument("--boost", type=int, default=0)
     ap.add_argument("--twin", action="store_true")
     ap.add_argument("--phone", action="store_true")

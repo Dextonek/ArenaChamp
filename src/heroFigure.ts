@@ -431,7 +431,8 @@ export class HeroFigure {
     if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.5) this.castNow = null;
     // An action holds a moment where it landed, then comes back: about 1.2 s after landing it is over.
     for (const a of this.bodyActs) a.t += dt;
-    this.bodyActs = this.bodyActs.filter((a) => a.t <= a.dur + 1.2);
+    // Kept 2 s past its impact: the wyrm's breath sweeps for 1.8 s after it.
+    this.bodyActs = this.bodyActs.filter((a) => a.t <= a.dur + 2);
     f.root.position.set(pos.x, pos.y, pos.z);
     if (!f.loaded) return;
     const acts: BodyAct[] = [];

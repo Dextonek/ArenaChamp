@@ -8,7 +8,8 @@
 // 17 (2026-11-14): leaderboards (`leaderboards`, `climb_report`, the duel rating) and clans with a clan chat (`clan_*`).
 // 18 (2026-11-14): the Climb's open world, stage 2: shared packs (`pack_*`, `world_roster.packs`).
 // 19 (2026-11-16): the Climb's open world, stage 3: doors together (`door_*`; a ruler fought by a party on the Raid's `boss_*`).
-export const PROTOCOL = 19;
+// 20 (2026-11-19): the Raid's fourth boss, the Eclipse Wyrm (`RAID_BOSSES.wyrm`, `RAID_REWARDS.wyrm`, a run of four).
+export const PROTOCOL = 20;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -22,6 +23,8 @@ export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16, partyRing: 38 },
   heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12, partyRing: 35 },
+  // The Eclipse Wyrm (pipeline/designs/raid-wyrm.md): no party room; a party fights it in the Roost too, not tuned for one.
+  wyrm: { hp: { solo: 3500, duo: 7500 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 14 },
 };
 
 /**
@@ -44,6 +47,8 @@ export const RAID_REWARDS = {
   },
   // `hands`: The Ring of Hands, the ring full enough when it closes.
   heart: { lock: { stagger: 40 }, hands: { kneel: true } },
+  // `pin`: Pin the Tail, its tip held after a Tail Sweep. `stand`: Shadows Stand, its three shades cut down in time.
+  wyrm: { pin: { stagger: 40 }, stand: { kneel: true } },
 };
 
 /** What the Shrine, a side door of the hall, costs on the run's time (s; src/raid/paths.ts). */
@@ -87,7 +92,7 @@ export const raidTwin = (id, band) => id === RAID_TWIN.boss && band > 2;
 export const RAID_HALL_RING = 13;
 
 /** The bosses of one tier of a run, in order. */
-export const RAID_RUN = ['sun', 'ash', 'heart'];
+export const RAID_RUN = ['sun', 'ash', 'heart', 'wyrm'];
 
 /** The most seats a raid's lobby holds (pipeline/designs/raid-party.md). */
 export const RAID_PARTY_MAX = 40;

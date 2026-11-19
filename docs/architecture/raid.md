@@ -14,7 +14,8 @@ Ember the pit below, and the run waits in the hall between them. Under the hall 
 ## The run
 
 Walk onto an altar in the hall to take an upgrade, walk through the gate, fight the Sun Warden. Back to the hall, another altar, the next gate,
-Ash and Ember; then a third altar and the north gate, the Heart of Noon. Beat all three (`RAID_RUN`) and the next tier is offered, keeping the
+Ash and Ember; then a third altar and the north gate, the Heart of Noon; then a fourth altar and the gate up to the Roost, the Eclipse Wyrm
+(2026-11-19). Beat all four (`RAID_RUN`) and the next tier is offered, keeping the
 upgrades, for a higher score. HP is full at each fight. One loss ends the run: alone that is one fall, for two it is both down at once.
 
 ## Noonfall's hall
@@ -22,7 +23,8 @@ upgrades, for a higher score. HP is full at each fight. One loss ends the run: a
 `src/raid/hall.ts` and `src/arenas/noonfall.ts`. Round, radius 13, not in `ARENAS`. A gold wheel half sunk in the middle with lava in its
 cracks; marble and gold on the Court's side (west), hex basalt on the Pit's (east); three broken gold rays standing between the two gates, and behind
 them, at the north centre, the gate down to the Sunken Heart (`HALL_GATES.heart`; its lintel carries a heart in a ring, its light is white gold).
-The hall draws one gate for each boss of `RAID_RUN`. All drawn in code with the temple's and the caldera's props: first-pass, for the artist to direct.
+On the Court's side, between the Court's gate and the west side door, the way up to the Roost (`HALL_GATES.wyrm`; its lintel carries
+a black disc in a gold ring, its light is violet). The hall draws one gate for each boss of `RAID_RUN`. All drawn in code with the temple's and the caldera's props: first-pass, for the artist to direct.
 
 | What | How |
 |---|---|
@@ -47,6 +49,7 @@ duel, the rim and the partner's screen call the same methods. Built by `blender/
 | Sun Warden | A floating stone sentinel: a gold-inlaid monolith, slab shoulders, a carved mask, a halo round a small sun, two free fists, a ring of floating stones. 5,554 triangles | `core`, `mask`, `halo`, `sun` (`corona`), `slabL`, `slabR`, `fistL`, `fistR`, `stones` | The sun dims to black with a corona, the halo turns, the slabs break away |
 | Ash | A hunched magma brute on his knuckles: basalt plates over a glowing core, huge forearms. 6,780 | `torso`, `head`, `core`, `armL`/`foreL`/`fistL`, the same on the right, `legL`, `legR`, `plateA` to `plateE` | Plates fall away, seams burn hotter |
 | Ember | A flame in a burnt mantle: a hollow hood, a white-hot core, a torn mantle with glowing tips, two orbiting lanterns. 2,597 | `hood`, `mantle`, `core`, `lanternL`, `lanternR` | The lanterns orbit faster, the flame grows |
+| The Eclipse Wyrm | A dragon on four legs: midnight-blue scales, bone-white throat and belly plates, a sun-gold breastplate, spine spikes, violet wings with four finger bones, a tail ending in a gold sun-blade, a black eclipse disc with a gold corona on its brow. 5,540 (`blender/bosses/boss_wyrm.py`) | `torso` (holds `neck1`..`neck4` > `head` > `jaw`, `crown`; `legFL`, `legFR`, `legBL`, `legBR`; `tail1`..`tail5`; `wingL` > `wingTipL`, `wingR` > `wingTipR`) | The breastplate burns a little brighter each phase. It hovers for its stage (`WYRM_LIVE.hover`), and its `crown` is hidden while the disc rolls on the floor (`WYRM_LIVE.disc`) |
 | The Heart of Noon | The fallen sun: a molten heart in a crust of basalt plates, a calm gold face in front, three armillary rings, a crown of snapped rays, two sun blades for hands. 8,846 | `core` (holds `mask`, `crown`, `ringA`, `ringB`, `ringC`), `bladeL`, `bladeR`, `shards` | The seams burn brighter; in The Rings Turn the rings come down round its foot and lie flat, each turning with its beam (a locked one goes dark); in Noon Falls the crown turns and each Heartbeat swells it. The crust is one mesh, so the plates that fall are drawn by the Heartbeat itself |
 
 **Every attack strikes when it lands** (user, 2026-11-08: "if the boss is attacking he should make some animation for it so that it makes
@@ -104,6 +107,7 @@ than the brain's pick (the vent) is `BossPhase.timed`.
 | Sun Warden's extras | Sun Order, then Walking Sun, then Eclipse, each from the first phase on |
 | Ash and Ember's extras | Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave from there |
 | The Heart's extras | The Crown of Rays, then The Rings Turn, then the Heartbeat, each from the first phase on |
+| The Wyrm's extras | Tearfall, then Wing Gust, then The Eclipse Rolls, each from the first phase on |
 
 **The score** is the most bosses beaten, then the fastest time. Alone it stays in this browser (`raid.best`). For two it goes on both
 accounts (`recordRaid`) and does not count as a win or a loss: the profile's record stays about duels with people.
@@ -967,6 +971,38 @@ saw them.
 dropped blade's place is exact when a lance knocked it loose, and as near as a fallen hero's place is on each screen otherwise. A
 hero that falls on a ring is not carried while it lies there. `PROTOCOL` must be raised before a deploy: the room's rules changed.
 
+## The Eclipse Wyrm
+
+`src/raid/wyrm.ts`, design and lore in [raid-wyrm.md](../../pipeline/designs/raid-wyrm.md) (user, 2026-11-19: "could you create boss
+to arena champs raid boss and this level of model that this account have", then "Yes, make the fight"). The fourth boss, the last of a
+tier: the shadow the sun threw as it fell, on the Tower's crown under the Tear. It walks on four legs at 2.2 m/s and stops 4.8 m from its
+target. Alone 3,500 HP, for two 7,500. Enrage 2:45. Its hit circle is 2.3 m; its tail reaches about 8 m, so a hit on the tail's tip misses.
+
+| Phase | From | Move | Shown | Costs | What you do |
+|---|---|---|---|---|---|
+| Shadowfall | 100 % | Claw Rake | 1.5 s | 16 % | Three lanes fan from its front, from 3.2 m to 12 m, 1.4 m wide, 26 degrees apart: a gap, under its chin, or round it |
+| | | Tail Sweep | 1.4 s | 20 %, knock 3 | It turns its back on you: 230 degrees round its back, 7 m. Get in front of it, or away. Then Pin the Tail |
+| | | Shadow Breath | 1.6 s, then a 1.6 s sweep | 13 %, once | A 28 degree cone 11 m long sweeps 110 degrees across its front. While it draws breath its head turns to the side it starts on and the fire glows there: go round to that side, behind it, or out of reach |
+| All, by the clock | | Wingshade | 3.2 s | 38 % | The whole roof burns but under its wings (within 4.8 m of its middle, a gold circle): run in. Shadowfall 14 s in, then every 26 s; Taking Wing 36 s in, every 24 s; Totality 8 s in, every 20 s |
+| Taking Wing | 66 % | Shadows Stand (the stage) | 30 s | | It hovers over the middle in a violet shell and can't be hurt; three Cast shades at 8.5 m shoot beams. Kill them: it crashes down and kneels. If not, Tearfall, 50 % over the whole roof, no cover |
+| | | Tearfall | 1.3 s, 0.9 s apart | 14 % each | Three circles of 2.2 m, each where you stand then |
+| | | Wing Gust | 1.3 s | 12 %, knock 4 | An 80 degree cone in front, 9 m |
+| Totality | 33 % | The Eclipse Rolls (also its opener) | 1.6 s, then it rolls | 18 %, once | Its disc rolls 9 m/s out along a line through where you stood to the rim and back; its track glows pale orange while it rolls |
+
+**Pin the Tail** (its mechanic with a reward): after each Tail Sweep its tail's tip is a gold spot 6.2 m behind it for 3.5 s. Hold it
+1.5 s for +40 on the gauge (`RAID_REWARDS.wyrm.pin`, once a sweep). **Wingshade** asks the opposite of every other boss: run in to it.
+
+**How it keeps the rules.** Tail Sweep's aim faces it away from its target (the brain turns it), so its back is toward that hero.
+Shadow Breath's side is a roll of the brain's, carried in the cast as a spot on that side (`x`, `z`), so both screens and the body read
+the same side. The breath and the rolling disc are zones that move (`Threat.hits`), drawn by their moves' looks, with a `warn` zone for
+the whole sweep and the whole line while they gather; an AI sees their whole path ahead (`look`). The stage is `stageMove`, with the
+body's hover set round it.
+
+**Measured** (`_raid`, the autopilot at Normal, every hero once, tier 1, alone): 11 of 40 cleared, fights about 106 s, the enrage
+reached twice. The autopilot takes the breath far more often than its share (about 2.6 times a fight): it does not walk round to the side
+the breath starts on, which a person can see. Tiers 2 and 3 and a party of five ran with no errors; two bots through the real hub
+cleared it with both screens agreeing.
+
 ## The lairs
 
 The boss rooms are where the bosses live, not duel arenas (user, 2026-11-07). Neither is in `ARENAS`, so no duel picks them. **The Sun Court's
@@ -1039,6 +1075,12 @@ along the north side of the east and west rays (behind a low shelf where a ray's
 is drawn in code: the crust of the room for two carried on outward, rings of plates to the well's rim and across every ray, a burnt streak
 down the middle of each. The room is waiting for the user's nod.
 
+**The Roost, the Eclipse Wyrm's room** (`src/arenas/wyrmRoost.ts`, 2026-11-19). Radius 14, round, no cover. The Tower's broken crown above
+the Sun Court, at night: a roof of dark blue-grey slate, the old sun-dial on it in thin dark bronze lines, broken and scorched by its
+breath, faint violet-pink glints in the cracks. A low slate parapet with a bronze edge; past it snapped pillar stumps with old chains, and
+gilded plates and big bones of what it ate. To the north, high over the rim, the Tear: a jagged black lens with a burning pink edge.
+Drawn in code, first-pass, waiting for the user's nod.
+
 ## Two screens
 
 **Each screen stays one hero against one enemy, plus a third body it only draws.** The partner is not in `liveFoes()`, so nothing
@@ -1077,6 +1119,12 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 ## Limits
 
+- **The Eclipse Wyrm is not tuned for a party** (a band over 2): it fights in the Roost with its band's HP and the same moves, checked
+  only to run (a party of five, no errors). It was not played by a person; whether the breath's start glow reads in time on a phone is for
+  a hand to say. Its body's poses were judged from the game camera and a side view only.
+- **The wyrm's gate in the hall stands close to the west side door (the Vault)**: both show on the Court's side; first-pass.
+- **A run is four bosses now**: a tier takes longer, and the week's board and the raid rank count the same bosses as before (a rank
+  comes at 1, 3, 6 and 9 bosses).
 - **The Hall of Noon was fought only by one autopilot hero at a time** (`_raid(..., { band: 5 })`), never by a party of people or of
   bots through the hub. What forty heroes do to The Hour Strikes (a crowd in one arm's mouth) was not seen. Its cost on a phone was
   not measured, only counted: late in the count about 45 tongues of flame and 300 embers at once, and 42 columns more for under a
@@ -1154,6 +1202,12 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   player. A phone that freezes the page and drops the socket hands the brain over at once.
 
 ## Tools
+
+- `pipeline/tools/wyrm-check.js`: `_raidWyrm()` for the Eclipse Wyrm: each move in and out of its zone, the breath's sweep from one side
+  to the other, Pin the Tail paid once, the gust's push, the disc off its brow and back, the stage (hover, immune, three shades, the
+  kneel), then the real brain through all three phases and the hub's fields (47 rows). `pipeline/tools/wyrm-shots.py`: its pictures from
+  the game page, `docs/bosses/wyrm-*.jpg`. `boss-poses.js` and `boss-fight-look.js` take any boss's id now (`'wyrm'`), and
+  `_bossPoses(..., { acts, yaw })` shows each body action and the body side-on.
 
 - `pipeline/tools/raid-check.js`: `_raidCheck()` forces each of the Warden's moves and checks what it costs, walking out, cover and the
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,

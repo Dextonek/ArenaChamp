@@ -3,7 +3,7 @@
 // phases come. Each move the body casts is pictured at its wind-up and its strike (the first time it comes), a clip of 12 s is
 // filmed (15 frames a second), and the body is measured all through: its lowest point (visible meshes only) and how far it reaches
 // out from its middle below 2.5 m, against its hit circle (`body.radius`).
-//   window._who = 'warden' | 'ash' | 'ember' on a line before this file's text, then
+//   window._who = 'warden' | 'ash' | 'ember' | any raid boss's id ('heart', 'wyrm') on a line before this file's text, then
 //   python -I pipeline/tools/page-shots.py <that script> <out folder> --port 5177 --json look.json --timeout 400
 // The clip comes back as frames clip_0000.jpg...: ffmpeg -framerate 15 -i clip_%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 28 <who>.mp4
 const who = window._who ?? 'warden';
@@ -12,7 +12,8 @@ const { ASH_AND_EMBER } = await import('/src/raid/ashEmber.ts');
 const { LocalLink } = await import('/src/raid/link.ts');
 const d = vfx.duel, a = vfx.arena, hm = vfx.heroMode;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const def = who === 'warden' ? SUN_WARDEN : ASH_AND_EMBER;
+const { BOSSES } = await import('/src/raid/bosses.ts');
+const def = who === 'warden' ? SUN_WARDEN : who === 'ash' || who === 'ember' ? ASH_AND_EMBER : BOSSES[who];
 vfx.view.paused = true;
 if (!d.on) vfx.setDuel(true, 'play');
 vfx.heroPickCtrl.setValue('Kaia');

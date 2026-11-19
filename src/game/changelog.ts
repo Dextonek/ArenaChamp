@@ -39,6 +39,25 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-19',
+    title: 'The Eclipse Wyrm, the Raid’s fourth boss',
+    live: false,
+    items: [
+      {
+        tag: 'Raid',
+        title: 'A fourth boss: the Eclipse Wyrm',
+        text: 'After the Heart of Noon, a gate on the Court’s side of the hall leads up to the Roost, the Tower’s broken crown under the Tear, where the shadow of the fallen sun waits as a dragon. It rakes with its claws, sweeps its tail at whoever stands behind it and breathes a fan of fire across its front. When the Tear flares, the whole roof burns except under its wings: run in to it. After a tail sweep, stand on the tail’s gold tip to pin it.',
+        image: 'news/eclipse-wyrm.jpg',
+        alt: 'The Eclipse Wyrm rearing with its wings spread on the Roost; the roof glows orange except a gold circle under it, where Kaia runs in.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Its stage and its last phase',
+        text: 'At two thirds of its health it takes wing over the roof and three shadows stand up and shoot: cut them down and it crashes and kneels, or the Tear burns the whole roof. In its last third its eclipse disc leaves its brow and rolls across the roof and back. A run of the Raid is now four bosses.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-19',
     title: 'How every spell lands, written on it',
     live: false,
     items: [

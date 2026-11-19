@@ -184,7 +184,7 @@ export class BossFight {
       if (this.twin) hud.showTwin(this.twin.defs.map((d) => d.name) as [string, string], def.phases.slice(1).map((p) => p.at));
     }
     if (def.gates) {
-      const out = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' ? def.id : 'sun';
+      const out = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' || def.id === 'wyrm' ? def.id : 'sun';
       const gate = (deg: number, r = out) => {
         const a = THREE.MathUtils.degToRad(deg), x = RING.x + Math.sin(a) * r, z = RING.z + Math.cos(a) * r;
         const g = new KeepGate(x, z, Math.atan2(RING.x - x, RING.z - z), tone);

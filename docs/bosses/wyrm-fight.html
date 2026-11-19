@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Eclipse Wyrm</title>
+<style>
+  :root { --bg: #0d0b16; --card: #17142a; --ink: #ece8f8; --dim: #a9a2c4; --gold: #ffc870; --violet: #8a6af0; --orange: #ff9a50; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-family: Georgia, serif; color: var(--gold); margin: 0 0 4px; font-size: 30px; }
+  h2 { font-family: Georgia, serif; color: var(--gold); margin: 34px 0 10px; font-size: 22px; }
+  .sub { color: var(--dim); margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  figure { margin: 0; background: var(--card); border-radius: 10px; overflow: hidden; }
+  figure img { width: 100%; display: block; }
+  figcaption { padding: 10px 12px 12px; color: var(--dim); font-size: 14px; }
+  figcaption b { color: var(--ink); }
+  .wide { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #262140; vertical-align: top; }
+  th { color: var(--gold); font-weight: 600; }
+  .num { font-size: 34px; color: var(--gold); font-family: Georgia, serif; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .stat { background: var(--card); border-radius: 10px; padding: 12px; }
+  .stat div:last-child { color: var(--dim); font-size: 13px; }
+  .phone { max-width: 260px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Eclipse Wyrm</h1>
+  <p class="sub">The Raid's fourth boss, after the Heart of Noon. The shadow the sun threw as it fell, roosting on the Tower's broken crown under the Tear. Built and checked; not pushed, not live.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num">11 / 40</div><div>heroes cleared it once each at Normal (28 %): between Ash and Ember (22 %) and the Warden (36 %)</div></div>
+    <div class="stat"><div class="num">47 / 47</div><div>rule checks pass: every move in and out of its zone, the pin, the stage, all three phases</div></div>
+    <div class="stat"><div class="num">0</div><div>errors at tiers 1 to 3, for a party of five, and for two bots through the real server</div></div>
+    <div class="stat"><div class="num">4</div><div>bosses in a run now: Warden, Ash and Ember, the Heart, the Wyrm</div></div>
+  </div>
+
+  <h2>Its own mechanic: run in under its wings</h2>
+  <div class="grid">
+    <figure class="wide"><img src="wyrm-shade.jpg" alt="Wingshade"><figcaption><b>Wingshade</b>, by the clock in every phase. The Tear flares and the whole roof burns (38 %) except the gold circle under it. Every other boss pushes you away; this one asks you to run in.</figcaption></figure>
+  </div>
+
+  <h2>Its moves</h2>
+  <div class="grid">
+    <figure><img src="wyrm-breath.jpg" alt="Shadow Breath gathering"><figcaption><b>Shadow Breath</b>, drawing breath: its head turns to the side the fire starts on and the fire glows there.</figcaption></figure>
+    <figure><img src="wyrm-breath-sweep.jpg" alt="Shadow Breath sweeping"><figcaption>Then the fan of fire sweeps across its front. Go round to the side it started on, behind it, or out of reach.</figcaption></figure>
+    <figure><img src="wyrm-rake.jpg" alt="Claw Rake"><figcaption><b>Claw Rake</b>: three lanes fan from its front. Step into a gap, under its chin, or round it.</figcaption></figure>
+    <figure><img src="wyrm-tail.jpg" alt="Tail Sweep"><figcaption><b>Tail Sweep</b>: it turns its back on you and sweeps all round its back. Get in front of it.</figcaption></figure>
+    <figure><img src="wyrm-pin.jpg" alt="Pin the Tail"><figcaption><b>Pin the Tail</b>: after a sweep its tail's tip is a gold spot. Stand on it 1.5 s: +40 on its gauge.</figcaption></figure>
+    <figure><img src="wyrm-stand.jpg" alt="Shadows Stand"><figcaption><b>Shadows Stand</b>, its stage at two thirds: it hovers in a violet shell and three Cast shades shoot. Cut them down and it crashes and kneels.</figcaption></figure>
+    <figure><img src="wyrm-rain.jpg" alt="Tearfall"><figcaption><b>Tearfall</b>: three shards of the Tear, each where you stand then. Keep walking.</figcaption></figure>
+    <figure><img src="wyrm-roll.jpg" alt="The Eclipse Rolls"><figcaption><b>The Eclipse Rolls</b>, its last third: the disc leaves its brow and rolls out along a line and back. Its track glows while it rolls.</figcaption></figure>
+  </div>
+
+  <h2>Where it lives</h2>
+  <div class="grid">
+    <figure><img src="wyrm-hall.jpg" alt="The hall with the wyrm's gate"><figcaption><b>The hall</b>: a violet gate on the Court's side leads up to it, a black disc in a gold ring on its lintel. First pass: it stands close to the Vault's door.</figcaption></figure>
+    <figure class="phone"><img src="wyrm-phone.jpg" alt="On a phone"><figcaption><b>On a phone</b>, held upright, during Wingshade.</figcaption></figure>
+  </div>
+  <p class="sub">The Roost (its room) is drawn in code, first pass: a slate roof with the old sun-dial scorched into it, broken pillars with chains, bones and gilded plates past the lip, the Tear to the north.</p>
+
+  <h2>The fight</h2>
+  <table>
+    <tr><th>Phase</th><th>Moves</th></tr>
+    <tr><td>Shadowfall (100 %)</td><td>Claw Rake, Tail Sweep and Pin the Tail, Shadow Breath; Wingshade 14 s in, then every 26 s</td></tr>
+    <tr><td>Taking Wing (66 %)</td><td>opens with the stage, Shadows Stand; adds Tearfall and Wing Gust; Wingshade every 24 s</td></tr>
+    <tr><td>Totality (33 %)</td><td>opens with The Eclipse Rolls, and keeps it; Wingshade every 20 s</td></tr>
+  </table>
+  <p class="sub">Alone 3,500 HP, for two 7,500; it enrages at 2:45. Not tuned for a party yet, and not played by a person: whether the breath's glow reads in time on a phone is for your hand to say.</p>
+</main>
+</body>
+</html>

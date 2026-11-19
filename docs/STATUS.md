@@ -3,6 +3,24 @@
 
 
 
+## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built and committed; NOT pushed, NOT live; the Roost and the hall gate wait on the user's look
+
+The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/designs/raid-wyrm.md`; how it works: `docs/architecture/raid.md`
+("The Eclipse Wyrm"); lore: `docs/lore/LORE.md` (`## The Noonfall`, the Tower's place line).
+- Fight `src/raid/wyrm.ts`: Claw Rake, Tail Sweep with Pin the Tail (+40 gauge), Shadow Breath (a sweeping cone; its start side glows),
+  Wingshade by the clock (run in under its wings), the stage Shadows Stand at 66 % (hovers, three Cast shades), Tearfall, Wing Gust, and
+  The Eclipse Rolls at 33 %. Body `src/raid/bodies/wyrm.ts` (+ `wyrmShade.ts`, the shades); room `src/arenas/wyrmRoost.ts`, drawn in code.
+- Run of four: `RAID_RUN` + `wyrm`, `RAID_BOSSES.wyrm`, `RAID_REWARDS.wyrm`, **PROTOCOL 20**; hall gate `HALL_GATES.wyrm` (violet, west);
+  server smoke test walks four bosses. `heroFigure.ts`: body actions kept 2 s past their impact (was 1.2), for the breath's sweep.
+- Checks: `_raidWyrm()` (`pipeline/tools/wyrm-check.js`) 47 of 47; tsc, build; `npm run test:server` passes; tiers 2 and 3 and a party of 5
+  with no errors; two bots through the real hub cleared it, screens agreed (`party-raid.py --boss wyrm --players 2`).
+- Measured, Normal, every hero once: 11 of 40 (28 %); between Ash and Ember and the Warden. The autopilot eats the breath more than a person
+  should (it does not go to the start side).
+- Pictures `docs/bosses/wyrm-*.jpg` (`pipeline/tools/wyrm-shots.py`), the model sheet `docs/bosses/wyrm_sheet.jpg`. News: a release
+  "The Eclipse Wyrm" (not live), `public/news/eclipse-wyrm.jpg`.
+- Not done: a person playing it; a party room and party mechanics (a party fights it in the Roost, untuned); the Rust tools know nothing of
+  bosses. Next: the user's look at the Roost and the gate, then a push and a deploy when asked (a deploy also raises the tabs' version).
+
 ## Wick balanced: 30% -> 53% (2026-11-19), done, not pushed, not live
 
 The user: "Yes, fix Wick". The simulator showed Wick short on damage (22.7 a second dealt against 25-28 for Pip, Fenna, Nyx; damage taken

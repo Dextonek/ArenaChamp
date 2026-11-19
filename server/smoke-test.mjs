@@ -31,7 +31,7 @@ import {
 } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
-const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
+const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo, WYRM = RAID_BOSSES.wyrm.hp.duo;
 
 const onlyShop = process.argv.includes('--shop');
 const onlyWorld = process.argv.includes('--world');
@@ -392,7 +392,7 @@ async function shopCases() {
       const none = await g.next('boards');
       ok(g.got.obols === undefined && (await profile(g)).rank === null && none.raid.length === 0, `a boss that falls in under ${SHOP.minBossS} s pays nothing, gives no rank and is on no board`);
 
-      // A run that counts: the three bosses of a tier, each fought for longer than that.
+      // A run that counts: the four bosses of a tier, each fought for longer than that.
       await start();
       const e = SHOP.earn, hold = SHOP.minBossS * 1000 + 300;
       await stage();
@@ -406,16 +406,20 @@ async function shopCases() {
       await g.next('obols'); await h.next('obols');
       await stage();
       await pause(hold);
-      const won3 = await kill(HEART);
+      await kill(HEART);
+      await g.next('obols'); await h.next('obols');
+      await stage();
+      await pause(hold);
+      const won3 = await kill(WYRM);
       const pay3 = await g.next('obols');
-      ok(won3.last === true && pay3.earned === e.boss + e.tier && pay3.total === SHOP.start + 3 * e.boss + e.tier, `the last boss of a tier pays ${e.tier} on top: the tier is cleared`);
+      ok(won3.last === true && pay3.earned === e.boss + e.tier && pay3.total === SHOP.start + 4 * e.boss + e.tier, `the last boss of a tier pays ${e.tier} on top: the tier is cleared`);
       await leave();
       const pg = await profile(g), ph = await profile(h);
-      ok(pg.rank === 'ash' && ph.rank === 'ash' && pg.raids.others === 3 && pg.obols === SHOP.start + 3 * e.boss + e.tier, 'three bosses in one run with others: the rank Ash, on the profile with the obols');
+      ok(pg.rank === 'ash' && ph.rank === 'ash' && pg.raids.others === 4 && pg.obols === SHOP.start + 4 * e.boss + e.tier, 'four bosses in one run with others: the rank Ash, on the profile with the obols');
       g.send({ t: 'boards' });
       const board = await g.next('boards');
-      ok(board.raid.length === 1 && board.raid[0].bosses === 3 && board.raid[0].seconds >= 3 * SHOP.minBossS && board.raid[0].names.join() === 'rhea,sol' && board.raid[0].tier === 1,
-        `the run is on the week's raid board: 3 bosses in ${board.raid[0]?.seconds} s, by both names`);
+      ok(board.raid.length === 1 && board.raid[0].bosses === 4 && board.raid[0].seconds >= 4 * SHOP.minBossS && board.raid[0].names.join() === 'rhea,sol' && board.raid[0].tier === 1,
+        `the run is on the week's raid board: 4 bosses in ${board.raid[0]?.seconds} s, by both names`);
       // The rank stands beside a name in a raid room and on the list of open raids.
       g.forget('lobby');
       g.send({ t: 'lobby_create', raid: 'sun', open: true });
@@ -1741,9 +1745,28 @@ if (!only) try {
     await h.next('match_fight');
     await wait(3100);
 
+    // The third boss falls, and the fourth waits: the Eclipse Wyrm.
+    const won3 = await until('raid_won', HEART);
+    check(won3.bosses === 3 && won3.last === false, 'the third boss falls and the run goes on');
+    await h.next('raid_won');
+    const offW = await g.next('raid_offer', 5000);
+    check(offW.stage === 3 && offW.boss === 'wyrm', 'the next pick is for the fourth boss');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    await through();
+    const stW = await g.next('raid_stage');
+    check(stW.boss === 'wyrm' && stW.hp === WYRM, 'the fourth boss loads at its own HP');
+    await h.next('raid_stage');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
+
     // The last boss falls: the clear screen. Both go on to the next tier, keeping their upgrades, with more boss HP.
-    const clear = await until('raid_won', HEART);
-    check(clear.bosses === 3 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
+    const clear = await until('raid_won', WYRM);
+    check(clear.bosses === 4 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
     await h.next('raid_won');
     g.send({ t: 'raid_next', go: true });
     await wait(150);
@@ -1765,9 +1788,9 @@ if (!only) try {
     g.send({ t: 'hero_down' });
     h.send({ t: 'hero_down' });
     const eg = await g.next('raid_end', 12000), eh = await h.next('raid_end', 12000);
-    check(eg.result === 'lost' && eh.result === 'lost' && eg.bosses === 3 && eg.tier === 2, 'both down ends the run, with its score');
+    check(eg.result === 'lost' && eh.result === 'lost' && eg.bosses === 4 && eg.tier === 2, 'both down ends the run, with its score');
     const pr = eg.profile.raids;
-    check(pr.played === 1 && pr.bosses === 3 && pr.tier === 2 && pr.best > 0 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
+    check(pr.played === 1 && pr.bosses === 4 && pr.tier === 2 && pr.best > 0 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
 
     // Someone leaves: the other fights on and takes the brain. The last hero down ends it.
     g.send({ t: 'lobby_create', raid: 'sun' });

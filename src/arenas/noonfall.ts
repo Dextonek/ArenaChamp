@@ -17,10 +17,12 @@ export const HALL_GATES: Record<string, { x: number; z: number; yaw: number }> =
   sun: { x: RING.x - 7, z: RING.z - 9.2, yaw: 0.65 },
   ash: { x: RING.x + 7, z: RING.z - 9.2, yaw: -0.65 },
   heart: { x: RING.x, z: RING.z - 10.6, yaw: 0 },
+  // The way up to the Roost, on the Court's side (west), between the Court's gate and the west side door.
+  wyrm: { x: RING.x - 10.8, z: RING.z - 5.7, yaw: 1.08 },
 };
 
-/** Which look a gate has: the Court's gold, the Pit's ember, or the Heart's white gold. */
-export type GateTone = 'sun' | 'ash' | 'heart';
+/** Which look a gate has: the Court's gold, the Pit's ember, the Heart's white gold, or the Roost's violet. */
+export type GateTone = 'sun' | 'ash' | 'heart' | 'wyrm';
 
 /** The three altars, in an arc before the fallen sun, and where heroes come in: alone, then side 0 and side 1. */
 export const HALL_ALTARS = [{ x: RING.x - 5.2, z: RING.z + 3.6 }, { x: RING.x, z: RING.z + 5.2 }, { x: RING.x + 5.2, z: RING.z + 3.6 }];
@@ -226,9 +228,9 @@ export class KeepGate {
   private wanted = 0;
   private trim: THREE.MeshStandardMaterial;
 
-  /** `tone`: gold for the Court's, ember for the Pit's, white gold for the Heart's. */
+  /** `tone`: gold for the Court's, ember for the Pit's, white gold for the Heart's, violet for the Roost's. */
   constructor(x: number, z: number, yaw: number, tone: GateTone) {
-    const color = tone === 'sun' ? 0xffc860 : tone === 'heart' ? 0xffe0a8 : 0xff6a20;
+    const color = tone === 'sun' ? 0xffc860 : tone === 'heart' ? 0xffe0a8 : tone === 'wyrm' ? 0xc08aff : 0xff6a20;
     this.trim = new THREE.MeshStandardMaterial({ color: tone === 'ash' ? 0x8a3a18 : GOLD, roughness: 0.42, metalness: 0.75, emissive: color, emissiveIntensity: 0.12 });
     const W = 2.1, H = 5.4;
     const post = new THREE.BoxGeometry(0.85, H, 0.95).translate(0, H / 2, 0);
@@ -252,7 +254,10 @@ export class KeepGate {
       ? new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.13, 8, 28), this.trim)
       : tone === 'heart'
         ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), this.trim).add(new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.08, 6, 28).rotateX(1.1), this.trim))
-        : new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.45, 6).scale(1, 1, 0.5), this.trim);
+        : tone === 'wyrm'
+          // The Roost's: a black disc in a gold ring.
+          ? new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.12, 8, 28), this.trim).add(new THREE.Mesh(new THREE.CircleGeometry(0.55, 28), new THREE.MeshStandardMaterial({ color: 0x0b0a12, roughness: 0.7, side: THREE.DoubleSide })))
+          : new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.45, 6).scale(1, 1, 0.5), this.trim);
     sign.position.set(0, H + 1.25, 0);
     this.group.add(lintel, top, sign);
     this.light = new THREE.ShaderMaterial({

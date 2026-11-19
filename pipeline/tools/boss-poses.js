@@ -2,7 +2,9 @@
 // style, kneel, phases and fall, and draws them as one contact sheet, so a body's look can be judged in one picture.
 //
 //   eval(await (await fetch('/pipeline/tools/boss-poses.js')).text());
-//   await _bossPoses('warden')   // 'warden', 'ash' or 'ember'; the sheet opens as an <img> over the page, _bossPoses.close() hides it
+//   await _bossPoses('warden')   // 'warden', 'ash', 'ember' or any raid boss's id ('heart', 'wyrm'); the sheet opens as an <img> over the page, _bossPoses.close() hides it
+//   await _bossPoses('wyrm', { acts: ['rake', 'tail', 'breath'] })   // also each body action (`BossMove.body`): wind-up, strike, after
+//   await _bossPoses('wyrm', { yaw: Math.PI / 2 })                   // turned side-on to the camera
 (() => {
   let shown = null;
   window._bossPoses = async (who = 'warden', o = {}) => {
@@ -10,8 +12,9 @@
     const { SUN_WARDEN } = await import('/src/raid/sunWarden.ts');
     const { ASH_AND_EMBER } = await import('/src/raid/ashEmber.ts');
     const { LocalLink } = await import('/src/raid/link.ts');
-    const def = who === 'warden' ? SUN_WARDEN : ASH_AND_EMBER;
-    const styles = o.styles ?? (who === 'warden' ? ['swing', 'raise', 'thrust', 'burst', 'channel'] : who === 'ash' ? ['slam', 'lunge', 'channel', 'raise'] : ['thrust', 'point', 'raise', 'burst']);
+    const { BOSSES } = await import('/src/raid/bosses.ts');
+    const def = who === 'warden' ? SUN_WARDEN : who === 'ash' || who === 'ember' ? ASH_AND_EMBER : BOSSES[who];
+    const styles = o.styles ?? (who === 'warden' ? ['swing', 'raise', 'thrust', 'burst', 'channel'] : who === 'ash' ? ['slam', 'lunge', 'channel', 'raise'] : who === 'ember' ? ['thrust', 'point', 'raise', 'burst'] : ['swing', 'raise', 'thrust', 'channel']);
     const V = a.caster.group.position.constructor;
     const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
     vfx.view.paused = true;
@@ -31,7 +34,7 @@
     if (who === 'ember') d.bossWorld().tag(1, 0, 3, 0, -9.4);
     const at = new V(0, 0, 4);
     a.placeFoe(d.foe, at);
-    d.foe.group.rotation.y = 0;
+    d.foe.group.rotation.y = o.yaw ?? 0;
     // The camera looks at the boss, and the hero stands well off to the side.
     a.caster.group.position.set(o.side ?? 9, 0, 4 + (o.back ?? 6));
     hm.focus = at.clone();
@@ -63,7 +66,7 @@
       for (let i = 0; i < 40; i++) { d.bossWorld().walk(1 / 60, 0, 12, 2.5); step(1 / 60); }
       grab('walking');
       a.placeFoe(d.foe, at);
-      d.foe.group.rotation.y = 0;
+      d.foe.group.rotation.y = o.yaw ?? 0;
       step(0.5);
       for (const style of styles) {
         const dur = 1.6;
@@ -74,6 +77,19 @@
         step(dur * 0.2 + 0.05);
         grab(`${style}: strike`);
         step(0.8);
+      }
+      // Each body action, aimed ahead and a little to its left: wind-up, strike, and a moment after.
+      for (const name of o.acts ?? []) {
+        const dur = 1.4;
+        d.figure.act(name, 0, at.x + 2, at.z + 6, dur);
+        step(dur * 0.6);
+        hold();
+        grab(`${name}: wind-up`);
+        step(dur * 0.4);
+        grab(`${name}: strike`);
+        step(o.after ?? 0.7);
+        grab(`${name}: after`);
+        step(1.4);
       }
       d.figure.setBodyPhase(1);
       step(1.6);
@@ -107,6 +123,7 @@
     shown?.remove();
     shown = new Image();
     shown.src = sheet.toDataURL('image/jpeg', 0.85);
+    window._bossPoses.sheet = shown.src;
     shown.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:auto;z-index:99;background:#000;';
     document.body.append(shown);
     return { shots: shots.length, cols, rows };
