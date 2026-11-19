@@ -10,11 +10,11 @@ The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/des
 - Fight `src/raid/wyrm.ts`: Claw Rake, Tail Sweep with Pin the Tail (+40 gauge), Shadow Breath (a sweeping cone; its start side glows),
   Wingshade by the clock (run in under its wings), the stage Shadows Stand at 66 % (hovers, three Cast shades), Tearfall, Wing Gust, and
   The Eclipse Rolls at 33 %. Body `src/raid/bodies/wyrm.ts` (+ `wyrmShade.ts`, the shades); room `src/arenas/wyrmRoost.ts`, drawn in code.
-- Run of four: `RAID_RUN` + `wyrm`, `RAID_BOSSES.wyrm`, `RAID_REWARDS.wyrm`, **PROTOCOL 20**; hall gate `HALL_GATES.wyrm` (violet, west);
-  server smoke test walks four bosses. `heroFigure.ts`: body actions kept 2 s past their impact (was 1.2), for the breath's sweep.
-- Checks: `_raidWyrm()` (`pipeline/tools/wyrm-check.js`) 47 of 47; tsc, build; `npm run test:server` passes; tiers 2 and 3 and a party of 5
-  with no errors; two bots through the real hub cleared it, screens agreed (`party-raid.py --boss wyrm --players 2`).
-- Measured, Normal, every hero once: 11 of 40 (28 %); between Ash and Ember and the Warden. The autopilot eats the breath more than a person
+- Run of four: `RAID_RUN` + `wyrm`, `RAID_BOSSES.wyrm` (4,000 / 8,600 HP), `RAID_REWARDS.wyrm`, **PROTOCOL 20**; hall gate `HALL_GATES.wyrm`
+  (violet, west); server smoke test walks four bosses. Enrage 2:40; Wingshade is `due` (14 s, then every 22 s).
+- Checks: `_raidWyrm()` (`pipeline/tools/wyrm-check.js`) 50 of 50, and `_raidCheck`, `_raidAsh`, `_raidHeart`, `_raidUpgrades` still all
+  pass; tsc, build; `npm run test:server` passes; tiers 2 and 3 and a party of 5 with no errors; two bots through the real hub cleared it, screens agreed (`party-raid.py --boss wyrm --players 2`).
+- Measured, Normal, every hero once: 15 of 40 (38 %), level with the Warden (36 %). The autopilot eats the breath more than a person
   should (it does not go to the start side).
 - Pictures `docs/bosses/wyrm-*.jpg` (`pipeline/tools/wyrm-shots.py`), the model sheet `docs/bosses/wyrm_sheet.jpg`. News: a release
   "The Eclipse Wyrm" (not live), `public/news/eclipse-wyrm.jpg`.

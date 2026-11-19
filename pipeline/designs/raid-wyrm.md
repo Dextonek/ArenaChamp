@@ -34,11 +34,11 @@ a black disc in a gold ring.
 
 | | |
 |---|---|
-| HP | alone 3,500, for two 7,500 (`RAID_BOSSES.wyrm`) |
+| HP | alone 4,000, for two 8,600 (`RAID_BOSSES.wyrm`; first 3,500 and 7,500, raised after the measure below) |
 | Phases | Shadowfall 100 %, Taking Wing 66 %, Totality 33 % |
 | Gauge | 100, a kneel 6 s |
 | Body | radius 2.3 m (its long body and tail reach about 8 m, so a hit on the tail's tip misses), height 6.5 m; walks at 2.2 m/s and stops 4.8 m from its target |
-| Enrage | 2:45 (165 s) |
+| Enrage | 2:40 (160 s) |
 | Tier extras | Tearfall, Wing Gust, The Eclipse Rolls, one a tier |
 
 ## The moves
@@ -51,14 +51,20 @@ Pale orange means leave, gold means stand here (the Raid's rules). Every move is
 | All | Tail Sweep (`tail`) | 1.4 s | 20 %, knock 3 m | The floor behind and beside it, 230 degrees round its back, 7 m: get in front of it, or far away | The tail draws round one way and sweeps the other |
 | All | Pin the Tail | 4 s after the sweep | | The tail lies where it ended, its tip a gold spot 6 m behind it. Stand on the spot 1.5 s | +40 on the gauge, once a sweep (`RAID_REWARDS.wyrm.pin`) |
 | All | Shadow Breath (`breath`) | 1.6 s, then a 1.8 s sweep | 14 %, once a cast | A 28 degree cone 11 m long sweeps 130 degrees across its front, from one side to the other. Get behind it, or out past its reach, or start on the side it ends | Its head swings with the breath, the jaw wide |
-| All, by the clock | Wingshade (`shade`) | 3.2 s | 38 % | The Tear flares. The whole roof burns except under its wings: within 4.8 m of its middle (a gold circle). Go **in** to it | It rears and spreads both wings wide |
+| All, on its own clock | Wingshade (`shade`) | 3.2 s | 38 % | The Tear flares. The whole roof burns except under its wings: within 4.8 m of its middle (a gold circle). Go **in** to it | It rears and spreads both wings wide |
 | Taking Wing | Shadows Stand (`stand`), the stage | 30 s | | It flies up over the middle in a shell and can't be hurt. Three Cast shades rise 8.5 m out and shoot beams through you: kill them before its bar fills | Hovers, wings beating. Win: it crashes down and kneels. Fail: **Tearfall** over the whole roof, 50 %, no cover |
 | Taking Wing on | Tearfall (`rain`) | 1.3 s, 0.9 s apart | 14 % each | Three circles, 2.2 m, each where you stand then. Keep walking | Its head up to the Tear, then down with each shard |
 | Taking Wing on | Wing Gust (`gust`) | 1.3 s | 12 %, knock 4 m | An 80 degree cone in front, 9 m | Both wings beat forward |
 | Totality (opener) on | The Eclipse Rolls (`roll`) | 1.6 s, then it rolls | 18 %, once a cast | The black disc leaves its brow and rolls 9 m/s in a straight line, a circle 2.6 m wide, from it through where you stood to the rim, and back to it along the same line. Step off the line, and stay off it on the way back | The disc goes from its crown; the crown is bare until it comes back |
 
-The clock for Wingshade: Shadowfall 14 s in, then every 26 s; Taking Wing 36 s into the phase (after the stage), then every 24 s;
-Totality 8 s in, then every 20 s.
+Wingshade's clock: 14 s into the fight, then every 22 s (`due`, as Ash's Charge): it waits for the move before it to end, for a kneel and
+for the stage. (A phase's clock, `BossPhase.timed`, sends its move whatever the boss is doing; the first build used it and Wingshade
+landed on top of other moves.)
+
+**Measured** (the autopilot at Normal, every hero once, tier 1, alone; `_raid`): with 3,500 HP and a 1.9 m hit circle 11 of 40; with
+the hit circle at 2.3 m and Wingshade on its own clock 22 of 40, too easy for the last boss; with 4,000 HP and the enrage at 2:40,
+**15 of 40 (38 %)**, level with the Sun Warden (36 %). The autopilot takes the breath far more often than its share: it does not go
+round to the side the fire starts on.
 
 Gaps between moves: Shadowfall 2 to 3 s, Taking Wing 1.9 to 2.8 s, Totality 1.6 to 2.5 s.
 

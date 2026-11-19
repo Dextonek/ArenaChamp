@@ -976,14 +976,14 @@ hero that falls on a ring is not carried while it lies there. `PROTOCOL` must be
 `src/raid/wyrm.ts`, design and lore in [raid-wyrm.md](../../pipeline/designs/raid-wyrm.md) (user, 2026-11-19: "could you create boss
 to arena champs raid boss and this level of model that this account have", then "Yes, make the fight"). The fourth boss, the last of a
 tier: the shadow the sun threw as it fell, on the Tower's crown under the Tear. It walks on four legs at 2.2 m/s and stops 4.8 m from its
-target. Alone 3,500 HP, for two 7,500. Enrage 2:45. Its hit circle is 2.3 m; its tail reaches about 8 m, so a hit on the tail's tip misses.
+target. Alone 4,000 HP, for two 8,600. Enrage 2:40. Its hit circle is 2.3 m; its tail reaches about 8 m, so a hit on the tail's tip misses.
 
 | Phase | From | Move | Shown | Costs | What you do |
 |---|---|---|---|---|---|
 | Shadowfall | 100 % | Claw Rake | 1.5 s | 16 % | Three lanes fan from its front, from 3.2 m to 12 m, 1.4 m wide, 26 degrees apart: a gap, under its chin, or round it |
 | | | Tail Sweep | 1.4 s | 20 %, knock 3 | It turns its back on you: 230 degrees round its back, 7 m. Get in front of it, or away. Then Pin the Tail |
 | | | Shadow Breath | 1.6 s, then a 1.6 s sweep | 13 %, once | A 28 degree cone 11 m long sweeps 110 degrees across its front. While it draws breath its head turns to the side it starts on and the fire glows there: go round to that side, behind it, or out of reach |
-| All, by the clock | | Wingshade | 3.2 s | 38 % | The whole roof burns but under its wings (within 4.8 m of its middle, a gold circle): run in. Shadowfall 14 s in, then every 26 s; Taking Wing 36 s in, every 24 s; Totality 8 s in, every 20 s |
+| All, on its own clock | | Wingshade | 3.2 s | 38 % | The whole roof burns but under its wings (within 4.8 m of its middle, a gold circle): run in. 14 s into the fight, then every 22 s (`due`: it waits for the move before it, a kneel and the stage) |
 | Taking Wing | 66 % | Shadows Stand (the stage) | 30 s | | It hovers over the middle in a violet shell and can't be hurt; three Cast shades at 8.5 m shoot beams. Kill them: it crashes down and kneels. If not, Tearfall, 50 % over the whole roof, no cover |
 | | | Tearfall | 1.3 s, 0.9 s apart | 14 % each | Three circles of 2.2 m, each where you stand then |
 | | | Wing Gust | 1.3 s | 12 %, knock 4 | An 80 degree cone in front, 9 m |
@@ -994,12 +994,12 @@ target. Alone 3,500 HP, for two 7,500. Enrage 2:45. Its hit circle is 2.3 m; its
 
 **How it keeps the rules.** Tail Sweep's aim faces it away from its target (the brain turns it), so its back is toward that hero.
 Shadow Breath's side is a roll of the brain's, carried in the cast as a spot on that side (`x`, `z`), so both screens and the body read
-the same side. The breath and the rolling disc are zones that move (`Threat.hits`), drawn by their moves' looks, with a `warn` zone for
+the same side; the sweep itself reaches the body through `WYRM_LIVE.sweep` (a body action is kept only 1.2 s past its impact). The breath and the rolling disc are zones that move (`Threat.hits`), drawn by their moves' looks, with a `warn` zone for
 the whole sweep and the whole line while they gather; an AI sees their whole path ahead (`look`). The stage is `stageMove`, with the
 body's hover set round it.
 
-**Measured** (`_raid`, the autopilot at Normal, every hero once, tier 1, alone): 11 of 40 cleared, fights about 106 s, the enrage
-reached twice. The autopilot takes the breath far more often than its share (about 2.6 times a fight): it does not walk round to the side
+**Measured** (`_raid`, the autopilot at Normal, every hero once, tier 1, alone): 15 of 40 cleared (38 %, the Warden 36 %), fights
+about 118 s, the enrage reached three times. The autopilot takes the breath far more often than its share (about 2.6 times a fight): it does not walk round to the side
 the breath starts on, which a person can see. Tiers 2 and 3 and a party of five ran with no errors; two bots through the real hub
 cleared it with both screens agreeing.
 
@@ -1205,7 +1205,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 - `pipeline/tools/wyrm-check.js`: `_raidWyrm()` for the Eclipse Wyrm: each move in and out of its zone, the breath's sweep from one side
   to the other, Pin the Tail paid once, the gust's push, the disc off its brow and back, the stage (hover, immune, three shades, the
-  kneel), then the real brain through all three phases and the hub's fields (47 rows). `pipeline/tools/wyrm-shots.py`: its pictures from
+  kneel), then the real brain through all three phases and the hub's fields (50 rows, among them Wingshade never starting while another move holds the boss, and Tail Sweep's back toward the hero the brain aimed at). `pipeline/tools/wyrm-shots.py`: its pictures from
   the game page, `docs/bosses/wyrm-*.jpg`. `boss-poses.js` and `boss-fight-look.js` take any boss's id now (`'wyrm'`), and
   `_bossPoses(..., { acts, yaw })` shows each body action and the body side-on.
 

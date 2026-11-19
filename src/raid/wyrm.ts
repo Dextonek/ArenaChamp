@@ -207,6 +207,9 @@ const breath: BossMove = {
           const on = t < warm ? 0.12 + 0.2 * (t / warm) : t < end ? 0.85 : Math.max(0, 0.85 - (t - end) * 3);
           fire.mat.opacity = on;
           fire.mesh.rotation.y = angleAt(t);
+          // Its head follows the fire (the body's look reads this).
+          WYRM_LIVE.sweep = t < warm || t > end + 0.4 ? -1 : (t - warm) / BREATH.seconds;
+          WYRM_LIVE.side = side;
           if (on > 0 && Math.random() < dt * 40) {
             const a = angleAt(t) + (Math.random() - 0.5) * 2 * half, r = 2 + Math.random() * (BREATH.radius - 2);
             p.sparks.emit(c.fx + Math.sin(a) * r, 0.4, c.fz + Math.cos(a) * r, 2, 2.5, 2.5, 0.5, Math.random() < 0.4 ? GOLDEN : SPARK);
@@ -216,6 +219,7 @@ const breath: BossMove = {
           p.shake(0.04);
         },
         dispose() {
+          WYRM_LIVE.sweep = -1;
           fire.dispose();
         },
       },
@@ -224,12 +228,13 @@ const breath: BossMove = {
 };
 
 /**
- * Wingshade, by the clock in every phase: the Tear above flares and the whole roof burns, except under its wings. Run in to it: within
- * 4.8 m of its middle (a gold circle) is safe.
+ * Wingshade, on its own clock in every phase: the Tear above flares and the whole roof burns, except under its wings. Run in to it: within
+ * 4.8 m of its middle (a gold circle) is safe. It is `due` (first 14 s in, then each `cooldown`), as Ash's Charge is, so it waits for the
+ * move before it to end, a kneel and the stage: a move by the phase's clock (`BossPhase.timed`) is sent whatever the boss is doing.
  */
 const SHADE = { inner: 4.8, share: 0.38, shown: 3.2 };
 const shade: BossMove = {
-  id: 'shade', name: 'Wingshade', charge: SHADE.shown, lock: SHADE.shown + 0.6, cooldown: 999, big: true, pose: 'raise',
+  id: 'shade', name: 'Wingshade', charge: SHADE.shown, lock: SHADE.shown + 0.6, cooldown: 22, due: 14, big: true, pose: 'raise',
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) }),
   play(c, p) {
     const at = p.shown(SHADE.shown);
@@ -426,15 +431,9 @@ const roll: BossMove = {
 };
 
 const PHASES: BossPhase[] = [
-  { name: 'Shadowfall', at: 1, moves: ['rake', 'tail', 'breath'], gap: [2, 3], timed: { move: 'shade', first: 14, every: 26, most: 99 } },
-  {
-    name: 'Taking Wing', at: NUMBERS.phases[0], moves: ['rake', 'tail', 'breath', 'rain', 'gust'], opener: 'stand', gap: [1.9, 2.8],
-    timed: { move: 'shade', first: 36, every: 24, most: 99 },
-  },
-  {
-    name: 'Totality', at: NUMBERS.phases[1], moves: ['rake', 'tail', 'breath', 'rain', 'gust', 'roll'], opener: 'roll', gap: [1.6, 2.5],
-    timed: { move: 'shade', first: 8, every: 20, most: 99 },
-  },
+  { name: 'Shadowfall', at: 1, moves: ['rake', 'tail', 'breath', 'shade'], gap: [2, 3] },
+  { name: 'Taking Wing', at: NUMBERS.phases[0], moves: ['rake', 'tail', 'breath', 'rain', 'gust', 'shade'], opener: 'stand', gap: [1.9, 2.8] },
+  { name: 'Totality', at: NUMBERS.phases[1], moves: ['rake', 'tail', 'breath', 'rain', 'gust', 'roll', 'shade'], opener: 'roll', gap: [1.6, 2.5] },
 ];
 
 /** Its portrait: a black disc with a gold corona, a violet wing behind it, on the night of the Tear. */
@@ -496,8 +495,8 @@ export const ECLIPSE_WYRM: BossDef = {
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['rain', 'gust', 'roll'],
   moves: { rake, tail, breath, shade, stand, rain, gust, roll },
-  /** It enrages 2:45 in, as the Heart does. */
-  enrage: 165,
+  /** It enrages 2:40 in: the last boss of a run, measured to clear about as often as the Warden (pipeline/designs/raid-wyrm.md). */
+  enrage: 160,
   /** Past 5 minutes the Tear's light comes down from the rim inward, and at 6 Last stand ends it. */
   late: () => ({
     offset: -255,

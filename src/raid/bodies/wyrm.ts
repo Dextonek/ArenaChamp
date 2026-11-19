@@ -20,12 +20,23 @@ const seg = (v: number, a: number, b: number) => ease((v - a) / (b - a));
  * What the fight's moves tell the body, frame by frame: it hovers while Shadows Stand (the stage) is on, and its crown disc is away
  * while The Eclipse Rolls has it out on the floor. One fight at a time per page.
  */
-export const WYRM_LIVE = { hover: false, disc: true };
+export const WYRM_LIVE = {
+  hover: false,
+  disc: true,
+  /**
+   * Shadow Breath's sweep, set each frame by its move (a body action is kept only 1.2 s past its impact, and the sweep lasts longer):
+   * how far through it is (0 to 1, more while it fades), or -1; and the side it starts on, +1 its left.
+   */
+  sweep: -1,
+  side: 1,
+};
 
 /** Clears what the moves left: a new fight starts on the ground with its crown on. */
 export function resetWyrmLive() {
   WYRM_LIVE.hover = false;
   WYRM_LIVE.disc = true;
+  WYRM_LIVE.sweep = -1;
+  WYRM_LIVE.side = 1;
 }
 
 interface Mem { phase: number; kneel: number; gait: number; hover: number; disc: number }
@@ -59,8 +70,10 @@ function toneDown(p: BodyParts) {
     if (!mesh.isMesh) return;
     for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
       const std = mat as THREE.MeshStandardMaterial;
-      if (!std.isMeshStandardMaterial || seen.has(std)) continue;
+      // Once per material: a model's materials may be shared by every figure loaded from it, fight after fight.
+      if (!std.isMeshStandardMaterial || seen.has(std) || std.userData.wyrmToned) continue;
       seen.add(std);
+      std.userData.wyrmToned = true;
       if (std.name === 'wyrm_glow') std.color.multiplyScalar(0.3);
       else if (std.name === 'wyrm_bone') { std.color.multiplyScalar(0.72); std.roughness = Math.max(std.roughness, 0.8); }
       else if (std.name === 'wyrm_gold') { std.roughness = Math.max(std.roughness, 0.62); std.metalness = Math.min(std.metalness, 0.5); }
@@ -94,7 +107,7 @@ export const wyrmLook: BodyLook = (s, p) => {
 
   const rakeA = lead(live, (a) => a.name === 'rake');
   const tailA = lead(live, (a) => a.name === 'tail');
-  const breathA = lead(live, (a) => a.name === 'breath', BREATH_SWEEP + 0.5);
+  const breathA = lead(live, (a) => a.name === 'breath');
   const gustA = lead(live, (a) => a.name === 'gust');
   const rollA = lead(live, (a) => a.name === 'roll');
   const rainA = lead(live, (a) => a.name === 'rain');
@@ -198,12 +211,14 @@ export const wyrmLook: BodyLook = (s, p) => {
   }
 
   // Shadow Breath: the jaw wide, then the head swings across its front over the sweep, low and forward, starting on the target's side.
-  if (breathA) {
-    const sd = breathA.x >= 0 ? 1 : -1;
-    const wind = actBeat(breathA, 0.3, 0.1, 0.5).w;
-    const u = clamp((breathA.t - breathA.dur) / BREATH_SWEEP);
-    const open = breathA.t < breathA.dur ? wind : breathA.t < breathA.dur + BREATH_SWEEP ? 1 : 1 - seg(breathA.t - breathA.dur, BREATH_SWEEP, BREATH_SWEEP + 0.4);
-    const swing = breathA.t < breathA.dur ? wind : 1 - 2 * ease(u);
+  // The wind-up comes from its body action; the sweep itself from the move (`WYRM_LIVE.sweep`).
+  const sweeping = WYRM_LIVE.sweep >= 0 && !s.kneeling && fall <= 0;
+  if ((breathA && breathA.t < breathA.dur) || sweeping) {
+    const sd = sweeping ? WYRM_LIVE.side : breathA!.x >= 0 ? 1 : -1;
+    const wind = sweeping ? 1 : actBeat(breathA!, 0.3, 0.1, 0.5).w;
+    const u = sweeping ? clamp(WYRM_LIVE.sweep) : 0;
+    const open = !sweeping ? wind : WYRM_LIVE.sweep <= 1 ? 1 : 1 - clamp((WYRM_LIVE.sweep - 1) * BREATH_SWEEP / 0.4);
+    const swing = !sweeping ? wind : 1 - 2 * ease(u);
     const hold = open;
     jaw += 0.75 * hold;
     nYaw += sd * 0.95 * swing * hold;

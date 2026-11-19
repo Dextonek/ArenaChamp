@@ -24,7 +24,7 @@ export const RAID_BOSSES = {
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16, partyRing: 38 },
   heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12, partyRing: 35 },
   // The Eclipse Wyrm (pipeline/designs/raid-wyrm.md): no party room; a party fights it in the Roost too, not tuned for one.
-  wyrm: { hp: { solo: 3500, duo: 7500 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 14 },
+  wyrm: { hp: { solo: 4000, duo: 8600 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 14 },
 };
 
 /**

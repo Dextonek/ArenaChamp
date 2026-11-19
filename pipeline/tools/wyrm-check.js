@@ -35,8 +35,6 @@
       d.holdStart = false;
       d.startBoss({ def, link: new LocalLink(def), seed: 'wyrm', mode: 'play' });
       d.boss.brain.pause = 1e9;
-      // Wingshade comes by the clock, whatever the brain's pause: none of its own here.
-      d.boss.brain.timedDone = 1e9;
       d.countdown = -1;
       a.placeFoe(d.foe, new V(H.x, 0, H.z));
       step(0.05);
@@ -207,14 +205,26 @@
       fresh();
       place(0, 13);
       const seen = [], on = d.boss.link.on;
-      d.boss.link.on = { ...on, cast: (x) => { seen.push(x); on.cast(x); } };
+      const me0 = a.caster.group.position;
+      d.boss.link.on = { ...on, cast: (x) => { seen.push({ ...x, at: d.boss.brain.time, hx: me0.x, hz: me0.z }); on.cast(x); } };
       d.boss.brain.pause = 0;
       d.boss.brain.wait = 0;
-      d.boss.brain.timedDone = 0;
       const hitTo = (share) => { for (let i = 0; i < 900 && a.hpOf(d.foe) / def.hp.solo > share; i++) a.hit(d.foe, { damage: 10, knock: 0 }); };
       for (let i = 0; i < 30; i++) { d.playerHp = d.playerMax; step(1); }
       yes('Shadowfall: rake, tail and breath from the brain', ['rake', 'tail', 'breath'].every((m) => seen.some((x) => x.move === m)));
-      yes('Shadowfall: Wingshade by the clock', seen.some((x) => x.move === 'shade'));
+      yes('Shadowfall: Wingshade comes on its own (due 14 s in)', seen.some((x) => x.move === 'shade'));
+      {
+        // Never on top of another move: each Wingshade begins after the cast before it has stood its lock.
+        const MOVES = def.moves, starts = seen.filter((x) => x.step === 0);
+        const clash = starts.some((x, i) => x.move === 'shade' && i > 0 && x.at - starts[i - 1].at < MOVES[starts[i - 1].move].lock - 0.05);
+        yes('Wingshade never starts while another move holds it', !clash);
+        // Tail Sweep, aimed by the brain: its cone covers where the hero stood; the breath starts on the side its cast names.
+        const tails = starts.filter((x) => x.move === 'tail');
+        yes('Tail Sweep from the brain: its back toward the hero it aimed at', tails.length > 0 && tails.every((x) => {
+          const back = x.dir + Math.PI, toHero = Math.atan2(x.hx - x.fx, x.hz - x.fz);
+          return Math.abs(Math.atan2(Math.sin(back - toHero), Math.cos(back - toHero))) < 0.05;
+        }));
+      }
       hitTo(0.65);
       yes('Taking Wing at 66 %', d.boss.stats.phases === 1);
       for (let i = 0; i < 6; i++) { d.playerHp = d.playerMax; step(1); }
@@ -228,7 +238,7 @@
       yes('Totality: it opens with the disc rolling', seen.some((x) => x.move === 'roll'));
       for (let i = 0; i < 25; i++) { d.playerHp = d.playerMax; step(1); }
       const HUB = ['id', 'move', 'step', 'x', 'z', 'fx', 'fz', 'dir', 'seed', 'target', 'alone', 'rim', 'form', 'flag', 'which', 'mate'];
-      yes('every cast it sent has only what the hub passes on', seen.every((x) => Object.keys(x).every((k) => HUB.includes(k)) && [x.id, x.step, x.x, x.z, x.fx, x.fz, x.dir, x.seed, x.target].every(Number.isFinite)));
+      yes('every cast it sent has only what the hub passes on', seen.every((x) => Object.keys(x).filter((k) => !['at', 'hx', 'hz'].includes(k)).every((k) => HUB.includes(k)) && [x.id, x.step, x.x, x.z, x.fx, x.fz, x.dir, x.seed, x.target].every(Number.isFinite)));
       check('no errors in the page', errors.length, 0, 0);
       rows.push(`     casts seen: ${[...new Set(seen.map((x) => x.move))].join(', ')}`);
     } catch (e) {
