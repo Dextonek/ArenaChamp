@@ -38,6 +38,20 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    date: '2026-11-19',
+    title: 'How every spell lands, written on it',
+    live: false,
+    items: [
+      {
+        tag: 'Heroes',
+        title: 'Each spell says how it lands and how to answer it',
+        text: 'Every spell’s tooltip now has one more line: whether it hits the first in its path, everyone along it or the whole area, whether cover stops it, when it lands, and how to get out of it, for example "lands after 0.6 s. Answer: leave 3 m in 0.6 s."',
+        image: 'news/spell-rules-tooltip.jpg',
+        alt: 'Brannoc’s Quench tooltip in a duel, with its new line: hits all in the area, ignores cover, lands after 0.6 s, and its answer.',
+      },
+    ],
+  },
+  {
     date: '2026-11-16',
     title: 'The Climb alive and fought together, new spell icons, the heroes’ peoples, lore, clans and leaderboards',
     live: true,
