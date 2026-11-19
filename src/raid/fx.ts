@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { propClone } from './models';
 import { RING } from '../arenas/common';
 import { softDotTexture } from '../effects/common';
 import type { TelegraphClip } from '../effects/telegraph';
@@ -12,17 +13,27 @@ import type { Obstacle } from '../obstacles';
 const stoneGeo = new THREE.CylinderGeometry(1, 1.25, 1, 9).translate(0, 0.5, 0);
 const stoneMat = new THREE.MeshStandardMaterial({ color: 0x6e665a, roughness: 0.92, flatShading: true });
 
-/** A stone drum that falls out of the sky onto (x, z) and lands at `at`, sinks away after. */
+/**
+ * A stone that falls out of the sky onto (x, z) and lands at `at`, sinks away after. `kind`: which model it is (src/raid/models.ts): the
+ * Sun Court's carved sun-stone (`sunstone`, Pillar Fall) or a rock of the Cinder Pit (`cinder`, Ash's throws); the plain drum in code
+ * until its file has landed. The model is built to the drum's size at radius 1 (about 1.4 m across, 1.3 m high), its foot at y = 0.
+ */
 export class FallingStone {
-  readonly mesh = new THREE.Mesh(stoneGeo, stoneMat);
+  readonly mesh: THREE.Object3D = new THREE.Group();
   private fall = 0.4;
   /** `stays`: seconds it stands on the floor before it sinks. */
-  constructor(private x: number, private z: number, radius: number, private at: number, private stays = 0) {
-    this.mesh.scale.set(radius * 0.55, radius * 1.3, radius * 0.55);
+  constructor(private x: number, private z: number, radius: number, private at: number, private stays = 0, kind: 'sunstone' | 'cinder' = 'sunstone') {
+    const model = propClone(kind);
+    const body = model ?? new THREE.Mesh(stoneGeo, stoneMat);
+    if (!model) {
+      body.scale.set(0.55, 1.3, 0.55);
+      (body as THREE.Mesh).castShadow = true;
+    }
+    this.mesh.add(body);
+    this.mesh.scale.setScalar(radius);
     this.mesh.position.set(x, 30, z);
     this.mesh.rotation.y = (x * 7 + z * 3) % 6.28;
     this.mesh.visible = false;
-    this.mesh.castShadow = true;
   }
 
   update(t: number) {

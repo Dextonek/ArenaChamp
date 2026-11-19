@@ -39,8 +39,10 @@ export interface BeastState {
 }
 
 export interface BeastDef {
-  /** The file stem: models/tower/beasts/<id>.glb. */
+  /** The file stem: models/tower/beasts/<id>.glb (or `url`). */
   id: string;
+  /** Another file than the Climb's (the Raid's adds: models/raid/<id>.glb). */
+  url?: string;
   /** How much bigger the rig is drawn than the model (the model is built at the code look's size: 1). */
   scale?: number;
   /** The health bar's height over the feet (m, at the model's size: `scale` and the unit's own are applied to it). */
@@ -53,16 +55,19 @@ export interface BeastDef {
 }
 
 const URL_OF = (id: string) => `models/tower/beasts/${id}.glb`;
+/** Where a beast's file is, by its key in `loads` (the id, or the url for one that has its own). */
+const urls = new Map<string, string>();
 const loads = new Map<string, Promise<THREE.Object3D | null>>();
 const landed = new Map<string, THREE.Object3D>();
 let loader: GLTFLoader | null = null;
 
 /** Starts loading a beast's file (once); resolves when it has landed (or failed: null). */
-export function preloadBeast(id: string): Promise<THREE.Object3D | null> {
+export function preloadBeast(id: string, url?: string): Promise<THREE.Object3D | null> {
+  if (url) urls.set(id, url);
   let p = loads.get(id);
   if (!p) {
     loader ??= new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-    p = loader.loadAsync(URL_OF(id)).then((g) => {
+    p = loader.loadAsync(urls.get(id) ?? URL_OF(id)).then((g) => {
       fewerDraws(g.scene);
       // As the people models (foeModels.ts `dress`): no shadow of their own, for a pack's frame on a phone.
       g.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = false; });
@@ -83,7 +88,7 @@ export function preloadBeast(id: string): Promise<THREE.Object3D | null> {
  * into one mesh coloured by vertex (one material for them all); a piece that glows or is metal keeps a mesh of its own, merged with
  * the part's others of the same kind. A hound comes to about 15.
  */
-function fewerDraws(scene: THREE.Object3D) {
+export function fewerDraws(scene: THREE.Object3D) {
   const plain = new Map<string, THREE.MeshStandardMaterial>();
   const groups: THREE.Object3D[] = [];
   scene.traverse((o) => { if (o.children.some((c) => (c as THREE.Mesh).isMesh)) groups.push(o); });
@@ -158,7 +163,7 @@ let made = 0;
 
 /** A `MinionLook` drawn from a beast's model; `fallback` is its code look, shown until the file has landed. */
 export function beastLook(def: BeastDef, fallback: MinionLook, unit: { speed: number; scale?: number }): MinionLook {
-  void preloadBeast(def.id);
+  void preloadBeast(def.id, def.url);
   return (kind, p: MinionPalette): MinionRig => {
     const code = fallback(kind, p);
     const root = new THREE.Group(), holder = new THREE.Group();

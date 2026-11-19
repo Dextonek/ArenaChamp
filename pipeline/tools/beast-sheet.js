@@ -81,7 +81,8 @@ const out = { low: {} };
 const keys = Object.keys(BEASTS).filter((k) => !ONLY || ONLY.includes(k));
 for (const key of keys) {
   const def = BEASTS[key], sp = UNIT[key] ?? { speed: 2.5, scale: 1, melee: !def.shotY, look: key };
-  const code = sp.id ? codeLookOf(sp) : escortLook(key);
+  // `window._codeLook = { file: '/src/raid/bodies/adds.ts', name: 'hourStoneLook' };` the code look a Raid add replaces.
+  const code = window._codeLook ? (await import(window._codeLook.file))[window._codeLook.name] : sp.id ? codeLookOf(sp) : escortLook(key);
   const s = sp.scale ?? 1, top = def.barY * s;
   const frames = [], lows = {};
   const views = (rig, label) => {
