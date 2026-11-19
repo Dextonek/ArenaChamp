@@ -58,7 +58,7 @@ floor, 6-10 of the floor's weaker enemies wandering, each back 20-30 s after it 
 shared online as the packs are. **Waiting on the user:** why go there (hunt quest / a rare strong mob / both / just the fight), how
 busy (6 or 10), and where to start (one Sea floor alone first, or all floors).
 
-## The arenas' landmarks (2026-11-19): nine built, in the arenas, committed; NOT pushed, NOT live; waiting on the user's look at all nine
+## The arenas' landmarks (2026-11-19): nine built, in the arenas, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models for the arenas too and make them special", then, shown the harbour's serpent: "Yes, do the rest".
 Each duel arena has one great living thing of its own past the ring, tied to its realm, only for the eye (no cover, nothing the fight
