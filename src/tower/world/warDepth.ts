@@ -199,9 +199,10 @@ export function buildWarDepth(o: WarDepthIn) {
       post: (x, z, yaw) => { near.add('wood', postG, x, 0, z, yaw); taken.push({ x, z, r: 0.3 }); },
       rail: (mx, mz, yaw, len) => { near.add('plank', railG, mx, 0.55, mz, yaw, 1, 1, len).add('plank', railG, mx, 0.9, mz, yaw, 1, 1, len); },
       verge: (x, z, sc, turn, sy) => { put(lists.tuft, x, 0, z, sc, sy, turn); },
+      // the upper arm points at the place, the lower one back along the road (they were 1.2 and -0.9 rad off: 20-40 degrees askew)
       signpost: (x, z, a, muted) => {
         if (muted) return;
-        near.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
+        near.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + Math.PI / 2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - Math.PI / 2);
         taken.push({ x, z, r: 0.5 });
       },
       milestone: (x, z, yaw, muted) => {

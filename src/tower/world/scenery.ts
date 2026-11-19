@@ -3,6 +3,8 @@ import { softDotTexture } from '../../effects/common';
 import { LightPillar } from '../../raid/fx';
 import type { ZoneCtx } from './ctx';
 import type { DoorDef, Spot } from './def';
+import { RING } from '../../arenas/common';
+import { lifeLook } from './life';
 
 /**
  * What stands in a floor besides its people and enemies, drawn from the floor's data and acted on by the hero's walk alone:
@@ -14,6 +16,43 @@ import type { DoorDef, Spot } from './def';
 
 const GOLD = 0xc9a24a, BLUE = 0x6ec8ff, WARM = 0xffd27a;
 const dist = (a: Spot, b: Spot) => Math.hypot(a.x - b.x, a.z - b.z);
+
+/** The floor's roads as world points (its look's paths), for what faces them (2026-11-19). */
+function roadsOf(n: number): Spot[][] {
+  return ((lifeLook(n)?.paths ?? []) as [number, number][][]).map((p) => p.map(([dx, dz]) => ({ x: RING.x + dx, z: RING.z + dz })));
+}
+/** The nearest point of the floor's roads to `at`, and the way that road runs there. */
+function nearestRoad(roads: Spot[][], at: Spot) {
+  let best: { p: Spot; d: number; tx: number; tz: number } | null = null;
+  for (const r of roads) for (let i = 1; i < r.length; i++) {
+    const a = r[i - 1], b = r[i], ex = b.x - a.x, ez = b.z - a.z, l2 = ex * ex + ez * ez || 1;
+    const t = Math.max(0, Math.min(1, ((at.x - a.x) * ex + (at.z - a.z) * ez) / l2)), p = { x: a.x + ex * t, z: a.z + ez * t }, d = Math.hypot(at.x - p.x, at.z - p.z);
+    if (!best || d < best.d) { const l = Math.sqrt(l2); best = { p, d, tx: ex / l, tz: ez / l }; }
+  }
+  return best;
+}
+let ROADS: { n: number; roads: Spot[][] } | null = null;
+const floorRoads = (n: number) => (ROADS?.n === n ? ROADS.roads : (ROADS = { n, roads: roadsOf(n) }).roads);
+let FLOOR_N = 0;
+/** The yaw that turns a thing's front (+z) towards the nearest road, kept within `max` rad of the camera's side (+z, south). */
+function towardRoad(at: Spot, max: number) {
+  const r = nearestRoad(floorRoads(FLOOR_N), at);
+  if (!r || r.d < 0.5) return 0;
+  const yaw = Math.atan2(r.p.x - at.x, r.p.z - at.z);
+  return Math.max(-max, Math.min(max, yaw));
+}
+/** An arch's yaw: its opening (local z) towards the road that comes to it, or along the road when the road runs through it. */
+function archYaw(at: Spot) {
+  const r = nearestRoad(floorRoads(FLOOR_N), at);
+  if (!r) return 0;
+  let yaw = r.d < 1.5 ? Math.atan2(r.tx, r.tz) : Math.atan2(r.p.x - at.x, r.p.z - at.z);
+  // An arch is the same from both sides: half a turn either way is the same arch. Kept within 1 rad of facing the camera (it looks
+  // north): turned fully to a road from the east or the west it stood edge-on, a slab from where the player sees it.
+  yaw = Math.atan2(Math.sin(yaw), Math.cos(yaw));
+  if (yaw > Math.PI / 2) yaw -= Math.PI;
+  else if (yaw < -Math.PI / 2) yaw += Math.PI;
+  return Math.max(-1, Math.min(1, yaw));
+}
 
 export class Scenery {
   private group = new THREE.Group();
@@ -34,6 +73,7 @@ export class Scenery {
   read: (lines: string[]) => void = () => {};
 
   constructor(private z: ZoneCtx) {
+    FLOOR_N = z.def.n;
     z.p.group.add(this.group);
     const mat = (color: number, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
       const m = new THREE.MeshStandardMaterial({ color, roughness: 0.8, flatShading: true, ...o });
@@ -97,7 +137,9 @@ export class Scenery {
       plate.position.set(0, 0.52, 0.32);
       g.add(plate);
       g.position.set(c.at.x, 0, c.at.z);
-      g.rotation.y = (c.at.x * 7.3) % 3;
+      // its lock towards the road it is found from, turned at most 0.8 rad off the camera (2026-11-19: it was turned by a number from its
+      // place, up to 3 rad: the lock and the plate often faced away)
+      g.rotation.y = towardRoad(c.at, 0.8);
       g.scale.setScalar(1.6);
       this.group.add(g);
       const glow = sprite(WARM, 3.2, c.at, 0.9);
@@ -124,7 +166,8 @@ export class Scenery {
       glyph.position.set(0, 1.5, 0.24);
       g.add(slab, glyph);
       g.position.set(l.at.x, 0, l.at.z);
-      g.rotation.y = 2.6;
+      // its glyph towards the road, at most 1 rad off the camera (it was turned 2.6 on every floor: the glyph faced north, away)
+      g.rotation.y = towardRoad(l.at, 1);
       this.group.add(g);
       this.lore = { glow: sprite(0xcfefff, 2.2, l.at, 1.6) };
     }
@@ -195,7 +238,10 @@ export class Scenery {
         sealed = sheet;
         glow = sprite(tone, 3.4, d.at, 2.6);
       }
-      g.rotation.y = d.id === 'gate' ? Math.PI / 2 : d.id === 'trial' ? Math.PI / 2 : 0;
+      // An arch's opening faces the road that comes to it (along the road when it runs through); a wall's leaf is turned on its own.
+      // (2026-11-19: the gate's and the trial's arches were turned 90 degrees and the others 0 on every floor, as floor 1 was laid out:
+      // on the made floors the road often came to an arch from its side, into a post.)
+      g.rotation.y = d.wall ? 0 : archYaw(d.at);
       this.group.add(g);
       this.doors.set(d.id, { g, lift, glow, lifted: z.run.opened.includes(d.id) ? 1 : 0, sealed });
     }

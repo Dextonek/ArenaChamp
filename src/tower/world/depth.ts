@@ -139,7 +139,7 @@ export function buildDepth(o: DepthIn) {
       const a = Math.atan2(ex - place.x, ez - place.z), x = ex + Math.cos(a) * 2.6, z = ez - Math.sin(a) * 2.6;
       if (!free(x, z, 0.4, { road: 1.6 })) continue;
       dress.mute = blocked(x, z, 0.5);
-      dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
+      dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + Math.PI / 2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - Math.PI / 2);
       dress.add('gold', box(0.18, 0.05, 0.18), x, 2.3, z);
       dress.mute = false;
     }
@@ -279,9 +279,10 @@ export function buildDepth(o: DepthIn) {
       },
       vergeOk: (x, z) => geo.beach(x - RING.x, z - RING.z) <= 0.25,
       verge: (x, z, sc, turn, sy) => { tuft.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), tq.setFromAxisAngle(up, turn).clone(), new THREE.Vector3(sc, sy, sc))); },
+      // the upper arm points at the place, the lower one back along the road (they were 1.2 and -0.9 rad off: 20-40 degrees askew)
       signpost: (x, z, a, muted) => {
         dress.mute = muted;
-        dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + 1.2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - 0.9);
+        dress.add('wood', cyl(0.08, 0.1, 2.3, 6), x, 0, z).add('plank', box(0.9, 0.22, 0.06).translate(0.35, 0, 0), x, 1.85, z, a + Math.PI / 2).add('plank', box(0.8, 0.2, 0.06).translate(0.3, 0, 0), x, 1.55, z, a - Math.PI / 2);
         dress.add('gold', box(0.18, 0.05, 0.18), x, 2.3, z);
         dress.mute = false;
       },

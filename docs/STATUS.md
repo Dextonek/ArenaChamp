@@ -7,6 +7,21 @@
 ## rest, the Climb's clean roads and roadsides, the hunting plains, the beasts and the arena landmarks). NOT live: a deploy needs its own
 ## request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. The live game is the 2026-11-16 version.
 
+## The Climb's floors: what faces wrong, set right (2026-11-19), committed, NOT pushed, NOT live
+
+The user: "make the floor thing more detailed and look at all models and make it more details and correct the directional", then
+(asked) all Climb floors, the floors' props, "models facing wrong". Probes: `pipeline/tools/climb-facing.js` (every enemy kind walking
+towards the camera, every person from the side it faces: `docs/tower/facing/enemies.jpg`, `people.jpg`): all face the right way.
+`pipeline/tools/climb-doors-face.js` (arches from above, lore stones, caches: `docs/tower/facing/before|after/doors.jpg`, the sheet
+`docs/tower/facing/doors-before-after.jpg`). Fixed in `scenery.ts`: the arches were turned 90 degrees (gate, trial) or 0 on every
+floor, as floor 1 was laid out (the gate and the trial stood edge-on to the camera, the road came to many from the side): now towards
+the road that comes to them, kept within 1 rad of the camera (an arch is the same from both sides); the lore stone was turned 2.6 on
+every floor (its glyph faced north, away): now towards the road within 1 rad of the camera; a cache was turned by a number from its
+place (its lock often away): now towards the road within 0.8 rad. The Sea's and the War's roadside signposts: the arms point at the
+place and back along the road (they were 1.2 and -0.9 rad off). Seen, not changed: the War's red side's soldiers (footman-r,
+bowman-r) are still the old drawn figures while the blue side has models.
+- **Next (the user's pick):** more detail in the floors' props, the Sea first (the camp's crates: a plain box with one band).
+
 ## The Climb's roads made clean (2026-11-19), all five chapters' roadsides too: done, pushed (ceef026a), NOT live
 
 The user: "push and continue to make more improvement to maps in tower", then "lets make road more cleanly and like put them into
