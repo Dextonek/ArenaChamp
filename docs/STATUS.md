@@ -45,6 +45,10 @@ scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `doc
   Sands and Deep within a few, the War's and the Deep's far background (army camps, rock ledges past the edge) reshuffled because their
   props' draw changed (War gaps 113 -> 42 on 41, 42 -> 60 on 44, 108 -> 46 on 48), none of the new pieces flagged; open time within
   the noise, draw calls +-2, triangles +1.5-4 %.
+- **Junctions (the user: "there is multiple road mix together", floor 34's yard):** the clean network now keeps the longest roads whole
+  and cuts the shorter ones where they run along them (it went in the floor's order: a 9 m spur into the yard was kept and the long
+  track beside it cut, two ends side by side), and drops a piece under 12 m joined to a road at both ends. Every place still has a road
+  (checked on all 46 made floors); picture `docs/tower/roads/junctions-fixed.jpg` (left before, right after: floors 34, 1, 24).
 
 ## Hunting plains (the user: "make some zone where to fight mobs like plains where mobs spawn"): a plan, nothing built
 

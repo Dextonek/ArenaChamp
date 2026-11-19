@@ -78,12 +78,17 @@ export function roadNet(paths: Pt[][], o: { R?: number; step?: number; overlap?:
     for (const [x, z] of q) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
     return { q, x0, z0, x1, z1 };
   });
-  const out: Pt[][] = [];
-  full.forEach((pts, k) => {
+  // The longest roads first, kept whole; a shorter one is cut where it runs along them (2026-11-19, the user: "there is multiple road
+  // mix together": taken in the floor's order, a spur into a yard was kept and the long track by it cut, two ends side by side).
+  const lens = full.map((p) => { let L = 0; for (let i = 1; i < p.length; i++) L += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); return L; });
+  const order = full.map((_, k) => k).sort((a, b) => lens[b] - lens[a] || a - b);
+  const pieces: { pts: Pt[]; len: number; joins: number }[] = [];
+  order.forEach((k, rank) => {
+    const pts = full[k];
     const near = (q: Pt) => {
       let best: { at: Pt; d: number } | null = null;
-      for (let e = 0; e < k; e++) {
-        const l = coarse[e], bx = Math.max(l.x0 - q[0], 0, q[0] - l.x1), bz = Math.max(l.z0 - q[1], 0, q[1] - l.z1);
+      for (let r = 0; r < rank; r++) {
+        const e = order[r], l = coarse[e], bx = Math.max(l.x0 - q[0], 0, q[0] - l.x1), bz = Math.max(l.z0 - q[1], 0, q[1] - l.z1);
         if (best && Math.hypot(bx, bz) >= best.d) continue;
         const n = nearestOn(l.q, q[0], q[1]);
         if (!best || n.d < best.d) best = n;
@@ -99,12 +104,13 @@ export function roadNet(paths: Pt[][], o: { R?: number; step?: number; overlap?:
         let len = 0;
         for (let i = 1; i < run.length; i++) len += Math.hypot(run[i][0] - run[i - 1][0], run[i][1] - run[i - 1][1]);
         if (len >= minLen) {
+          let joins = joinedStart ? 1 : 0;
           if (endJoin) {
             const e = run[run.length - 1], f = run[run.length - 2], n = near(e);
-            if (n && onward(e, n.at, [e[0] - f[0], e[1] - f[1]])) run.push(n.at);
+            if (n && onward(e, n.at, [e[0] - f[0], e[1] - f[1]])) { run.push(n.at); joins++; }
           }
           // the joins rounded too (a join is a turn of its own), at a tighter radius
-          out.push(endJoin || joinedStart ? resample(smoothPath(run.filter((_, i) => i === 0 || i === run.length - 1 || i % 4 === 0), 2.5), step) : run);
+          pieces.push({ pts: endJoin || joinedStart ? resample(smoothPath(run.filter((_, i) => i === 0 || i === run.length - 1 || i % 4 === 0), 2.5), step) : run, len, joins });
         }
       }
       run = [];
@@ -121,6 +127,8 @@ export function roadNet(paths: Pt[][], o: { R?: number; step?: number; overlap?:
     }
     flush(false);
   });
+  // A short piece left between two roads, joined to one at each end (a stub that only links two roads already near each other): dropped.
+  const out = pieces.filter((p) => !(p.joins === 2 && p.len < 12)).map((p) => p.pts);
   CACHE.set(paths, out);
   return out;
 }
