@@ -271,7 +271,7 @@ function chainMark(c: BossCast, p: PlayContext): PlayedMove {
 function chainRocks(c: BossCast, p: PlayContext): PlayedMove {
   const at = p.shown(1.7), dx = Math.sin(c.dir), dz = Math.cos(c.dir);
   const spots = [-1, 0, 1].map((k) => ({ x: c.x + dx * k * CHAIN.rockOut, z: c.z + dz * k * CHAIN.rockOut }));
-  const stones = spots.map((s) => new FallingStone(s.x, s.z, CHAIN.rockR, at));
+  const stones = spots.map((s) => new FallingStone(s.x, s.z, CHAIN.rockR, at, 0, 'cinder'));
   p.group.add(...stones.map((s) => s.mesh));
   return {
     threats: spots.map((s) => ({ shape: { kind: 'circle', x: s.x, z: s.z, radius: CHAIN.rockR }, at, share: CHAIN.rock })), duration: at + 0.9,

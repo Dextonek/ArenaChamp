@@ -11,6 +11,7 @@ import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
 import { HEART_LIVE, heartLook, resetHeartLive } from './bodies/heart';
 import { HoldRing, LightPillar, ShadowFloor, SunOrb } from './fx';
+import { preloadProps, propClone } from './models';
 import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR, STILL_COLOR, STILL_WINDOW } from './script';
 import type { AimContext, BossCast, BossDef, BossMove, BossPhase, Objective, PlayContext, PlayedMove, RaidSide, Threat } from './types';
 
@@ -675,14 +676,17 @@ const heartbeat: BossMove = {
       const x = C.x + Math.sin(a) * out, z = C.z + Math.cos(a) * out;
       // Where it stands once raised: between the spot and the heart, facing the heart.
       const cx = x - Math.sin(a) * PLATE_IN, cz = z - Math.cos(a) * PLATE_IN;
-      const mesh = new THREE.Mesh(plateGeo, crust), edge = new THREE.Mesh(plateTrimGeo, trim);
+      // The box with its gold bar stands in until the model (blender/raid/crustplate.py) has landed; the model's underside is at its
+      // own y = 0, so it sits 0.16 lower than the box's middle, and its rim runs along the same (+z) edge as the bar.
+      const mesh = new THREE.Group(), box = new THREE.Mesh(plateGeo, crust), edge = new THREE.Mesh(plateTrimGeo, trim);
       edge.position.set(0, 0.16, 1.3);
-      mesh.add(edge);
-      mesh.castShadow = true;
+      box.add(edge);
+      box.castShadow = true;
+      mesh.add(box);
       mesh.visible = false;
       const light = new LightPillar(x, z, 1.3, 5, STAND_COLOR), held = new HoldRing(x, z, 1.3, STAND_COLOR);
       p.group.add(mesh, light.mesh, held.mesh);
-      return { a, x, z, cx, cz, mesh, light, held, up: -1 };
+      return { a, x, z, cx, cz, mesh, box, model: false, light, held, up: -1 };
     });
     const objectives: Objective[] = plates.map((s, k) => ({
       part: k, x: s.x, z: s.z, radius: 1.3, hold: PLATE_HOLD, until: at - 0.3, can: () => !raised[k] && time >= PLATE_FALL,
@@ -759,6 +763,15 @@ const heartbeat: BossMove = {
           crust.emissiveIntensity = t < at ? 0.04 + 0.06 * (t / at) ** 2 : Math.max(0, 0.1 - (t - at) * 0.2);
           plates.forEach((s, k) => {
             const m = s.mesh;
+            if (!s.model) {
+              const mdl = propClone('crustplate');
+              if (mdl) {
+                s.model = true;
+                mdl.position.y = -0.16;
+                m.add(mdl);
+                s.box.visible = false;
+              }
+            }
             if (t < PLATE_FALL) {
               // Thrown off the heart, tumbling, onto its spot.
               const u = t / PLATE_FALL;
@@ -1686,6 +1699,7 @@ export const HEART_OF_NOON: BossDef = {
   kit: (hp) => {
     // A new fight: the rings start up, whatever the last one left.
     resetHeartLive();
+    preloadProps(['crustplate']);
     return {
       name: 'The Heart of Noon', title: 'The Fallen Sun', accent: '#ffb84a', foil: '#ffe2a0', portrait, model: MODEL, look: heartLook, maxHp: hp,
       spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],

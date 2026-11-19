@@ -7,13 +7,17 @@ import { PILLARS, PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import { PILLAR_GLASS } from '../arenas/cinderPillars';
 import { TWIN_LAYOUT, TWIN_PILLARS, TWIN_R, TWIN_WALL, forge, forgeReach, twinHeroStart, twinPitArena } from '../arenas/twinpit';
 import type { ArenaDef } from '../arenas/types';
+import type { MinionLook } from '../effects/parts/minion';
 import type { TelegraphClip, TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
+import { COAL_HEART } from './adds/coalHeart';
 import { coalHeartLook } from './bodies/adds';
 import { ashLook } from './bodies/ash';
 import { TOSS, emberLook } from './bodies/ember';
 import type { BodyLook } from './bodies/look';
+import { beastLook } from '../tower/world/beasts';
+import { preloadProps } from './models';
 import { AimLane, FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, ShadowFloor, SunOrb, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
 import { stageMove } from './stage';
@@ -402,7 +406,7 @@ function movesFor(room: Room): Record<string, BossMove> {
     aim: atTarget,
     play(c, p) {
       const radius = 2.4, at = p.shown(1.7);
-      const stone = new FallingStone(c.x, c.z, radius, at);
+      const stone = new FallingStone(c.x, c.z, radius, at, 0, 'cinder');
       p.group.add(stone.mesh);
       return {
         threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.12 }], duration: at + 0.9,
@@ -696,7 +700,7 @@ function movesFor(room: Room): Record<string, BossMove> {
     id, name: 'Eruption', pose: 'channel',
     hold: room.home[who], shell: { radius: 2.9, y: 2.4, color: 0xff7030 },
     center: room.home[who], ring: room.addRing, turns: [[0, 120, 240], [60, 180, 300]],
-    look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
+    look: COAL_LOOK, color: '#5a3424', shot: 'lob', shotColor: LAVA,
     fail: { share: 0.45, cover: false, radius: room.reach + 1, text: 'THE VENT ERUPTS', blast: 'geyser' },
     seconds: room.stage?.seconds, add: room.stage ? () => room.stage!.add(who) : undefined, blow: room.blow?.(who),
     // The lava it throws lands on its own side of the wall of fire.
@@ -767,6 +771,12 @@ const FORMS = [
   },
 ];
 
+/** The Coal Heart: the model of blender/raid/coalheart.py, posed in code (src/raid/adds/coalHeart.ts); its code look stands in until the file lands. */
+let coalLook: MinionLook | null = null;
+/** Made on first use, so its file starts loading when a fight that has Coal Hearts is made (not when the page loads). */
+const coalLooks = (): MinionLook => (coalLook ??= beastLook(COAL_HEART, coalHeartLook, { speed: 0 }));
+const COAL_LOOK: MinionLook = (kind, p) => coalLooks()(kind, p);
+
 /** Bodies of their own, posed by `ashLook` and `emberLook`. Built by blender/bosses/boss_bodies.py. */
 export const ASH_AND_EMBER: BossDef = {
   id: 'ash',
@@ -776,7 +786,12 @@ export const ASH_AND_EMBER: BossDef = {
   /** The way out stands between two of the rim's perches. */
   gates: { enter: 0, exit: 157.5 },
   starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
-  kit: (hp) => kitOf('Ash and Ember', 'models/bosses/ash.glb', ashLook, '#e8703a')(hp),
+  kit: (hp) => {
+    // The fight's own objects: the rocks Ash throws, and the Coal Hearts of its stage.
+    preloadProps(['cinder']);
+    coalLooks();
+    return kitOf('Ash and Ember', 'models/bosses/ash.glb', ashLook, '#e8703a')(hp);
+  },
   hp: NUMBERS.hp,
   scale: 1,
   body: { radius: 1.8, height: 5.8 },
@@ -899,6 +914,8 @@ function twinDef(which: 0 | 1): BossDef {
     /** The room for this party: more pillars for more heroes, the forge whole and dry. Set before the fight is built. */
     resize: (band) => {
       twinPlace = twinPitArena(band);
+      preloadProps(['cinder']);
+      coalLooks();
       PARTY.heads = Math.max(2, band / 2);
       twinBand = band;
       twinPhaseList = [twinPhases(0, band), twinPhases(1, band)];
