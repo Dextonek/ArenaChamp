@@ -5,7 +5,7 @@ import { STAND_COLOR } from '../../raid/script';
 import type { QuestDef, Spot, Step } from './def';
 import type { QuestLine } from './hud';
 import { personLook } from './looks';
-import { escortLook } from './looksWild';
+import { escortModelLook } from './beasts/all';
 import type { ZoneCtx } from './ctx';
 import type { SummonUnit } from '../../effects/summon';
 import { carryMesh } from './f45/carry';
@@ -448,7 +448,7 @@ export class Quests {
       }
       const at = st.progress > 0 ? step.path[Math.min(step.path.length - 1, st.progress - 1)] : step.from;
       const handle = arena.summonFor('hero', {
-        kind: 'melee', at: new THREE.Vector3(at.x, 0, at.z), hp: 260, seconds: 3600, damage: 0.001, attackEvery: 999, speed: step.speed ?? 2.5, color: '#e8d8a8', look: step.look && step.look !== 'person' ? escortLook(step.look) : personLook(),
+        kind: 'melee', at: new THREE.Vector3(at.x, 0, at.z), hp: 260, seconds: 3600, damage: 0.001, attackEvery: 999, speed: step.speed ?? 2.5, color: '#e8d8a8', look: step.look && step.look !== 'person' ? escortModelLook(step.look, step.speed ?? 2.5) : personLook(),
         // The summon system walks a unit only toward a victim (there is none while nothing is awake), so the escort is walked from
         // here; its `goal` keeps it from running at whatever stirs.
         goal: (pos) => pos.clone(),

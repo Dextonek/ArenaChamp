@@ -3,6 +3,8 @@ import { MinionFx } from '../../effects/parts/minion';
 import { TelegraphLayer } from '../../effects/telegraph';
 import type { GameApi } from '../../runtime';
 import type { EnemySpec } from './def';
+import { BEASTS } from './beasts/all';
+import { preloadBeast } from './beasts';
 import { BUILT, FOE_MODELS } from './foeKinds';
 import { cullable, preloadFoe, returnFoe } from './foeModels';
 import { codeLookOf } from './looks';
@@ -31,6 +33,9 @@ export function prewarmFoes(api: GameApi, enemies: Record<string, EnemySpec>) {
   for (const spec of Object.values(enemies)) {
     const m = FOE_MODELS[spec.look as string];
     if (m && BUILT.has(m.id) && !(globalThis as { __codeFoes?: boolean }).__codeFoes) files.add(m.id);
+    // A beast's file is small (a few hundred KB, no skeleton): only loaded here, so the first pack finds it landed.
+    const beast = BEASTS[spec.look as string];
+    if (beast && !(globalThis as { __codeFoes?: boolean }).__codeFoes) void preloadBeast(beast.id);
     const key = `${spec.look}|${spec.melee}`;
     if (seen.has(key)) continue;
     seen.add(key);
