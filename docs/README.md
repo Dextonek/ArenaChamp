@@ -85,6 +85,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [League kit design](knowledge/league-kit-design.md) | Why League's kits work: 14 principles, what its reworks fixed, how our 20 kits compare, a kit checklist and what to do first |
 | [WoW raid mechanics](knowledge/wow-raid-mechanics.md) | World of Warcraft's raid bosses, Classic to Midnight (2026): about 25 kinds of mechanic with the bosses that use them, how they scale with raid size, the newest raids boss by boss, what players love and hate (with the few numbers that exist), and what it means for our three bosses. The researchers' notes per era: `knowledge/wow-raid-research/` |
 | [League champion kits](knowledge/league-champion-kits.md) | All 173 League champions read as a designer would, with counts across the roster |
+| [MOBA spell mechanics](knowledge/moba-spell-mechanics.md) | League, Dota 2 and Smite compared: every kind of ability, how it is cast, aimed, resolved and countered, the counts per game, our 41 kits and the tool's spells beside them, and 20 ranked improvements. The notes (every Dota hero and Smite god, the casting systems, our spells inventory): `knowledge/moba-research/` |
 
 ### Project state
 | Page | What it answers |
