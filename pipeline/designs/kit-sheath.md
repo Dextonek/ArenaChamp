@@ -2,7 +2,7 @@
 title: Kit sheet, Kagen
 tags: [kit, design, draft, sheath]
 updated: 2026-11-18
-status: gates 1 to 3 agreed (gate 3: "Yes, build the kit", 2026-11-19); gate 4 in progress: the rules are built and proven, the looks are being drawn
+status: parked at gate 4 (2026-11-19): the user wanted the spells, not a hero for the game; the four spells play on the VFX tool page, the hero stays a draft
 ---
 
 # Kagen, the Scarlet Sheath

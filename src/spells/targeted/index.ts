@@ -137,6 +137,8 @@ import { cleaveTestModule } from './cleaveTest';
 import { boltTestModule, splitBoltTestModule, bounceBoltTestModule, pierceBoltTestModule, summonerBoltTestModule } from './boltTests';
 import { summonMeleeTestModule, summonRangedTestModule, turretTestModule } from './summonTests';
 import { gameModules } from './game';
+import { SHOW_DRAFTS } from '../../heroes/index';
+import { spells as scarletSheathSpells } from '../../heroes/sheath/fight';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -207,6 +209,10 @@ export const targetedModules: EffectModule[] = [
   thousandCutIaidoModule,
   worldSeverModule,
   thousandSwordsModule,
+  // The Scarlet Sheath's four (Issen, Noto, Senbon, Sekai-giri): a draft hero's kit, parked as tool spells (the user,
+  // 2026-11-19: "all i wanted was to do some spells ... try it there dont add it to arena"). Where the draft is shown
+  // (?drafts=1, the workbench) the game's list below has them already.
+  ...(SHOW_DRAFTS ? [] : scarletSheathSpells.map((m) => ({ ...m, category: 'targeted' }))),
   lunarTideModule,
   abyssalAnglerModule,
   supercellModule,

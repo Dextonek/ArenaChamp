@@ -1,6 +1,6 @@
 # Status
 
-## New hero 41: Kagen, the Scarlet Sheath (2026-11-18): look and kit agreed; gate 4 (the spells) built and shown, waiting on the user's yes; a draft, NOT live
+## The Scarlet Sheath's spells on the VFX tool page (2026-11-19); the hero Kagen PARKED as a draft at gate 4, not for the game
 
 The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
 to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts leave marks that only open when he sheathes.
@@ -27,8 +27,13 @@ to the gate-1 card (`docs/heroes/new/sheath-card.html`): a swordsman whose cuts 
   the four spells clean; 15 CPU fights, no errors (9 won, before any tuning). Only Sekai-giri has a full-screen impact frame.
 - **The icons are a stand-in export:** VectorCraft is not on this computer; on the one that has it, run
   `python pipeline/icons/vectorcraft/make.py kagen` to export `public/icons/spells/kagen-*.svg` properly (the command files are committed).
-- **Waiting on the user:** yes to the spells (gate 4). **Next:** gate 5, balance with `python pipeline/sim/sim.py hero Kagen --drafts --browser msedge`
-  (40-60% over at least 96 fights), the Raid's first boss, a clip of a CPU duel.
+- **Parked (2026-11-19).** Shown gate 4, the user: "i like what you did but all i wanted was to do some spells so just go back to our
+  vfx tool and try it there dont add it to arena". So Kagen stays a draft (`draft: true`: not on the roster, in the shop, the CPU's
+  picks or the Codex) and goes no further through the gates (no balance, no release) unless the user asks. His four spells are on the
+  TOOL page (`/`) as targeted spells next to World Sever and Thousand Swords: `src/spells/targeted/index.ts` lists
+  `src/heroes/sheath/fight.ts`'s spells there when the draft is not shown. Pictures as the tool plays them:
+  `python pipeline/tools/page-shots.py pipeline/tools/sheath-tool-shots.js docs/spells/kagen/tool --browser msedge` -> `docs/spells/kagen/tool/`.
+  On the tool page there is no passive, so no cut marks are laid and Noto's click opens none (its look still plays).
 
 ## Showpieces: eleven short anime special moves, five with 3D creatures (2026-11-18); the first five pushed, the rest committed; NOT live
 
