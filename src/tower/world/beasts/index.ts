@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { MinionLook, MinionPalette, MinionPose, MinionRig } from '../../../effects/parts/minion';
 import { BodyParts } from '../../../raid/bodies/look';
 
@@ -62,7 +63,9 @@ export function preloadBeast(id: string): Promise<THREE.Object3D | null> {
   if (!p) {
     loader ??= new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     p = loader.loadAsync(URL_OF(id)).then((g) => {
-      g.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
+      fewerDraws(g.scene);
+      // As the people models (foeModels.ts `dress`): no shadow of their own, for a pack's frame on a phone.
+      g.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = false; });
       landed.set(id, g.scene);
       return g.scene;
     }).catch((e) => {
@@ -72,6 +75,65 @@ export function preloadBeast(id: string): Promise<THREE.Object3D | null> {
     loads.set(id, p);
   }
   return p;
+}
+
+/**
+ * A model of rigid parts comes with one draw call for every material of every part (a hound 39, a crab 67, where a person of the Climb
+ * is 5), and a pack is several of them. Once, as its file lands: within each part, the pieces of plain matte materials are merged
+ * into one mesh coloured by vertex (one material for them all); a piece that glows or is metal keeps a mesh of its own, merged with
+ * the part's others of the same kind. A hound comes to about 15.
+ */
+function fewerDraws(scene: THREE.Object3D) {
+  const plain = new Map<string, THREE.MeshStandardMaterial>();
+  const groups: THREE.Object3D[] = [];
+  scene.traverse((o) => { if (o.children.some((c) => (c as THREE.Mesh).isMesh)) groups.push(o); });
+  for (const g of groups) {
+    const meshes = g.children.filter((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh[];
+    if (meshes.length < 2) continue;
+    // By kind: plain, metal, or a glow (its own material, so a pose's `glow` still finds it).
+    const kinds = new Map<string, THREE.Mesh[]>();
+    for (const m of meshes) {
+      const mat = m.material as THREE.MeshStandardMaterial;
+      const glows = mat.emissive && (mat.emissive.r + mat.emissive.g + mat.emissive.b) * mat.emissiveIntensity > 0.01;
+      const key = glows ? `glow:${mat.uuid}` : mat.metalness > 0.4 ? 'metal' : 'plain';
+      kinds.set(key, [...(kinds.get(key) ?? []), m]);
+    }
+    for (const [key, list] of kinds) {
+      if (list.length < 2 && !key.startsWith('plain') && !key.startsWith('metal')) continue;
+      const geos = list.map((m) => {
+        m.updateMatrix();
+        const geo = (m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone()).applyMatrix4(m.matrix);
+        for (const name of Object.keys(geo.attributes)) if (name !== 'position' && name !== 'normal') geo.deleteAttribute(name);
+        if (!geo.attributes.normal) geo.computeVertexNormals();
+        const c = (m.material as THREE.MeshStandardMaterial).color, n = geo.attributes.position.count, col = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
+        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        return geo;
+      });
+      const merged = mergeGeometries(geos, false);
+      for (const geo of geos) geo.dispose();
+      if (!merged) continue;
+      let mat = list[0].material as THREE.MeshStandardMaterial;
+      if (key === 'plain' || key === 'metal') {
+        let shared = plain.get(key);
+        if (!shared) {
+          const rough = list.reduce((a, m) => a + (m.material as THREE.MeshStandardMaterial).roughness, 0) / list.length;
+          shared = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: key === 'metal' ? 0.4 : rough, metalness: key === 'metal' ? 0.7 : 0, flatShading: true });
+          shared.name = `beast_${key}`;
+          plain.set(key, shared);
+        }
+        mat = shared;
+      } else {
+        mat = mat.clone();
+        mat.vertexColors = true;
+        mat.color.setRGB(1, 1, 1);
+      }
+      const one = new THREE.Mesh(merged, mat);
+      one.name = `${g.name}_${key.split(':')[0]}`;
+      for (const m of list) { m.removeFromParent(); m.geometry.dispose(); }
+      g.add(one);
+    }
+  }
 }
 
 /** The scene a unit clones, with materials of its own (and the colours it loaded with, for the hit flash). */
