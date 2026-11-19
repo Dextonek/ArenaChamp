@@ -80,4 +80,4 @@ but where its tail can be pinned. A melee hero lives under it; a ranged one must
 
 ## Not in this pass
 
-A party room and party mechanics; a Blender-built room (the Roost is drawn in code, first-pass, waiting on the user's nod).
+A party room and party mechanics; a Blender-built room (the Roost is drawn in code; the user approved its look and the hall's gate on 2026-11-19: "Looks right").

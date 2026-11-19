@@ -3,7 +3,7 @@
 
 
 
-## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built and committed; NOT pushed, NOT live; the Roost and the hall gate wait on the user's look
+## The Eclipse Wyrm, the Raid's fourth boss (2026-11-19): built and committed; NOT pushed, NOT live; the Roost and the hall gate approved by the user ("Looks right")
 
 The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/designs/raid-wyrm.md`; how it works: `docs/architecture/raid.md`
 ("The Eclipse Wyrm"); lore: `docs/lore/LORE.md` (`## The Noonfall`, the Tower's place line).
@@ -19,7 +19,7 @@ The user, shown the model: "Yes, make the fight". Design and lore: `pipeline/des
 - Pictures `docs/bosses/wyrm-*.jpg` (`pipeline/tools/wyrm-shots.py`), the model sheet `docs/bosses/wyrm_sheet.jpg`. News: a release
   "The Eclipse Wyrm" (not live), `public/news/eclipse-wyrm.jpg`.
 - Not done: a person playing it; a party room and party mechanics (a party fights it in the Roost, untuned); the Rust tools know nothing of
-  bosses. Next: the user's look at the Roost and the gate, then a push and a deploy when asked (a deploy also raises the tabs' version).
+  bosses. Next: a person playing it, then a push and a deploy when asked (a deploy also raises the tabs' version).
 
 ## Wick balanced: 30% -> 53% (2026-11-19), done, not pushed, not live
 

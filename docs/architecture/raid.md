@@ -1079,7 +1079,7 @@ down the middle of each. The room is waiting for the user's nod.
 the Sun Court, at night: a roof of dark blue-grey slate, the old sun-dial on it in thin dark bronze lines, broken and scorched by its
 breath, faint violet-pink glints in the cracks. A low slate parapet with a bronze edge; past it snapped pillar stumps with old chains, and
 gilded plates and big bones of what it ate. To the north, high over the rim, the Tear: a jagged black lens with a burning pink edge.
-Drawn in code, first-pass, waiting for the user's nod.
+Drawn in code; the user approved its look and the hall's gate on 2026-11-19 ("Looks right").
 
 ## Two screens
 
@@ -1122,7 +1122,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **The Eclipse Wyrm is not tuned for a party** (a band over 2): it fights in the Roost with its band's HP and the same moves, checked
   only to run (a party of five, no errors). It was not played by a person; whether the breath's start glow reads in time on a phone is for
   a hand to say. Its body's poses were judged from the game camera and a side view only.
-- **The wyrm's gate in the hall stands close to the west side door (the Vault)**: both show on the Court's side; first-pass.
+- **The wyrm's gate in the hall stands close to the west side door (the Vault)**: both show on the Court's side. The user approved it as it is (2026-11-19).
 - **A run is four bosses now**: a tier takes longer, and the week's board and the raid rank count the same bosses as before (a rank
   comes at 1, 3, 6 and 9 bosses).
 - **The Hall of Noon was fought only by one autopilot hero at a time** (`_raid(..., { band: 5 })`), never by a party of people or of
