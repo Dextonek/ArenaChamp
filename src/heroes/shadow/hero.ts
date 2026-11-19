@@ -17,7 +17,7 @@ const kit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'umbral cut', name: 'Umbral Cut', range: 2.5, cooldown: 4,
-      blurb: 'Click an enemy within 2.5 m. After 0.35 s a dagger strike lands on where it stands (within 3.2 m): 58, 93 from behind (its back 120 degrees).',
+      blurb: 'Click an enemy within 2.5 m. After 0.43 s a dagger strike lands on where it stands (within 3.2 m): 58, 93 from behind (its back 120 degrees).',
       icon: icons.Q,
     },
     {

@@ -69,8 +69,9 @@ def need(d):
     return REACT + max(0.0, d) / WALK
 
 
-def judge(spell):
-    """The sheet's fields and the check for one measured spell."""
+def judge(spell, ov=None):
+    """The sheet's fields and the check for one measured spell. `ov`: its overrides ('walk' m, 'boltSpeed' m/s)."""
+    ov = ov or {}
     zones = spell['zones']
     reach = spell['reach'] or 2.2
     checks = []
@@ -90,6 +91,8 @@ def judge(spell):
         else:
             d_rad = d_walk = z['width'] / 2
             what = f"line {z['length']:g} m by {z['width']:g} m"
+            if ov.get('boltSpeed') and (z.get('until') is None or z['until'] <= z['impact'] + 0.01):
+                z = dict(z, until=z['impact'] + z['length'] / ov['boltSpeed'])
             if z.get('until') is not None and z['until'] > z['impact'] + 0.01:
                 # A front that travels (a bolt, a dash down a lane): a victim 6 m out has until the front gets there, and the
                 # project's bolt rule says that is no sooner than 0.5 s after the cast. Judged at 6 m (or the end if shorter).
@@ -104,6 +107,9 @@ def judge(spell):
                 c['margin'] = round(c['warn'] - c['need_walk'], 2)
                 checks.append(c)
                 continue
+        if 'walk' in ov:
+            d_walk = ov['walk']
+            what += f" (walk {ov['walk']:g} m by hand)"
         if warn <= 0.001 and z['kind'] != 'line':
             continue  # a zone that lands as it shows (a lingering ground, a buff ring): no walk-out answer to check
         c = {'what': what, 'warn': warn, 'need_radius': round(need(d_rad), 2), 'need_walk': round(need(d_walk), 2)}
@@ -152,7 +158,7 @@ def main():
         f = fields(s, i)
         ov = over.get(s['label'], {})
         f.update({k: v for k, v in ov.items() if k != 'check'})
-        checks = judge(s)
+        checks = judge(s, ov)
         for c in checks:
             if ov.get('check'):
                 c['na'] = ov['check']

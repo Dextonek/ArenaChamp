@@ -7,7 +7,7 @@ import { fightNow } from '../../fightClock';
 /** Express Letter (Q): reach, speed, wind-up, bolt radius, damage and the damage each Charge adds. */
 export const LETTER_RANGE = 8;
 export const LETTER_SPEED = 24;
-export const LETTER_WIND = 0.25;
+export const LETTER_WIND = 0.29; // 0.25 until 2026-11-19: the letter leaves 0.8 m ahead of him and reached 6 m before 0.5 s
 export const LETTER_RADIUS = 0.3;
 export const LETTER_DAMAGE = 58;
 export const LETTER_PER_CHARGE = 15;

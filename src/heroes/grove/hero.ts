@@ -31,7 +31,7 @@ const kit: HeroKit = {
     },
     {
       key: 'R', label: 'world tree', name: 'World Tree', range: 9, cooldown: 24, cc: true,
-      blurb: 'A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 4 HP a second each instead of 3. Recast: Uproot, a 3 m burst of thorns after 0.6 s: 60.',
+      blurb: 'A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 4 HP a second each instead of 3. Recast: Uproot, a 3 m burst of thorns after 1 s: 60.',
       icon: icons.R,
     },
   ],

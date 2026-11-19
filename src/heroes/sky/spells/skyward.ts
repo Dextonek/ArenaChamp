@@ -359,7 +359,7 @@ export const skywardModule: EffectModule = {
     const e = effect as Skyward;
     if (!e.ctx) return [];
     // The zone shows from take-off; the hit is judged on the live positions at touchdown.
-    return [{ shape: { kind: 'circle', x: e.want.x, z: e.want.z, radius: RADIUS }, start: TAKEOFF, impact: LAND_T }];
+    return [{ shape: { kind: 'circle', x: e.want.x, z: e.want.z, radius: RADIUS }, start: 0, impact: LAND_T }]; // from the cast (from take-off until 2026-11-19: 0.46 s was too short for 1.4 m)
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

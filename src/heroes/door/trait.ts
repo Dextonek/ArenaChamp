@@ -47,7 +47,7 @@ export const SLAM_WIND = 0.7;
 export const LOBBY_RANGE = 9;
 export const LOBBY_RADIUS = 3;
 export const LOBBY_LIFE = 4;
-export const LOBBY_WIND = 0.8;
+export const LOBBY_WIND = 1.05; // 0.8 until 2026-11-19: leaving the 3 m ring before the doors rise needs 0.25 + 3 / 4 s
 export const LOBBY_DOORS = 4;
 export const LOBBY_GAP = Math.SQRT2 * LOBBY_RADIUS - 2 * LOBBY_R;
 

@@ -652,7 +652,7 @@
     {
      "kind": "circle",
      "start": 0,
-     "impact": 0.35,
+     "impact": 0.43,
      "until": null,
      "radius": 1.1,
      "onCaster": false
@@ -810,7 +810,7 @@
     {
      "kind": "circle",
      "start": 0,
-     "impact": 0.6,
+     "impact": 1,
      "until": null,
      "radius": 3,
      "onCaster": false
@@ -941,7 +941,7 @@
    "zones": [
     {
      "kind": "circle",
-     "start": 0.04,
+     "start": 0,
      "impact": 0.9,
      "until": null,
      "radius": 2.5,
@@ -1038,7 +1038,7 @@
    "zones": [
     {
      "kind": "circle",
-     "start": 0.14,
+     "start": 0,
      "impact": 0.6,
      "until": null,
      "radius": 1.4,
@@ -2804,8 +2804,8 @@
     {
      "kind": "line",
      "start": 0,
-     "impact": 0.25,
-     "until": 0.55,
+     "impact": 0.29,
+     "until": 0.59,
      "length": 8,
      "width": 1.44
     }
@@ -3542,7 +3542,7 @@
     {
      "kind": "circle",
      "start": 0.04,
-     "impact": 0.8,
+     "impact": 1.05,
      "until": null,
      "radius": 3,
      "onCaster": false
@@ -3768,7 +3768,7 @@
    "zones": [
     {
      "kind": "circle",
-     "start": 0.04,
+     "start": 0,
      "impact": 0.5,
      "until": null,
      "radius": 3.5,
@@ -3793,7 +3793,7 @@
    "zones": [
     {
      "kind": "circle",
-     "start": 0.04,
+     "start": 0,
      "impact": 1,
      "until": 1.85,
      "radius": 3,

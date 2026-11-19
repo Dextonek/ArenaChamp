@@ -13,7 +13,7 @@ import {
 /**
  * Grand Lobby (door kit v5, R). He raises both white-gloved hands with a key turning over each, and the floor round the enemy's
  * spot (9 m, in his sight) fills with a brass ring 3 m in radius while four keys circle it, four dark door-shaped shadows mark where
- * the doors will stand, and the telegraph shows the ring (0.8 s; he is rooted until then). At 0.8 s four tall red double doors in brass
+ * the doors will stand, and the telegraph shows the ring (1.05 s; he is rooted until then). At 1.05 s four tall red double doors in brass
  * frames rise on the ring, a big star on each, a ring of force along the floor, an impact frame and a warm flash, and they stand for
  * 4 s. The doors are the trait's records (`newLobby` in src/traits/door.ts, from `sentFrom` and `point` only, on both screens),
  * drawn with `marks`: they are not counted against his two doors and have no HP. Each is the other's mate across the ring: walking

@@ -49,6 +49,11 @@ export const CHANGELOG: Release[] = [
         image: 'news/spell-rules-tooltip.jpg',
         alt: 'Brannoc’s Quench tooltip in a duel, with its new line: hits all in the area, ignores cover, lands after 0.6 s, and its answer.',
       },
+      {
+        tag: 'Balance',
+        title: 'Every warning long enough to walk out of',
+        text: 'Every spell was checked: a warning now always gives you time to react and walk out. Nyx’s Umbral Cut winds up 0.43 s (was 0.35), Fenna’s Uproot bursts after 1 s (was 0.6), Pip’s letter leaves his hand after 0.29 s (was 0.25) and Wick’s Grand Lobby doors rise after 1.05 s (was 0.8). Zephyr’s Skyward and Marin’s Coral Spire now show their circle from the moment they are cast.',
+      },
     ],
   },
   {

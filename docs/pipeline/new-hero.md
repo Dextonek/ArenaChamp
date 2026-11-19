@@ -48,9 +48,13 @@ one model style ("real", v4); the line-up beside Sefu and Kaia; push and deploy 
    resource with two exits, a thing to walk to). A kit without all three is a damage table.
 4. **Answers first, on paper.** Every spell has a written answer ("step out", "break it", "stand behind cover"),
    checked with the game's numbers before it is built: a hero walks 4 m/s, a person reacts in 0.25 s, a circle warns
-   for at least `0.25 + radius / 4` seconds, a bolt reaches 6 m no sooner than 0.5 s. If the numbers fail, the spell
+   for at least `0.25 + d / 4` seconds, a bolt reaches 6 m no sooner than 0.5 s. If the numbers fail, the spell
    changes, not the answer. The ultimate never lands the moment it is cast.
-   Checked by script since 2026-11-19: `python pipeline/tools/spell-rules.py` measures every hero spell's real danger zones (`pipeline/tools/spell-rules-measure.js` in the tool page) and lists any that warn too briefly, with two readings of the radius (docs/heroes/spell-rules.md); the same run writes the tooltip's rules line (`src/heroes/rules.ts`).
+   **d is the walk (agreed 2026-11-19, the user: "The walk reading"):** for a circle cast at a spot, its radius (the victim may
+   stand in its middle); for a zone round the caster, its radius minus the caster's own attack reach (in a fight the victim
+   already stands where he could hit it); for a line, half its width; for a mark that follows the enemy, how far the enemy must
+   walk out of the strike's reach. The warning counts from when the zone appears, not from the cast.
+   Checked by script since 2026-11-19: `python pipeline/tools/spell-rules.py` measures every hero spell's real danger zones (`pipeline/tools/spell-rules-measure.js` in the tool page) and lists any that warn too briefly (the walk reading counts; the radius reading is listed beside it) (docs/heroes/spell-rules.md); `--check` exits 1 on a failure; the same run writes the tooltip's rules line (`src/heroes/rules.ts`).
 5. **One body, one motion.** The figure is built the fourth way: the pack's body, costume and props built from clean
    forms, on the animation pack's skeleton (`pipeline/designs/style-v4/README.md`). She moves only with the pack's
    clips. A staff, wand or instrument goes in the left hand, a weapon in the right.

@@ -53,7 +53,7 @@ close to one League champion, so its mark and its shield were changed and its sp
 0.35 that is 0.46 s. Budget for every skillshot in v5: it reaches 6 m no sooner than **0.5 s** after the cast starts. Inside about
 5 m a bolt becomes hard to dodge. That is the reward for standing close and the price of being close.
 
-**A circle** can be left from its centre when its delay is at least `0.25 + radius / 4`. A slowed target cannot leave most of them in time,
+**A circle** can be left from its centre when its delay is at least `0.25 + radius / 4`. (Since 2026-11-19 the walk reading counts: for a zone round the caster, the radius minus his attack reach; docs/pipeline/new-hero.md, rule 4, and `pipeline/tools/spell-rules.py`.) A slowed target cannot leave most of them in time,
 so landing a slow first is how a player earns a hit. That is intended.
 
 ## Damage budget

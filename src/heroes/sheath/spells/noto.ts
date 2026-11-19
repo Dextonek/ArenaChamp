@@ -229,6 +229,8 @@ export const notoModule = spell<null>({
     windup: W.windup,
     shape: { kind: 'zone', area: (c) => ({ kind: 'circle', x: c.from.x, z: c.from.z, radius: W.radius }) },
     hit: { damage: 0, none: true, knock: 0, color: C.accent },
+    // the ring shows from the cast: its 0.5 s is exactly the walk out of his reach (0.25 + 0.9 / 4 s)
+    warn: 0,
   },
   look: NotoLook,
   noDamage: true,

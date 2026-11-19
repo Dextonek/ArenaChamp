@@ -23,7 +23,7 @@ export const shadowMarks = new WeakMap<object, ShadowMarkTally>();
 export const MARK_SHARE = 0.3;
 
 /** Umbral Cut: the wind-up, how far her dagger reaches when it lands, and the back cone (the enemy's back 120 degrees). */
-export const CUT_WIND = 0.35;
+export const CUT_WIND = 0.43; // 0.35 until 2026-11-19: 0.7 m of walk out of her reach needs 0.25 + 0.7 / 4 s
 export const CUT_REACH = 3.2;
 export const CUT_BACK = (Math.PI * 4) / 3;
 /** How much more Umbral Cut deals from behind. */

@@ -10,8 +10,8 @@ import { isBehind } from '../../../traits/types';
 
 /**
  * Umbral Cut (shadow kit, Q: a targeted dagger strike, `projectile` hit). A click on the enemy (2.5 m, sight checked by the engine
- * at the cast) starts a `CUT_WIND` (0.35 s) wind-up in which she stands (the telegraph roots her): a black pool with a violet rim and a
- * pale foil ring marks the enemy on both screens and follows it, and a dagger cut-out lies on the floor from her to it. At 0.35 s the
+ * at the cast) starts a `CUT_WIND` (0.43 s) wind-up in which she stands (the telegraph roots her): a black pool with a violet rim and a
+ * pale foil ring marks the enemy on both screens and follows it, and a dagger cut-out lies on the floor from her to it. At 0.43 s the
  * strike lands on the enemy's LIVE position if it is within `CUT_REACH` (3.2 m) of her: `damage` (58), times `CUT_BEHIND` (1.6) when she is behind it
  * (the back 120 degrees of its facing, `isBehind` with `CUT_BACK`; its facing follows its walk, so a step toward her turns it). The
  * bonus is decided here, at the hit, on the screen that resolves it, and `damage` is passed in the hit. Out of reach: a puff and no hit.
@@ -194,7 +194,7 @@ export class UmbralCut implements Effect {
 export const umbralCutModule: EffectModule = {
   label: 'umbral cut',
   category: 'hero: shadow',
-  // Click an enemy: a 0.35 s wind-up, then one dagger strike that always lands (`projectile`) if it is within 3.2 m; from behind it is doubled.
+  // Click an enemy: a 0.43 s wind-up, then one dagger strike that always lands (`projectile`) if it is within 3.2 m; from behind it is doubled.
   targeting: { mode: 'enemy' },
   create: () => new UmbralCut(),
   telegraphs(effect) {

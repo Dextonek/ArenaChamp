@@ -269,7 +269,7 @@ export const coralSpireModule: EffectModule = {
     const e = effect as CoralSpireFx;
     if (!e.ctx) return [];
     // The circle the coral shoves or drags: the rise is the dodge check, so the circle is the zone.
-    return [{ shape: { kind: 'circle', x: e.centre.x, z: e.centre.z, radius: HIT_R }, start: 0.04, impact: RISE_T }];
+    return [{ shape: { kind: 'circle', x: e.centre.x, z: e.centre.z, radius: HIT_R }, start: 0, impact: RISE_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

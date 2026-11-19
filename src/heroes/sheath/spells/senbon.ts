@@ -238,6 +238,8 @@ export const senbonModule = spell<Rain>({
       until: E.waves[E.waves.length - 1] - E.waves[0] + 0.05,
     },
     hit: { damage: E.damage, knock: E.knock, color: C.accent },
+    // the ring shows from the cast: its 1 s is exactly the walk out from the middle (0.25 + 3 / 4 s)
+    warn: 0,
     on: {
       frame(c, t) {
         const ctx = c.ctx, area = c.area;

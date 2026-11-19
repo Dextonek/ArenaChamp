@@ -11,13 +11,13 @@ import { LETTER_DAMAGE, LETTER_PER_CHARGE, LETTER_RADIUS, LETTER_RANGE, LETTER_S
 
 /**
  * Express Letter (courier kit v5, Q: a skillshot that grows with his Charges). Pip pulls an airmail envelope out of his enormous bag
- * over the 0.25 s wind-up (it grows in his hand and turns faster) and flicks it as a real bolt (`ctx.projectile`: 8 m from him,
+ * over the 0.29 s wind-up (it grows in his hand and turns faster) and flicks it as a real bolt (`ctx.projectile`: 8 m from him,
  * 24 m/s, radius 0.3) that FLUTTERS and SPINS about its line of flight, trailing scraps of paper and one translucent after-image per
  * Charge: 58 damage, +15 for each Charge he holds (read from `courierBooks` at the cast, which both screens fill from his shown
  * Charges), and the envelope grows with them. It reaches 6 m at 0.5 s. Where it hits, or where its line ends (8 m, or the first
  * cover), it bursts into paper.
  *
- * Telegraph: one thin line as wide as the bolt really hits (`boltWidth`), from him to where it stops, impact at the launch (0.25 s,
+ * Telegraph: one thin line as wide as the bolt really hits (`boltWidth`), from him to where it stops, impact at the launch (0.29 s,
  * which roots him until then). Network duels: bolts fly on the victim's screen, so his own screen draws the same envelope along the
  * same line. Clean by about 2 s. See pipeline/designs/kit-courier.md.
  */
