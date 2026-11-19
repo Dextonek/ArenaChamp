@@ -7,6 +7,8 @@ import { IceRift } from './hazards/frost';
 import { frostShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
+import { landmark } from './landmarks';
+import { orreryPose } from './landmarks/orrery';
 
 /**
  * Frostfall Lake: a frozen lake in a snowfield at night, ringed by snow-laden pines and mountains under a faint aurora.
@@ -587,6 +589,14 @@ export const frostArena: ArenaDef = {
       );
     const taken: { x: number; z: number; r: number }[] = [];
     const free = (x: number, z: number, r: number) => taken.every((t) => Math.hypot(t.x - x, t.z - z) > t.r + r);
+
+    // The landmark: the Hourkeepers' orrery on the frozen shore to the north-west (src/arenas/landmarks/orrery.ts), off the line between
+    // the two players' cameras (|x| > 12: the sides are where this arena may stand tall), 18 m from the ring's middle so the duel's camera
+    // sees it when the fight comes to that side; the snow props keep clear of its plinth.
+    const OX = RING.x - 17, OZ = RING.z - 5;
+    const orrery = landmark('orrery', { x: OX, y: snowH(OX, OZ) - 0.15, z: OZ, face: Math.atan2(RING.x - OX, RING.z - OZ), scale: 1.0 }, orreryPose, 0.72);
+    g.add(orrery.group);
+    taken.push({ x: OX, z: OZ, r: 7 });
     const tallOk = (x: number, z: number, reach: number) =>
       (Math.abs(x - RING.x) - reach > 12.5 || Math.hypot(x - RING.x, z - RING.z) - reach > 26.5) && Math.hypot(x - 16, z - 27) > 9 + reach;
     /** `count` props of `names` (in turn) between radii r0 and r1, `room` apart (times the scale); `reach` > 0 marks
@@ -610,6 +620,7 @@ export const frostArena: ArenaDef = {
     for (let i = 0; i < 7; i++) {
       const a = (i / 7) * Math.PI * 2 + rnd() * 0.5;
       const [x, z] = polar(14.6 + rnd() * 2.5, a);
+      if (!free(x, z, 2.4)) continue;
       put(back, 'Ridge', x, z, Math.atan2(-Math.cos(a), -Math.sin(a)) + (rnd() - 0.5) * 0.4, 0.9 + rnd() * 0.3, 0.12);
       taken.push({ x, z, r: 2.4 });
     }
@@ -739,6 +750,7 @@ export const frostArena: ArenaDef = {
     return {
       group: g,
       update(dt, time) {
+        orrery.update(time);
         for (let i = 0; i < N; i++) {
           let y = pos[i * 3 + 1] - vy[i] * dt;
           if (y < 0) y += 14;
@@ -765,6 +777,7 @@ export const frostArena: ArenaDef = {
       },
       dispose() {
         disposed = true;
+        orrery.dispose();
         mist.dispose();
         disposeTree(g);
       },

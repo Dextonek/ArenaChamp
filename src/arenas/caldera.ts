@@ -7,6 +7,8 @@ import { VentEruption } from './hazards/caldera';
 import { calderaShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded, shadowed } from './common';
 import type { ArenaDef } from './types';
+import { landmark } from './landmarks';
+import { automatonPose } from './landmarks/automaton';
 
 /**
  * Ember Caldera: a basalt shelf in a lava lake, inside a crater wall with lava falls and smoke columns.
@@ -570,6 +572,14 @@ export const calderaArena: ArenaDef = {
       (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, -sink * s, z), new THREE.Quaternion().setFromAxisAngle(_up, ry), new THREE.Vector3(s, s, s)));
     const taken: { x: number; z: number; r: number }[] = [];
     const free = (x: number, z: number, r: number) => taken.every((t) => Math.hypot(t.x - x, t.z - z) > t.r + r);
+
+    // The landmark: the forge automaton on a basalt shelf in the lava lake to the north-east (src/arenas/landmarks/automaton.ts), off the
+    // line between the two players' cameras (|x| > 12), 22 m from the ring's middle, turned a little so the duel's camera sees its hammer
+    // swing from the side; the lake's spires and prisms keep clear of its shelf.
+    const FX = RING.x + 18, FZ = RING.z - 12;
+    const automaton = landmark('automaton', { x: FX, y: 0, z: FZ, face: Math.atan2(RING.x - FX, RING.z - FZ) + 0.6, scale: 1.0 }, automatonPose);
+    g.add(automaton.group);
+    taken.push({ x: FX, z: FZ, r: 9 });
     const tallOk = (x: number, z: number, reach: number) =>
       (Math.abs(x - RING.x) - reach > 12.5 || Math.hypot(x - RING.x, z - RING.z) - reach > 26.5) && Math.hypot(x - 16, z - 27) > 9 + reach;
     /** `count` props of `names` (in turn) between radii r0 and r1, `room` apart (times the scale); `reach` > 0 marks
@@ -747,6 +757,7 @@ export const calderaArena: ArenaDef = {
     return {
       group: g,
       update(dt, time) {
+        automaton.update(time);
         lavaTex.offset.x = (time * 0.004) % 1;
         lavaTex.offset.y = (time * 0.0025) % 1;
         for (let i = 0; i < N; i++) {
@@ -785,6 +796,7 @@ export const calderaArena: ArenaDef = {
       },
       dispose() {
         disposed = true;
+        automaton.dispose();
         bubbles.dispose();
         disposeTree(g);
       },
