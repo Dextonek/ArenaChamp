@@ -1,5 +1,19 @@
 # Status
 
+
+## The gallery: twenty tool spells (2026-11-19), in progress; tool page only, NOT in the game
+
+The user, shown World Sever on the tool page: "lets make more like this effects do like 20 more spells in like different action and
+different style but this quality". Design: `pipeline/designs/gallery-20.md` (twenty actions, twenty styles, the quality bar).
+Files `src/spells/targeted/gallery/` (each group's spells listed in `g<N>.ts`, wired through `gallery/index.ts`).
+- **In progress:** wave 1, six helpers in worktrees, two spells each (g1-g6: kintsugi shatter, carnival masquerade, quetzal descent,
+  runestone fall, mosaic nova, mandala unbinding, celtic knot snare, watercolour vortex, geode heart, whalebone harpoon, molten glass
+  bloom, charcoal tempest). Each branch is merged here when done and its worktree removed (link to node_modules first).
+- **Next:** wave 2, four helpers (g7-g10: art deco arc, solar orrery, coral bastion, gargoyle swoop, arabesque fan, crescent return,
+  whiplash fissure, venom orchid); then one page of all twenty.
+- **Disk:** 20.6 GB free on C: before the wave (under the 30 GB the user asked for); 1.24 GB of old `tmp_pack_*` files in
+  `.git/objects/pack` (failed transfers of 2026-11-16/18) could be deleted, waiting on the user.
+
 ## The Scarlet Sheath's spells on the VFX tool page (2026-11-19); the hero Kagen PARKED as a draft at gate 4, not for the game
 
 The user asked for "a move set so that someone is actually fighting", answered "Playable hero kit" and "A new swordsman", and said yes
