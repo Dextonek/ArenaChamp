@@ -1,7 +1,7 @@
 import type { HeroKit } from '../../heroes';
 import type { HeroCard, HeroPointers } from '../framework/card';
 import { icons, portrait } from './icons';
-import { C, E, Q, R, W } from './numbers';
+import { C, E, P, Q, R, W } from './numbers';
 
 /**
  * Kagen, the Scarlet Sheath: the card (found by the game by itself, src/heroes/index.ts). A DRAFT made by
@@ -12,7 +12,7 @@ import { C, E, Q, R, W } from './numbers';
  */
 const kit: HeroKit = {
   name: 'Kagen',
-  maxHp: 700,
+  maxHp: P.hp,
   melee: true,
   title: 'the Scarlet Sheath',
   accent: C.accent,
@@ -20,23 +20,23 @@ const kit: HeroKit = {
   portrait,
   spells: [
     {
-      key: 'Q', label: 'kagen first spell', name: 'First Spell', range: Q.range, cooldown: Q.cooldown, aim: 'line',
-      blurb: `A bolt down the aim (${Q.range} m, ${Q.windup} s wind-up): ${Q.damage} damage to the first enemy it touches.`,
+      key: 'Q', label: 'issen', name: 'Issen', range: Q.range, cooldown: Q.cooldown, aim: 'line', overCover: true,
+      blurb: `One Flash. A line shows down the aim for ${Q.windup} s, then he crosses it (${Q.range} m) and stands at its end: ${Q.damage} damage and a cut mark to whoever the cut passes.`,
       icon: icons.Q,
     },
     {
-      key: 'W', label: 'kagen second spell', name: 'Second Spell', range: W.range, cooldown: W.cooldown,
-      blurb: `A circle of ${W.radius} m at the aim lands after ${W.delay} s: ${W.damage} damage to everyone inside.`,
+      key: 'W', label: 'noto', name: 'Noto', range: 0, cooldown: W.cooldown,
+      blurb: `The Click. He sheathes the blade: a ring of ${W.radius} m shows round him for ${W.windup} s, then every cut mark on an enemy inside it opens, ${P.markDamage} each. For ${W.parry} s after the click, the next hit on him is parried and leaves a mark on the attacker.`,
       icon: icons.W,
     },
     {
-      key: 'E', label: 'kagen third spell', name: 'Third Spell', range: E.range, cooldown: E.cooldown, dash: true, aim: 'line', overCover: true,
-      blurb: `A dash of ${E.range} m down the aim (${E.windup} s wind-up): ${E.damage} damage to whoever it passes.`,
+      key: 'E', label: 'senbon', name: 'Senbon', range: E.range, cooldown: E.cooldown,
+      blurb: `Thousand Swords. A ring of ${E.radius} m is painted on a spot for ${E.warn} s, then katanas rain into it in ${E.waves.length} waves: ${E.damage} damage and a cut mark for each wave you stand in.`,
       icon: icons.E,
     },
     {
-      key: 'R', label: 'kagen ultimate', name: 'Ultimate', range: R.range, cooldown: R.cooldown,
-      blurb: `A circle of ${R.radius} m at the aim lands after ${R.delay} s: ${R.damage} damage to everyone inside.`,
+      key: 'R', label: 'sekai giri', name: 'Sekai-giri', range: R.range, cooldown: R.cooldown, aim: 'line', overCover: true,
+      blurb: `Ultimate, World Sever. He draws one cut along a ${R.range} m line and stands still for ${R.windup} s; then it tears: ${R.damage} damage on the line, and every cut mark on you opens wherever you stand, ${R.markDamage} each.`,
       icon: icons.R,
     },
   ],

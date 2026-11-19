@@ -30,6 +30,8 @@ const STACK_LOOK: Record<string, { color: string; shape: NonNullable<PipLook['sh
   brand: { color: '#ffe9a0', shape: 'mark' },
   tag: { color: '#ffc36a', shape: 'gem' },
   magnet: { color: '#7fd4ff', shape: 'mark' },
+  // Kagen's cut marks (src/heroes/sheath/trait.ts).
+  cut: { color: '#cf4a1c', shape: 'mark' },
   air: { color: '#ff8fb8', shape: 'balloon' },
   wool: { color: '#c9c0a8', shape: 'balloon' },
 };
