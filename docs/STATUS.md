@@ -1,6 +1,17 @@
 # Status
 
 
+
+## Research: MOBA spell mechanics (League, Dota 2, Smite) compared with ours (2026-11-19), in progress
+
+The user: "research all mobas spells ... all league of legends spells all dota 2 spells and all smite game spells and their mechanics
+... compare to ours and think where we could improve ... how is it activated, is it targetable or just free cast", and "write down every
+detail into docs". League's 173 kits are already in `docs/knowledge/league-champion-kits.md` and `league-kit-design.md`.
+Notes go to `docs/knowledge/moba-research/`, the report to `docs/knowledge/moba-spell-mechanics.md`.
+- **Running:** Dota 2 heroes A-M (`moba-research/dota2-heroes-a-m.md`).
+- **Queued (started as the gallery helpers finish; at most 6 agents at once):** Dota 2 heroes N-Z; Smite gods (all); the cast and targeting
+  systems of the three games; our game's 40 heroes and the tool's spells listed by mechanics; then the report writer.
+
 ## The gallery: twenty tool spells (2026-11-19), in progress; tool page only, NOT in the game
 
 The user, shown World Sever on the tool page: "lets make more like this effects do like 20 more spells in like different action and
