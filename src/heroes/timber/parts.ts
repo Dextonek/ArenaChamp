@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { heroProp } from '../../effects/props';
 
 /**
  * The timber kit (pipeline/designs/kit-timber.md): Hank the Lumberjack. Plaid red, wood brown and pine green, with pale
@@ -101,6 +102,13 @@ export function buildTree(stage: TreeStage): THREE.Group {
   const g = new THREE.Group();
   g.add(decal(0, s.foot, TIMBER.dark, 0.6, 0.01));
   if (s.ring) g.add(decal(s.foot - 0.07, s.foot, TIMBER.pale, 0.75, 0.02, 3));
+  // The pine itself as a model (blender/heroes/props/pine.py: a fir of the Walking Wood, the same height and crown) once its file has
+  // landed; until then the stack of cones below.
+  const model = heroProp(`pine_${stage}`);
+  if (model) {
+    g.add(model);
+    return g;
+  }
   g.add(cylMesh(s.trunkR * 0.78, s.trunkR, s.trunkH, 0, TIMBER.body));
   if (stage !== 'sapling') g.add(cylMesh(s.trunkR * 1.05, s.trunkR * 1.35, 0.3, 0, 0x6a4426));
   s.tiers.forEach(([r, y, h], i) => {
@@ -114,6 +122,11 @@ export function buildTree(stage: TreeStage): THREE.Group {
 export function buildStump(): THREE.Group {
   const g = new THREE.Group();
   g.add(decal(0, 0.7, TIMBER.dark, 0.45, 0.01));
+  const model = heroProp('stump');
+  if (model) {
+    g.add(model);
+    return g;
+  }
   g.add(cylMesh(0.44, 0.55, 0.5, 0, TIMBER.body));
   const top = new THREE.Mesh(cachedGeo('stumpTop', () => new THREE.CircleGeometry(0.43, 16).rotateX(-Math.PI / 2)), flatMat(TIMBER.hot));
   top.position.y = 0.51;

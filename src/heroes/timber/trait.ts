@@ -6,6 +6,7 @@ import { insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
 import type { CastContext } from '../../effects/targeting';
 import { pillar, type Obstacle } from '../../obstacles';
 import type { GroundMark, Trait, TraitView } from '../../traits/types';
+import { preloadHeroProp } from '../../effects/props';
 
 /**
  * Hank (bruiser, melee). Passive Fresh Cut: his trees (3 at most; the oldest falls over harmlessly) grow from a sapling (30 HP, blocks
@@ -320,6 +321,10 @@ export class ToolTrees {
   }
 }
 
+/** The trees' model files (blender/heroes/props/pine.py), loaded once Hank is in a fight. */
+const TREE_MODELS = ['pine_sapling', 'pine_young', 'pine_full', 'stump'];
+let treesLoading = false;
+
 export const timberTrait: Trait = {
   meter: { name: 'TREES', max: MAX_TREES, value: (t) => standing(t.self(), t.time).length },
   passive: {
@@ -343,6 +348,8 @@ export const timberTrait: Trait = {
   },
   // Both screens, every frame: the trees by stage, their stumps and the axe on the ground.
   marks(t) {
+    // The trees' models (src/effects/props.ts) start loading with Hank's first frame in a fight, before his first tree.
+    if (!treesLoading) { treesLoading = true; for (const k of TREE_MODELS) void preloadHeroProp(k); }
     const fig = t.self();
     syncClock(fig, t.time);
     advance(fig, t.time);
