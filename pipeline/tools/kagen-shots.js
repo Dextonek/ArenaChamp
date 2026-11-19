@@ -3,10 +3,12 @@
 //   MSYS_NO_PATHCONV=1 python pipeline/tools/page-shots.py pipeline/tools/kagen-shots.js docs/spells/kagen --page "/?drafts=1" [--browser msedge] [--port 5181]
 //
 // The body of an async function run in the tool page (see page-shots.py); `?drafts=1` puts Kagen (a draft) on the roster.
-// The duel is a 'play' duel in the Night Temple; Kagen's casts are made by hand (`heroMode.autoCast`) with his cooldowns
+// The duel is a 'play' duel in the Frost arena (window.KAGEN_ARENA for another), laid out 2.2 m beside its centre pillar; Kagen's casts are made by hand (`heroMode.autoCast`) with his cooldowns
 // cleared. The foe is Brannoc, held on a spot, silenced and played by a CPU that never casts, so each picture shows his spell.
 // `window.KAGEN_ONLY` (set it at the top of a copy) limits it to some sheets: e.g. ['q', 'w'].
 const ONLY = window.KAGEN_ONLY ?? ['marks', 'q', 'w', 'e', 'r'];
+// Every spot below is laid out round (0, 0) and moved by OX: the arena's centre pillar stands at (0, 7).
+const OX = window.KAGEN_OX ?? 2.2;
 const { CPU_LEVELS } = await import('/src/cpuLevels.ts');
 const STILL = { ...CPU_LEVELS[0], speed: 0.01, castGap: [999, 999], cooldown: 99 };
 const d = vfx.duel, cam = vfx.controls.object;
@@ -17,13 +19,19 @@ const W = 560, H = 350;
 const V = (x, y, z) => new (vfx.arena.caster.group.position.constructor)(x, y, z);
 const me = () => vfx.arena.caster;
 let pin = null, frames = 0;
+// The arena keeps each foe at its home spot (plus knock-back) and puts its body there every frame: move the home.
+const place = (x, z) => {
+  const slot = vfx.arena.foes?.find((f) => f.figure === d.foe);
+  if (slot) { slot.home.set(x, 0, z); slot.offset.set(0, 0, 0); }
+  d.foe.group.position.set(x, 0, z);
+};
 const step = (sec) => {
   for (let i = 0; i < Math.round(sec * 60); i++) {
     simMs += 1000 / 60;
-    if (pin) d.foe.group.position.set(pin[0], 0, pin[1]);
+    if (pin) place(pin[0] + OX, pin[1]);
     if (d.foe && frames++ % 40 === 0) vfx.arena.applyStatus(d.foe, 'silence', 1.5);
     vfx.step(1 / 60);
-    if (pin) d.foe.group.position.set(pin[0], 0, pin[1]);
+    if (pin) place(pin[0] + OX, pin[1]);
   }
 };
 performance.now = () => simMs;
@@ -32,9 +40,9 @@ const start = async () => {
   vfx.view.paused = true;
   if (!d.on) vfx.setDuel(true, 'play');
   vfx.heroPickCtrl.setValue('Kagen');
-  d.opponentChoice = 'Brannoc';
+  d.opponentChoice = window.KAGEN_FOE ?? 'Brannoc';
   d.cpuLevel = STILL;
-  d.arenaChoice = 'temple';
+  d.arenaChoice = window.KAGEN_ARENA ?? 'frost';
   d.hazardsInRuns = false;
   d.shiftsInRuns = false;
   d.start('play');
@@ -44,7 +52,7 @@ const start = async () => {
   pin = null;
   frames = 0;
   // He stands at the middle (the arena's spawn is at z 13): the pictures' spots are laid out round (0, 0).
-  me().group.position.set(0, 0, 0);
+  me().group.position.set(OX, 0, 0);
   step(0.3);
 };
 const sheet = (cols, rows) => {
@@ -58,8 +66,8 @@ const sheet = (cols, rows) => {
 };
 const shot = (s, label, mid, far = 1) => {
   const keep = { p: cam.position.clone(), q: cam.quaternion.clone() };
-  cam.position.set(mid[0], 10.5 * far, mid[1] + 7.5 * far);
-  cam.lookAt(mid[0], 0.8, mid[1]);
+  cam.position.set(mid[0] + OX, 10.5 * far, mid[1] + 7.5 * far);
+  cam.lookAt(mid[0] + OX, 0.8, mid[1]);
   cam.updateMatrixWorld();
   vfx.render();
   const sw = gl.width, sh = gl.height, ar = W / H;
@@ -79,8 +87,9 @@ const shot = (s, label, mid, far = 1) => {
   cam.quaternion.copy(keep.q);
 };
 const jpg = (s) => s.c.toDataURL('image/jpeg', 0.9);
-const cast = (i, x, z) => { d.heroRt.setCooldown(i, 0); step(1 / 60); return vfx.heroMode.autoCast(i, { point: V(x, 0, z) }); };
-const cuts = (n) => { d.heroRt.clearStacks('cut'); if (n) d.heroRt.addStacks('cut', n, 5, 4); };
+const cast = (i, x, z) => { d.heroRt.setCooldown(i, 0); step(1 / 60); return vfx.heroMode.autoCast(i, { point: V(x + OX, 0, z) }); };
+// Adds marks up to n (clearing them plays the opening burst on the foe, which is not what these pictures show).
+const cuts = (n) => { const now = d.heroRt.stacks('cut'); if (n > now) d.heroRt.addStacks('cut', n - now, 5, 4); };
 const foeHp = () => Math.round(vfx.arena.hpOf(d.foe));
 const out = { casts: {}, hp: {} };
 try {
