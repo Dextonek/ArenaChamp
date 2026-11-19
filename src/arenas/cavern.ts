@@ -5,6 +5,8 @@ import { RoofGives } from './hazards/cavern';
 import { cavernShift } from './shifts/cavern';
 import layout from './real/cavern.json';
 import { Glows, realProps, type RealLayout } from './real';
+import { landmark } from './landmarks';
+import { geodePose } from './landmarks/geode';
 import type { ArenaDef } from './types';
 
 /**
@@ -196,6 +198,14 @@ export const cavernArena: ArenaDef = {
     g.add(lamps.group, crystals.group);
     own.push(lamps, crystals);
 
+    // The landmark: the Last Light, a geode split open in a pillar of the cave's wall on the far left, its mouth toward the ring. Off the
+    // z line through the ring's middle (the cameras look along it), inside the cave's far arc; the sun's light runs down gold veins into it
+    // (src/arenas/landmarks/geode.ts).
+    const GX = RING.x - 15, GZ = RING.z - 17;
+    const geode = landmark('geode', { x: GX, y: OUT, z: GZ, face: Math.atan2(RING.x - GX, RING.z - GZ), scale: 0.8 }, geodePose, 0.7);
+    g.add(geode.group);
+    own.push(geode);
+
     let disposed = false;
     // the heroes' materials, a shade duller than on a hero: the arena must not outshine them
     void realProps('cavern', CAVERN_OBSTACLES.length, {
@@ -214,6 +224,7 @@ export const cavernArena: ArenaDef = {
       update(_dt, time) {
         lamps.update(time);
         crystals.update(time);
+        geode.update(time);
       },
       dispose() {
         disposed = true;

@@ -5,6 +5,8 @@ import { DustDevils } from './hazards/canyon';
 import { canyonShift } from './shifts/canyon';
 import layout from './real/canyon.json';
 import { Glows, realProps, type RealLayout } from './real';
+import { landmark } from './landmarks';
+import { colossusPose } from './landmarks/colossus';
 import type { ArenaDef } from './types';
 
 /**
@@ -239,6 +241,14 @@ export const canyonArena: ArenaDef = {
     g.add(glows.group);
     own.push(glows);
 
+    // The landmark: the Colossus of the Dune Throne, seated in a niche of the right-hand wall, on the lower terrace, looking out over
+    // the court. Off the z line through the ring's middle (the cameras look along it), well to the side where the wall stands; his head
+    // sweeps the ring (src/arenas/landmarks/colossus.ts).
+    const CX = RING.x + 26.5, CZ = RING.z - 3;
+    const colossus = landmark('colossus', { x: CX, y: 7, z: CZ, face: Math.atan2(RING.x - CX, RING.z - CZ), scale: 0.8 }, colossusPose);
+    g.add(colossus.group);
+    own.push(colossus);
+
     let disposed = false;
     // the heroes' materials, a shade duller than on a hero, and the rock darker still: the arena must not outshine them
     void realProps('canyon', CANYON_OBSTACLES.length, {
@@ -273,6 +283,7 @@ export const canyonArena: ArenaDef = {
       group: g,
       update(_dt, time) {
         glows.update(time);
+        colossus.update(time);
       },
       dispose() {
         disposed = true;
