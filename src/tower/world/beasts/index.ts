@@ -42,9 +42,9 @@ export interface BeastDef {
   id: string;
   /** How much bigger the rig is drawn than the model (the model is built at the code look's size: 1). */
   scale?: number;
-  /** The health bar's height over the feet (m, before the unit's scale). */
+  /** The health bar's height over the feet (m, at the model's size: `scale` and the unit's own are applied to it). */
   barY: number;
-  /** Where its shots leave (m over the feet), for one that shoots. */
+  /** Where its shots leave (m over the feet, at the model's size), for one that shoots. */
   shotY?: number;
   /** How far one stride carries it (m, before the unit's scale): its legs keep pace with how fast it goes. */
   stride?: number;
@@ -123,8 +123,9 @@ export function beastLook(def: BeastDef, fallback: MinionLook, unit: { speed: nu
     dress();
     return {
       root,
-      barY: def.barY,
-      shotY: def.shotY,
+      // The bar and the shots at the model's own size (`scale`), before the unit's.
+      barY: def.barY * (def.scale ?? 1),
+      shotY: def.shotY === undefined ? undefined : def.shotY * (def.scale ?? 1),
       animate(dt: number, pose: MinionPose) {
         if (!model) {
           dress();
