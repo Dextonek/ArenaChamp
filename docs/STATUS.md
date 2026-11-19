@@ -3,11 +3,11 @@
 
 
 
-## Pushed 2026-11-19: GitHub main is 00e024ef (the wyrm, Wick, the spell rules line, the gallery, the research, the showpieces'
-## rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. A deploy started in the
-## fork session was stopped by the user: nothing was deployed, the live game is the 2026-11-16 version.
+## Pushed 2026-11-19: GitHub main is ceef026a (the wyrm, Wick, the spell rules line, the gallery, the research, the showpieces'
+## rest, the Climb's clean roads and roadsides, the hunting plains, the beasts and the arena landmarks). NOT live: a deploy needs its own
+## request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. The live game is the 2026-11-16 version.
 
-## The Climb's roads made clean (2026-11-19), all five chapters' roadsides too: done, committed, NOT pushed, NOT live
+## The Climb's roads made clean (2026-11-19), all five chapters' roadsides too: done, pushed (ceef026a), NOT live
 
 The user: "push and continue to make more improvement to maps in tower", then "lets make road more cleanly and like put them into
 scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `docs/tower/survey/`), then the roads close up
@@ -50,7 +50,7 @@ scenario". A survey of 15 floors first (`pipeline/tools/climb-survey.js` -> `doc
   track beside it cut, two ends side by side), and drops a piece under 12 m joined to a road at both ends. Every place still has a road
   (checked on all 46 made floors); picture `docs/tower/roads/junctions-fixed.jpg` (left before, right after: floors 34, 1, 24).
 
-## Hunting plains on all 50 floors (2026-11-19): built, committed, NOT pushed, NOT live
+## Hunting plains on all 50 floors (2026-11-19): built, pushed (ceef026a), NOT live
 
 The user, shown the plan (`docs/tower/hunting/plan.html`): "make the hunting plains, hunt quest and 10 mobs".
 - **Where:** one plain a floor, `src/tower/world/plains-table.ts`, made by `node --experimental-strip-types --no-warnings
