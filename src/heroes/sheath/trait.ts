@@ -1,4 +1,5 @@
 import type { Trait, TraitHit, TraitView } from '../../traits/types';
+import { cutLook, cutMarks } from './marks';
 import { C, E, P, Q, R, W } from './numbers';
 
 /**
@@ -44,6 +45,8 @@ const trait: Trait = {
     blurb: 'Count the cuts on you. Step out of his ring when it shows, or stay out of his reach for 5 s, and they fade unspent.',
   },
   speed: P.speed,
+  marks: cutMarks,
+  markLook: cutLook,
   attack: { kind: 'melee', range: P.reach, damage: P.attack, interval: P.interval, windup: P.attackWind, speed: 0, look: 'sweep' },
   badge(t) {
     const n = t.stacks(CUT);
