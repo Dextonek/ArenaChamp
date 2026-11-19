@@ -175,10 +175,15 @@ class Part:
         if self.boss.solid:
             bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         me = bpy.data.meshes.new(self.name)
+        # Flat facets, as the bosses are; a model that sets `smooth` (an arena's landmark: the arenas' rule 2, smooth shading) is
+        # shaded smooth with its edges over 40 degrees kept sharp.
+        smooth = getattr(self.boss, "smooth", False)
         for f in bm.faces:
-            f.smooth = False
+            f.smooth = smooth
         bm.to_mesh(me)
         bm.free()
+        if smooth:
+            me.set_sharp_from_angle(angle=math.radians(40))
         for mm in self.mats:
             me.materials.append(mm)
         self.boss.colour(me, self.pivot, self.mats)

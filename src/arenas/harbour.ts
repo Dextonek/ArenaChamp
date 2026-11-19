@@ -5,6 +5,8 @@ import { SwellBreaks } from './hazards/harbour';
 import { harbourShift } from './shifts/harbour';
 import layout from './real/harbour.json';
 import { Glows, Sea, realProps, type RealLayout } from './real';
+import { landmark } from './landmarks';
+import { serpentPose } from './landmarks/serpent';
 import type { ArenaDef } from './types';
 
 /**
@@ -169,6 +171,14 @@ export const harbourArena: ArenaDef = {
     g.add(glows.group);
     own.push(glows);
 
+    // The landmark: the Harbour Serpent in the bay to the north-east, off the line between the two players' cameras (nothing tall on
+    // that line: the north is the other player's side), near enough that the duel's camera sees it rise when the fight comes to that
+    // side; its body trails away from the quay (src/arenas/landmarks/serpent.ts).
+    const SX = RING.x + 19, SZ = RING.z - 17;
+    const serpent = landmark('serpent', { x: SX, y: SEA, z: SZ, face: Math.atan2(RING.x - SX, RING.z - SZ), scale: 1.5 }, serpentPose);
+    g.add(serpent.group);
+    own.push(serpent);
+
     let disposed = false;
     // the heroes' materials, a shade duller than on a hero: the arena must not outshine them
     void realProps('harbour', HARBOUR_OBSTACLES.length, {
@@ -185,6 +195,7 @@ export const harbourArena: ArenaDef = {
       update(_dt, time) {
         sea.update(time);
         glows.update(time);
+        serpent.update(time);
       },
       dispose() {
         disposed = true;
