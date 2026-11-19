@@ -27,9 +27,9 @@ COS30 = math.cos(math.pi / 6)
 
 def build_hourstone():
     B = Boss("hourstone", HEIGHT)
-    marble = B.m("marble", "#d8cdb4", 0.0, 0.85)
-    marble_dk = B.m("marble_dark", "#a39880", 0.0, 0.9)
-    marble_hi = B.m("marble_hi", "#ebe2ca", 0.0, 0.8)
+    marble = B.m("marble", "#a89d86", 0.0, 0.85)
+    marble_dk = B.m("marble_dark", "#7d735f", 0.0, 0.9)
+    marble_hi = B.m("marble_hi", "#bcb197", 0.0, 0.8)
     gold = B.m("gold", "#d2ae55", 0.85, 0.35, "#e0a93a", 0.3)
     eye = B.m("eye", "#fff0c0", 0.0, 0.4, "#ffd27a", 1.4)
     socket = B.m("socket", "#4a4234", 0.0, 0.8)

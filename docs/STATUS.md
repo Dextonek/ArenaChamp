@@ -54,6 +54,16 @@ floor, 6-10 of the floor's weaker enemies wandering, each back 20-30 s after it 
 shared online as the packs are. **Waiting on the user:** why go there (hunt quest / a rare strong mob / both / just the fight), how
 busy (6 or 10), and where to start (one Sea floor alone first, or all floors).
 
+## The Raid's fight models (2026-11-19): seven built, in the fights, committed; NOT pushed, NOT live
+
+The user: "lets make more models for the raid too". The stages' adds and the fights' objects were the last things of the Raid drawn in
+code: the Hour Stone, the sun-stone (Pillar Fall), the sun shard, the Coal Heart, the cinder rock, the Heart's crust plate and the
+wyrm's Cast shade are models now (`docs/raid/models/README.md`; builders `blender/raid/`, built by three helpers in parallel). The adds
+go through the Climb's beasts' look (`BeastDef.url`), the objects through `src/raid/models.ts`; the code look stands in until a file
+lands. Every rule check still passes (`_raidCheck` 234, `_raidAsh` 77, `_raidHeart` 246, `_raidTwin` 143, `_raidWyrm` 50,
+`_raidUpgrades` 40); pictures in their fights `docs/raid/models/fight-*.jpg` (`pipeline/tools/raid-models-shots.py`). Not done: the
+user's look; a phone frame with a stage's three adds; the cinder rock reads a little like a face from the side.
+
 ## The Climb's beasts as models (2026-11-19): nine built, in the game, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models even for the tower", then, shown the bark hound: "Yes, do them all". The Climb's beasts, spirits

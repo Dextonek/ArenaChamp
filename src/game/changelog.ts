@@ -43,6 +43,13 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Raid',
+        title: 'The Raid’s stage creatures and fight objects, made real',
+        text: 'The Sun Warden’s Hour Stones, Ash and Ember’s Coal Hearts and the Eclipse Wyrm’s Cast shades are real models now, and so are the things you fight around: the broken column drums of Pillar Fall, the sun shards you carry to the altar, Ash’s cinder rocks and the Heart’s crust plates.',
+        image: 'news/raid-models.jpg',
+        alt: 'The Sun Warden’s stage: Hour Stones of pale marble with gold crowns of rays stand round the court and beam at Kaia.',
+      },
+      {
         tag: 'Tower',
         title: 'The Climb’s beasts and spirits, made real',
         text: 'The last figures of the Climb that were still a few cones and cylinders are real models now: the bark hounds and the Stag-Crowned of the Walking Wood and its feeding roots, the brine crab of the Sea, the dust wraith of the Sands, the shard mites and crystal golems of the Deep, and the wisp and the caravan cart you lead. Each runs, bites, slams or throws with its own body.',
