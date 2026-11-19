@@ -6,7 +6,7 @@
 ## Pushed 2026-11-19: GitHub main is d7d3f9c8 (57 commits: the wyrm, Wick, the spell rules line, the gallery, the research, the
 ## showpieces' rest). NOT live: a deploy needs its own request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload.
 
-## The Climb's beasts as models (2026-11-19): nine built, in the game, committed; NOT pushed, NOT live
+## The Climb's beasts as models (2026-11-19): nine built, in the game, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models even for the tower", then, shown the bark hound: "Yes, do them all". The Climb's beasts, spirits
 and led ones were the last figures still drawn in code: now each is a model of rigid parts built by script with the Raid bosses'
