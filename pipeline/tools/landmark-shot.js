@@ -6,7 +6,8 @@
 //   python -I pipeline/tools/page-shots.py <a copy with window._arenas = ['canyon']; window._near = [...]; window._toward = [...];
 //       window._secs = 20 on its first line> <out folder> --port 5187 --browser msedge --size 1600x1000
 //
-// `_secs`: how long the fight runs first (a landmark on a cycle shows its moment). It returns `sheet` (one row: five views).
+// `_secs`: how long the fight runs first (a landmark on a cycle shows its moment); `_hero`, `_foe`: who fights (default Hank and Isolde).
+// It returns `sheet` (one row: five views).
 // Pictures of a duel arena as the game draws it, with two heroes fighting in it: the game's own camera, an overview, a
 // low view across the floor and a view from the far side. Paste into the VFX tool page (browser javascript tool), with
 // the frame sink running (node pipeline/tools/frame-sink.mjs <folder>):
@@ -76,5 +77,5 @@ window._arenaShot = async (file, arenas, o = {}) => {
   return info;
 };
 
-const info = await _arenaShot('x.jpg', window._arenas ?? ['harbour'], { hero: 'Hank', foe: 'Isolde', seconds: window._secs ?? 20, W: 800, H: 500 });
+const info = await _arenaShot('x.jpg', window._arenas ?? ['harbour'], { hero: window._hero ?? 'Hank', foe: window._foe ?? 'Isolde', seconds: window._secs ?? 20, W: 800, H: 500 });
 return { info, sheet: window.__sheet };
