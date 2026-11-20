@@ -3,11 +3,12 @@
 
 
 
-## Pushed 2026-11-19: GitHub main is ceef026a (the wyrm, Wick, the spell rules line, the gallery, the research, the showpieces'
-## rest, the Climb's clean roads and roadsides, the hunting plains, the beasts and the arena landmarks). NOT live: a deploy needs its own
+## Pushed 2026-11-20: GitHub main is 14dc4a4c (the wyrm, Wick, the spell rules line, the gallery, the research, the showpieces'
+## rest, the Climb's clean roads and roadsides, the hunting plains, the beasts, the arena landmarks, Hank's firs, the floors' facing
+## and every chapter's props in detail). NOT live: a deploy needs its own
 ## request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. The live game is the 2026-11-16 version.
 
-## The Climb's floors: what faces wrong, set right, and every chapter's props in more detail (2026-11-19/20), committed, NOT pushed, NOT live
+## The Climb's floors: what faces wrong, set right, and every chapter's props in more detail (2026-11-19/20), pushed (14dc4a4c), NOT live
 
 The user: "make the floor thing more detailed and look at all models and make it more details and correct the directional", then
 (asked) all Climb floors, the floors' props, "models facing wrong". Probes: `pipeline/tools/climb-facing.js` (every enemy kind walking
