@@ -114,6 +114,18 @@ The user, shown the plan (`docs/tower/hunting/plan.html`): "make the hunting pla
   (floor 1) another fight, as expected (its scene sets the hero beside packs near floor 1's plain: wild ones join); retake its reference.
 - **Not done:** the wild ones are not shared online (a plain on the hub needs a new message: PROTOCOL, a deploy); nobody has played a
   plain by hand; no tuning of how hard ten at a time is past the autopilot's runs.
+## The heroes' spell models (2026-11-20): Hank's trees done and PUSHED; the rest STOPPED by the user mid-way ("stop and push what you have")
+
+The user: "lets make more models for the heroes spells too", then, shown Hank's trees: "Yes, do the rest". Done and pushed: Hank's
+Timber trees as firs of the Walking Wood (`blender/heroes/props/pine.py`, `src/effects/props.ts`, guide `docs/heroes/props/README.md`).
+Six helpers were building the rest (Bo's sheep, Zambini's rabbit, Mortis's skeleton and colossus, Shiori's ink crane, Sirix's wasp,
+Vitriol's homunculus, Ada's turret, Nyx's double, Wick's door and bell, Mum's wall, Bram's Gerald, Cleaver's table, Gus's sign, Silvane's
+mirror, Opaline's pillar) when the user said stop. **Left in the working tree, NOT committed, NOT reviewed:** half-done builders in
+`blender/heroes/props/` (door, feasttable, gerald, homunculus, inkcrane, mimewall, placedkit, rabbit, sheep, skeleton, turret, wasp),
+some exported .glb files and loose renders in `docs/heroes/props/`, `src/heroes/{ink,magic,sheep}/*Model.ts`, and edits to
+`src/heroes/door/parts.ts`, `door/trait.ts`, `magic/spells/grandFinale.ts`, `magic/spells/hatTrick.ts`, `sheep/trait.ts` (tsc passes
+with them). Next: look at each, finish or drop it (`git checkout -- <file>` for the tracked edits), then the same review as the beasts.
+
 ## The arenas' landmarks (2026-11-19): nine built, in the arenas, committed, approved by the user ("They look right"); NOT pushed, NOT live
 
 The user: "lets make more models for the arenas too and make them special", then, shown the harbour's serpent: "Yes, do the rest".
