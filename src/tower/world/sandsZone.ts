@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { crateLoaded, hv, tent, type Put, type Role } from './propParts';
 import { along, roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
@@ -236,7 +237,23 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
   const M = materials(own);
   const rim = look.rim, geo = desert(rim, look.dunes, look.seed), rnd = seeded(4049 + look.seed);
   const rmax = Math.max(...rim), rmean = rim.reduce((s, r) => s + r, 0) / rim.length;
-  const kit = new Kit(), far = new Kit();
+  // (2026-11-19) the plain matte parts merged by colour, one mesh a square a shading (zone.ts `Kit.matte`): the props in detail
+  // (propParts.ts) put more colours in more squares
+  const plainMats = [M.sandstone, M.flag, M.cream, M.wood, M.plank, M.lacquer, M.wine, M.turquoise, M.clay, M.palm, M.dark, M.rockA, M.rockB, M.rockC];
+  const kit = new Kit().matte(...plainMats), far = new Kit().matte(...plainMats);
+  /** The roles of the props' parts in the Sands' colours (propParts.ts). */
+  const ROLE: Record<Role, THREE.Material> = {
+    wood: M.wood, dark: M.dark, plank: M.plank, stone: M.sandstone, rock: M.rockA, metal: M.lacquer, gold: M.gold, cloth: M.cream, accent: M.turquoise, accent2: M.wine,
+    catch: M.wine, clay: M.clay, rope: M.cream, flame: M.flame, ash: M.dark,
+  };
+  const part = (x: number, z: number, yaw: number, over: Partial<Record<Role, THREE.Material>> = {}): Put => (role, geo) => { kit.add(over[role] ?? ROLE[role], geo, x, 0, z, yaw); };
+  const fires = look.pieces.filter((pc) => pc.look === 'fire').map((pc) => pc.o);
+  /** The way to the nearest fire within 18 m (a tent's door), else towards the camera. */
+  const toFire = (x: number, z: number) => {
+    let best: { ax: number; az: number } | null = null, bd = 18;
+    for (const f of fires) { const d = Math.hypot(f.ax - x, f.az - z); if (d < bd) { bd = d; best = f; } }
+    return best ? Math.atan2(best.ax - x, best.az - z) : 0;
+  };
   const glowSpots: { x: number; y: number; z: number; size?: number }[] = [];
   const W = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
   /** A point `b` m past the outline in direction `a` (radians, atan2(dz, dx)), as an offset. */
@@ -295,6 +312,13 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
     if (foot) for (let i = 0; i < 3; i++) { const a = rnd() * 6.28, d = r * (0.95 + rnd() * 0.2), s = r * (0.22 + rnd() * 0.12); into.add(rocks[(base + i) % 3], ico1, x + Math.cos(a) * d, y + s * 0.45, z + Math.sin(a) * d, rnd() * 6, s * 1.2, s * 0.9, s); }
   };
 
+  /** A wall's dressing (2026-11-19): a footing of bigger blocks, the joints of its courses drawn dark on both faces, every 1.3 m. */
+  const dressed = (P: Put, r: number, L: number, h: number) => {
+    P('stone', box(r * 2 + 0.24, 0.32, L + 0.12));
+    for (let y = 0.7; y < h - 0.3; y += 0.6) for (const s of [-1, 1]) P('dark', box(0.02, 0.03, L - 0.1).translate(s * (r + 0.005), y, 0));
+    for (let t = -L / 2 + 0.65; t < L / 2 - 0.3; t += 1.3) for (const s of [-1, 1]) P('dark', box(0.02, Math.min(0.6, h - 0.8), 0.03).translate(s * (r + 0.005), 0.4 + ((Math.round((t + L) / 1.3) % 2) * 0.6), t));
+  };
+
   // --- the cover ---------------------------------------------------------------------------------------------------------
   const kinds = new Map(look.kinds);
   look.pieces.forEach(({ look: lk, o }, idx) => {
@@ -306,7 +330,8 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
         else boulder(kit, o.ax, o.az, r, h, 0, idx);
         return;
       case 'crate':
-        kit.add(M.plank, box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3).add(M.gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.55, o.az, 0);
+        // (2026-11-19) planks, battens, braces, the band; now and then a smaller crate or a sack on it (it was a box with gilt wedges)
+        crateLoaded(part(o.ax, o.az, rnd() * 3, { wood: M.plank, plank: M.wood }), r * 2, h, hv(o.ax, o.az));
         return;
       case 'barrel':
         if (kind === 'well') {
@@ -326,16 +351,22 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
           }
         }
         return;
-      case 'tent':
-        kit.add(rnd() < 0.5 ? M.cloth : M.red, new THREE.ConeGeometry(r * 1.3, h * 1.4, 8).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(M.gold, cyl(0.05, 0.05, h * 1.9, 5), o.ax, 0, o.az);
+      case 'tent': {
+        const tc = rnd() < 0.5 ? M.cloth : M.red;
+        void rnd(); // (the stream's draws, as before)
+        // (2026-11-19) its door towards the fire, the flap tied back, guy ropes to pegs, a skirt in sandstone, the pole and its finial
+        tent(part(o.ax, o.az, toFire(o.ax, o.az), { cloth: tc, accent: M.sandstone }), r * 1.3, h * 1.4, 8);
         return;
+      }
       case 'stall':
         // a low wall of dressed blocks with a brass cap
         kit.add(M.sandstone, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(M.gold, box(r * 2.2, 0.08, len + r * 2.2), mx, h, mz, yaw);
+        dressed(part(mx, mz, yaw), r, len + r * 2, h);
         return;
       case 'house':
         // a wall of dressed stone: a band of turquoise tiles, a cap of brass
         kit.add(M.flag, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(M.turquoise, box(r * 2.08, 0.38, len + r * 2.08), mx, h * 0.72, mz, yaw).add(M.gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h, mz, yaw);
+        dressed(part(mx, mz, yaw, { stone: M.flag }), r, len + r * 2, h);
         return;
       case 'fire':
         // a fire bowl on a short stone foot

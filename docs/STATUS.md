@@ -7,7 +7,7 @@
 ## rest, the Climb's clean roads and roadsides, the hunting plains, the beasts and the arena landmarks). NOT live: a deploy needs its own
 ## request (`npm run cf:deploy`); PROTOCOL 20 makes open tabs reload. The live game is the 2026-11-16 version.
 
-## The Climb's floors: what faces wrong, set right (2026-11-19), committed, NOT pushed, NOT live
+## The Climb's floors: what faces wrong, set right, and every chapter's props in more detail (2026-11-19/20), committed, NOT pushed, NOT live
 
 The user: "make the floor thing more detailed and look at all models and make it more details and correct the directional", then
 (asked) all Climb floors, the floors' props, "models facing wrong". Probes: `pipeline/tools/climb-facing.js` (every enemy kind walking
@@ -20,7 +20,18 @@ every floor (its glyph faced north, away): now towards the road within 1 rad of 
 place (its lock often away): now towards the road within 0.8 rad. The Sea's and the War's roadside signposts: the arms point at the
 place and back along the road (they were 1.2 and -0.9 rad off). Seen, not changed: the War's red side's soldiers (footman-r,
 bowman-r) are still the old drawn figures while the blue side has models.
-- **More detail in the Sea's props (floors 1-10), done as the sample, waiting on the user's look before the other chapters:** in
+- **All chapters (the user: "Yes, all chapters"), done:** the builders in `src/tower/world/propParts.ts` (fire, tent, crate, barrel,
+  stall, hut, column, menhir, stump, cot), each prop through a role-to-material map of its chapter (no new material where the props
+  are merged per material). The Wood: fire, tents (door to the fire, moss skirt), crates, huts (plank walls, door, window, gabled thatch),
+  menhirs (runes, moss, a pointed top), stumps, logs (cut ends, branches), the shrine (footing, coping, ivy, a niche). The Sands: tents,
+  crates, the walls' footing and joints. The Deep: fire, crates, the felt huts now miners' huts (door to the fire), columns (fluted,
+  capitals, one in three broken). The War: crates (iron band), barrels, cots, tents (door, ropes). The Sands' and the War's plain matte
+  materials merged by colour too (`Kit.matte`, one shared material a shading): draws over a whole floor 347 -> 236 (Sands), 313 -> 239
+  (War), the Wood and the Deep +2-5; triangles +1-3 %; open time the same. Fights the same (world-2..5: 65783258, 45b46573, b081ed7b,
+  5267e5db). Probe: no new fault on walkable ground (the new gaps on 24, 28 and 41 are the lair walls already in the dunes and the far
+  siege line); the Wood's cover meshes named `zone-cover` too (its count of "in cover" is its instanced trees in their own groves: an old
+  limit of the probe). Sheet `docs/tower/props/detail/chapters-props-before-after.jpg`.
+- **More detail in the Sea's props (floors 1-10), done as the sample:** in
   `zone.ts`: the camp fire (a ring of stones, the ash, a tepee of logs, the flame, a tripod with its kettle on a chain; it was a slab and
   a cone), the tent (a doorway towards the camp's fire, the flap tied back, guy ropes to pegs, a skirt in wine or teal, the pole and a
   gilt finial), the crate (battens, rims, braces, the band; now and then a smaller crate or a sack on it), the barrel (bulging staves,

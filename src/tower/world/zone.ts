@@ -141,20 +141,25 @@ export class Kit {
    * a square whatever their colours (as land.ts's `Dress`). (2026-11-19: the props' detail put more colours in more squares, a draw
    * each.) One material for them all, matte and flat.
    */
-  private vc = new Map<THREE.Material, THREE.Color>();
-  private shared: THREE.MeshStandardMaterial | null = null;
+  private vc = new Map<THREE.Material, { col: THREE.Color; shared: THREE.MeshStandardMaterial }>();
+  /** One shared material a shading (flat, smooth): a chapter's materials are faceted (the Sea) or smooth (the Sands' jars). */
+  private shareds = new Map<boolean, THREE.MeshStandardMaterial>();
   matte(...mats: THREE.MeshStandardMaterial[]) {
-    for (const m of mats) this.vc.set(m, m.color.clone());
-    this.shared ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true });
+    for (const m of mats) {
+      const flat = !!m.flatShading;
+      let shared = this.shareds.get(flat);
+      if (!shared) this.shareds.set(flat, (shared = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: flat })));
+      this.vc.set(m, { col: m.color.clone(), shared });
+    }
     return this;
   }
   private put(mat: THREE.Material, g: THREE.BufferGeometry) {
-    const col = this.vc.get(mat);
-    if (col) {
-      const n = g.attributes.position.count, c = new Float32Array(n * 3);
+    const vc = this.vc.get(mat);
+    if (vc) {
+      const col = vc.col, n = g.attributes.position.count, c = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b; }
       g.setAttribute('color', new THREE.BufferAttribute(c, 3));
-      mat = this.shared!;
+      mat = vc.shared;
     }
     g.computeBoundingBox();
     const c = g.boundingBox!.getCenter(new THREE.Vector3()), key = `${Math.floor(c.x / CELL)}:${Math.floor(c.z / CELL)}`;
@@ -185,7 +190,8 @@ export class Kit {
     this.put(mesh.material as THREE.Material, g);
   }
   build(into: THREE.Group, own: { dispose(): void }[]) {
-    if (this.shared) own.push(this.shared);
+    for (const sh of this.shareds.values()) own.push(sh);
+    const isShared = new Set<THREE.Material>(this.shareds.values());
     for (const cell of this.cells.values()) {
       for (const [mat, geos] of cell) {
         const merged = mergeGeometries(geos, false);
@@ -193,7 +199,7 @@ export class Kit {
         if (!merged) continue;
         const mesh = new THREE.Mesh(merged, mat);
         mesh.castShadow = mesh.receiveShadow = true;
-        if (mat === this.shared) mesh.name = 'zone-cover'; // the cover's own parts (the props probe tells them from the dressing by this)
+        if (isShared.has(mat)) mesh.name = 'zone-cover'; // the cover's own parts (the props probe tells them from the dressing by this)
         into.add(mesh);
         own.push(merged);
       }

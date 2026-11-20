@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { campFire, column, crateLoaded, hut, hv, type Put, type Role } from './propParts';
 import { roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
@@ -279,6 +280,8 @@ function paint(look: DeepLook, cave: Cave, L: number) {
 const PALETTE = {
   rock: '#3a3a4c', rockLight: '#4c4a60', pale: '#b8b2cc', paleDark: '#8e88a6', wood: '#4a3626', darkWood: '#2a1f1a', cloth: '#4a3a6a',
   stone: '#484a5e', iron: '#23252c', black: '#030308',
+  // (2026-11-19, the props in detail: propParts.ts) the parts' own: planks, rope, clay, a dull violet, ash, the catch
+  plank: '#5a4030', rope: '#8a7a58', clay: '#6a3a2a', violet: '#5a4a7a', ash: '#1a1a22', catch: '#6a7080',
 } as const;
 type Key = keyof typeof PALETTE;
 
@@ -343,6 +346,23 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
   const amethyst = mat(0x7a52c8, 0.4, { emissive: 0x5a30b0, emissiveIntensity: 0.55 });
   const greatMat = mat(0x6a48b8, 0.35, { emissive: 0x4a2ca0, emissiveIntensity: 0.6 });
   const kit = new Kit(), dress = new Dress();
+  /** The roles of the props' parts in the Deep's colours (propParts.ts): the dressing's keys, the gold and the flame in the kit. */
+  const KEY: Record<Role, Key | null> = {
+    wood: 'wood', dark: 'darkWood', plank: 'plank', stone: 'stone', rock: 'rock', metal: 'iron', gold: null, cloth: 'cloth', accent: 'violet', accent2: 'violet',
+    catch: 'catch', clay: 'clay', rope: 'rope', flame: null, ash: 'ash',
+  };
+  const part = (x: number, z: number, yaw: number, over: Partial<Record<Role, Key>> = {}): Put => (role, geo) => {
+    const k = over[role] ?? KEY[role];
+    if (k) dress.add(k, geo, x, 0, z, yaw);
+    else kit.add(gold, geo, x, 0, z, yaw);
+  };
+  const fires = look.pieces.filter((_, i) => look.kinds[i] === 'fire').map((pc) => pc.o);
+  /** The way to the nearest fire within 18 m (a tent's door), else towards the camera. */
+  const toFire = (x: number, z: number) => {
+    let best: { ax: number; az: number } | null = null, bd = 18;
+    for (const f of fires) { const d = Math.hypot(f.ax - x, f.az - z); if (d < bd) { bd = d; best = f; } }
+    return best ? Math.atan2(best.ax - x, best.az - z) : 0;
+  };
   const W = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
   /** A point `b` m past the outline in direction `a` (radians, atan2(dz, dx)), as an offset. */
   const out = (a: number, b: number) => { const r = rimAt(rim, a) + b; return { dx: Math.cos(a) * r, dz: Math.sin(a) * r }; };
@@ -399,8 +419,8 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
     const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az), len = Math.hypot(o.bx - o.ax, o.bz - o.az), mx = (o.ax + o.bx) / 2, mz = (o.az + o.bz) / 2, r = o.r, h = o.height;
     switch (lk) {
       case 'crate':
-        dress.add('wood', box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3);
-        kit.add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, 0);
+        // (2026-11-19) planks, battens, braces, the band; now and then a smaller crate or a sack on it
+        crateLoaded(part(o.ax, o.az, rnd() * 3), r * 2, h, hv(o.ax, o.az));
         break;
       case 'timber':
         // four logs, two by two, on the ground and on each other, over the cover's own round (2026-11-14, the props pass: they ran from its
@@ -409,12 +429,14 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
         dress.add('darkWood', box(r * 2.2, h * 0.5, 0.15), o.ax, 0, o.az - 0.6, 0.4);
         break;
       case 'hut':
-        dress.add('cloth', new THREE.ConeGeometry(r * 1.25, h * 1.3, 4).translate(0, h * 0.65, 0), o.ax, 0, o.az, rnd() * 3).add('darkWood', cyl(0.06, 0.06, h * 1.8, 4), o.ax, 0, o.az);
-        kit.add(gold, new THREE.ConeGeometry(r * 1.27, 0.25, 4).translate(0, 0.13, 0), o.ax, 0, o.az, 0);
+        void rnd(); // (the stream's draw, as before)
+        // (2026-11-19) a miners' hut: plank walls on a stone footing, a door towards the fire, a shuttered window, a felt roof with eaves
+        // (it was a cone of felt). Its walls inside the cover's round, its roof over it.
+        hut(part(o.ax, o.az, toFire(o.ax, o.az) - Math.PI / 2), r * 0.85, 0, h * 0.6, h * 0.45);
         break;
       case 'fire':
-        dress.add('rock', cyl(r, r * 1.1, 0.35, 8), o.ax, 0, o.az).add('darkWood', cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 0.3, 1, 1, 1, 0.8).add('darkWood', cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 2.4, 1, 1, 1, 0.8);
-        kit.add(gold, new THREE.ConeGeometry(0.35, 0.9, 6).translate(0, 0.85, 0), o.ax, 0, o.az);
+        // (2026-11-19) a ring of stones, the ash, a tepee of logs, the flame, a tripod with its kettle (it was a slab and a cone)
+        campFire(part(o.ax, o.az, hv(o.ax, o.az) * 6), r, hv(o.ax, o.az, 1));
         warm.push({ x: o.ax, y: 1.2, z: o.az, size: 7 });
         break;
       case 'cradle':
@@ -448,7 +470,9 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
         break;
       }
       case 'column':
-        dress.add('pale', cyl(r * 0.8, r, h, 9), o.ax, 0, o.az).add('stone', cyl(r * 1.25, r * 1.25, 0.3, 9), o.ax, 0, o.az);
+        // (2026-11-19) a pale stone column: a square base, a fluted shaft, a capital with a gilt edge; one in three broken off, its drum
+        // fallen beside it (it was a plain shaft on a disc)
+        column(part(o.ax, o.az, hv(o.ax, o.az) * 1.5, { stone: 'paleDark', rock: 'pale' }), r, h, hv(o.ax, o.az, 3));
         break;
       case 'rock':
         dress.add('rock', ico, o.ax, h * 0.3, o.az, rnd() * 6, r * 1.1, h * 0.7, r * 1.1).add('rockLight', ico, o.ax + r * 0.5, h * 0.12, o.az - r * 0.3, rnd() * 6, r * 0.6, h * 0.38, r * 0.6);

@@ -19,7 +19,9 @@ _world.go(g.floor.start.x + 60, g.floor.start.z + 60);
 _world.step(1);
 await new Promise((r) => setTimeout(r, 1500)); // the harbour file's props load in the background
 const kinds = new Map();
-look.pieces.forEach((p, i) => { const k = (look.kinds?.[i]) ?? p.look; if (k !== 'edge' && !kinds.has(k)) kinds.set(k, p); });
+// a look's kinds: an array by piece (the Wood, the Deep) or a list of [piece, kind] pairs (the Sands, the War)
+const kindOf = Array.isArray(look.kinds?.[0]) ? new Map(look.kinds) : null;
+look.pieces.forEach((p, i) => { const k = (kindOf ? kindOf.get(i) : look.kinds?.[i]) ?? p.look; if (k !== 'edge' && !kinds.has(k)) kinds.set(k, p); });
 // the camp's own pieces first (fire, tents, crates), as they stand together
 const want = window.__props?.kinds;
 const list = [...kinds.entries()].filter(([k]) => !want || want.includes(k));

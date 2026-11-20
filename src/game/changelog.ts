@@ -111,8 +111,8 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
-        title: 'The Climb’s doors face their roads, and the Sea’s camps and markets in more detail',
-        text: 'The arches of the Climb’s doors now open towards the road that leads to them (many stood side-on to it), the lore stones show their glyph and the caches their lock. On the Sea’s floors the camp fires have a ring of stones, logs and a kettle on a tripod, the tents a doorway towards the fire, guy ropes and a coloured skirt, the crates battens and braces, the barrels bulging staves, the market stalls trestles, goods and striped awnings, and the lairs’ walls buttresses and coping stones.',
+        title: 'The Climb’s doors face their roads, and every floor’s camps and props in more detail',
+        text: 'The arches of the Climb’s doors now open towards the road that leads to them (many stood side-on to it), the lore stones show their glyph and the caches their lock. On the Sea’s floors the camp fires have a ring of stones, logs and a kettle on a tripod, the tents a doorway towards the fire, guy ropes and a coloured skirt, the crates battens and braces, the barrels bulging staves, the market stalls trestles, goods and striped awnings, and the lairs’ walls buttresses and coping stones. The Wood’s huts have plank walls, doors and gabled thatch, its standing stones runes and moss, its stumps roots; the Deep’s miners live in plank huts, and its columns are fluted with capitals; the Sands’ and the War’s tents have doors and guy ropes, their crates braces, the War’s cots blankets in their army’s colour.',
       },
     ],
   },

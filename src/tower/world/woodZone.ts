@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { campFire, crateLoaded, hut, hv, menhir, stump, tent, type Put, type Role } from './propParts';
 import { along, roadNet } from './roads';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
@@ -234,6 +235,7 @@ export class Props {
       if (!merged) continue;
       const mesh = new THREE.Mesh(merged, mat);
       mesh.castShadow = mesh.receiveShadow = mat !== this.own[1];
+      if (mat === this.shared) mesh.name = 'zone-cover'; // the cover's own parts (the props probe tells them from the dressing by this)
       into.add(mesh);
       keep.push(merged);
     }
@@ -376,6 +378,21 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   const thornMat = mat(0x5a2f3e, 0.8), sap = new THREE.MeshBasicMaterial({ color: 0xffb860 }), water = new THREE.MeshStandardMaterial({ color: 0x2c5a5a, roughness: 0.15, metalness: 0.2, emissive: 0x0c2a2a, emissiveIntensity: 0.4 });
   own.push(sap, water);
   const kit = new Props([gold, sap, water]);
+  // (2026-11-19, the props in detail: propParts.ts) the roles of the parts in the Wood's colours. The Props merge every colour but the
+  // gold, the sap and the water into one mesh a square, so these new ones cost no draw.
+  const ironM = mat(0x2a2c32, 0.6), mossM = mat(0x55693c, 0.95), wineM = mat(0x5e1a28, 0.8), catchM = mat(0x7d8a90, 0.85), clayM = mat(0x8a4a30, 0.8), ropeM = mat(0xb89a5a, 0.9);
+  const ROLE: Record<Role, THREE.Material> = {
+    wood, dark: bark, plank: barkLight, stone, rock: stone, metal: ironM, gold, cloth: sail, accent: mossM, accent2: wineM, catch: catchM, clay: clayM, rope: ropeM, flame: gold, ash,
+  };
+  /** A prop's parts at (x, z) turned `yaw`, some roles in other colours (`over`). */
+  const part = (x: number, z: number, yaw: number, over: Partial<Record<Role, THREE.Material>> = {}): Put => (role, geo) => { kit.add(over[role] ?? ROLE[role], geo, x, 0, z, yaw); };
+  const fires = look.pieces.filter((_, i) => look.kinds[i] === 'fire').map((pc) => pc.o);
+  /** The way to the nearest fire within 18 m (a tent's door), else towards the camera. */
+  const toFire = (x: number, z: number) => {
+    let best: { ax: number; az: number } | null = null, bd = 18;
+    for (const f of fires) { const d = Math.hypot(f.ax - x, f.az - z); if (d < bd) { bd = d; best = f; } }
+    return best ? Math.atan2(best.ax - x, best.az - z) : 0;
+  };
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 7) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const ico = new THREE.IcosahedronGeometry(1, 0);
@@ -456,49 +473,69 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
         for (let i = 0; i < 6; i++) kit.add(thornMat, new THREE.ConeGeometry(0.16, 1.4 + rnd(), 5).translate(0, 0.75, 0), o.ax + (rnd() - 0.5) * r * 1.3, 0, o.az + (rnd() - 0.5) * r * 1.3, 0, 1, 1, 1, (rnd() - 0.5) * 1.2);
         kit.add(leafA, ico, o.ax, 0.5, o.az, rnd() * 6, r * 1.05, 0.7, r * 1.05);
         break;
-      case 'log':
+      case 'log': {
         kit.add(bark, new THREE.CylinderGeometry(r * 1.3, r * 1.45, len + r * 2, 7).rotateX(Math.PI / 2).translate(0, r * 1.3, 0), mx, 0, mz, yaw).add(mossy, box(r * 1.1, 0.18, len * 0.75), mx, r * 2.5, mz, yaw);
+        // (2026-11-19) its cut ends with their rings, two broken branches, fungus on its side
+        const P = part(mx, mz, yaw), L2 = (len + r * 2) / 2;
+        for (const s2 of [-1, 1]) {
+          P('plank', new THREE.CylinderGeometry(r * (s2 > 0 ? 1.3 : 1.45) - 0.04, r * (s2 > 0 ? 1.3 : 1.45) - 0.04, 0.03, 7).rotateX(Math.PI / 2).translate(0, r * 1.3, s2 * (L2 + 0.01)));
+          P('dark', new THREE.TorusGeometry(r * 0.7, 0.025, 3, 10).translate(0, r * 1.3, s2 * (L2 + 0.03)));
+        }
+        for (const [t, a] of [[-0.25, 0.7], [0.3, -0.9]] as const) P('wood', new THREE.CylinderGeometry(0.07, 0.13, r * 2.2, 5).translate(0, r * 1.1, 0).rotateZ(a).translate(0, r * 1.9, t * len));
+        P('clay', new THREE.SphereGeometry(0.18, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.4, 1).rotateZ(Math.PI / 2).translate(r * 1.42, r * 1.1, 0.2 * len));
         break;
+      }
       case 'stump':
-        kit.add(barkLight, cyl(r * 0.85, r, h, 8), o.ax, 0, o.az).add(wood, cyl(r * 0.8, r * 0.8, 0.05, 8), o.ax, h, o.az);
+        // (2026-11-19) its bark, the rings of the cut, roots splaying, moss on its north side
+        stump(part(o.ax, o.az, hv(o.ax, o.az) * 6, { wood: barkLight, plank: wood }), r, h);
         break;
       case 'menhir': {
         // its gilt band turned and leaning with the stone (it was square to the world: its corners stood out of the stone's sides)
-        const my = rnd() * 3, by = h * 0.62;
-        kit.add(stone, new THREE.BoxGeometry(r * 1.6, h, r * 1.2).translate(0, h / 2, 0), o.ax, 0, o.az, my, 1, 1, 1, 0.04).add(gold, box(r * 1.7, 0.08, r * 1.3), o.ax + Math.sin(my) * Math.sin(0.04) * by, by * Math.cos(0.04), o.az + Math.cos(my) * Math.sin(0.04) * by, my, 1, 1, 1, 0.04);
+        const my = rnd() * 3;
+        // (2026-11-19) a worked stone: its pointed top, carved bands of runes on its face, moss on its top, the band, stones at its foot
+        menhir(part(o.ax, o.az, my), r * 1.6, r * 1.2, h, 0.04);
         break;
       }
       case 'twist':
         kit.add(bark, cyl(0.3, 0.55, h, 6), o.ax, 0, o.az, 0, 1, 1, 1, 0.12).add(bark, cyl(0.2, 0.3, h * 0.6, 5), o.ax + 0.3, h * 0.7, o.az, 1, 1, 1, 1, -0.9).add(leafC, ico, o.ax, h + 0.7, o.az, 0, 1.6, 1.2, 1.6);
         break;
       case 'fire':
-        kit.add(stone, cyl(r, r * 1.1, 0.35, 8), o.ax, 0, o.az).add(bark, cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 0.3, 1, 1, 1, 0.8).add(bark, cyl(0.1, 0.1, 1, 5), o.ax, 0.3, o.az, 2.4, 1, 1, 1, 0.8);
-        kit.add(gold, new THREE.ConeGeometry(0.35, 0.9, 6).translate(0, 0.85, 0), o.ax, 0, o.az);
+        // (2026-11-19) a ring of stones, the ash, a tepee of logs, the flame, a tripod with its kettle (it was a slab and a cone)
+        campFire(part(o.ax, o.az, hv(o.ax, o.az) * 6), r, hv(o.ax, o.az, 1));
         glowSpots.push({ x: o.ax, y: 1.2, z: o.az, size: 7 });
         break;
       case 'tent':
-        kit.add(sail, new THREE.ConeGeometry(r * 1.25, h * 1.4, 7).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(gold, cyl(0.05, 0.05, h * 1.9, 4), o.ax, 0, o.az);
+        void rnd(); // (the stream's draw, as before)
+        // (2026-11-19) its door towards the fire, the flap tied back, guy ropes to pegs, a skirt in moss green, the pole and its finial
+        tent(part(o.ax, o.az, toFire(o.ax, o.az)), r * 1.25, h * 1.4);
         break;
       case 'crate': {
         const cy = rnd() * 3; // its band turned with it (its corners stood out of the crate's sides)
-        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, cy).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, cy);
+        // (2026-11-19) planks, battens, braces, the band; now and then a smaller crate or a sack on it
+        crateLoaded(part(o.ax, o.az, cy), r * 2, h, hv(o.ax, o.az));
         break;
       }
       case 'hut': {
-        // a burner's hut: timber walls, a steep thatch, a gilt ridge
-        kit.add(wood, box(r * 2, h * 0.6, len + r * 2), mx, 0, mz, yaw);
-        const roof = new THREE.ConeGeometry(1, 1, 4).rotateY(Math.PI / 4).scale(r * 1.75, h * 0.7, (len + r * 2) * 0.72).translate(0, h * 0.6 + h * 0.35, 0);
-        // a gilt cap on the roof's peak (a ridge along it stood out of the hipped roof, which has a peak and no ridge)
-        kit.add(thatch, roof, mx, 0, mz, yaw).add(gold, new THREE.ConeGeometry(0.16, 0.3, 4).rotateY(Math.PI / 4).translate(0, 0.15, 0), mx, h * 1.3 - 0.12, mz, yaw);
+        // a burner's hut (2026-11-19, in detail: propParts `hut`): plank walls on a stone footing, corner posts, a door and a shuttered
+        // window, a pitched thatch with eaves and a gilt ridge (it was a box under a pyramid)
+        hut(part(mx, mz, yaw, { cloth: thatch }), r, len, h * 0.55, h * 0.6);
         break;
       }
       case 'mound':
         kit.add(ash, new THREE.SphereGeometry(1, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(r, h, r), o.ax, 0, o.az);
         glowSpots.push({ x: o.ax, y: h * 0.8, z: o.az, size: 2.2 });
         break;
-      case 'shrine':
+      case 'shrine': {
         kit.add(plaster, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h, mz, yaw);
+        // (2026-11-19) a stone footing and coping, ivy climbing its faces, a niche with a lamp's gold on its +x face
+        const P = part(mx, mz, yaw), Lw = len + r * 2;
+        P('stone', box(r * 2 + 0.22, 0.35, Lw + 0.12));
+        P('stone', box(r * 2 + 0.14, 0.14, Lw + 0.06).translate(0, h - 0.14, 0));
+        for (let t = -Lw / 2 + 0.8; t < Lw / 2 - 0.4; t += 1.7) P('accent', new THREE.SphereGeometry(0.5, 6, 4).scale(0.12, 1.2 + hv(mx + t, mz) * 0.8, 0.6).translate(r + 0.04, h * 0.4, t));
+        P('dark', box(0.06, 0.7, 0.5).translate(r + 0.01, h * 0.45, 0));
+        P('gold', box(0.08, 0.12, 0.2).translate(r + 0.03, h * 0.45 + 0.05, 0));
         break;
+      }
       case 'post':
         kit.add(bark, cyl(r * 0.6, r * 0.8, h, 6), o.ax, 0, o.az).add(gold, cyl(0.22, 0.22, 0.3, 6), o.ax, h, o.az);
         glowSpots.push({ x: o.ax, y: h + 0.2, z: o.az, size: 1.6 });

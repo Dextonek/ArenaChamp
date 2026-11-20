@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { barrel, cot, crateLoaded, hv, tent, type Put, type Role } from './propParts';
 import { along, offsetLine, roadNet } from './roads';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
@@ -316,8 +317,22 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
   const M = materials(own);
   const rim = look.rim, geo = battlefield(rim, look.seed), rnd = seeded(5051 + look.seed);
   const rmax = Math.max(...rim), rmean = rim.reduce((s, r) => s + r, 0) / rim.length;
-  const kit = new Kit();
+  // (2026-11-19) the plain matte parts merged by colour, one mesh a square a shading (zone.ts `Kit.matte`)
+  const kit = new Kit().matte(M.stone, M.charred, M.wood, M.darkWood, M.plank, M.straw, M.sack, M.lacquer, M.rockA, M.rockB, M.rockC);
   const glowSpots: { x: number; y: number; z: number; size?: number }[] = [];
+  /** The roles of the props' parts in the War's colours (propParts.ts). */
+  const ROLE: Record<Role, THREE.Material> = {
+    wood: M.plank, dark: M.darkWood, plank: M.wood, stone: M.stone, rock: M.rockA, metal: M.iron, gold: M.gold, cloth: M.sack, accent: M.charred, accent2: M.charred,
+    catch: M.steel, clay: M.charred, rope: M.straw, flame: M.flame, ash: M.charred,
+  };
+  const part = (x: number, z: number, yaw: number, over: Partial<Record<Role, THREE.Material>> = {}): Put => (role, geo) => { kit.add(over[role] ?? ROLE[role], geo, x, 0, z, yaw); };
+  const fires = look.pieces.filter((pc) => pc.look === 'fire').map((pc) => pc.o);
+  /** The way to the nearest fire within 18 m (a tent's door), else towards the camera. */
+  const toFire = (x: number, z: number) => {
+    let best: { ax: number; az: number } | null = null, bd = 18;
+    for (const f of fires) { const d = Math.hypot(f.ax - x, f.az - z); if (d < bd) { bd = d; best = f; } }
+    return best ? Math.atan2(best.ax - x, best.az - z) : 0;
+  };
   const W = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
   /** A point `b` m past the outline in direction `a` (radians, atan2(dz, dx)), as an offset. */
   const out = (a: number, b: number) => { const r = rimAt(rim, a) + b; return { dx: Math.cos(a) * r, dz: Math.sin(a) * r }; };
@@ -402,9 +417,13 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
         } else if (kind === 'sacks') {
           for (let k = 0; k < 3; k++) kit.add(M.sack, new THREE.SphereGeometry(0.42, 9, 6).scale(1, 0.75, 0.8).translate(0, 0.3, 0), o.ax + (k - 1) * 0.5, k === 1 ? 0.45 : 0, o.az + (rnd() - 0.5) * 0.3, rnd() * 3);
         } else if (kind === 'cot') {
-          kit.add(M.wood, box(r * 2.6, 0.45, r * 1.2), o.ax, 0, o.az, rnd() * 0.4).add(M.white, box(r * 2.4, 0.08, r * 1.1), o.ax, 0.45, o.az, rnd() * 0.4);
+          // (2026-11-19) legs, a frame, the pallet, a blanket in the side's colour folded down, a pillow (it was a box under a sheet)
+          const cy = rnd() * 0.4;
+          void rnd();
+          cot(part(o.ax, o.az, cy, { cloth: M.white, accent: sideCloth(o.ax) }), r);
         } else {
-          kit.add(M.plank, box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3).add(M.iron, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.55, o.az, 0);
+          // (2026-11-19) planks, battens, braces, an iron band; now and then a smaller crate or a sack on it
+          crateLoaded(part(o.ax, o.az, rnd() * 3, { gold: M.iron }), r * 2, h, hv(o.ax, o.az));
         }
         return;
       case 'barrel':
@@ -414,13 +433,15 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
         } else if (kind === 'hay') {
           kit.add(M.straw, new THREE.SphereGeometry(r, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, h / r, 1), o.ax, 0, o.az).add(M.charred, new THREE.SphereGeometry(r * 1.01, 12, 4, 0, Math.PI * 2, Math.PI / 2 - 0.5, 0.5).scale(1, h / r, 1), o.ax, 0, o.az, rnd() * 3);
         } else {
-          kit.add(M.plank, cyl(r * 0.9, r, h, 12), o.ax, 0, o.az).add(M.iron, cyl(r * 1.02, r * 1.02, 0.06, 12), o.ax, h * 0.25, o.az).add(M.iron, cyl(r * 0.95, r * 0.95, 0.06, 12), o.ax, h * 0.8, o.az);
+          // (2026-11-19) bulging staves, three hoops, a lid; one in three open
+          barrel(part(o.ax, o.az, hv(o.ax, o.az, 1) * 6, { catch: M.charred }), r, h, hv(o.ax, o.az, 2));
         }
         return;
       case 'tent': {
         const white = kind === 'whitetent', cloth = white ? M.linen : M.canvas, band = white ? M.gold : sideCloth(o.ax);
-        kit.add(cloth, new THREE.ConeGeometry(r * 1.3, h * 1.3, 8).translate(0, h * 0.65, 0), o.ax, 0, o.az, rnd() * 3).add(band, new THREE.CylinderGeometry(r * 1.06, r * 1.32, 0.4, 8).translate(0, 0.2, 0), o.ax, 0, o.az);
-        kit.add(M.gold, cyl(0.05, 0.05, h * 1.8, 5), o.ax, 0, o.az);
+        void rnd(); // (the stream's draw, as before)
+        // (2026-11-19) its door towards the fire, the flap tied back, guy ropes to pegs, the band, the pole and its finial
+        tent(part(o.ax, o.az, toFire(o.ax, o.az), { cloth, accent: band }), r * 1.3, h * 1.3, 8);
         if (!white) kit.add(band, new THREE.PlaneGeometry(0.5, 0.36).translate(0.25, 0, 0), o.ax, h * 1.7, o.az, rnd() * 3);
         return;
       }
